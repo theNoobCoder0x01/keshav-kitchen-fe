@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(STAFF)
+  kitchenId String?  @map("kitchen_id")
+  kitchen   Kitchen? @relation(fields: [kitchenId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  recipes     Recipe[]
+  dailyMenus  DailyMenu[]
+
+  @@map("users")
+}
+
+model Kitchen {
+  id       String  @id @default(cuid())
+  name     String
+  location String?
+  isActive Boolean @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  users       User[]
+  dailyMenus  DailyMenu[]
+  dailyReports DailyReport[]
+
+  @@map("kitchens")
+}
+
+model Recipe {
+  id             String    @id @default(cuid())
+  name           String
+  type           MealType
+  description    String?
+  instructions   String?
+  prepTime       Int?      @map("prep_time")
+  cookTime       Int?      @map("cook_time")
+  servings       Int?
+  costPerServing Decimal?  @map("cost_per_serving") @db.Decimal(10,2)
+  imageUrl       String?   @map("image_url")
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  creator     User                @relation(fields: [createdBy], references: [id])
+  ingredients RecipeIngredient[]
+  dailyMenus  DailyMenu[]
+
+  @@map("recipes")
+}
+
+model RecipeIngredient {
+  id           String  @id @default(cuid())
+  recipeId     String  @map("recipe_id")
+  ingredientName String @map("ingredient_name")
+  quantity     Decimal @db.Decimal(10,2)
+  unit         String
+  costPerUnit  Decimal? @map("cost_per_unit") @db.Decimal(10,2)
+  notes        String?
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@map("recipe_ingredients")
+}
+
+model DailyMenu {
+  id              String     @id @default(cuid())
+  kitchenId       String     @map("kitchen_id")
+  menuDate        DateTime   @map("menu_date") @db.Date
+  mealType        MealType   @map("meal_type")
+  recipeId        String     @map("recipe_id")
+  plannedServings Int        @map("planned_servings")
+  actualServings  Int?       @map("actual_servings")
+  ghanMultiplier  Decimal    @default(1.0) @map("ghan_multiplier") @db.Decimal(5,2)
+  status          MenuStatus @default(PLANNED)
+  createdBy       String     @map("created_by")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  kitchen Kitchen @relation(fields: [kitchenId], references: [id])
+  recipe  Recipe  @relation(fields: [recipeId], references: [id])
+  creator User    @relation(fields: [createdBy], references: [id])
+
+  @@unique([kitchenId, menuDate, mealType, recipeId])
+  @@map("daily_menus")
+}
+
+model DailyReport {
+  id            String   @id @default(cuid())
+  kitchenId     String   @map("kitchen_id")
+  reportDate    DateTime @map("report_date") @db.Date
+  totalVisitors Int      @map("total_visitors")
+  breakfastCount Int     @map("breakfast_count")
+  lunchCount    Int      @map("lunch_count")
+  dinnerCount   Int      @map("dinner_count")
+  totalCost     Decimal? @map("total_cost") @db.Decimal(10,2)
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  kitchen Kitchen @relation(fields: [kitchenId], references: [id])
+
+  @@unique([kitchenId, reportDate])
+  @@map("daily_reports")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  CHEF
+  STAFF
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum MenuStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+}

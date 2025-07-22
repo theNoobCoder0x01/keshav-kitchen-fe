@@ -1,103 +1,182 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { AddMealDialog } from "@/components/dialogs/add-meal-dialog"
+import { ReportDialog } from "@/components/dialogs/report-dialog"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { MenuGrid } from "@/components/menu/menu-grid"
+import { Button } from "@/components/ui/button"
+import { DateSelector } from "@/components/ui/date-selector"
+import { PageHeader } from "@/components/ui/page-header"
+import { StatsGrid } from "@/components/ui/stats-grid"
+import { TabNavigation } from "@/components/ui/tab-navigation"
+import { getKitchens } from "@/lib/actions/kitchens"
+import { getDailyMenus, getMenuStats } from "@/lib/actions/menu"
+import { Eye, FileText, Upload, Users } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function MenuPage() {
+  const { data: session } = useSession()
+  const [addMealDialog, setAddMealDialog] = useState(false)
+  const [reportDialog, setReportDialog] = useState(false)
+  const [selectedMealType, setSelectedMealType] = useState("")
+  const [activeTab, setActiveTab] = useState(0)
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [kitchens, setKitchens] = useState<any[]>([])
+  const [menuStats, setMenuStats] = useState<any>(null)
+  const [dailyMenus, setDailyMenus] = useState<any>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadData()
+  }, [selectedDate, activeTab])
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [kitchensData, statsData, menusData] = await Promise.all([
+        getKitchens(),
+        getMenuStats(selectedDate, kitchens[activeTab]?.id),
+        getDailyMenus(selectedDate, kitchens[activeTab]?.id),
+      ])
+
+      setKitchens(kitchensData)
+      setMenuStats(statsData)
+      setDailyMenus(menusData)
+    } catch (error) {
+      toast.error("Failed to load data")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Dynamic stats based on active tab and date
+  const getStatsForTab = () => {
+    if (!menuStats) return []
+
+    return [
+      {
+        label: "Total Planned",
+        value: menuStats.total.planned.toString(),
+        icon: Users,
+        iconColor: "#00cfe8",
+        trend: { value: 12, isPositive: true },
+      },
+      {
+        label: "Breakfast",
+        value: menuStats.byMealType.BREAKFAST.toString(),
+        icon: Users,
+        iconColor: "#28c76f",
+        trend: { value: 8, isPositive: true },
+      },
+      {
+        label: "Lunch",
+        value: menuStats.byMealType.LUNCH.toString(),
+        icon: Eye,
+        iconColor: "#ff9f43",
+        trend: { value: 5, isPositive: false },
+      },
+      {
+        label: "Dinner",
+        value: menuStats.byMealType.DINNER.toString(),
+        icon: Eye,
+        iconColor: "#ea5455",
+        trend: { value: 0, isPositive: true },
+      },
+    ]
+  }
+
+  const handleAddMeal = (mealType: string) => {
+    setSelectedMealType(mealType)
+    setAddMealDialog(true)
+  }
+
+  const handleTabChange = (index: number) => {
+    setActiveTab(index)
+  }
+
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date)
+  }
+
+  const handleMealDialogClose = (open: boolean) => {
+    setAddMealDialog(open)
+    if (!open) {
+      // Reload data when dialog closes
+      loadData()
+    }
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5] mx-auto mb-4"></div>
+            <p className="text-[#4b465c]/70">Loading dashboard...</p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      </DashboardLayout>
+    )
+  }
+
+  return (
+    <DashboardLayout>
+      {/* Header Section */}
+      <div className="mb-6 sm:mb-8">
+        <PageHeader
+          title="Kitchen Dashboard"
+          subtitle="Manage your daily menu and track kitchen operations"
+          actions={
+            <>
+              <Button
+                variant="outline"
+                className="border-[#674af5] text-[#674af5] hover:bg-[#674af5]/10 bg-white/80 backdrop-blur-sm"
+                onClick={() => setReportDialog(true)}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Reports</span>
+              </Button>
+              <Button className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                <Upload className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Bulk Upload</span>
+              </Button>
+            </>
+          }
+        />
+      </div>
+
+      {/* Date and Stats Section */}
+      <div className="mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
+          {/* Date Selector */}
+          <div className="xl:col-span-2">
+            <DateSelector date={selectedDate} onDateChange={handleDateChange} className="h-full min-h-[120px]" />
+          </div>
+
+          {/* Stats Grid */}
+          <div className="xl:col-span-3">
+            <StatsGrid stats={getStatsForTab()} />
+          </div>
+        </div>
+
+        <TabNavigation tabs={kitchens.map((k) => k.name)} activeTab={activeTab} onTabChange={handleTabChange} />
+      </div>
+
+      {/* Menu Section */}
+      <div className="space-y-6">
+        <MenuGrid onAddMeal={handleAddMeal} dailyMenus={dailyMenus} selectedDate={selectedDate} />
+      </div>
+
+      {/* Dialogs */}
+      <AddMealDialog
+        open={addMealDialog}
+        onOpenChange={handleMealDialogClose}
+        mealType={selectedMealType}
+        selectedDate={selectedDate}
+      />
+      <ReportDialog open={reportDialog} onOpenChange={setReportDialog} />
+    </DashboardLayout>
+  )
 }
