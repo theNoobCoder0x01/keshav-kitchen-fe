@@ -1,96 +1,92 @@
 "use server"
 
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import prisma from "../prisma"
-import { auth } from "../auth"
 
 export async function getKitchens() {
   try {
-    const session = await auth()
-
-    if (!session || !session.user) {
-      throw new Error("Unauthorized")
-    }
-
-    // Admin can see all kitchens, others only see their assigned kitchen
-    if (session.user.role === "ADMIN") {
-      const kitchens = await prisma.kitchen.findMany({
-        include: {
-          _count: {
-            select: {
-              users: true,
-              menus: true,
-            },
-          },
-        },
-        orderBy: {
-          name: "asc",
-        },
-      })
-
-      return { success: true, data: kitchens }
-    } else {
-      // For non-admin users, only return their assigned kitchen
-      if (!session.user.kitchenId) {
-        return { success: true, data: [] }
-      }
-
-      const kitchen = await prisma.kitchen.findUnique({
-        where: {
-          id: session.user.kitchenId,
-        },
-        include: {
-          _count: {
-            select: {
-              users: true,
-              menus: true,
-            },
-          },
-        },
-      })
-
-      return { success: true, data: kitchen ? [kitchen] : [] }
-    }
-  } catch (error) {
-    console.error("Error fetching kitchens:", error)
-    return { success: false, error: "Failed to fetch kitchens" }
-  }
-}
-
-export async function getKitchenById(id: string) {
-  try {
-    const session = await auth()
-
-    if (!session || !session.user) {
-      throw new Error("Unauthorized")
-    }
-
-    // Check if user has access to this kitchen
-    if (session.user.role !== "ADMIN" && session.user.kitchenId !== id) {
-      throw new Error("Unauthorized to access this kitchen")
-    }
-
-    const kitchen = await prisma.kitchen.findUnique({
-      where: { id },
+    const kitchens = await prisma.kitchen.findMany({
       include: {
-        users: true,
+        users: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        menus: {
+          select: {
+            id: true,
+            date: true,
+            mealType: true,
+          },
+        },
+        reports: {
+          select: {
+            id: true,
+            date: true,
+            visitorCount: true,
+          },
+        },
         _count: {
           select: {
+            users: true,
             menus: true,
             reports: true,
           },
         },
       },
+      orderBy: {
+        name: "asc",
+      },
     })
 
-    if (!kitchen) {
-      return { success: false, error: "Kitchen not found" }
-    }
+    return kitchens
+  } catch (error) {
+    console.error("Error fetching kitchens:", error)
+    throw new Error("Failed to fetch kitchens")
+  }
+}
 
-    return { success: true, data: kitchen }
+export async function getKitchenById(id: string) {
+  try {
+    const kitchen = await prisma.kitchen.findUnique({
+      where: { id },
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        menus: {
+          include: {
+            recipe: {
+              select: {
+                name: true,
+                category: true,
+              },
+            },
+          },
+          orderBy: {
+            date: "desc",
+          },
+        },
+        reports: {
+          orderBy: {
+            date: "desc",
+          },
+        },
+      },
+    })
+
+    return kitchen
   } catch (error) {
     console.error("Error fetching kitchen:", error)
-    return { success: false, error: "Failed to fetch kitchen" }
+    throw new Error("Failed to fetch kitchen")
   }
 }
 
@@ -100,25 +96,19 @@ export async function createKitchen(data: {
   description?: string
 }) {
   try {
-    const session = await auth()
-
-    if (!session || !session.user || session.user.role !== "ADMIN") {
-      throw new Error("Unauthorized")
-    }
-
     const kitchen = await prisma.kitchen.create({
       data: {
         name: data.name,
-        location: data.location || "",
-        description: data.description || "",
+        location: data.location,
+        description: data.description,
       },
     })
 
     revalidatePath("/")
-    return { success: true, data: kitchen }
+    return kitchen
   } catch (error) {
     console.error("Error creating kitchen:", error)
-    return { success: false, error: "Failed to create kitchen" }
+    throw new Error("Failed to create kitchen")
   }
 }
 
@@ -131,56 +121,21 @@ export async function updateKitchen(
   },
 ) {
   try {
-    const session = await auth()
-
-    if (!session || !session.user || session.user.role !== "ADMIN") {
-      throw new Error("Unauthorized")
-    }
-
     const kitchen = await prisma.kitchen.update({
       where: { id },
-      data: {
-        name: data.name,
-        location: data.location,
-        description: data.description,
-      },
+      data,
     })
 
     revalidatePath("/")
-    return { success: true, data: kitchen }
+    return kitchen
   } catch (error) {
     console.error("Error updating kitchen:", error)
-    return { success: false, error: "Failed to update kitchen" }
+    throw new Error("Failed to update kitchen")
   }
 }
 
 export async function deleteKitchen(id: string) {
   try {
-    const session = await auth()
-
-    if (!session || !session.user || session.user.role !== "ADMIN") {
-      throw new Error("Unauthorized")
-    }
-
-    // Check if kitchen has users
-    const kitchenWithUsers = await prisma.kitchen.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            users: true,
-          },
-        },
-      },
-    })
-
-    if (kitchenWithUsers?._count.users && kitchenWithUsers._count.users > 0) {
-      return {
-        success: false,
-        error: "Cannot delete kitchen with assigned users",
-      }
-    }
-
     await prisma.kitchen.delete({
       where: { id },
     })
@@ -189,6 +144,40 @@ export async function deleteKitchen(id: string) {
     return { success: true }
   } catch (error) {
     console.error("Error deleting kitchen:", error)
-    return { success: false, error: "Failed to delete kitchen" }
+    throw new Error("Failed to delete kitchen")
+  }
+}
+
+export async function getKitchenStats() {
+  try {
+    const stats = await prisma.kitchen.findMany({
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            users: true,
+            menus: true,
+            reports: true,
+          },
+        },
+      },
+    })
+
+    const totalKitchens = stats.length
+    const totalUsers = stats.reduce((sum, kitchen) => sum + kitchen._count.users, 0)
+    const totalMenus = stats.reduce((sum, kitchen) => sum + kitchen._count.menus, 0)
+    const totalReports = stats.reduce((sum, kitchen) => sum + kitchen._count.reports, 0)
+
+    return {
+      totalKitchens,
+      totalUsers,
+      totalMenus,
+      totalReports,
+      kitchens: stats,
+    }
+  } catch (error) {
+    console.error("Error fetching kitchen stats:", error)
+    throw new Error("Failed to fetch kitchen stats")
   }
 }
