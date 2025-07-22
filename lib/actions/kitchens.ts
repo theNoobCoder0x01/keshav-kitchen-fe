@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 import { requireAuth, requireRole } from "@/lib/auth-utils"
 
 export async function getKitchens() {
@@ -9,31 +9,35 @@ export async function getKitchens() {
 
     // If user is not admin, only return their kitchen
     if (session.user.role !== "ADMIN" && session.user.kitchenId) {
-      const kitchen = await prisma.kitchen.findUnique({
-        where: { id: session.user.kitchenId },
-        include: {
-          _count: {
-            select: { users: true, dailyMenus: true },
-          },
-        },
-      })
-      return kitchen ? [kitchen] : []
+      const kitchen = await sql`
+        SELECT k.*, 
+               COUNT(DISTINCT u.id) as user_count,
+               COUNT(DISTINCT dm.id) as menu_count
+        FROM kitchens k
+        LEFT JOIN users u ON k.id = u.kitchen_id
+        LEFT JOIN daily_menus dm ON k.id = dm.kitchen_id
+        WHERE k.id = ${session.user.kitchenId}
+        GROUP BY k.id, k.name, k.location, k.is_active, k.created_at
+      `
+      return kitchen
     }
 
-    const kitchens = await prisma.kitchen.findMany({
-      where: { isActive: true },
-      include: {
-        _count: {
-          select: { users: true, dailyMenus: true },
-        },
-      },
-      orderBy: { name: "asc" },
-    })
+    const kitchens = await sql`
+      SELECT k.*, 
+             COUNT(DISTINCT u.id) as user_count,
+             COUNT(DISTINCT dm.id) as menu_count
+      FROM kitchens k
+      LEFT JOIN users u ON k.id = u.kitchen_id
+      LEFT JOIN daily_menus dm ON k.id = dm.kitchen_id
+      WHERE k.is_active = true
+      GROUP BY k.id, k.name, k.location, k.is_active, k.created_at
+      ORDER BY k.name ASC
+    `
 
     return kitchens
   } catch (error) {
     console.error("Get kitchens error:", error)
-    throw new Error("Failed to fetch kitchens")
+    return []
   }
 }
 
@@ -48,14 +52,18 @@ export async function createKitchen(formData: FormData) {
       return { success: false, error: "Kitchen name is required" }
     }
 
-    const kitchen = await prisma.kitchen.create({
-      data: {
-        name: name.trim(),
-        location: location?.trim(),
-      },
-    })
+    const id = `kitchen_${Date.now()}`
 
-    return { success: true, kitchen }
+    await sql`
+      INSERT INTO kitchens (id, name, location) 
+      VALUES (${id}, ${name.trim()}, ${location?.trim() || null})
+    `
+
+    const kitchen = await sql`
+      SELECT * FROM kitchens WHERE id = ${id}
+    `
+
+    return { success: true, kitchen: kitchen[0] }
   } catch (error) {
     console.error("Create kitchen error:", error)
     return { success: false, error: "Failed to create kitchen" }

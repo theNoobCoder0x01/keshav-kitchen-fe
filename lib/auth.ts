@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { prisma } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
 
@@ -21,14 +21,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const { email, password } = LoginSchema.parse(credentials)
 
-          const user = await prisma.user.findUnique({
-            where: { email },
-            include: {
-              kitchen: {
-                select: { id: true, name: true },
-              },
-            },
-          })
+          const users = await sql`
+            SELECT u.*, k.name as kitchen_name
+            FROM users u
+            LEFT JOIN kitchens k ON u.kitchen_id = k.id
+            WHERE u.email = ${email}
+          `
+
+          const user = users[0]
 
           if (!user || !(await bcrypt.compare(password, user.password))) {
             return null
@@ -39,8 +39,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
             name: user.name,
             role: user.role,
-            kitchenId: user.kitchenId,
-            kitchen: user.kitchen?.name,
+            kitchenId: user.kitchen_id,
+            kitchen: user.kitchen_name,
           }
         } catch (error) {
           console.error("Auth error:", error)
