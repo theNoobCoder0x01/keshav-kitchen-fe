@@ -1,221 +1,291 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { requireAuth } from "@/lib/auth-utils"
-import { startOfDay, endOfDay, startOfMonth, endOfMonth, format } from "date-fns"
-import { getMenuStats } from "@/lib/actions/menu"
+import { auth } from "@/lib/auth"
+import { revalidatePath } from "next/cache"
+import { z } from "zod"
 
-export async function generateDailyReport(date: Date, kitchenIds?: string[]) {
+const ReportSchema = z.object({
+  kitchenId: z.string(),
+  reportDate: z.date(),
+  totalVisitors: z.number().min(0),
+  breakfastCount: z.number().min(0),
+  lunchCount: z.number().min(0),
+  dinnerCount: z.number().min(0),
+  totalCost: z.number().min(0).optional(),
+  notes: z.string().optional(),
+})
+
+export async function getDailyReports(kitchenId?: string, startDate?: Date, endDate?: Date) {
   try {
-    const session = await requireAuth()
-
-    const whereClause: any = {
-      menuDate: {
-        gte: startOfDay(date),
-        lte: endOfDay(date),
-      },
-    }
-
-    if (kitchenIds?.length) {
-      whereClause.kitchenId = { in: kitchenIds }
-    } else if (session.user.kitchenId && session.user.role !== "ADMIN") {
-      whereClause.kitchenId = session.user.kitchenId
-    }
-
-    const menus = await prisma.dailyMenu.findMany({
-      where: whereClause,
-      include: {
-        recipe: {
-          include: {
-            ingredients: true,
-          },
-        },
-        kitchen: {
-          select: { id: true, name: true },
-        },
-      },
-    })
-
-    // Group by kitchen and meal type
-    const reportData = menus.reduce((acc, menu) => {
-      const kitchenName = menu.kitchen.name
-      if (!acc[kitchenName]) {
-        acc[kitchenName] = {
-          BREAKFAST: [],
-          LUNCH: [],
-          DINNER: [],
-          SNACK: [],
-        }
-      }
-
-      acc[kitchenName][menu.mealType].push({
-        recipeName: menu.recipe.name,
-        plannedServings: menu.plannedServings,
-        actualServings: menu.actualServings || menu.plannedServings,
-        ghanMultiplier: menu.ghanMultiplier,
-        ingredients: menu.recipe.ingredients.map((ing) => ({
-          name: ing.ingredientName,
-          totalQuantity: Number(ing.quantity) * Number(menu.ghanMultiplier),
-          unit: ing.unit,
-          estimatedCost: ing.costPerUnit
-            ? Number(ing.quantity) * Number(menu.ghanMultiplier) * Number(ing.costPerUnit)
-            : null,
-        })),
-        status: menu.status,
-      })
-
-      return acc
-    }, {} as any)
-
-    return {
-      date: format(date, "yyyy-MM-dd"),
-      kitchens: reportData,
-      summary: {
-        totalKitchens: Object.keys(reportData).length,
-        totalMenuItems: menus.length,
-        totalPlannedServings: menus.reduce((sum, m) => sum + m.plannedServings, 0),
-        totalActualServings: menus.reduce((sum, m) => sum + (m.actualServings || m.plannedServings), 0),
-      },
-    }
-  } catch (error) {
-    console.error("Generate daily report error:", error)
-    throw new Error("Failed to generate daily report")
-  }
-}
-
-export async function getKitchenStats(kitchenId?: string, startDate?: Date, endDate?: Date) {
-  try {
-    const session = await requireAuth()
-
-    const actualKitchenId = kitchenId || session.user.kitchenId
-    if (!actualKitchenId && session.user.role !== "ADMIN") {
-      throw new Error("Kitchen ID required")
+    const session = await auth()
+    if (!session?.user) {
+      throw new Error("Unauthorized")
     }
 
     const whereClause: any = {}
 
-    if (actualKitchenId) {
-      whereClause.kitchenId = actualKitchenId
+    if (kitchenId) {
+      whereClause.kitchenId = kitchenId
+    } else if (session.user.kitchenId) {
+      whereClause.kitchenId = session.user.kitchenId
     }
 
     if (startDate && endDate) {
-      whereClause.menuDate = {
-        gte: startOfDay(startDate),
-        lte: endOfDay(endDate),
+      whereClause.reportDate = {
+        gte: startDate,
+        lte: endDate,
       }
     }
 
-    const [totalMenus, completedMenus, servingsStats] = await Promise.all([
-      prisma.dailyMenu.count({ where: whereClause }),
-      prisma.dailyMenu.count({
-        where: { ...whereClause, status: "COMPLETED" },
-      }),
-      prisma.dailyMenu.aggregate({
-        where: whereClause,
-        _sum: {
-          plannedServings: true,
-          actualServings: true,
-        },
-        _avg: {
-          plannedServings: true,
-          actualServings: true,
-        },
-      }),
-    ])
-
-    return {
-      totalMenus,
-      completedMenus,
-      completionRate: totalMenus > 0 ? (completedMenus / totalMenus) * 100 : 0,
-      totalPlannedServings: servingsStats._sum.plannedServings || 0,
-      totalActualServings: servingsStats._sum.actualServings || servingsStats._sum.plannedServings || 0,
-      avgPlannedServings: Math.round(servingsStats._avg.plannedServings || 0),
-      avgActualServings: Math.round(servingsStats._avg.actualServings || servingsStats._avg.plannedServings || 0),
-    }
-  } catch (error) {
-    console.error("Get kitchen stats error:", error)
-    throw new Error("Failed to fetch kitchen statistics")
-  }
-}
-
-export async function exportMenuReport(date: Date, kitchenIds?: string[], format: "csv" | "pdf" = "csv") {
-  try {
-    const reportData = await generateDailyReport(date, kitchenIds)
-
-    if (format === "csv") {
-      // Generate CSV content
-      const csvRows = ["Kitchen,Meal Type,Recipe,Planned Servings,Actual Servings,Status"]
-
-      Object.entries(reportData.kitchens).forEach(([kitchenName, meals]: [string, any]) => {
-        Object.entries(meals).forEach(([mealType, items]: [string, any[]]) => {
-          items.forEach((item) => {
-            csvRows.push(
-              [kitchenName, mealType, item.recipeName, item.plannedServings, item.actualServings, item.status].join(
-                ",",
-              ),
-            )
-          })
-        })
-      })
-
-      return {
-        content: csvRows.join("\n"),
-        filename: `menu-report-${format(date, "yyyy-MM-dd")}.csv`,
-        contentType: "text/csv",
-      }
-    }
-
-    // For PDF, you would integrate with a PDF library like puppeteer or jsPDF
-    throw new Error("PDF export not implemented yet")
-  } catch (error) {
-    console.error("Export menu report error:", error)
-    throw new Error("Failed to export menu report")
-  }
-}
-
-export async function getDashboardStats(kitchenId?: string) {
-  try {
-    const session = await requireAuth()
-    const today = new Date()
-
-    const actualKitchenId = kitchenId || session.user.kitchenId
-    const whereClause: any = actualKitchenId && session.user.role !== "ADMIN" ? { kitchenId: actualKitchenId } : {}
-
-    const [todayStats, monthStats, recentMenus] = await Promise.all([
-      getMenuStats(today, actualKitchenId),
-      prisma.dailyMenu.aggregate({
-        where: {
-          ...whereClause,
-          menuDate: {
-            gte: startOfMonth(today),
-            lte: endOfMonth(today),
+    const reports = await prisma.dailyReport.findMany({
+      where: whereClause,
+      include: {
+        kitchen: {
+          select: {
+            name: true,
           },
         },
-        _sum: { plannedServings: true, actualServings: true },
-        _count: { id: true },
-      }),
-      prisma.dailyMenu.findMany({
-        where: whereClause,
-        include: {
-          recipe: { select: { name: true } },
-          kitchen: { select: { name: true } },
+      },
+      orderBy: {
+        reportDate: "desc",
+      },
+    })
+
+    return reports.map((report) => ({
+      id: report.id,
+      kitchenId: report.kitchenId,
+      kitchenName: report.kitchen.name,
+      reportDate: report.reportDate,
+      totalVisitors: report.totalVisitors,
+      breakfastCount: report.breakfastCount,
+      lunchCount: report.lunchCount,
+      dinnerCount: report.dinnerCount,
+      totalCost: report.totalCost,
+      notes: report.notes,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+    }))
+  } catch (error) {
+    console.error("Error fetching daily reports:", error)
+    throw new Error("Failed to fetch daily reports")
+  }
+}
+
+export async function createDailyReport(data: z.infer<typeof ReportSchema>) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      throw new Error("Unauthorized")
+    }
+
+    const validatedData = ReportSchema.parse(data)
+
+    // Check if report already exists for this date and kitchen
+    const existingReport = await prisma.dailyReport.findUnique({
+      where: {
+        kitchenId_reportDate: {
+          kitchenId: validatedData.kitchenId,
+          reportDate: validatedData.reportDate,
         },
-        orderBy: { createdAt: "desc" },
-        take: 5,
+      },
+    })
+
+    if (existingReport) {
+      throw new Error("Report already exists for this date and kitchen")
+    }
+
+    const report = await prisma.dailyReport.create({
+      data: validatedData,
+      include: {
+        kitchen: true,
+      },
+    })
+
+    revalidatePath("/reports")
+    return report
+  } catch (error) {
+    console.error("Error creating daily report:", error)
+    throw new Error("Failed to create daily report")
+  }
+}
+
+export async function updateDailyReport(id: string, data: Partial<z.infer<typeof ReportSchema>>) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      throw new Error("Unauthorized")
+    }
+
+    const report = await prisma.dailyReport.update({
+      where: { id },
+      data,
+      include: {
+        kitchen: true,
+      },
+    })
+
+    revalidatePath("/reports")
+    return report
+  } catch (error) {
+    console.error("Error updating daily report:", error)
+    throw new Error("Failed to update daily report")
+  }
+}
+
+export async function deleteDailyReport(id: string) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      throw new Error("Unauthorized")
+    }
+
+    await prisma.dailyReport.delete({
+      where: { id },
+    })
+
+    revalidatePath("/reports")
+  } catch (error) {
+    console.error("Error deleting daily report:", error)
+    throw new Error("Failed to delete daily report")
+  }
+}
+
+export async function getReportStats(kitchenId?: string, days = 30) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      throw new Error("Unauthorized")
+    }
+
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+
+    const whereClause: any = {
+      reportDate: {
+        gte: startDate,
+      },
+    }
+
+    if (kitchenId) {
+      whereClause.kitchenId = kitchenId
+    } else if (session.user.kitchenId) {
+      whereClause.kitchenId = session.user.kitchenId
+    }
+
+    const [totalReports, aggregateStats, recentReports] = await Promise.all([
+      prisma.dailyReport.count({
+        where: whereClause,
+      }),
+      prisma.dailyReport.aggregate({
+        where: whereClause,
+        _sum: {
+          totalVisitors: true,
+          breakfastCount: true,
+          lunchCount: true,
+          dinnerCount: true,
+          totalCost: true,
+        },
+        _avg: {
+          totalVisitors: true,
+          totalCost: true,
+        },
+      }),
+      prisma.dailyReport.findMany({
+        where: whereClause,
+        orderBy: {
+          reportDate: "desc",
+        },
+        take: 7,
+        include: {
+          kitchen: {
+            select: {
+              name: true,
+            },
+          },
+        },
       }),
     ])
 
     return {
-      today: todayStats,
-      month: {
-        totalMenus: monthStats._count.id,
-        totalServings: monthStats._sum.plannedServings || 0,
-        actualServings: monthStats._sum.actualServings || monthStats._sum.plannedServings || 0,
-      },
-      recentMenus,
+      totalReports,
+      totalVisitors: aggregateStats._sum.totalVisitors || 0,
+      totalMealsServed:
+        (aggregateStats._sum.breakfastCount || 0) +
+        (aggregateStats._sum.lunchCount || 0) +
+        (aggregateStats._sum.dinnerCount || 0),
+      totalCost: aggregateStats._sum.totalCost || 0,
+      avgVisitorsPerDay: aggregateStats._avg.totalVisitors || 0,
+      avgCostPerDay: aggregateStats._avg.totalCost || 0,
+      recentReports: recentReports.map((report) => ({
+        id: report.id,
+        kitchenName: report.kitchen.name,
+        reportDate: report.reportDate,
+        totalVisitors: report.totalVisitors,
+        totalMeals: report.breakfastCount + report.lunchCount + report.dinnerCount,
+        totalCost: report.totalCost,
+      })),
     }
   } catch (error) {
-    console.error("Get dashboard stats error:", error)
-    throw new Error("Failed to fetch dashboard statistics")
+    console.error("Error fetching report stats:", error)
+    throw new Error("Failed to fetch report stats")
+  }
+}
+
+export async function getKitchenPerformance(days = 30) {
+  try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      throw new Error("Unauthorized")
+    }
+
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+
+    const kitchenStats = await prisma.kitchen.findMany({
+      where: { isActive: true },
+      include: {
+        dailyReports: {
+          where: {
+            reportDate: {
+              gte: startDate,
+            },
+          },
+        },
+        _count: {
+          select: {
+            users: true,
+            dailyMenus: true,
+          },
+        },
+      },
+    })
+
+    return kitchenStats.map((kitchen) => {
+      const reports = kitchen.dailyReports
+      const totalVisitors = reports.reduce((sum, report) => sum + report.totalVisitors, 0)
+      const totalCost = reports.reduce((sum, report) => sum + (report.totalCost?.toNumber() || 0), 0)
+      const totalMeals = reports.reduce(
+        (sum, report) => sum + report.breakfastCount + report.lunchCount + report.dinnerCount,
+        0,
+      )
+
+      return {
+        id: kitchen.id,
+        name: kitchen.name,
+        location: kitchen.location,
+        userCount: kitchen._count.users,
+        menuCount: kitchen._count.dailyMenus,
+        totalVisitors,
+        totalMeals,
+        totalCost,
+        avgVisitorsPerDay: reports.length > 0 ? totalVisitors / reports.length : 0,
+        avgCostPerDay: reports.length > 0 ? totalCost / reports.length : 0,
+        efficiency: totalMeals > 0 ? totalVisitors / totalMeals : 0,
+      }
+    })
+  } catch (error) {
+    console.error("Error fetching kitchen performance:", error)
+    throw new Error("Failed to fetch kitchen performance")
   }
 }

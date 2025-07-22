@@ -1,36 +1,14 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { requireAuth, requireRole } from "@/lib/auth-utils"
+import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 export async function getKitchens() {
   try {
-    const session = await requireAuth()
-
-    // If user is not admin, only return their kitchen
-    if (session.user.role !== "ADMIN" && session.user.kitchenId) {
-      const kitchen = await prisma.kitchen.findUnique({
-        where: {
-          id: session.user.kitchenId,
-          isActive: true,
-        },
-        include: {
-          _count: {
-            select: {
-              users: true,
-              dailyMenus: true,
-            },
-          },
-        },
-      })
-      return kitchen ? [kitchen] : []
-    }
-
     const kitchens = await prisma.kitchen.findMany({
-      where: {
-        isActive: true,
-      },
+      where: { isActive: true },
+      orderBy: { name: "asc" },
       include: {
         _count: {
           select: {
@@ -39,89 +17,91 @@ export async function getKitchens() {
           },
         },
       },
-      orderBy: {
-        name: "asc",
-      },
     })
 
-    return kitchens
+    return kitchens.map((kitchen) => ({
+      id: kitchen.id,
+      name: kitchen.name,
+      location: kitchen.location,
+      isActive: kitchen.isActive,
+      userCount: kitchen._count.users,
+      menuCount: kitchen._count.dailyMenus,
+      createdAt: kitchen.createdAt,
+    }))
   } catch (error) {
-    console.error("Get kitchens error:", error)
-    return []
+    console.error("Error fetching kitchens:", error)
+    throw new Error("Failed to fetch kitchens")
   }
 }
 
-export async function createKitchen(formData: FormData) {
+export async function createKitchen(data: {
+  name: string
+  location?: string
+}) {
   try {
-    await requireRole(["ADMIN"])
-
-    const name = formData.get("name") as string
-    const location = formData.get("location") as string
-
-    if (!name?.trim()) {
-      return { success: false, error: "Kitchen name is required" }
+    const session = await auth()
+    if (!session?.user) {
+      throw new Error("Unauthorized")
     }
 
     const kitchen = await prisma.kitchen.create({
       data: {
-        name: name.trim(),
-        location: location?.trim() || null,
+        name: data.name,
+        location: data.location,
         isActive: true,
       },
     })
 
     revalidatePath("/")
-    return { success: true, kitchen }
+    return kitchen
   } catch (error) {
-    console.error("Create kitchen error:", error)
-    return { success: false, error: "Failed to create kitchen" }
+    console.error("Error creating kitchen:", error)
+    throw new Error("Failed to create kitchen")
   }
 }
 
-export async function updateKitchen(formData: FormData) {
+export async function updateKitchen(
+  id: string,
+  data: {
+    name?: string
+    location?: string
+    isActive?: boolean
+  },
+) {
   try {
-    await requireRole(["ADMIN"])
-
-    const id = formData.get("id") as string
-    const name = formData.get("name") as string
-    const location = formData.get("location") as string
-    const isActive = formData.get("isActive") === "true"
-
-    if (!name?.trim()) {
-      return { success: false, error: "Kitchen name is required" }
+    const session = await auth()
+    if (!session?.user) {
+      throw new Error("Unauthorized")
     }
 
     const kitchen = await prisma.kitchen.update({
       where: { id },
-      data: {
-        name: name.trim(),
-        location: location?.trim() || null,
-        isActive,
-      },
+      data,
     })
 
     revalidatePath("/")
-    return { success: true, kitchen }
+    return kitchen
   } catch (error) {
-    console.error("Update kitchen error:", error)
-    return { success: false, error: "Failed to update kitchen" }
+    console.error("Error updating kitchen:", error)
+    throw new Error("Failed to update kitchen")
   }
 }
 
-export async function deleteKitchen(kitchenId: string) {
+export async function deleteKitchen(id: string) {
   try {
-    await requireRole(["ADMIN"])
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      throw new Error("Unauthorized")
+    }
 
-    // Soft delete by setting isActive to false
-    const kitchen = await prisma.kitchen.update({
-      where: { id: kitchenId },
+    await prisma.kitchen.update({
+      where: { id },
       data: { isActive: false },
     })
 
     revalidatePath("/")
-    return { success: true, kitchen }
   } catch (error) {
-    console.error("Delete kitchen error:", error)
-    return { success: false, error: "Failed to delete kitchen" }
+    console.error("Error deleting kitchen:", error)
+    throw new Error("Failed to delete kitchen")
   }
 }

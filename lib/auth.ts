@@ -1,7 +1,5 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import GoogleProvider from "next-auth/providers/google"
-import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
@@ -12,7 +10,6 @@ const LoginSchema = z.object({
 })
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -51,14 +48,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-      ? [
-          GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          }),
-        ]
-      : []),
   ],
   callbacks: {
     jwt({ token, user }) {
@@ -75,29 +64,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role as string
         session.user.kitchenId = token.kitchenId as string
         session.user.kitchen = token.kitchen as string
-
-        // Fetch fresh user data from database
-        const user = await prisma.user.findUnique({
-          where: { id: token.sub! },
-          include: {
-            kitchen: {
-              select: { name: true },
-            },
-          },
-        })
-
-        if (user) {
-          session.user.role = user.role
-          session.user.kitchenId = user.kitchenId
-          session.user.kitchen = user.kitchen?.name
-        }
       }
       return session
     },
   },
   pages: {
     signIn: "/auth/signin",
-    error: "/auth/error",
   },
   session: {
     strategy: "jwt",
