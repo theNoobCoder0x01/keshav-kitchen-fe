@@ -1,15 +1,25 @@
-import { neon } from "@neondatabase/serverless"
+import { PrismaClient } from "@prisma/client"
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set")
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-export const sql = neon(process.env.DATABASE_URL)
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ["query", "error", "warn"],
+  })
 
-// For backward compatibility, we'll create a mock prisma object
-// that throws errors if used, encouraging migration to direct SQL
-export const prisma = new Proxy({} as any, {
-  get() {
-    throw new Error("Prisma has been replaced with direct SQL queries. Use the sql function from @/lib/db instead.")
-  },
-})
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+
+// Test connection function
+export async function testPrismaConnection() {
+  try {
+    await prisma.$connect()
+    console.log("✅ Prisma connected successfully")
+    return true
+  } catch (error) {
+    console.error("❌ Prisma connection failed:", error)
+    return false
+  }
+}

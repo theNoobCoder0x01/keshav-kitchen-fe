@@ -1,24 +1,17 @@
-import { neon } from "@neondatabase/serverless"
+import { prisma } from "./prisma"
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set")
-}
+// Re-export prisma for convenience
+export { prisma }
 
-export const sql = neon(process.env.DATABASE_URL)
-
-// Helper function to execute queries with error handling
-export async function executeQuery<T = any>(query: string, params: any[] = []): Promise<T[]> {
+// Test the connection
+export async function testConnection() {
   try {
-    const result = await sql(query, params)
-    return result as T[]
+    await prisma.$connect()
+    const result = await prisma.$queryRaw`SELECT NOW() as current_time`
+    console.log("✅ Database connected successfully:", result)
+    return true
   } catch (error) {
-    console.error("Database query error:", error)
-    throw new Error("Database operation failed")
+    console.error("❌ Database connection failed:", error)
+    return false
   }
-}
-
-// Helper function for single row queries
-export async function executeQuerySingle<T = any>(query: string, params: any[] = []): Promise<T | null> {
-  const result = await executeQuery<T>(query, params)
-  return result[0] || null
 }
