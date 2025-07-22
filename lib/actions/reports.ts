@@ -1,291 +1,234 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
+import prisma from "../prisma"
+import { auth } from "../auth"
 import { z } from "zod"
 
-const ReportSchema = z.object({
+const reportSchema = z.object({
+  date: z.string(),
   kitchenId: z.string(),
-  reportDate: z.date(),
-  totalVisitors: z.number().min(0),
-  breakfastCount: z.number().min(0),
-  lunchCount: z.number().min(0),
-  dinnerCount: z.number().min(0),
-  totalCost: z.number().min(0).optional(),
+  visitorCount: z.number().int().min(0),
+  mealsCounted: z.number().int().min(0),
   notes: z.string().optional(),
 })
 
-export async function getDailyReports(kitchenId?: string, startDate?: Date, endDate?: Date) {
+export async function getReports(startDate?: string, endDate?: string) {
   try {
     const session = await auth()
-    if (!session?.user) {
+
+    if (!session || !session.user) {
       throw new Error("Unauthorized")
     }
 
-    const whereClause: any = {}
+    const where: any = {}
 
-    if (kitchenId) {
-      whereClause.kitchenId = kitchenId
-    } else if (session.user.kitchenId) {
-      whereClause.kitchenId = session.user.kitchenId
-    }
-
+    // Filter by date range if provided
     if (startDate && endDate) {
-      whereClause.reportDate = {
-        gte: startDate,
-        lte: endDate,
+      where.date = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
       }
     }
 
-    const reports = await prisma.dailyReport.findMany({
-      where: whereClause,
+    // Non-admin users can only see reports for their kitchen
+    if (session.user.role !== "ADMIN" && session.user.kitchenId) {
+      where.kitchenId = session.user.kitchenId
+    }
+
+    const reports = await prisma.report.findMany({
+      where,
       include: {
-        kitchen: {
+        kitchen: true,
+        user: {
           select: {
+            id: true,
             name: true,
+            email: true,
           },
         },
       },
       orderBy: {
-        reportDate: "desc",
+        date: "desc",
       },
     })
 
-    return reports.map((report) => ({
-      id: report.id,
-      kitchenId: report.kitchenId,
-      kitchenName: report.kitchen.name,
-      reportDate: report.reportDate,
-      totalVisitors: report.totalVisitors,
-      breakfastCount: report.breakfastCount,
-      lunchCount: report.lunchCount,
-      dinnerCount: report.dinnerCount,
-      totalCost: report.totalCost,
-      notes: report.notes,
-      createdAt: report.createdAt,
-      updatedAt: report.updatedAt,
-    }))
+    return { success: true, data: reports }
   } catch (error) {
-    console.error("Error fetching daily reports:", error)
-    throw new Error("Failed to fetch daily reports")
+    console.error("Error fetching reports:", error)
+    return { success: false, error: "Failed to fetch reports" }
   }
 }
 
-export async function createDailyReport(data: z.infer<typeof ReportSchema>) {
+export async function getReportById(id: string) {
   try {
     const session = await auth()
-    if (!session?.user) {
+
+    if (!session || !session.user) {
       throw new Error("Unauthorized")
     }
 
-    const validatedData = ReportSchema.parse(data)
+    const report = await prisma.report.findUnique({
+      where: { id },
+      include: {
+        kitchen: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    if (!report) {
+      return { success: false, error: "Report not found" }
+    }
+
+    // Check if user has access to this report
+    if (session.user.role !== "ADMIN" && session.user.kitchenId !== report.kitchenId) {
+      throw new Error("Unauthorized to access this report")
+    }
+
+    return { success: true, data: report }
+  } catch (error) {
+    console.error("Error fetching report:", error)
+    return { success: false, error: "Failed to fetch report" }
+  }
+}
+
+export async function createReport(data: z.infer<typeof reportSchema>) {
+  try {
+    const session = await auth()
+
+    if (!session || !session.user) {
+      throw new Error("Unauthorized")
+    }
+
+    // Validate data
+    const validatedData = reportSchema.parse(data)
+
+    // Check if user has access to this kitchen
+    if (session.user.role !== "ADMIN" && session.user.kitchenId !== validatedData.kitchenId) {
+      throw new Error("Unauthorized to create report for this kitchen")
+    }
 
     // Check if report already exists for this date and kitchen
-    const existingReport = await prisma.dailyReport.findUnique({
+    const existingReport = await prisma.report.findFirst({
       where: {
-        kitchenId_reportDate: {
-          kitchenId: validatedData.kitchenId,
-          reportDate: validatedData.reportDate,
-        },
+        date: new Date(validatedData.date),
+        kitchenId: validatedData.kitchenId,
       },
     })
 
     if (existingReport) {
-      throw new Error("Report already exists for this date and kitchen")
-    }
-
-    const report = await prisma.dailyReport.create({
-      data: validatedData,
-      include: {
-        kitchen: true,
-      },
-    })
-
-    revalidatePath("/reports")
-    return report
-  } catch (error) {
-    console.error("Error creating daily report:", error)
-    throw new Error("Failed to create daily report")
-  }
-}
-
-export async function updateDailyReport(id: string, data: Partial<z.infer<typeof ReportSchema>>) {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      throw new Error("Unauthorized")
-    }
-
-    const report = await prisma.dailyReport.update({
-      where: { id },
-      data,
-      include: {
-        kitchen: true,
-      },
-    })
-
-    revalidatePath("/reports")
-    return report
-  } catch (error) {
-    console.error("Error updating daily report:", error)
-    throw new Error("Failed to update daily report")
-  }
-}
-
-export async function deleteDailyReport(id: string) {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      throw new Error("Unauthorized")
-    }
-
-    await prisma.dailyReport.delete({
-      where: { id },
-    })
-
-    revalidatePath("/reports")
-  } catch (error) {
-    console.error("Error deleting daily report:", error)
-    throw new Error("Failed to delete daily report")
-  }
-}
-
-export async function getReportStats(kitchenId?: string, days = 30) {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      throw new Error("Unauthorized")
-    }
-
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - days)
-
-    const whereClause: any = {
-      reportDate: {
-        gte: startDate,
-      },
-    }
-
-    if (kitchenId) {
-      whereClause.kitchenId = kitchenId
-    } else if (session.user.kitchenId) {
-      whereClause.kitchenId = session.user.kitchenId
-    }
-
-    const [totalReports, aggregateStats, recentReports] = await Promise.all([
-      prisma.dailyReport.count({
-        where: whereClause,
-      }),
-      prisma.dailyReport.aggregate({
-        where: whereClause,
-        _sum: {
-          totalVisitors: true,
-          breakfastCount: true,
-          lunchCount: true,
-          dinnerCount: true,
-          totalCost: true,
-        },
-        _avg: {
-          totalVisitors: true,
-          totalCost: true,
-        },
-      }),
-      prisma.dailyReport.findMany({
-        where: whereClause,
-        orderBy: {
-          reportDate: "desc",
-        },
-        take: 7,
-        include: {
-          kitchen: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      }),
-    ])
-
-    return {
-      totalReports,
-      totalVisitors: aggregateStats._sum.totalVisitors || 0,
-      totalMealsServed:
-        (aggregateStats._sum.breakfastCount || 0) +
-        (aggregateStats._sum.lunchCount || 0) +
-        (aggregateStats._sum.dinnerCount || 0),
-      totalCost: aggregateStats._sum.totalCost || 0,
-      avgVisitorsPerDay: aggregateStats._avg.totalVisitors || 0,
-      avgCostPerDay: aggregateStats._avg.totalCost || 0,
-      recentReports: recentReports.map((report) => ({
-        id: report.id,
-        kitchenName: report.kitchen.name,
-        reportDate: report.reportDate,
-        totalVisitors: report.totalVisitors,
-        totalMeals: report.breakfastCount + report.lunchCount + report.dinnerCount,
-        totalCost: report.totalCost,
-      })),
-    }
-  } catch (error) {
-    console.error("Error fetching report stats:", error)
-    throw new Error("Failed to fetch report stats")
-  }
-}
-
-export async function getKitchenPerformance(days = 30) {
-  try {
-    const session = await auth()
-    if (!session?.user || session.user.role !== "ADMIN") {
-      throw new Error("Unauthorized")
-    }
-
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - days)
-
-    const kitchenStats = await prisma.kitchen.findMany({
-      where: { isActive: true },
-      include: {
-        dailyReports: {
-          where: {
-            reportDate: {
-              gte: startDate,
-            },
-          },
-        },
-        _count: {
-          select: {
-            users: true,
-            dailyMenus: true,
-          },
-        },
-      },
-    })
-
-    return kitchenStats.map((kitchen) => {
-      const reports = kitchen.dailyReports
-      const totalVisitors = reports.reduce((sum, report) => sum + report.totalVisitors, 0)
-      const totalCost = reports.reduce((sum, report) => sum + (report.totalCost?.toNumber() || 0), 0)
-      const totalMeals = reports.reduce(
-        (sum, report) => sum + report.breakfastCount + report.lunchCount + report.dinnerCount,
-        0,
-      )
-
       return {
-        id: kitchen.id,
-        name: kitchen.name,
-        location: kitchen.location,
-        userCount: kitchen._count.users,
-        menuCount: kitchen._count.dailyMenus,
-        totalVisitors,
-        totalMeals,
-        totalCost,
-        avgVisitorsPerDay: reports.length > 0 ? totalVisitors / reports.length : 0,
-        avgCostPerDay: reports.length > 0 ? totalCost / reports.length : 0,
-        efficiency: totalMeals > 0 ? totalVisitors / totalMeals : 0,
+        success: false,
+        error: "A report already exists for this date and kitchen",
       }
+    }
+
+    const report = await prisma.report.create({
+      data: {
+        date: new Date(validatedData.date),
+        kitchenId: validatedData.kitchenId,
+        userId: session.user.id,
+        visitorCount: validatedData.visitorCount,
+        mealsCounted: validatedData.mealsCounted,
+        notes: validatedData.notes,
+      },
     })
+
+    revalidatePath("/reports")
+    return { success: true, data: report }
   } catch (error) {
-    console.error("Error fetching kitchen performance:", error)
-    throw new Error("Failed to fetch kitchen performance")
+    console.error("Error creating report:", error)
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.errors[0].message }
+    }
+    return { success: false, error: "Failed to create report" }
+  }
+}
+
+export async function updateReport(id: string, data: Partial<z.infer<typeof reportSchema>>) {
+  try {
+    const session = await auth()
+
+    if (!session || !session.user) {
+      throw new Error("Unauthorized")
+    }
+
+    // Get the current report
+    const currentReport = await prisma.report.findUnique({
+      where: { id },
+    })
+
+    if (!currentReport) {
+      return { success: false, error: "Report not found" }
+    }
+
+    // Check if user has access to this report
+    if (session.user.role !== "ADMIN" && session.user.kitchenId !== currentReport.kitchenId) {
+      throw new Error("Unauthorized to update this report")
+    }
+
+    const report = await prisma.report.update({
+      where: { id },
+      data: {
+        date: data.date ? new Date(data.date) : undefined,
+        kitchenId: data.kitchenId,
+        visitorCount: data.visitorCount,
+        mealsCounted: data.mealsCounted,
+        notes: data.notes,
+      },
+    })
+
+    revalidatePath("/reports")
+    return { success: true, data: report }
+  } catch (error) {
+    console.error("Error updating report:", error)
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.errors[0].message }
+    }
+    return { success: false, error: "Failed to update report" }
+  }
+}
+
+export async function deleteReport(id: string) {
+  try {
+    const session = await auth()
+
+    if (!session || !session.user) {
+      throw new Error("Unauthorized")
+    }
+
+    // Get the current report
+    const currentReport = await prisma.report.findUnique({
+      where: { id },
+    })
+
+    if (!currentReport) {
+      return { success: false, error: "Report not found" }
+    }
+
+    // Check if user has access to this report
+    if (
+      session.user.role !== "ADMIN" &&
+      session.user.role !== "MANAGER" &&
+      session.user.kitchenId !== currentReport.kitchenId
+    ) {
+      throw new Error("Unauthorized to delete this report")
+    }
+
+    await prisma.report.delete({
+      where: { id },
+    })
+
+    revalidatePath("/reports")
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting report:", error)
+    return { success: false, error: "Failed to delete report" }
   }
 }

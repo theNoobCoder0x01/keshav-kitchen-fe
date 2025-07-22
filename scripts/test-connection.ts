@@ -1,16 +1,32 @@
-import { testConnection } from "../lib/db-setup"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 async function main() {
-  console.log("🔌 Testing database connection...")
+  try {
+    console.log("Testing database connection...")
 
-  const connected = await testConnection()
+    // Try to query the database
+    const kitchenCount = await prisma.kitchen.count()
+    const userCount = await prisma.user.count()
+    const recipeCount = await prisma.recipe.count()
+    const menuCount = await prisma.menu.count()
+    const reportCount = await prisma.report.count()
 
-  if (connected) {
-    console.log("✅ Database connection successful!")
-    process.exit(0)
-  } else {
-    console.log("❌ Database connection failed!")
+    console.log("Connection successful!")
+    console.log("Database statistics:")
+    console.log(`- Kitchens: ${kitchenCount}`)
+    console.log(`- Users: ${userCount}`)
+    console.log(`- Recipes: ${recipeCount}`)
+    console.log(`- Menus: ${menuCount}`)
+    console.log(`- Reports: ${reportCount}`)
+
+    console.log("\nDatabase is ready to use!")
+  } catch (error) {
+    console.error("Error connecting to database:", error)
     process.exit(1)
+  } finally {
+    await prisma.$disconnect()
   }
 }
 

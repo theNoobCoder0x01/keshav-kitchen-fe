@@ -1,21 +1,13 @@
 import { z } from "zod"
 
-export const CreateDailyMenuSchema = z.object({
-  kitchenId: z.string().min(1, "Kitchen is required"),
-  menuDate: z.date(),
+export const menuSchema = z.object({
+  date: z.string(),
   mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]),
-  recipeId: z.string().min(1, "Recipe is required"),
-  plannedServings: z.number().positive("Planned servings must be positive"),
-  ghanMultiplier: z.number().positive().default(1),
+  recipeId: z.string(),
+  kitchenId: z.string(),
+  servings: z.number().int().min(1, "Servings must be at least 1"),
+  ghanFactor: z.number().min(0.1).default(1.0),
+  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).default("PLANNED"),
+  actualCount: z.number().int().min(0).optional(),
+  notes: z.string().optional(),
 })
-
-export const UpdateDailyMenuSchema = z.object({
-  id: z.string().min(1, "Menu ID is required"),
-  actualServings: z.number().positive().optional(),
-  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED"]).optional(),
-  plannedServings: z.number().positive().optional(),
-  ghanMultiplier: z.number().positive().optional(),
-})
-
-export type CreateDailyMenuInput = z.infer<typeof CreateDailyMenuSchema>
-export type UpdateDailyMenuInput = z.infer<typeof UpdateDailyMenuSchema>

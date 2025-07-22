@@ -1,27 +1,25 @@
-import type { DefaultSession, DefaultUser } from "next-auth"
-import type { DefaultJWT } from "next-auth/jwt"
+import type { DefaultSession } from "next-auth"
 
 declare module "next-auth" {
   interface Session {
     user: {
       id: string
       role: string
-      kitchenId?: string
-      kitchen?: string
+      kitchenId: string | null
     } & DefaultSession["user"]
   }
 
-  interface User extends DefaultUser {
+  interface User {
+    id: string
     role: string
-    kitchenId?: string
-    kitchen?: string
+    kitchenId: string | null
   }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT extends DefaultJWT {
+  interface JWT {
+    id: string
     role: string
-    kitchenId?: string
-    kitchen?: string
+    kitchenId: string | null
   }
 }
