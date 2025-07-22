@@ -2,29 +2,20 @@
 
 import type React from "react"
 
-import { signIn, getSession } from "next-auth/react"
-import { useState, useEffect } from "react"
+import { signIn } from "next-auth/react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
-import { useSession } from "next-auth/react"
 
 export default function SignInPage() {
-  const { data: session, status } = useSession()
-  const [email, setEmail] = useState("admin@kitchen.com")
-  const [password, setPassword] = useState("admin123")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/")
-    }
-  }, [status, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,8 +32,6 @@ export default function SignInPage() {
         toast.error("Invalid credentials")
       } else {
         toast.success("Signed in successfully!")
-        // Force a session refresh
-        await getSession()
         router.push("/")
         router.refresh()
       }
@@ -51,18 +40,6 @@ export default function SignInPage() {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5]"></div>
-      </div>
-    )
-  }
-
-  if (status === "authenticated") {
-    return null // Will redirect
   }
 
   return (

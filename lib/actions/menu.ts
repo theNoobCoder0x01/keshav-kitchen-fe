@@ -176,13 +176,7 @@ export async function getDailyMenus(date: Date, kitchenId?: string) {
     return groupedMenus
   } catch (error) {
     console.error("Get daily menus error:", error)
-    // Return empty structure instead of throwing
-    return {
-      BREAKFAST: [],
-      LUNCH: [],
-      DINNER: [],
-      SNACK: [],
-    }
+    throw new Error("Failed to fetch daily menus")
   }
 }
 
@@ -229,19 +223,6 @@ export async function getMenuStats(date: Date, kitchenId?: string) {
     }
   } catch (error) {
     console.error("Get menu stats error:", error)
-    // Return default stats instead of throwing
-    return {
-      total: {
-        planned: 0,
-        actual: 0,
-        items: 0,
-      },
-      byMealType: {
-        BREAKFAST: 0,
-        LUNCH: 0,
-        DINNER: 0,
-        SNACK: 0,
-      },
-    }
+    throw new Error("Failed to fetch menu statistics")
   }
 }

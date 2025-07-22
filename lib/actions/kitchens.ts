@@ -33,8 +33,7 @@ export async function getKitchens() {
     return kitchens
   } catch (error) {
     console.error("Get kitchens error:", error)
-    // Return empty array instead of throwing
-    return []
+    throw new Error("Failed to fetch kitchens")
   }
 }
 
