@@ -12,12 +12,12 @@ export async function getKitchens() {
       const kitchen = await sql`
         SELECT k.*, 
                COUNT(DISTINCT u.id) as user_count,
-               COUNT(DISTINCT dm.id) as menu_count
+               COUNT(DISTINCT dm.id) as daily_menu_count
         FROM kitchens k
         LEFT JOIN users u ON k.id = u.kitchen_id
         LEFT JOIN daily_menus dm ON k.id = dm.kitchen_id
-        WHERE k.id = ${session.user.kitchenId}
-        GROUP BY k.id, k.name, k.location, k.is_active, k.created_at
+        WHERE k.id = ${session.user.kitchenId} AND k.is_active = true
+        GROUP BY k.id, k.name, k.location, k.is_active, k.created_at, k.updated_at
       `
       return kitchen
     }
@@ -25,12 +25,12 @@ export async function getKitchens() {
     const kitchens = await sql`
       SELECT k.*, 
              COUNT(DISTINCT u.id) as user_count,
-             COUNT(DISTINCT dm.id) as menu_count
+             COUNT(DISTINCT dm.id) as daily_menu_count
       FROM kitchens k
       LEFT JOIN users u ON k.id = u.kitchen_id
       LEFT JOIN daily_menus dm ON k.id = dm.kitchen_id
       WHERE k.is_active = true
-      GROUP BY k.id, k.name, k.location, k.is_active, k.created_at
+      GROUP BY k.id, k.name, k.location, k.is_active, k.created_at, k.updated_at
       ORDER BY k.name ASC
     `
 
@@ -52,15 +52,12 @@ export async function createKitchen(formData: FormData) {
       return { success: false, error: "Kitchen name is required" }
     }
 
-    const id = `kitchen_${Date.now()}`
-
-    await sql`
-      INSERT INTO kitchens (id, name, location) 
-      VALUES (${id}, ${name.trim()}, ${location?.trim() || null})
-    `
+    const kitchenId = `kitchen_${Date.now()}`
 
     const kitchen = await sql`
-      SELECT * FROM kitchens WHERE id = ${id}
+      INSERT INTO kitchens (id, name, location, is_active)
+      VALUES (${kitchenId}, ${name.trim()}, ${location?.trim() || null}, true)
+      RETURNING *
     `
 
     return { success: true, kitchen: kitchen[0] }

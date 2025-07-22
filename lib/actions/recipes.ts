@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma, sql } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 import { requireAuth } from "@/lib/auth-utils"
 import { UpdateRecipeSchema } from "@/lib/validations/recipe"
 import { revalidatePath } from "next/cache"
@@ -66,50 +66,45 @@ export async function updateRecipe(formData: FormData) {
     const validatedData = UpdateRecipeSchema.parse(rawData)
 
     // Check if user owns the recipe or is admin
-    const existingRecipe = await prisma.recipe.findUnique({
-      where: { id: validatedData.id },
-    })
+    const existingRecipe = await sql`
+      SELECT * FROM recipes WHERE id = ${validatedData.id}
+    `
 
-    if (!existingRecipe) {
+    if (existingRecipe.length === 0) {
       return { success: false, error: "Recipe not found" }
     }
 
-    if (existingRecipe.createdBy !== session.user.id && session.user.role !== "ADMIN") {
+    if (existingRecipe[0].created_by !== session.user.id && session.user.role !== "ADMIN") {
       return { success: false, error: "Unauthorized" }
     }
 
-    const recipe = await prisma.recipe.update({
-      where: { id: validatedData.id },
-      data: {
-        name: validatedData.name,
-        type: validatedData.type as any,
-        description: validatedData.description,
-        instructions: validatedData.instructions,
-        prepTime: validatedData.prepTime,
-        cookTime: validatedData.cookTime,
-        servings: validatedData.servings,
-        ingredients: {
-          deleteMany: {},
-          create:
-            validatedData.ingredients?.map((ingredient) => ({
-              ingredientName: ingredient.ingredientName,
-              quantity: ingredient.quantity,
-              unit: ingredient.unit,
-              costPerUnit: ingredient.costPerUnit,
-              notes: ingredient.notes,
-            })) || [],
-        },
-      },
-      include: {
-        ingredients: true,
-        creator: {
-          select: { name: true },
-        },
-      },
-    })
+    // Update recipe
+    await sql`
+      UPDATE recipes 
+      SET name = ${validatedData.name},
+          type = ${validatedData.type},
+          description = ${validatedData.description},
+          instructions = ${validatedData.instructions},
+          prep_time = ${validatedData.prepTime},
+          cook_time = ${validatedData.cookTime},
+          servings = ${validatedData.servings},
+          updated_at = NOW()
+      WHERE id = ${validatedData.id}
+    `
+
+    // Delete existing ingredients and add new ones
+    await sql`DELETE FROM recipe_ingredients WHERE recipe_id = ${validatedData.id}`
+
+    for (const ingredient of validatedData.ingredients || []) {
+      const ingredientId = `ing_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      await sql`
+        INSERT INTO recipe_ingredients (id, recipe_id, ingredient_name, quantity, unit, cost_per_unit, notes)
+        VALUES (${ingredientId}, ${validatedData.id}, ${ingredient.ingredientName}, ${ingredient.quantity}, ${ingredient.unit}, ${ingredient.costPerUnit}, ${ingredient.notes})
+      `
+    }
 
     revalidatePath("/recipes")
-    return { success: true, recipe }
+    return { success: true }
   } catch (error) {
     console.error("Update recipe error:", error)
     return { success: false, error: "Failed to update recipe" }
@@ -120,21 +115,19 @@ export async function deleteRecipe(recipeId: string) {
   try {
     const session = await requireAuth()
 
-    const existingRecipe = await prisma.recipe.findUnique({
-      where: { id: recipeId },
-    })
+    const existingRecipe = await sql`
+      SELECT * FROM recipes WHERE id = ${recipeId}
+    `
 
-    if (!existingRecipe) {
+    if (existingRecipe.length === 0) {
       return { success: false, error: "Recipe not found" }
     }
 
-    if (existingRecipe.createdBy !== session.user.id && session.user.role !== "ADMIN") {
+    if (existingRecipe[0].created_by !== session.user.id && session.user.role !== "ADMIN") {
       return { success: false, error: "Unauthorized" }
     }
 
-    await prisma.recipe.delete({
-      where: { id: recipeId },
-    })
+    await sql`DELETE FROM recipes WHERE id = ${recipeId}`
 
     revalidatePath("/recipes")
     return { success: true }
@@ -150,11 +143,8 @@ export async function getRecipes(page = 1, limit = 10, search?: string) {
     const offset = (page - 1) * limit
 
     let whereClause = ""
-    let params: any[] = []
-
     if (search) {
-      whereClause = "WHERE r.name ILIKE $1 OR r.description ILIKE $1"
-      params = [`%${search}%`]
+      whereClause = `WHERE r.name ILIKE '%${search}%' OR r.description ILIKE '%${search}%'`
     }
 
     const recipes = await sql`

@@ -6,14 +6,19 @@ if (!process.env.DATABASE_URL) {
 
 export const sql = neon(process.env.DATABASE_URL)
 
-// Test the connection
-export async function testConnection() {
+// Helper function to execute queries with error handling
+export async function executeQuery<T = any>(query: string, params: any[] = []): Promise<T[]> {
   try {
-    const result = await sql`SELECT NOW() as current_time`
-    console.log("✅ Database connected successfully:", result[0].current_time)
-    return true
+    const result = await sql(query, params)
+    return result as T[]
   } catch (error) {
-    console.error("❌ Database connection failed:", error)
-    return false
+    console.error("Database query error:", error)
+    throw new Error("Database operation failed")
   }
+}
+
+// Helper function for single row queries
+export async function executeQuerySingle<T = any>(query: string, params: any[] = []): Promise<T | null> {
+  const result = await executeQuery<T>(query, params)
+  return result[0] || null
 }
