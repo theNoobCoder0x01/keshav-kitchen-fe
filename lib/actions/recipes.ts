@@ -1,38 +1,22 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
-export async function getRecipes(userId?: string) {
+export async function getRecipes() {
   try {
-    const where: any = {}
-
-    if (userId) {
-      where.userId = userId
-    }
-
     const recipes = await prisma.recipe.findMany({
-      where,
       include: {
         ingredients: true,
         user: {
           select: {
             name: true,
-            email: true,
             role: true,
-          },
-        },
-        menus: {
-          select: {
-            id: true,
-            date: true,
-            mealType: true,
-            servings: true,
           },
         },
         _count: {
           select: {
-            ingredients: true,
             menus: true,
           },
         },
@@ -42,10 +26,10 @@ export async function getRecipes(userId?: string) {
       },
     })
 
-    return recipes
+    return { success: true, data: recipes }
   } catch (error) {
     console.error("Error fetching recipes:", error)
-    throw new Error("Failed to fetch recipes")
+    return { success: false, error: "Failed to fetch recipes" }
   }
 }
 
@@ -58,7 +42,6 @@ export async function getRecipeById(id: string) {
         user: {
           select: {
             name: true,
-            email: true,
             role: true,
           },
         },
@@ -67,41 +50,49 @@ export async function getRecipeById(id: string) {
             kitchen: {
               select: {
                 name: true,
-                location: true,
               },
             },
           },
           orderBy: {
             date: "desc",
           },
+          take: 5,
         },
       },
     })
 
-    return recipe
+    if (!recipe) {
+      return { success: false, error: "Recipe not found" }
+    }
+
+    return { success: true, data: recipe }
   } catch (error) {
     console.error("Error fetching recipe:", error)
-    throw new Error("Failed to fetch recipe")
+    return { success: false, error: "Failed to fetch recipe" }
   }
 }
 
 export async function createRecipe(data: {
   name: string
-  description?: string
-  instructions?: string
-  prepTime?: number
-  cookTime?: number
-  servings?: number
+  description: string
+  instructions: string
+  prepTime: number
+  cookTime: number
+  servings: number
   category?: string
-  userId: string
   ingredients: Array<{
     name: string
     quantity: number
     unit: string
-    costPerUnit?: number
+    costPerUnit: number
   }>
 }) {
   try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
     const recipe = await prisma.recipe.create({
       data: {
         name: data.name,
@@ -111,27 +102,21 @@ export async function createRecipe(data: {
         cookTime: data.cookTime,
         servings: data.servings,
         category: data.category,
-        userId: data.userId,
+        userId: session.user.id,
         ingredients: {
           create: data.ingredients,
         },
       },
       include: {
         ingredients: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
       },
     })
 
     revalidatePath("/recipes")
-    return recipe
+    return { success: true, data: recipe }
   } catch (error) {
     console.error("Error creating recipe:", error)
-    throw new Error("Failed to create recipe")
+    return { success: false, error: "Failed to create recipe" }
   }
 }
 
@@ -150,11 +135,30 @@ export async function updateRecipe(
       name: string
       quantity: number
       unit: string
-      costPerUnit?: number
+      costPerUnit: number
     }>
   },
 ) {
   try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Get the recipe to check permissions
+    const existingRecipe = await prisma.recipe.findUnique({
+      where: { id },
+    })
+
+    if (!existingRecipe) {
+      return { success: false, error: "Recipe not found" }
+    }
+
+    // Check permissions
+    if (session.user.role !== "ADMIN" && existingRecipe.userId !== session.user.id) {
+      return { success: false, error: "Unauthorized to edit this recipe" }
+    }
+
     const updateData: any = {
       name: data.name,
       description: data.description,
@@ -165,13 +169,11 @@ export async function updateRecipe(
       category: data.category,
     }
 
+    // Handle ingredients update if provided
     if (data.ingredients) {
       // Delete existing ingredients and create new ones
-      await prisma.ingredient.deleteMany({
-        where: { recipeId: id },
-      })
-
       updateData.ingredients = {
+        deleteMany: {},
         create: data.ingredients.map((ing) => ({
           name: ing.name,
           quantity: ing.quantity,
@@ -186,25 +188,47 @@ export async function updateRecipe(
       data: updateData,
       include: {
         ingredients: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
       },
     })
 
     revalidatePath("/recipes")
-    return recipe
+    return { success: true, data: recipe }
   } catch (error) {
     console.error("Error updating recipe:", error)
-    throw new Error("Failed to update recipe")
+    return { success: false, error: "Failed to update recipe" }
   }
 }
 
 export async function deleteRecipe(id: string) {
   try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Get the recipe to check permissions
+    const existingRecipe = await prisma.recipe.findUnique({
+      where: { id },
+    })
+
+    if (!existingRecipe) {
+      return { success: false, error: "Recipe not found" }
+    }
+
+    // Check permissions
+    if (session.user.role !== "ADMIN" && existingRecipe.userId !== session.user.id) {
+      return { success: false, error: "Unauthorized to delete this recipe" }
+    }
+
+    // Check if recipe is used in any menus
+    const menuCount = await prisma.menu.count({
+      where: { recipeId: id },
+    })
+
+    if (menuCount > 0) {
+      return { success: false, error: "Cannot delete recipe that is used in menus" }
+    }
+
     await prisma.recipe.delete({
       where: { id },
     })
@@ -213,53 +237,62 @@ export async function deleteRecipe(id: string) {
     return { success: true }
   } catch (error) {
     console.error("Error deleting recipe:", error)
-    throw new Error("Failed to delete recipe")
+    return { success: false, error: "Failed to delete recipe" }
   }
 }
 
-export async function getRecipeStats() {
+export async function getRecipesByCategory() {
   try {
-    const totalRecipes = await prisma.recipe.count()
-
-    const recipesByCategory = await prisma.recipe.groupBy({
+    const recipes = await prisma.recipe.groupBy({
       by: ["category"],
       _count: {
-        category: true,
+        id: true,
       },
     })
 
-    const avgPrepTime = await prisma.recipe.aggregate({
-      _avg: {
-        prepTime: true,
-        cookTime: true,
-        servings: true,
-      },
-    })
+    return { success: true, data: recipes }
+  } catch (error) {
+    console.error("Error fetching recipes by category:", error)
+    return { success: false, error: "Failed to fetch recipes by category" }
+  }
+}
 
-    const mostUsedRecipes = await prisma.recipe.findMany({
+export async function calculateRecipeCost(recipeId: string, servings?: number) {
+  try {
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
       include: {
-        _count: {
-          select: {
-            menus: true,
-          },
-        },
+        ingredients: true,
       },
-      orderBy: {
-        menus: {
-          _count: "desc",
-        },
-      },
-      take: 5,
     })
+
+    if (!recipe) {
+      return { success: false, error: "Recipe not found" }
+    }
+
+    const totalCost = recipe.ingredients.reduce((sum, ingredient) => {
+      return sum + ingredient.quantity * ingredient.costPerUnit
+    }, 0)
+
+    const targetServings = servings || recipe.servings
+    const costPerServing = totalCost / recipe.servings
+    const totalCostForServings = costPerServing * targetServings
 
     return {
-      totalRecipes,
-      recipesByCategory,
-      avgPrepTime,
-      mostUsedRecipes,
+      success: true,
+      data: {
+        totalCost,
+        costPerServing,
+        targetServings,
+        totalCostForServings,
+        ingredients: recipe.ingredients.map((ing) => ({
+          ...ing,
+          totalCost: ing.quantity * ing.costPerUnit,
+        })),
+      },
     }
   } catch (error) {
-    console.error("Error fetching recipe stats:", error)
-    throw new Error("Failed to fetch recipe stats")
+    console.error("Error calculating recipe cost:", error)
+    return { success: false, error: "Failed to calculate recipe cost" }
   }
 }

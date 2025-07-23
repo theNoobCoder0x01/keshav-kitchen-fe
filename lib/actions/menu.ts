@@ -1,8 +1,8 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
-import type { MealType, Status } from "@prisma/client"
 
 export async function getMenus(kitchenId?: string, date?: Date) {
   try {
@@ -30,12 +30,6 @@ export async function getMenus(kitchenId?: string, date?: Date) {
         recipe: {
           include: {
             ingredients: true,
-            user: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
           },
         },
         kitchen: {
@@ -47,7 +41,6 @@ export async function getMenus(kitchenId?: string, date?: Date) {
         user: {
           select: {
             name: true,
-            email: true,
             role: true,
           },
         },
@@ -55,147 +48,211 @@ export async function getMenus(kitchenId?: string, date?: Date) {
       orderBy: [{ date: "desc" }, { mealType: "asc" }],
     })
 
-    return menus
+    return { success: true, data: menus }
   } catch (error) {
     console.error("Error fetching menus:", error)
-    throw new Error("Failed to fetch menus")
+    return { success: false, error: "Failed to fetch menus" }
+  }
+}
+
+export async function getMenuById(id: string) {
+  try {
+    const menu = await prisma.menu.findUnique({
+      where: { id },
+      include: {
+        recipe: {
+          include: {
+            ingredients: true,
+          },
+        },
+        kitchen: true,
+        user: {
+          select: {
+            name: true,
+            role: true,
+          },
+        },
+      },
+    })
+
+    if (!menu) {
+      return { success: false, error: "Menu not found" }
+    }
+
+    return { success: true, data: menu }
+  } catch (error) {
+    console.error("Error fetching menu:", error)
+    return { success: false, error: "Failed to fetch menu" }
   }
 }
 
 export async function createMenu(data: {
   date: Date
-  mealType: MealType
+  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK"
   recipeId: string
   kitchenId: string
-  userId: string
   servings: number
   ghanFactor?: number
-  notes?: string
+  status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
 }) {
   try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Check if user has permission for this kitchen
+    if (session.user.role !== "ADMIN" && session.user.kitchenId !== data.kitchenId) {
+      return { success: false, error: "Unauthorized for this kitchen" }
+    }
+
     const menu = await prisma.menu.create({
       data: {
         date: data.date,
         mealType: data.mealType,
         recipeId: data.recipeId,
         kitchenId: data.kitchenId,
-        userId: data.userId,
+        userId: session.user.id,
         servings: data.servings,
         ghanFactor: data.ghanFactor || 1.0,
-        notes: data.notes,
-        status: "PLANNED",
+        status: data.status || "PLANNED",
       },
       include: {
         recipe: true,
         kitchen: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
       },
     })
 
-    revalidatePath("/")
-    return menu
+    revalidatePath("/menus")
+    return { success: true, data: menu }
   } catch (error) {
     console.error("Error creating menu:", error)
-    throw new Error("Failed to create menu")
+    return { success: false, error: "Failed to create menu" }
   }
 }
 
 export async function updateMenu(
   id: string,
   data: {
+    date?: Date
+    mealType?: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK"
+    recipeId?: string
     servings?: number
     ghanFactor?: number
-    status?: Status
-    actualCount?: number
-    notes?: string
+    status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
   },
 ) {
   try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Get the menu to check permissions
+    const existingMenu = await prisma.menu.findUnique({
+      where: { id },
+    })
+
+    if (!existingMenu) {
+      return { success: false, error: "Menu not found" }
+    }
+
+    // Check permissions
+    if (session.user.role !== "ADMIN" && session.user.kitchenId !== existingMenu.kitchenId) {
+      return { success: false, error: "Unauthorized for this kitchen" }
+    }
+
     const menu = await prisma.menu.update({
       where: { id },
       data,
       include: {
         recipe: true,
         kitchen: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
       },
     })
 
-    revalidatePath("/")
-    return menu
+    revalidatePath("/menus")
+    return { success: true, data: menu }
   } catch (error) {
     console.error("Error updating menu:", error)
-    throw new Error("Failed to update menu")
+    return { success: false, error: "Failed to update menu" }
   }
 }
 
 export async function deleteMenu(id: string) {
   try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Get the menu to check permissions
+    const existingMenu = await prisma.menu.findUnique({
+      where: { id },
+    })
+
+    if (!existingMenu) {
+      return { success: false, error: "Menu not found" }
+    }
+
+    // Check permissions
+    if (session.user.role !== "ADMIN" && session.user.kitchenId !== existingMenu.kitchenId) {
+      return { success: false, error: "Unauthorized for this kitchen" }
+    }
+
     await prisma.menu.delete({
       where: { id },
     })
 
-    revalidatePath("/")
+    revalidatePath("/menus")
     return { success: true }
   } catch (error) {
     console.error("Error deleting menu:", error)
-    throw new Error("Failed to delete menu")
+    return { success: false, error: "Failed to delete menu" }
   }
 }
 
 export async function getTodaysMenus(kitchenId?: string) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  return getMenus(kitchenId, today)
-}
-
-export async function getMenuStats() {
   try {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
 
-    const totalMenus = await prisma.menu.count()
-    const todaysMenus = await prisma.menu.count({
-      where: {
-        date: {
-          gte: today,
+    const where: any = {
+      date: {
+        gte: today,
+        lt: tomorrow,
+      },
+    }
+
+    if (kitchenId) {
+      where.kitchenId = kitchenId
+    }
+
+    const menus = await prisma.menu.findMany({
+      where,
+      include: {
+        recipe: {
+          include: {
+            ingredients: true,
+          },
+        },
+        kitchen: {
+          select: {
+            name: true,
+            location: true,
+          },
         },
       },
-    })
-
-    const menusByStatus = await prisma.menu.groupBy({
-      by: ["status"],
-      _count: {
-        status: true,
+      orderBy: {
+        mealType: "asc",
       },
     })
 
-    const menusByMealType = await prisma.menu.groupBy({
-      by: ["mealType"],
-      _count: {
-        mealType: true,
-      },
-    })
-
-    return {
-      totalMenus,
-      todaysMenus,
-      menusByStatus,
-      menusByMealType,
-    }
+    return { success: true, data: menus }
   } catch (error) {
-    console.error("Error fetching menu stats:", error)
-    throw new Error("Failed to fetch menu stats")
+    console.error("Error fetching today's menus:", error)
+    return { success: false, error: "Failed to fetch today's menus" }
   }
 }

@@ -1,6 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 export async function getKitchens() {
@@ -11,7 +12,6 @@ export async function getKitchens() {
           select: {
             id: true,
             name: true,
-            email: true,
             role: true,
           },
         },
@@ -42,10 +42,10 @@ export async function getKitchens() {
       },
     })
 
-    return kitchens
+    return { success: true, data: kitchens }
   } catch (error) {
     console.error("Error fetching kitchens:", error)
-    throw new Error("Failed to fetch kitchens")
+    return { success: false, error: "Failed to fetch kitchens" }
   }
 }
 
@@ -67,35 +67,46 @@ export async function getKitchenById(id: string) {
             recipe: {
               select: {
                 name: true,
-                category: true,
+                servings: true,
               },
             },
           },
           orderBy: {
             date: "desc",
           },
+          take: 10,
         },
         reports: {
           orderBy: {
             date: "desc",
           },
+          take: 5,
         },
       },
     })
 
-    return kitchen
+    if (!kitchen) {
+      return { success: false, error: "Kitchen not found" }
+    }
+
+    return { success: true, data: kitchen }
   } catch (error) {
     console.error("Error fetching kitchen:", error)
-    throw new Error("Failed to fetch kitchen")
+    return { success: false, error: "Failed to fetch kitchen" }
   }
 }
 
 export async function createKitchen(data: {
   name: string
-  location?: string
+  location: string
   description?: string
 }) {
   try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" }
+    }
+
     const kitchen = await prisma.kitchen.create({
       data: {
         name: data.name,
@@ -104,11 +115,11 @@ export async function createKitchen(data: {
       },
     })
 
-    revalidatePath("/")
-    return kitchen
+    revalidatePath("/kitchens")
+    return { success: true, data: kitchen }
   } catch (error) {
     console.error("Error creating kitchen:", error)
-    throw new Error("Failed to create kitchen")
+    return { success: false, error: "Failed to create kitchen" }
   }
 }
 
@@ -121,30 +132,40 @@ export async function updateKitchen(
   },
 ) {
   try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" }
+    }
+
     const kitchen = await prisma.kitchen.update({
       where: { id },
       data,
     })
 
-    revalidatePath("/")
-    return kitchen
+    revalidatePath("/kitchens")
+    return { success: true, data: kitchen }
   } catch (error) {
     console.error("Error updating kitchen:", error)
-    throw new Error("Failed to update kitchen")
+    return { success: false, error: "Failed to update kitchen" }
   }
 }
 
 export async function deleteKitchen(id: string) {
   try {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" }
+    }
+
     await prisma.kitchen.delete({
       where: { id },
     })
 
-    revalidatePath("/")
+    revalidatePath("/kitchens")
     return { success: true }
   } catch (error) {
     console.error("Error deleting kitchen:", error)
-    throw new Error("Failed to delete kitchen")
+    return { success: false, error: "Failed to delete kitchen" }
   }
 }
 
@@ -170,14 +191,17 @@ export async function getKitchenStats() {
     const totalReports = stats.reduce((sum, kitchen) => sum + kitchen._count.reports, 0)
 
     return {
-      totalKitchens,
-      totalUsers,
-      totalMenus,
-      totalReports,
-      kitchens: stats,
+      success: true,
+      data: {
+        totalKitchens,
+        totalUsers,
+        totalMenus,
+        totalReports,
+        kitchens: stats,
+      },
     }
   } catch (error) {
     console.error("Error fetching kitchen stats:", error)
-    throw new Error("Failed to fetch kitchen stats")
+    return { success: false, error: "Failed to fetch kitchen stats" }
   }
 }

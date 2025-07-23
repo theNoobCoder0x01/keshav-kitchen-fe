@@ -1,9 +1,11 @@
-import type { NextAuthOptions } from "next-auth"
+import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { prisma } from "./prisma"
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -16,37 +18,32 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        try {
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email,
-            },
-            include: {
-              kitchen: true,
-            },
-          })
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email as string,
+          },
+          include: {
+            kitchen: true,
+          },
+        })
 
-          if (!user || !user.password) {
-            return null
-          }
-
-          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-
-          if (!isPasswordValid) {
-            return null
-          }
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            kitchenId: user.kitchenId,
-            kitchen: user.kitchen,
-          }
-        } catch (error) {
-          console.error("Auth error:", error)
+        if (!user) {
           return null
+        }
+
+        const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password)
+
+        if (!isPasswordValid) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          kitchenId: user.kitchenId,
+          kitchen: user.kitchen,
         }
       },
     }),
@@ -76,4 +73,4 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
   },
-}
+})

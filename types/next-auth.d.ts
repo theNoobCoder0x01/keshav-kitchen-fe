@@ -3,13 +3,14 @@ declare module "next-auth" {
     user: {
       id: string
       email: string
-      name?: string
+      name: string
       role: string
-      kitchenId?: string
+      kitchenId: string
       kitchen?: {
         id: string
         name: string
-        location?: string
+        location: string
+        description?: string
       }
     }
   }
@@ -17,13 +18,14 @@ declare module "next-auth" {
   interface User {
     id: string
     email: string
-    name?: string
+    name: string
     role: string
-    kitchenId?: string
+    kitchenId: string
     kitchen?: {
       id: string
       name: string
-      location?: string
+      location: string
+      description?: string
     }
   }
 }
@@ -31,11 +33,12 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     role: string
-    kitchenId?: string
+    kitchenId: string
     kitchen?: {
       id: string
       name: string
-      location?: string
+      location: string
+      description?: string
     }
   }
 }
