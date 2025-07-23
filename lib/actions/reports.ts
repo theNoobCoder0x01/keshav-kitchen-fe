@@ -1,151 +1,348 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { requireAuth } from "@/lib/auth-utils"
+import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns"
 
-export async function createReport(formData: FormData) {
+export async function getReports() {
   try {
-    const session = await requireAuth()
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
 
-    const rawData = {
-      title: formData.get("title") as string,
-      type: formData.get("type") as string,
-      date: new Date(formData.get("date") as string),
-      kitchenId: formData.get("kitchenId") as string,
-      totalVisitors: Number.parseInt(formData.get("totalVisitors") as string),
-      totalMeals: Number.parseInt(formData.get("totalMeals") as string),
-      totalCost: Number.parseFloat(formData.get("totalCost") as string),
-      notes: formData.get("notes") as string,
+    const whereClause: any = {}
+
+    // If user has a specific kitchen, filter by it
+    if (session.user.kitchenId && session.user.role !== "ADMIN") {
+      whereClause.kitchenId = session.user.kitchenId
+    }
+
+    const reports = await prisma.report.findMany({
+      where: whereClause,
+      include: {
+        kitchen: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        date: "desc",
+      },
+    })
+
+    return { success: true, data: reports }
+  } catch (error) {
+    console.error("Get reports error:", error)
+    return { success: false, error: "Failed to fetch reports" }
+  }
+}
+
+export async function getReportById(id: string) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    const report = await prisma.report.findUnique({
+      where: { id },
+      include: {
+        kitchen: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
+      },
+    })
+
+    if (!report) {
+      return { success: false, error: "Report not found" }
+    }
+
+    // Check permissions
+    if (session.user.kitchenId && session.user.role !== "ADMIN" && session.user.kitchenId !== report.kitchenId) {
+      return { success: false, error: "Access denied" }
+    }
+
+    return { success: true, data: report }
+  } catch (error) {
+    console.error("Get report by ID error:", error)
+    return { success: false, error: "Failed to fetch report" }
+  }
+}
+
+export async function createReport(data: {
+  date: Date
+  kitchenId: string
+  visitorCount: number
+  mealsCounted: number
+  notes?: string
+}) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Check if user has permission to create report for this kitchen
+    if (session.user.kitchenId && session.user.role !== "ADMIN" && session.user.kitchenId !== data.kitchenId) {
+      return { success: false, error: "Access denied for this kitchen" }
     }
 
     const report = await prisma.report.create({
       data: {
-        ...rawData,
-        createdBy: session.user.id,
+        date: data.date,
+        kitchenId: data.kitchenId,
+        userId: session.user.id,
+        visitorCount: data.visitorCount,
+        mealsCounted: data.mealsCounted,
+        notes: data.notes,
       },
       include: {
         kitchen: {
-          select: { name: true },
-        },
-        creator: {
-          select: { name: true },
+          select: {
+            name: true,
+          },
         },
       },
     })
 
     revalidatePath("/reports")
-    return { success: true, report }
+    return { success: true, data: report }
   } catch (error) {
     console.error("Create report error:", error)
     return { success: false, error: "Failed to create report" }
   }
 }
 
-export async function getReports(page = 1, limit = 10, kitchenId?: string, type?: string) {
+export async function updateReport(
+  id: string,
+  data: {
+    visitorCount?: number
+    mealsCounted?: number
+    notes?: string
+  },
+) {
   try {
-    const session = await requireAuth()
-
-    const skip = (page - 1) * limit
-    const where = {
-      ...(kitchenId && { kitchenId }),
-      ...(type && { type }),
-      ...(session.user.kitchenId && session.user.role !== "ADMIN" && { kitchenId: session.user.kitchenId }),
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
     }
 
-    const [reports, total] = await Promise.all([
-      prisma.report.findMany({
-        where,
-        include: {
-          kitchen: {
-            select: { name: true },
-          },
-          creator: {
-            select: { name: true },
+    // Check if report exists and user has permission
+    const existingReport = await prisma.report.findUnique({
+      where: { id },
+      select: { kitchenId: true, userId: true },
+    })
+
+    if (!existingReport) {
+      return { success: false, error: "Report not found" }
+    }
+
+    // Check permissions
+    if (
+      session.user.kitchenId &&
+      session.user.role !== "ADMIN" &&
+      session.user.kitchenId !== existingReport.kitchenId
+    ) {
+      return { success: false, error: "Access denied" }
+    }
+
+    const report = await prisma.report.update({
+      where: { id },
+      data,
+      include: {
+        kitchen: {
+          select: {
+            name: true,
           },
         },
-        orderBy: { date: "desc" },
-        skip,
-        take: limit,
-      }),
-      prisma.report.count({ where }),
-    ])
+      },
+    })
 
-    return {
-      reports,
-      total,
-      pages: Math.ceil(total / limit),
-      currentPage: page,
-    }
+    revalidatePath("/reports")
+    return { success: true, data: report }
   } catch (error) {
-    console.error("Get reports error:", error)
-    return {
-      reports: [],
-      total: 0,
-      pages: 0,
-      currentPage: 1,
-    }
+    console.error("Update report error:", error)
+    return { success: false, error: "Failed to update report" }
   }
 }
 
-export async function getReportStats(kitchenId?: string) {
+export async function deleteReport(id: string) {
   try {
-    const session = await requireAuth()
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
 
-    const where = {
-      ...(kitchenId && { kitchenId }),
-      ...(session.user.kitchenId && session.user.role !== "ADMIN" && { kitchenId: session.user.kitchenId }),
+    // Check if report exists and user has permission
+    const existingReport = await prisma.report.findUnique({
+      where: { id },
+      select: { kitchenId: true, userId: true },
+    })
+
+    if (!existingReport) {
+      return { success: false, error: "Report not found" }
+    }
+
+    // Check permissions
+    if (
+      session.user.kitchenId &&
+      session.user.role !== "ADMIN" &&
+      session.user.kitchenId !== existingReport.kitchenId &&
+      existingReport.userId !== session.user.id
+    ) {
+      return { success: false, error: "Access denied" }
+    }
+
+    await prisma.report.delete({
+      where: { id },
+    })
+
+    revalidatePath("/reports")
+    return { success: true }
+  } catch (error) {
+    console.error("Delete report error:", error)
+    return { success: false, error: "Failed to delete report" }
+  }
+}
+
+export async function getReportStats() {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
     }
 
     const today = new Date()
-    const thisWeek = { gte: startOfWeek(today), lte: endOfWeek(today) }
-    const thisMonth = { gte: startOfMonth(today), lte: endOfMonth(today) }
+    today.setHours(0, 0, 0, 0)
 
-    const [dailyStats, weeklyStats, monthlyStats] = await Promise.all([
-      prisma.report.aggregate({
-        where: { ...where, date: { gte: startOfDay(today), lte: endOfDay(today) } },
-        _sum: { totalVisitors: true, totalMeals: true, totalCost: true },
-        _count: { id: true },
+    const thisWeekStart = new Date(today)
+    thisWeekStart.setDate(today.getDate() - today.getDay())
+
+    const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+
+    const whereClause: any = {}
+
+    // If user has a specific kitchen, filter by it
+    if (session.user.kitchenId && session.user.role !== "ADMIN") {
+      whereClause.kitchenId = session.user.kitchenId
+    }
+
+    const [
+      totalReports,
+      reportsToday,
+      reportsThisWeek,
+      reportsThisMonth,
+      totalVisitorsToday,
+      totalMealsToday,
+      avgVisitorsPerDay,
+    ] = await Promise.all([
+      prisma.report.count({ where: whereClause }),
+      prisma.report.count({
+        where: { ...whereClause, date: today },
+      }),
+      prisma.report.count({
+        where: {
+          ...whereClause,
+          date: { gte: thisWeekStart },
+        },
+      }),
+      prisma.report.count({
+        where: {
+          ...whereClause,
+          date: { gte: thisMonthStart },
+        },
       }),
       prisma.report.aggregate({
-        where: { ...where, date: thisWeek },
-        _sum: { totalVisitors: true, totalMeals: true, totalCost: true },
-        _count: { id: true },
+        where: { ...whereClause, date: today },
+        _sum: { visitorCount: true },
       }),
       prisma.report.aggregate({
-        where: { ...where, date: thisMonth },
-        _sum: { totalVisitors: true, totalMeals: true, totalCost: true },
-        _count: { id: true },
+        where: { ...whereClause, date: today },
+        _sum: { mealsCounted: true },
+      }),
+      prisma.report.aggregate({
+        where: {
+          ...whereClause,
+          date: { gte: thisWeekStart },
+        },
+        _avg: { visitorCount: true },
       }),
     ])
 
     return {
-      daily: {
-        visitors: dailyStats._sum.totalVisitors || 0,
-        meals: dailyStats._sum.totalMeals || 0,
-        cost: dailyStats._sum.totalCost || 0,
-        reports: dailyStats._count.id || 0,
-      },
-      weekly: {
-        visitors: weeklyStats._sum.totalVisitors || 0,
-        meals: weeklyStats._sum.totalMeals || 0,
-        cost: weeklyStats._sum.totalCost || 0,
-        reports: weeklyStats._count.id || 0,
-      },
-      monthly: {
-        visitors: monthlyStats._sum.totalVisitors || 0,
-        meals: monthlyStats._sum.totalMeals || 0,
-        cost: monthlyStats._sum.totalCost || 0,
-        reports: monthlyStats._count.id || 0,
+      success: true,
+      data: {
+        totalReports,
+        reportsToday,
+        reportsThisWeek,
+        reportsThisMonth,
+        totalVisitorsToday: totalVisitorsToday._sum.visitorCount || 0,
+        totalMealsToday: totalMealsToday._sum.mealsCounted || 0,
+        avgVisitorsPerDay: Math.round(avgVisitorsPerDay._avg.visitorCount || 0),
       },
     }
   } catch (error) {
     console.error("Get report stats error:", error)
-    return {
-      daily: { visitors: 0, meals: 0, cost: 0, reports: 0 },
-      weekly: { visitors: 0, meals: 0, cost: 0, reports: 0 },
-      monthly: { visitors: 0, meals: 0, cost: 0, reports: 0 },
+    return { success: false, error: "Failed to fetch report statistics" }
+  }
+}
+
+export async function getReportsByDateRange(startDate: Date, endDate: Date) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
     }
+
+    const whereClause: any = {
+      date: {
+        gte: startDate,
+        lte: endDate,
+      },
+    }
+
+    // If user has a specific kitchen, filter by it
+    if (session.user.kitchenId && session.user.role !== "ADMIN") {
+      whereClause.kitchenId = session.user.kitchenId
+    }
+
+    const reports = await prisma.report.findMany({
+      where: whereClause,
+      include: {
+        kitchen: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        date: "asc",
+      },
+    })
+
+    return { success: true, data: reports }
+  } catch (error) {
+    console.error("Get reports by date range error:", error)
+    return { success: false, error: "Failed to fetch reports" }
   }
 }

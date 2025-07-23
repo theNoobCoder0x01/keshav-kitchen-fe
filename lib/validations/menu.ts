@@ -1,21 +1,23 @@
 import { z } from "zod"
+import { MealType, Status } from "@prisma/client"
 
-export const CreateDailyMenuSchema = z.object({
-  kitchenId: z.string().min(1, "Kitchen is required"),
-  menuDate: z.date(),
-  mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]),
+export const menuSchema = z.object({
+  date: z.date(),
+  mealType: z.nativeEnum(MealType),
   recipeId: z.string().min(1, "Recipe is required"),
-  plannedServings: z.number().min(1, "Planned servings must be at least 1").max(10000),
-  ghanMultiplier: z.number().min(0.1, "Ghan multiplier must be at least 0.1").max(100),
+  kitchenId: z.string().min(1, "Kitchen is required"),
+  servings: z.number().positive("Servings must be positive"),
+  ghanFactor: z.number().positive("Ghan factor must be positive").optional(),
+  notes: z.string().optional(),
 })
 
-export const UpdateDailyMenuSchema = z.object({
-  id: z.string().min(1, "Menu ID is required"),
-  actualServings: z.number().min(0).max(10000).optional(),
-  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
-  plannedServings: z.number().min(1).max(10000).optional(),
-  ghanMultiplier: z.number().min(0.1).max(100).optional(),
+export const menuUpdateSchema = z.object({
+  servings: z.number().positive("Servings must be positive").optional(),
+  ghanFactor: z.number().positive("Ghan factor must be positive").optional(),
+  status: z.nativeEnum(Status).optional(),
+  actualCount: z.number().optional(),
+  notes: z.string().optional(),
 })
 
-export type CreateDailyMenuInput = z.infer<typeof CreateDailyMenuSchema>
-export type UpdateDailyMenuInput = z.infer<typeof UpdateDailyMenuSchema>
+export type MenuFormData = z.infer<typeof menuSchema>
+export type MenuUpdateData = z.infer<typeof menuUpdateSchema>

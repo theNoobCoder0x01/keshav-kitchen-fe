@@ -17,8 +17,6 @@ async function main() {
         name: "Main Kitchen",
         description: "Primary kitchen facility for daily operations",
         location: "Ground Floor, Building A",
-        capacity: 500,
-        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
@@ -29,8 +27,6 @@ async function main() {
         name: "Secondary Kitchen",
         description: "Backup kitchen for overflow and special events",
         location: "First Floor, Building B",
-        capacity: 300,
-        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
@@ -41,8 +37,6 @@ async function main() {
         name: "Catering Kitchen",
         description: "Specialized kitchen for external catering services",
         location: "Ground Floor, Building C",
-        capacity: 200,
-        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
@@ -53,8 +47,6 @@ async function main() {
         name: "Training Kitchen",
         description: "Kitchen facility for staff training and development",
         location: "Second Floor, Building A",
-        capacity: 100,
-        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
@@ -65,8 +57,6 @@ async function main() {
         name: "Emergency Kitchen",
         description: "Emergency backup kitchen facility",
         location: "Basement, Building A",
-        capacity: 150,
-        isActive: false,
       },
     }),
   ])
@@ -86,7 +76,7 @@ async function main() {
         email: "admin@kitchen.com",
         password: hashedPassword,
         role: "ADMIN",
-        isActive: true,
+        kitchenId: "kitchen-1",
       },
     }),
     prisma.user.upsert({
@@ -99,7 +89,6 @@ async function main() {
         password: hashedPassword2,
         role: "MANAGER",
         kitchenId: "kitchen-1",
-        isActive: true,
       },
     }),
     prisma.user.upsert({
@@ -112,7 +101,6 @@ async function main() {
         password: hashedPassword2,
         role: "CHEF",
         kitchenId: "kitchen-1",
-        isActive: true,
       },
     }),
     prisma.user.upsert({
@@ -125,7 +113,6 @@ async function main() {
         password: hashedPassword2,
         role: "STAFF",
         kitchenId: "kitchen-2",
-        isActive: true,
       },
     }),
   ])
@@ -143,41 +130,40 @@ async function main() {
         servings: 100,
         prepTime: 30,
         cookTime: 45,
-        difficulty: "MEDIUM",
-        category: "MAIN_COURSE",
+        category: "Main Course",
         instructions: "Heat oil, add spices, cook vegetables, simmer with sauce",
         userId: "user-3",
         ingredients: {
           create: [
             {
               name: "Mixed Vegetables",
-              quantity: 5000,
-              unit: "GRAMS",
-              costPerUnit: 0.02,
+              quantity: 5.0,
+              unit: "kg",
+              costPerUnit: 20.0,
             },
             {
               name: "Onions",
-              quantity: 1000,
-              unit: "GRAMS",
-              costPerUnit: 0.025,
+              quantity: 1.0,
+              unit: "kg",
+              costPerUnit: 25.0,
             },
             {
               name: "Tomatoes",
-              quantity: 800,
-              unit: "GRAMS",
-              costPerUnit: 0.03,
+              quantity: 0.8,
+              unit: "kg",
+              costPerUnit: 30.0,
             },
             {
               name: "Spices",
-              quantity: 200,
-              unit: "GRAMS",
-              costPerUnit: 0.15,
+              quantity: 0.2,
+              unit: "kg",
+              costPerUnit: 150.0,
             },
             {
               name: "Oil",
-              quantity: 300,
-              unit: "ML",
-              costPerUnit: 0.08,
+              quantity: 0.3,
+              unit: "liter",
+              costPerUnit: 80.0,
             },
           ],
         },
@@ -193,35 +179,34 @@ async function main() {
         servings: 100,
         prepTime: 15,
         cookTime: 30,
-        difficulty: "EASY",
-        category: "MAIN_COURSE",
+        category: "Main Course",
         instructions: "Boil lentils, prepare tempering, mix and serve",
         userId: "user-3",
         ingredients: {
           create: [
             {
               name: "Yellow Lentils",
-              quantity: 2000,
-              unit: "GRAMS",
-              costPerUnit: 0.06,
+              quantity: 2.0,
+              unit: "kg",
+              costPerUnit: 60.0,
             },
             {
               name: "Onions",
-              quantity: 500,
-              unit: "GRAMS",
-              costPerUnit: 0.025,
+              quantity: 0.5,
+              unit: "kg",
+              costPerUnit: 25.0,
             },
             {
               name: "Tomatoes",
-              quantity: 400,
-              unit: "GRAMS",
-              costPerUnit: 0.03,
+              quantity: 0.4,
+              unit: "kg",
+              costPerUnit: 30.0,
             },
             {
               name: "Spices",
-              quantity: 100,
-              unit: "GRAMS",
-              costPerUnit: 0.15,
+              quantity: 0.1,
+              unit: "kg",
+              costPerUnit: 150.0,
             },
           ],
         },
@@ -237,29 +222,28 @@ async function main() {
         servings: 100,
         prepTime: 10,
         cookTime: 20,
-        difficulty: "EASY",
-        category: "SIDE_DISH",
+        category: "Side Dish",
         instructions: "Wash rice, heat oil, add cumin, cook rice",
         userId: "user-3",
         ingredients: {
           create: [
             {
               name: "Basmati Rice",
-              quantity: 3000,
-              unit: "GRAMS",
-              costPerUnit: 0.08,
+              quantity: 3.0,
+              unit: "kg",
+              costPerUnit: 80.0,
             },
             {
               name: "Cumin Seeds",
-              quantity: 50,
-              unit: "GRAMS",
-              costPerUnit: 0.2,
+              quantity: 0.05,
+              unit: "kg",
+              costPerUnit: 200.0,
             },
             {
               name: "Oil",
-              quantity: 200,
-              unit: "ML",
-              costPerUnit: 0.08,
+              quantity: 0.2,
+              unit: "liter",
+              costPerUnit: 80.0,
             },
           ],
         },
@@ -275,35 +259,34 @@ async function main() {
         servings: 100,
         prepTime: 20,
         cookTime: 0,
-        difficulty: "EASY",
-        category: "SALAD",
+        category: "Salad",
         instructions: "Chop vegetables, mix with dressing, serve fresh",
         userId: "user-3",
         ingredients: {
           create: [
             {
               name: "Cucumber",
-              quantity: 1500,
-              unit: "GRAMS",
-              costPerUnit: 0.02,
+              quantity: 1.5,
+              unit: "kg",
+              costPerUnit: 20.0,
             },
             {
               name: "Tomatoes",
-              quantity: 1000,
-              unit: "GRAMS",
-              costPerUnit: 0.03,
+              quantity: 1.0,
+              unit: "kg",
+              costPerUnit: 30.0,
             },
             {
               name: "Onions",
-              quantity: 500,
-              unit: "GRAMS",
-              costPerUnit: 0.025,
+              quantity: 0.5,
+              unit: "kg",
+              costPerUnit: 25.0,
             },
             {
               name: "Lemon",
-              quantity: 200,
-              unit: "GRAMS",
-              costPerUnit: 0.05,
+              quantity: 0.2,
+              unit: "kg",
+              costPerUnit: 50.0,
             },
           ],
         },
@@ -319,35 +302,34 @@ async function main() {
         servings: 50,
         prepTime: 5,
         cookTime: 10,
-        difficulty: "EASY",
-        category: "BEVERAGE",
+        category: "Beverage",
         instructions: "Boil water, add tea and spices, add milk, serve hot",
         userId: "user-3",
         ingredients: {
           create: [
             {
               name: "Tea Leaves",
-              quantity: 200,
-              unit: "GRAMS",
-              costPerUnit: 0.3,
+              quantity: 0.2,
+              unit: "kg",
+              costPerUnit: 300.0,
             },
             {
               name: "Milk",
-              quantity: 2000,
-              unit: "ML",
-              costPerUnit: 0.05,
+              quantity: 2.0,
+              unit: "liter",
+              costPerUnit: 50.0,
             },
             {
               name: "Sugar",
-              quantity: 500,
-              unit: "GRAMS",
-              costPerUnit: 0.04,
+              quantity: 0.5,
+              unit: "kg",
+              costPerUnit: 40.0,
             },
             {
               name: "Spices",
-              quantity: 50,
-              unit: "GRAMS",
-              costPerUnit: 0.15,
+              quantity: 0.05,
+              unit: "kg",
+              costPerUnit: 150.0,
             },
           ],
         },
@@ -355,120 +337,94 @@ async function main() {
     }),
   ])
 
-  // Create daily menus
-  console.log("Creating daily menus...")
+  // Create menus
+  console.log("Creating menus...")
   const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 
   const menus = await Promise.all([
-    prisma.dailyMenu.upsert({
-      where: {
-        kitchenId_menuDate_mealType_recipeId: {
-          kitchenId: "kitchen-1",
-          menuDate: today,
-          mealType: "BREAKFAST",
-          recipeId: "recipe-5",
-        },
-      },
+    prisma.menu.upsert({
+      where: { id: "menu-1" },
       update: {},
       create: {
-        kitchenId: "kitchen-1",
-        menuDate: today,
+        id: "menu-1",
+        date: today,
         mealType: "BREAKFAST",
         recipeId: "recipe-5",
-        plannedServings: 150,
-        actualServings: 145,
-        ghanMultiplier: 3.0,
+        kitchenId: "kitchen-1",
+        userId: "user-2",
+        servings: 150,
+        ghanFactor: 3.0,
         status: "COMPLETED",
-        createdBy: "user-2",
+        actualCount: 145,
+        notes: "Good turnout for breakfast",
       },
     }),
-    prisma.dailyMenu.upsert({
-      where: {
-        kitchenId_menuDate_mealType_recipeId: {
-          kitchenId: "kitchen-1",
-          menuDate: today,
-          mealType: "LUNCH",
-          recipeId: "recipe-1",
-        },
-      },
+    prisma.menu.upsert({
+      where: { id: "menu-2" },
       update: {},
       create: {
-        kitchenId: "kitchen-1",
-        menuDate: today,
+        id: "menu-2",
+        date: today,
         mealType: "LUNCH",
         recipeId: "recipe-1",
-        plannedServings: 200,
-        actualServings: 195,
-        ghanMultiplier: 2.0,
+        kitchenId: "kitchen-1",
+        userId: "user-2",
+        servings: 200,
+        ghanFactor: 2.0,
         status: "COMPLETED",
-        createdBy: "user-2",
+        actualCount: 195,
+        notes: "Vegetable curry was popular",
       },
     }),
-    prisma.dailyMenu.upsert({
-      where: {
-        kitchenId_menuDate_mealType_recipeId: {
-          kitchenId: "kitchen-1",
-          menuDate: today,
-          mealType: "LUNCH",
-          recipeId: "recipe-2",
-        },
-      },
+    prisma.menu.upsert({
+      where: { id: "menu-3" },
       update: {},
       create: {
-        kitchenId: "kitchen-1",
-        menuDate: today,
+        id: "menu-3",
+        date: today,
         mealType: "LUNCH",
         recipeId: "recipe-2",
-        plannedServings: 200,
-        actualServings: 190,
-        ghanMultiplier: 2.0,
+        kitchenId: "kitchen-1",
+        userId: "user-2",
+        servings: 200,
+        ghanFactor: 2.0,
         status: "COMPLETED",
-        createdBy: "user-2",
+        actualCount: 190,
+        notes: "Dal was well received",
       },
     }),
-    prisma.dailyMenu.upsert({
-      where: {
-        kitchenId_menuDate_mealType_recipeId: {
-          kitchenId: "kitchen-1",
-          menuDate: tomorrow,
-          mealType: "BREAKFAST",
-          recipeId: "recipe-5",
-        },
-      },
+    prisma.menu.upsert({
+      where: { id: "menu-4" },
       update: {},
       create: {
-        kitchenId: "kitchen-1",
-        menuDate: tomorrow,
+        id: "menu-4",
+        date: tomorrow,
         mealType: "BREAKFAST",
         recipeId: "recipe-5",
-        plannedServings: 160,
-        ghanMultiplier: 3.2,
+        kitchenId: "kitchen-1",
+        userId: "user-2",
+        servings: 160,
+        ghanFactor: 3.2,
         status: "PLANNED",
-        createdBy: "user-2",
       },
     }),
-    prisma.dailyMenu.upsert({
-      where: {
-        kitchenId_menuDate_mealType_recipeId: {
-          kitchenId: "kitchen-2",
-          menuDate: today,
-          mealType: "DINNER",
-          recipeId: "recipe-4",
-        },
-      },
+    prisma.menu.upsert({
+      where: { id: "menu-5" },
       update: {},
       create: {
-        kitchenId: "kitchen-2",
-        menuDate: today,
+        id: "menu-5",
+        date: today,
         mealType: "DINNER",
         recipeId: "recipe-4",
-        plannedServings: 100,
-        actualServings: 98,
-        ghanMultiplier: 1.0,
+        kitchenId: "kitchen-2",
+        userId: "user-4",
+        servings: 100,
+        ghanFactor: 1.0,
         status: "COMPLETED",
-        createdBy: "user-4",
+        actualCount: 98,
+        notes: "Fresh salad served",
       },
     }),
   ])
@@ -481,15 +437,12 @@ async function main() {
       update: {},
       create: {
         id: "report-1",
-        title: "Daily Kitchen Report - Main Kitchen",
-        type: "DAILY",
         date: today,
         kitchenId: "kitchen-1",
-        totalVisitors: 345,
-        totalMeals: 545,
-        totalCost: 12500.5,
+        userId: "user-2",
+        visitorCount: 345,
+        mealsCounted: 545,
         notes: "Successful day with high visitor turnout. All meals served on time.",
-        createdBy: "user-2",
       },
     }),
     prisma.report.upsert({
@@ -497,15 +450,12 @@ async function main() {
       update: {},
       create: {
         id: "report-2",
-        title: "Daily Kitchen Report - Secondary Kitchen",
-        type: "DAILY",
         date: today,
         kitchenId: "kitchen-2",
-        totalVisitors: 98,
-        totalMeals: 98,
-        totalCost: 2800.25,
+        userId: "user-4",
+        visitorCount: 98,
+        mealsCounted: 98,
         notes: "Smooth operations with dinner service completed successfully.",
-        createdBy: "user-4",
       },
     }),
   ])
@@ -517,6 +467,12 @@ async function main() {
   console.log(`- ${recipes.length} recipes`)
   console.log(`- ${menus.length} menu items`)
   console.log(`- ${reports.length} reports`)
+
+  console.log("\n🔑 Login credentials:")
+  console.log("Admin: admin@kitchen.com / admin123")
+  console.log("Manager: manager1@kitchen.com / password123")
+  console.log("Chef: chef1@kitchen.com / password123")
+  console.log("Staff: staff1@kitchen.com / password123")
 }
 
 main()

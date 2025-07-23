@@ -1,9 +1,9 @@
-import type { NextAuthOptions } from "next-auth"
+import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -16,56 +16,47 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        try {
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email,
-              isActive: true,
-            },
-            include: {
-              kitchen: {
-                select: {
-                  id: true,
-                  name: true,
-                },
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email as string,
+          },
+          include: {
+            kitchen: {
+              select: {
+                id: true,
+                name: true,
               },
             },
-          })
+          },
+        })
 
-          if (!user) {
-            return null
-          }
-
-          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-
-          if (!isPasswordValid) {
-            return null
-          }
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            kitchenId: user.kitchenId,
-            kitchenName: user.kitchen?.name,
-          }
-        } catch (error) {
-          console.error("Auth error:", error)
+        if (!user || !user.password) {
           return null
+        }
+
+        const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password)
+
+        if (!isPasswordValid) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          kitchenId: user.kitchenId,
+          kitchen: user.kitchen,
         }
       },
     }),
   ],
-  session: {
-    strategy: "jwt",
-  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role
         token.kitchenId = user.kitchenId
-        token.kitchenName = user.kitchenName
+        token.kitchen = user.kitchen
       }
       return token
     },
@@ -74,7 +65,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub!
         session.user.role = token.role as string
         session.user.kitchenId = token.kitchenId as string | null
-        session.user.kitchenName = token.kitchenName as string | null
+        session.user.kitchen = token.kitchen as any
       }
       return session
     },
@@ -82,4 +73,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
   },
-}
+  session: {
+    strategy: "jwt",
+  },
+})
