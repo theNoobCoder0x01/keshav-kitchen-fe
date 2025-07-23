@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { hashPassword, verifyPassword, isBcryptHash } from "@/lib/crypto-utils";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
@@ -36,10 +36,43 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
-          const isPasswordValid = await bcrypt.compare(
-            credentials.password as string,
-            user.password,
-          );
+          // Handle both new Web Crypto hashes and legacy bcrypt hashes
+          let isPasswordValid = false;
+          
+          if (isBcryptHash(user.password)) {
+            // Legacy bcrypt hash - you might want to migrate this
+            // For now, we'll need to keep bcrypt for existing hashes
+            // Consider implementing a migration strategy during login
+            console.warn('Legacy bcrypt hash detected for user:', user.email);
+            
+            // Temporary: Import bcrypt only when needed
+            const bcrypt = await import("bcryptjs");
+            isPasswordValid = await bcrypt.compare(
+              credentials.password as string,
+              user.password,
+            );
+            
+            // Optional: Migrate to new format after successful verification
+            if (isPasswordValid) {
+              try {
+                const newHash = await hashPassword(credentials.password as string);
+                await prisma.user.update({
+                  where: { id: user.id },
+                  data: { password: newHash },
+                });
+                console.log('Migrated user password to Web Crypto format:', user.email);
+              } catch (error) {
+                console.error('Failed to migrate password:', error);
+                // Don't fail login if migration fails
+              }
+            }
+          } else {
+            // New Web Crypto hash
+            isPasswordValid = await verifyPassword(
+              credentials.password as string,
+              user.password,
+            );
+          }
 
           if (!isPasswordValid) {
             return null;

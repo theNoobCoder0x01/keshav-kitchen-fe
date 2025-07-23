@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { hash } from "bcryptjs";
+import { hashPassword } from "@/lib/crypto-utils";
 
 const prisma = new PrismaClient();
 
@@ -44,8 +44,8 @@ async function main() {
 
     // Create users
     console.log("Creating users...");
-    const adminPassword = await hash("admin123", 12);
-    const userPassword = await hash("password123", 12);
+    const adminPassword = await hashPassword("admin123");
+    const userPassword = await hashPassword("password123");
 
     const admin = await prisma.user.upsert({
       where: { email: "admin@kitchen.com" },
