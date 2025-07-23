@@ -25,12 +25,23 @@ async function main() {
       create: {
         id: "kitchen-2",
         name: "Secondary Kitchen",
-        description: "Backup kitchen for high-volume days",
+        description: "Secondary kitchen for overflow and special events",
         location: "First Floor, Building B",
+      },
+    }),
+    prisma.kitchen.upsert({
+      where: { id: "kitchen-3" },
+      update: {},
+      create: {
+        id: "kitchen-3",
+        name: "Catering Kitchen",
+        description: "Specialized kitchen for catering services",
+        location: "Ground Floor, Building C",
       },
     }),
   ])
 
+  // Create users with proper kitchen references
   console.log("Creating users...")
   const hashedPassword = await bcrypt.hash("admin123", 12)
   const hashedPassword2 = await bcrypt.hash("password123", 12)
@@ -40,6 +51,7 @@ async function main() {
       where: { email: "admin@kitchen.com" },
       update: {},
       create: {
+        id: "user-1",
         name: "Admin User",
         email: "admin@kitchen.com",
         password: hashedPassword,
@@ -51,6 +63,7 @@ async function main() {
       where: { email: "manager1@kitchen.com" },
       update: {},
       create: {
+        id: "user-2",
         name: "Kitchen Manager",
         email: "manager1@kitchen.com",
         password: hashedPassword2,
@@ -62,26 +75,29 @@ async function main() {
       where: { email: "chef1@kitchen.com" },
       update: {},
       create: {
+        id: "user-3",
         name: "Head Chef",
         email: "chef1@kitchen.com",
         password: hashedPassword2,
         role: "CHEF",
-        kitchenId: kitchens[0].id,
+        kitchenId: kitchens[1].id,
       },
     }),
     prisma.user.upsert({
       where: { email: "staff1@kitchen.com" },
       update: {},
       create: {
+        id: "user-4",
         name: "Kitchen Staff",
         email: "staff1@kitchen.com",
         password: hashedPassword2,
         role: "STAFF",
-        kitchenId: kitchens[1].id,
+        kitchenId: kitchens[2].id,
       },
     }),
   ])
 
+  // Create recipes with proper nested ingredients
   console.log("Creating recipes...")
   const recipes = await Promise.all([
     prisma.recipe.upsert({
@@ -94,34 +110,34 @@ async function main() {
         instructions: "Cook dal, prepare tadka, mix and serve",
         prepTime: 15,
         cookTime: 30,
-        servings: 100,
+        servings: 10,
         category: "Main Course",
-        userId: users[2].id, // Chef
+        userId: users[0].id,
         ingredients: {
           create: [
             {
               name: "Toor Dal",
-              quantity: 2.0,
-              unit: "kg",
-              costPerUnit: 80.0,
+              quantity: 2,
+              unit: "cups",
+              costPerUnit: 40,
             },
             {
               name: "Onions",
-              quantity: 0.5,
-              unit: "kg",
-              costPerUnit: 25.0,
+              quantity: 2,
+              unit: "medium",
+              costPerUnit: 10,
             },
             {
               name: "Tomatoes",
-              quantity: 0.8,
-              unit: "kg",
-              costPerUnit: 30.0,
+              quantity: 3,
+              unit: "medium",
+              costPerUnit: 10,
             },
             {
               name: "Spices",
-              quantity: 0.1,
-              unit: "kg",
-              costPerUnit: 150.0,
+              quantity: 1,
+              unit: "mixed",
+              costPerUnit: 25,
             },
           ],
         },
@@ -134,37 +150,31 @@ async function main() {
         id: "recipe-2",
         name: "Vegetable Biryani",
         description: "Aromatic rice dish with mixed vegetables",
-        instructions: "Layer rice and vegetables, cook with dum method",
-        prepTime: 45,
-        cookTime: 60,
-        servings: 120,
+        instructions: "Layer rice and vegetables, cook with spices",
+        prepTime: 30,
+        cookTime: 45,
+        servings: 8,
         category: "Main Course",
-        userId: users[2].id, // Chef
+        userId: users[1].id,
         ingredients: {
           create: [
             {
               name: "Basmati Rice",
-              quantity: 3.0,
-              unit: "kg",
-              costPerUnit: 120.0,
+              quantity: 3,
+              unit: "cups",
+              costPerUnit: 60,
             },
             {
               name: "Mixed Vegetables",
-              quantity: 2.0,
-              unit: "kg",
-              costPerUnit: 40.0,
+              quantity: 2,
+              unit: "cups",
+              costPerUnit: 40,
             },
             {
-              name: "Spices & Herbs",
-              quantity: 0.2,
-              unit: "kg",
-              costPerUnit: 250.0,
-            },
-            {
-              name: "Ghee",
-              quantity: 0.3,
-              unit: "liter",
-              costPerUnit: 400.0,
+              name: "Biryani Spices",
+              quantity: 1,
+              unit: "packet",
+              costPerUnit: 30,
             },
           ],
         },
@@ -176,32 +186,106 @@ async function main() {
       create: {
         id: "recipe-3",
         name: "Chapati",
-        description: "Fresh whole wheat flatbread",
-        instructions: "Make dough, roll and cook on tawa",
-        prepTime: 30,
-        cookTime: 45,
-        servings: 200,
+        description: "Traditional Indian flatbread",
+        instructions: "Mix flour and water, roll and cook on tawa",
+        prepTime: 20,
+        cookTime: 15,
+        servings: 20,
         category: "Bread",
-        userId: users[3].id, // Staff
+        userId: users[2].id,
         ingredients: {
           create: [
             {
               name: "Wheat Flour",
-              quantity: 4.0,
-              unit: "kg",
-              costPerUnit: 35.0,
+              quantity: 2,
+              unit: "cups",
+              costPerUnit: 30,
+            },
+            {
+              name: "Water",
+              quantity: 1,
+              unit: "cup",
+              costPerUnit: 0,
             },
             {
               name: "Salt",
-              quantity: 0.05,
-              unit: "kg",
-              costPerUnit: 20.0,
+              quantity: 1,
+              unit: "tsp",
+              costPerUnit: 1,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.recipe.upsert({
+      where: { id: "recipe-4" },
+      update: {},
+      create: {
+        id: "recipe-4",
+        name: "Mixed Vegetable Curry",
+        description: "Healthy curry with seasonal vegetables",
+        instructions: "Sauté vegetables with spices and simmer",
+        prepTime: 15,
+        cookTime: 25,
+        servings: 12,
+        category: "Main Course",
+        userId: users[3].id,
+        ingredients: {
+          create: [
+            {
+              name: "Seasonal Vegetables",
+              quantity: 3,
+              unit: "cups",
+              costPerUnit: 50,
             },
             {
-              name: "Oil",
-              quantity: 0.2,
-              unit: "liter",
-              costPerUnit: 100.0,
+              name: "Curry Spices",
+              quantity: 1,
+              unit: "mix",
+              costPerUnit: 20,
+            },
+            {
+              name: "Coconut Oil",
+              quantity: 2,
+              unit: "tbsp",
+              costPerUnit: 10,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.recipe.upsert({
+      where: { id: "recipe-5" },
+      update: {},
+      create: {
+        id: "recipe-5",
+        name: "Sambar",
+        description: "South Indian lentil soup with vegetables",
+        instructions: "Cook dal and vegetables with sambar powder",
+        prepTime: 10,
+        cookTime: 30,
+        servings: 15,
+        category: "Soup",
+        userId: users[0].id,
+        ingredients: {
+          create: [
+            {
+              name: "Toor Dal",
+              quantity: 1.5,
+              unit: "cups",
+              costPerUnit: 30,
+            },
+            {
+              name: "Sambar Vegetables",
+              quantity: 2,
+              unit: "cups",
+              costPerUnit: 35,
+            },
+            {
+              name: "Sambar Powder",
+              quantity: 2,
+              unit: "tbsp",
+              costPerUnit: 15,
             },
           ],
         },
@@ -209,102 +293,101 @@ async function main() {
     }),
   ])
 
+  // Create menus
   console.log("Creating menus...")
   const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 
   await Promise.all([
-    prisma.menu.upsert({
-      where: { id: "menu-1" },
-      update: {},
-      create: {
-        id: "menu-1",
+    prisma.menu.create({
+      data: {
+        date: today,
+        mealType: "BREAKFAST",
+        recipeId: recipes[2].id, // Chapati
+        kitchenId: kitchens[0].id,
+        userId: users[0].id,
+        servings: 50,
+        ghanFactor: 1.2,
+        status: "PLANNED",
+      },
+    }),
+    prisma.menu.create({
+      data: {
         date: today,
         mealType: "LUNCH",
-        recipeId: recipes[0].id,
+        recipeId: recipes[0].id, // Dal Tadka
         kitchenId: kitchens[0].id,
-        userId: users[1].id, // Manager
+        userId: users[1].id,
         servings: 100,
         ghanFactor: 1.0,
-        status: "COMPLETED",
-        actualCount: 95,
-        notes: "Good response to Dal Tadka",
+        status: "PLANNED",
       },
     }),
-    prisma.menu.upsert({
-      where: { id: "menu-2" },
-      update: {},
-      create: {
-        id: "menu-2",
+    prisma.menu.create({
+      data: {
+        date: today,
+        mealType: "LUNCH",
+        recipeId: recipes[1].id, // Vegetable Biryani
+        kitchenId: kitchens[0].id,
+        userId: users[1].id,
+        servings: 80,
+        ghanFactor: 1.1,
+        status: "PLANNED",
+      },
+    }),
+    prisma.menu.create({
+      data: {
         date: today,
         mealType: "DINNER",
-        recipeId: recipes[1].id,
+        recipeId: recipes[4].id, // Sambar
         kitchenId: kitchens[0].id,
-        userId: users[1].id, // Manager
-        servings: 80,
-        ghanFactor: 1.2,
-        status: "COMPLETED",
-        actualCount: 78,
-        notes: "Biryani was popular",
+        userId: users[2].id,
+        servings: 120,
+        ghanFactor: 0.9,
+        status: "PLANNED",
       },
     }),
-    prisma.menu.upsert({
-      where: { id: "menu-3" },
-      update: {},
-      create: {
-        id: "menu-3",
+    prisma.menu.create({
+      data: {
         date: tomorrow,
         mealType: "BREAKFAST",
-        recipeId: recipes[2].id,
-        kitchenId: kitchens[1].id,
-        userId: users[3].id, // Staff
-        servings: 120,
-        ghanFactor: 1.5,
+        recipeId: recipes[2].id, // Chapati
+        kitchenId: kitchens[0].id,
+        userId: users[0].id,
+        servings: 60,
+        ghanFactor: 1.0,
         status: "PLANNED",
-        notes: "Fresh chapatis for breakfast",
       },
     }),
   ])
 
+  // Create reports
   console.log("Creating reports...")
   await Promise.all([
-    prisma.report.upsert({
-      where: { id: "report-1" },
-      update: {},
-      create: {
-        id: "report-1",
+    prisma.report.create({
+      data: {
         date: today,
         kitchenId: kitchens[0].id,
-        userId: users[1].id, // Manager
-        visitorCount: 173,
-        mealsCounted: 173,
-        notes: "Good response to Dal Tadka and Biryani. No major issues.",
+        userId: users[0].id,
+        visitorCount: 150,
+        mealsCounted: 145,
+        notes: "Good day with high attendance",
       },
     }),
-    prisma.report.upsert({
-      where: { id: "report-2" },
-      update: {},
-      create: {
-        id: "report-2",
-        date: today,
-        kitchenId: kitchens[1].id,
-        userId: users[3].id, // Staff
-        visitorCount: 45,
-        mealsCounted: 45,
-        notes: "Smooth operations in secondary kitchen.",
+    prisma.report.create({
+      data: {
+        date: new Date(today.getTime() - 24 * 60 * 60 * 1000), // Yesterday
+        kitchenId: kitchens[0].id,
+        userId: users[1].id,
+        visitorCount: 120,
+        mealsCounted: 118,
+        notes: "Normal operations",
       },
     }),
   ])
 
   console.log("✅ Database seeded successfully!")
-  console.log("📊 Created:")
-  console.log("  - 2 Kitchens")
-  console.log("  - 4 Users")
-  console.log("  - 3 Recipes with ingredients")
-  console.log("  - 3 Menus")
-  console.log("  - 2 Reports")
-  console.log("")
   console.log("🔑 Login credentials:")
   console.log("  Admin: admin@kitchen.com / admin123")
   console.log("  Manager: manager1@kitchen.com / password123")
@@ -313,10 +396,11 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error("❌ Seed failed:", e)
-    process.exit(1)
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error("❌ Seed failed:", e)
+    await prisma.$disconnect()
+    process.exit(1)
   })

@@ -7,24 +7,14 @@ declare module "next-auth" {
       id: string
       role: string
       kitchenId: string | null
-      kitchen?: {
-        id: string
-        name: string
-        location?: string | null
-        description?: string | null
-      } | null
+      kitchenName: string | null
     } & DefaultSession["user"]
   }
 
   interface User extends DefaultUser {
     role: string
     kitchenId: string | null
-    kitchen?: {
-      id: string
-      name: string
-      location?: string | null
-      description?: string | null
-    } | null
+    kitchenName: string | null
   }
 }
 
@@ -32,11 +22,6 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     role: string
     kitchenId: string | null
-    kitchen?: {
-      id: string
-      name: string
-      location?: string | null
-      description?: string | null
-    } | null
+    kitchenName: string | null
   }
 }

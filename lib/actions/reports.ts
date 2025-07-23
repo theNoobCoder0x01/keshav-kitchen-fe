@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
-export async function getReports(kitchenId?: string) {
+export async function getReports() {
   try {
     const session = await auth()
 
@@ -12,16 +12,11 @@ export async function getReports(kitchenId?: string) {
       return []
     }
 
-    const targetKitchenId = kitchenId || session.user.kitchenId
-
-    if (!targetKitchenId && session.user.role !== "ADMIN") {
-      return []
-    }
-
     const whereClause: any = {}
 
-    if (targetKitchenId) {
-      whereClause.kitchenId = targetKitchenId
+    // If user is not admin, filter by their kitchen
+    if (session.user.role !== "ADMIN" && session.user.kitchenId) {
+      whereClause.kitchenId = session.user.kitchenId
     }
 
     const reports = await prisma.report.findMany({
@@ -29,18 +24,20 @@ export async function getReports(kitchenId?: string) {
       include: {
         kitchen: {
           select: {
-            id: true,
             name: true,
+            location: true,
           },
         },
         user: {
           select: {
-            id: true,
             name: true,
+            email: true,
           },
         },
       },
-      orderBy: { date: "desc" },
+      orderBy: {
+        date: "desc",
+      },
     })
 
     return reports
@@ -55,7 +52,7 @@ export async function getReport(id: string) {
     const session = await auth()
 
     if (!session?.user) {
-      return null
+      throw new Error("Unauthorized")
     }
 
     const report = await prisma.report.findUnique({
@@ -63,96 +60,127 @@ export async function getReport(id: string) {
       include: {
         kitchen: {
           select: {
-            id: true,
             name: true,
+            location: true,
           },
         },
         user: {
           select: {
-            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    if (!report) {
+      throw new Error("Report not found")
+    }
+
+    // Check access permissions
+    if (session.user.role !== "ADMIN" && report.kitchenId !== session.user.kitchenId) {
+      throw new Error("Access denied")
+    }
+
+    return report
+  } catch (error) {
+    console.error("Get report error:", error)
+    throw error
+  }
+}
+
+export async function createReport(data: {
+  date: Date
+  kitchenId: string
+  visitorCount: number
+  mealsCounted: number
+  notes?: string
+}) {
+  try {
+    const session = await auth()
+
+    if (!session?.user) {
+      throw new Error("Unauthorized")
+    }
+
+    // Check permissions
+    if (session.user.role === "STAFF" && data.kitchenId !== session.user.kitchenId) {
+      throw new Error("Access denied for this kitchen")
+    }
+
+    const report = await prisma.report.create({
+      data: {
+        date: data.date,
+        kitchenId: data.kitchenId,
+        userId: session.user.id,
+        visitorCount: data.visitorCount,
+        mealsCounted: data.mealsCounted,
+        notes: data.notes,
+      },
+      include: {
+        kitchen: {
+          select: {
             name: true,
           },
         },
       },
     })
 
+    revalidatePath("/reports")
     return report
   } catch (error) {
-    console.error("Get report error:", error)
-    return null
+    console.error("Create report error:", error)
+    throw error
   }
 }
 
-export async function createReport(formData: FormData) {
+export async function updateReport(
+  id: string,
+  data: {
+    visitorCount?: number
+    mealsCounted?: number
+    notes?: string
+  },
+) {
   try {
     const session = await auth()
 
     if (!session?.user) {
-      return { success: false, error: "Unauthorized" }
+      throw new Error("Unauthorized")
     }
 
-    const date = formData.get("date") as string
-    const visitorCount = Number.parseInt(formData.get("visitorCount") as string)
-    const mealsCounted = Number.parseInt(formData.get("mealsCounted") as string)
-    const notes = formData.get("notes") as string
-
-    if (!date || isNaN(visitorCount) || isNaN(mealsCounted)) {
-      return { success: false, error: "Missing required fields" }
-    }
-
-    if (!session.user.kitchenId) {
-      return { success: false, error: "No kitchen assigned" }
-    }
-
-    const report = await prisma.report.create({
-      data: {
-        date: new Date(date),
-        kitchenId: session.user.kitchenId,
-        userId: session.user.id,
-        visitorCount,
-        mealsCounted,
-        notes: notes || null,
-      },
+    // Check if report exists and user has permission
+    const existingReport = await prisma.report.findUnique({
+      where: { id },
+      select: { kitchenId: true, userId: true },
     })
 
-    revalidatePath("/reports")
-    return { success: true, report }
-  } catch (error) {
-    console.error("Create report error:", error)
-    return { success: false, error: "Failed to create report" }
-  }
-}
-
-export async function updateReport(id: string, formData: FormData) {
-  try {
-    const session = await auth()
-
-    if (!session?.user) {
-      return { success: false, error: "Unauthorized" }
+    if (!existingReport) {
+      throw new Error("Report not found")
     }
 
-    const visitorCount = Number.parseInt(formData.get("visitorCount") as string)
-    const mealsCounted = Number.parseInt(formData.get("mealsCounted") as string)
-    const notes = formData.get("notes") as string
-
-    if (isNaN(visitorCount) || isNaN(mealsCounted)) {
-      return { success: false, error: "Invalid visitor count or meals counted" }
+    // Check permissions
+    if (session.user.role === "STAFF" && existingReport.userId !== session.user.id) {
+      throw new Error("Access denied")
     }
 
     const report = await prisma.report.update({
       where: { id },
-      data: {
-        visitorCount,
-        mealsCounted,
-        notes: notes || null,
+      data,
+      include: {
+        kitchen: {
+          select: {
+            name: true,
+          },
+        },
       },
     })
 
     revalidatePath("/reports")
-    return { success: true, report }
+    return report
   } catch (error) {
     console.error("Update report error:", error)
-    return { success: false, error: "Failed to update report" }
+    throw error
   }
 }
 
@@ -161,7 +189,22 @@ export async function deleteReport(id: string) {
     const session = await auth()
 
     if (!session?.user) {
-      return { success: false, error: "Unauthorized" }
+      throw new Error("Unauthorized")
+    }
+
+    // Check if report exists and user has permission
+    const existingReport = await prisma.report.findUnique({
+      where: { id },
+      select: { kitchenId: true, userId: true },
+    })
+
+    if (!existingReport) {
+      throw new Error("Report not found")
+    }
+
+    // Check permissions
+    if (session.user.role === "STAFF" && existingReport.userId !== session.user.id) {
+      throw new Error("Access denied")
     }
 
     await prisma.report.delete({
@@ -172,67 +215,60 @@ export async function deleteReport(id: string) {
     return { success: true }
   } catch (error) {
     console.error("Delete report error:", error)
-    return { success: false, error: "Failed to delete report" }
+    throw error
   }
 }
 
-export async function getReportStats(kitchenId?: string) {
+export async function getReportStats() {
   try {
     const session = await auth()
 
     if (!session?.user) {
       return {
         totalReports: 0,
-        totalVisitors: 0,
-        totalMeals: 0,
-        averageVisitorsPerDay: 0,
-      }
-    }
-
-    const targetKitchenId = kitchenId || session.user.kitchenId
-
-    if (!targetKitchenId && session.user.role !== "ADMIN") {
-      return {
-        totalReports: 0,
-        totalVisitors: 0,
-        totalMeals: 0,
-        averageVisitorsPerDay: 0,
+        avgVisitorCount: 0,
+        avgMealsCounted: 0,
+        efficiency: 0,
       }
     }
 
     const whereClause: any = {}
 
-    if (targetKitchenId) {
-      whereClause.kitchenId = targetKitchenId
+    // If user is not admin, filter by their kitchen
+    if (session.user.role !== "ADMIN" && session.user.kitchenId) {
+      whereClause.kitchenId = session.user.kitchenId
     }
 
-    const [reportCount, aggregates] = await Promise.all([
-      prisma.report.count({ where: whereClause }),
+    const [totalReports, avgStats] = await Promise.all([
+      prisma.report.count({
+        where: whereClause,
+      }),
       prisma.report.aggregate({
         where: whereClause,
-        _sum: {
-          visitorCount: true,
-          mealsCounted: true,
-        },
         _avg: {
           visitorCount: true,
+          mealsCounted: true,
         },
       }),
     ])
 
+    const avgVisitorCount = avgStats._avg.visitorCount || 0
+    const avgMealsCounted = avgStats._avg.mealsCounted || 0
+    const efficiency = avgVisitorCount > 0 ? (avgMealsCounted / avgVisitorCount) * 100 : 0
+
     return {
-      totalReports: reportCount,
-      totalVisitors: aggregates._sum.visitorCount || 0,
-      totalMeals: aggregates._sum.mealsCounted || 0,
-      averageVisitorsPerDay: Math.round(aggregates._avg.visitorCount || 0),
+      totalReports,
+      avgVisitorCount: Math.round(avgVisitorCount),
+      avgMealsCounted: Math.round(avgMealsCounted),
+      efficiency: Math.round(efficiency * 100) / 100,
     }
   } catch (error) {
     console.error("Get report stats error:", error)
     return {
       totalReports: 0,
-      totalVisitors: 0,
-      totalMeals: 0,
-      averageVisitorsPerDay: 0,
+      avgVisitorCount: 0,
+      avgMealsCounted: 0,
+      efficiency: 0,
     }
   }
 }
