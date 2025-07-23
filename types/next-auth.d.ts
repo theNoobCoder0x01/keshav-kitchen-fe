@@ -5,13 +5,8 @@ declare module "next-auth" {
       email: string
       name: string
       role: string
-      kitchenId: string
-      kitchen?: {
-        id: string
-        name: string
-        location: string
-        description?: string
-      }
+      kitchenId: string | null
+      kitchenName: string | null
     }
   }
 
@@ -20,25 +15,15 @@ declare module "next-auth" {
     email: string
     name: string
     role: string
-    kitchenId: string
-    kitchen?: {
-      id: string
-      name: string
-      location: string
-      description?: string
-    }
+    kitchenId: string | null
+    kitchenName: string | null
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     role: string
-    kitchenId: string
-    kitchen?: {
-      id: string
-      name: string
-      location: string
-      description?: string
-    }
+    kitchenId: string | null
+    kitchenName: string | null
   }
 }

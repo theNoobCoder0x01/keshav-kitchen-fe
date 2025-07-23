@@ -4,305 +4,350 @@ const bcrypt = require("bcryptjs")
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log("🌱 Seeding database...")
+  console.log("🌱 Starting database seed...")
 
-  // Create kitchens first
+  // Create kitchens
+  console.log("Creating kitchens...")
   const kitchens = await Promise.all([
     prisma.kitchen.upsert({
-      where: { id: "kitchen_1" },
+      where: { id: "kitchen-1" },
       update: {},
       create: {
-        id: "kitchen_1",
-        name: "Thakorji",
-        location: "Main Building",
-        description: "Main temple kitchen serving traditional meals",
+        id: "kitchen-1",
+        name: "Main Kitchen",
+        description: "Primary kitchen facility for daily operations",
+        location: "Ground Floor, Building A",
+        capacity: 500,
+        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
-      where: { id: "kitchen_2" },
+      where: { id: "kitchen-2" },
       update: {},
       create: {
-        id: "kitchen_2",
-        name: "Premvati",
-        location: "East Wing",
-        description: "East wing kitchen for special occasions",
+        id: "kitchen-2",
+        name: "Secondary Kitchen",
+        description: "Backup kitchen for overflow and special events",
+        location: "First Floor, Building B",
+        capacity: 300,
+        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
-      where: { id: "kitchen_3" },
+      where: { id: "kitchen-3" },
       update: {},
       create: {
-        id: "kitchen_3",
-        name: "Aarsh",
-        location: "West Wing",
-        description: "West wing kitchen for daily meals",
+        id: "kitchen-3",
+        name: "Catering Kitchen",
+        description: "Specialized kitchen for external catering services",
+        location: "Ground Floor, Building C",
+        capacity: 200,
+        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
-      where: { id: "kitchen_4" },
+      where: { id: "kitchen-4" },
       update: {},
       create: {
-        id: "kitchen_4",
-        name: "Mandir",
-        location: "Temple Complex",
-        description: "Temple kitchen for prasad preparation",
+        id: "kitchen-4",
+        name: "Training Kitchen",
+        description: "Kitchen facility for staff training and development",
+        location: "Second Floor, Building A",
+        capacity: 100,
+        isActive: true,
       },
     }),
     prisma.kitchen.upsert({
-      where: { id: "kitchen_5" },
+      where: { id: "kitchen-5" },
       update: {},
       create: {
-        id: "kitchen_5",
-        name: "Prasad",
-        location: "Central Kitchen",
-        description: "Central kitchen for large scale cooking",
+        id: "kitchen-5",
+        name: "Emergency Kitchen",
+        description: "Emergency backup kitchen facility",
+        location: "Basement, Building A",
+        capacity: 150,
+        isActive: false,
       },
     }),
   ])
 
-  console.log("✅ Created kitchens")
+  // Create users
+  console.log("Creating users...")
+  const hashedPassword = await bcrypt.hash("admin123", 12)
+  const hashedPassword2 = await bcrypt.hash("password123", 12)
 
-  // Create users with different roles
-  const hashedPassword = await bcrypt.hash("admin123", 10)
-  const hashedPasswordStaff = await bcrypt.hash("password123", 10)
+  const users = await Promise.all([
+    prisma.user.upsert({
+      where: { email: "admin@kitchen.com" },
+      update: {},
+      create: {
+        id: "user-1",
+        name: "Admin User",
+        email: "admin@kitchen.com",
+        password: hashedPassword,
+        role: "ADMIN",
+        isActive: true,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "manager1@kitchen.com" },
+      update: {},
+      create: {
+        id: "user-2",
+        name: "Kitchen Manager",
+        email: "manager1@kitchen.com",
+        password: hashedPassword2,
+        role: "MANAGER",
+        kitchenId: "kitchen-1",
+        isActive: true,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "chef1@kitchen.com" },
+      update: {},
+      create: {
+        id: "user-3",
+        name: "Head Chef",
+        email: "chef1@kitchen.com",
+        password: hashedPassword2,
+        role: "CHEF",
+        kitchenId: "kitchen-1",
+        isActive: true,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "staff1@kitchen.com" },
+      update: {},
+      create: {
+        id: "user-4",
+        name: "Kitchen Staff",
+        email: "staff1@kitchen.com",
+        password: hashedPassword2,
+        role: "STAFF",
+        kitchenId: "kitchen-2",
+        isActive: true,
+      },
+    }),
+  ])
 
-  const adminUser = await prisma.user.upsert({
-    where: { email: "admin@kitchen.com" },
-    update: {},
-    create: {
-      email: "admin@kitchen.com",
-      name: "Admin User",
-      password: hashedPassword,
-      role: "ADMIN",
-      kitchenId: "kitchen_1",
-    },
-  })
-
-  const managerUser = await prisma.user.upsert({
-    where: { email: "manager1@kitchen.com" },
-    update: {},
-    create: {
-      email: "manager1@kitchen.com",
-      name: "Kitchen Manager",
-      password: hashedPasswordStaff,
-      role: "MANAGER",
-      kitchenId: "kitchen_1",
-    },
-  })
-
-  const chefUser = await prisma.user.upsert({
-    where: { email: "chef1@kitchen.com" },
-    update: {},
-    create: {
-      email: "chef1@kitchen.com",
-      name: "Head Chef",
-      password: hashedPasswordStaff,
-      role: "CHEF",
-      kitchenId: "kitchen_2",
-    },
-  })
-
-  const staffUser = await prisma.user.upsert({
-    where: { email: "staff1@kitchen.com" },
-    update: {},
-    create: {
-      email: "staff1@kitchen.com",
-      name: "Kitchen Staff",
-      password: hashedPasswordStaff,
-      role: "STAFF",
-      kitchenId: "kitchen_3",
-    },
-  })
-
-  console.log("✅ Created users")
-
-  // Create sample recipes with ingredients
+  // Create recipes with ingredients
+  console.log("Creating recipes...")
   const recipes = await Promise.all([
     prisma.recipe.upsert({
-      where: { id: "recipe_1" },
+      where: { id: "recipe-1" },
       update: {},
       create: {
-        id: "recipe_1",
-        name: "Idli Sambhar",
-        description: "Traditional South Indian breakfast with steamed rice cakes and lentil curry",
-        instructions:
-          "1. Soak rice and urad dal overnight\n2. Grind to smooth batter\n3. Ferment for 8-12 hours\n4. Steam in idli plates\n5. Serve with sambhar",
+        id: "recipe-1",
+        name: "Vegetable Curry",
+        description: "Traditional mixed vegetable curry with spices",
+        servings: 100,
         prepTime: 30,
         cookTime: 45,
-        servings: 100,
-        category: "South Indian",
-        userId: adminUser.id,
-        ingredients: {
-          create: [
-            {
-              name: "Rice",
-              quantity: 2.5,
-              unit: "kg",
-              costPerUnit: 30.0,
-            },
-            {
-              name: "Urad Dal",
-              quantity: 0.5,
-              unit: "kg",
-              costPerUnit: 120.0,
-            },
-            {
-              name: "Toor Dal",
-              quantity: 0.3,
-              unit: "kg",
-              costPerUnit: 100.0,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.recipe.upsert({
-      where: { id: "recipe_2" },
-      update: {},
-      create: {
-        id: "recipe_2",
-        name: "Poha",
-        description: "Flattened rice with vegetables and spices",
-        instructions:
-          "1. Wash and drain poha\n2. Heat oil, add mustard seeds\n3. Add onions, potatoes\n4. Add poha and mix\n5. Garnish with coriander",
-        prepTime: 15,
-        cookTime: 20,
-        servings: 80,
-        category: "Maharashtrian",
-        userId: chefUser.id,
-        ingredients: {
-          create: [
-            {
-              name: "Poha",
-              quantity: 1.0,
-              unit: "kg",
-              costPerUnit: 40.0,
-            },
-            {
-              name: "Onion",
-              quantity: 0.5,
-              unit: "kg",
-              costPerUnit: 25.0,
-            },
-            {
-              name: "Potato",
-              quantity: 0.3,
-              unit: "kg",
-              costPerUnit: 20.0,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.recipe.upsert({
-      where: { id: "recipe_3" },
-      update: {},
-      create: {
-        id: "recipe_3",
-        name: "Dal Rice",
-        description: "Simple and nutritious lentils with rice",
-        instructions:
-          "1. Cook rice separately\n2. Boil dal with turmeric\n3. Temper with cumin, mustard seeds\n4. Add vegetables if desired\n5. Serve hot with rice",
-        prepTime: 20,
-        cookTime: 40,
-        servings: 120,
-        category: "North Indian",
-        userId: managerUser.id,
-        ingredients: {
-          create: [
-            {
-              name: "Rice",
-              quantity: 3.0,
-              unit: "kg",
-              costPerUnit: 30.0,
-            },
-            {
-              name: "Toor Dal",
-              quantity: 1.0,
-              unit: "kg",
-              costPerUnit: 100.0,
-            },
-            {
-              name: "Turmeric",
-              quantity: 0.05,
-              unit: "kg",
-              costPerUnit: 200.0,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.recipe.upsert({
-      where: { id: "recipe_4" },
-      update: {},
-      create: {
-        id: "recipe_4",
-        name: "Chapati",
-        description: "Fresh whole wheat flatbread",
-        instructions:
-          "1. Mix flour with water and salt\n2. Knead into soft dough\n3. Rest for 30 minutes\n4. Roll into circles\n5. Cook on hot tawa",
-        prepTime: 45,
-        cookTime: 30,
-        servings: 150,
-        category: "Bread",
-        userId: chefUser.id,
-        ingredients: {
-          create: [
-            {
-              name: "Wheat Flour",
-              quantity: 2.0,
-              unit: "kg",
-              costPerUnit: 35.0,
-            },
-            {
-              name: "Salt",
-              quantity: 0.02,
-              unit: "kg",
-              costPerUnit: 20.0,
-            },
-            {
-              name: "Oil",
-              quantity: 0.1,
-              unit: "liter",
-              costPerUnit: 120.0,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.recipe.upsert({
-      where: { id: "recipe_5" },
-      update: {},
-      create: {
-        id: "recipe_5",
-        name: "Mixed Vegetable Curry",
-        description: "Seasonal vegetables cooked in aromatic spices",
-        instructions:
-          "1. Heat oil in pan\n2. Add cumin seeds and onions\n3. Add vegetables and spices\n4. Cook until tender\n5. Garnish with coriander",
-        prepTime: 25,
-        cookTime: 35,
-        servings: 100,
-        category: "Vegetarian",
-        userId: staffUser.id,
+        difficulty: "MEDIUM",
+        category: "MAIN_COURSE",
+        instructions: "Heat oil, add spices, cook vegetables, simmer with sauce",
+        userId: "user-3",
         ingredients: {
           create: [
             {
               name: "Mixed Vegetables",
-              quantity: 2.0,
-              unit: "kg",
-              costPerUnit: 40.0,
+              quantity: 5000,
+              unit: "GRAMS",
+              costPerUnit: 0.02,
             },
             {
-              name: "Onion",
-              quantity: 0.5,
-              unit: "kg",
-              costPerUnit: 25.0,
+              name: "Onions",
+              quantity: 1000,
+              unit: "GRAMS",
+              costPerUnit: 0.025,
+            },
+            {
+              name: "Tomatoes",
+              quantity: 800,
+              unit: "GRAMS",
+              costPerUnit: 0.03,
             },
             {
               name: "Spices",
-              quantity: 0.1,
-              unit: "kg",
-              costPerUnit: 300.0,
+              quantity: 200,
+              unit: "GRAMS",
+              costPerUnit: 0.15,
+            },
+            {
+              name: "Oil",
+              quantity: 300,
+              unit: "ML",
+              costPerUnit: 0.08,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.recipe.upsert({
+      where: { id: "recipe-2" },
+      update: {},
+      create: {
+        id: "recipe-2",
+        name: "Dal Tadka",
+        description: "Yellow lentils with tempering",
+        servings: 100,
+        prepTime: 15,
+        cookTime: 30,
+        difficulty: "EASY",
+        category: "MAIN_COURSE",
+        instructions: "Boil lentils, prepare tempering, mix and serve",
+        userId: "user-3",
+        ingredients: {
+          create: [
+            {
+              name: "Yellow Lentils",
+              quantity: 2000,
+              unit: "GRAMS",
+              costPerUnit: 0.06,
+            },
+            {
+              name: "Onions",
+              quantity: 500,
+              unit: "GRAMS",
+              costPerUnit: 0.025,
+            },
+            {
+              name: "Tomatoes",
+              quantity: 400,
+              unit: "GRAMS",
+              costPerUnit: 0.03,
+            },
+            {
+              name: "Spices",
+              quantity: 100,
+              unit: "GRAMS",
+              costPerUnit: 0.15,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.recipe.upsert({
+      where: { id: "recipe-3" },
+      update: {},
+      create: {
+        id: "recipe-3",
+        name: "Jeera Rice",
+        description: "Cumin flavored basmati rice",
+        servings: 100,
+        prepTime: 10,
+        cookTime: 20,
+        difficulty: "EASY",
+        category: "SIDE_DISH",
+        instructions: "Wash rice, heat oil, add cumin, cook rice",
+        userId: "user-3",
+        ingredients: {
+          create: [
+            {
+              name: "Basmati Rice",
+              quantity: 3000,
+              unit: "GRAMS",
+              costPerUnit: 0.08,
+            },
+            {
+              name: "Cumin Seeds",
+              quantity: 50,
+              unit: "GRAMS",
+              costPerUnit: 0.2,
+            },
+            {
+              name: "Oil",
+              quantity: 200,
+              unit: "ML",
+              costPerUnit: 0.08,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.recipe.upsert({
+      where: { id: "recipe-4" },
+      update: {},
+      create: {
+        id: "recipe-4",
+        name: "Mixed Salad",
+        description: "Fresh mixed vegetable salad",
+        servings: 100,
+        prepTime: 20,
+        cookTime: 0,
+        difficulty: "EASY",
+        category: "SALAD",
+        instructions: "Chop vegetables, mix with dressing, serve fresh",
+        userId: "user-3",
+        ingredients: {
+          create: [
+            {
+              name: "Cucumber",
+              quantity: 1500,
+              unit: "GRAMS",
+              costPerUnit: 0.02,
+            },
+            {
+              name: "Tomatoes",
+              quantity: 1000,
+              unit: "GRAMS",
+              costPerUnit: 0.03,
+            },
+            {
+              name: "Onions",
+              quantity: 500,
+              unit: "GRAMS",
+              costPerUnit: 0.025,
+            },
+            {
+              name: "Lemon",
+              quantity: 200,
+              unit: "GRAMS",
+              costPerUnit: 0.05,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.recipe.upsert({
+      where: { id: "recipe-5" },
+      update: {},
+      create: {
+        id: "recipe-5",
+        name: "Masala Chai",
+        description: "Spiced Indian tea",
+        servings: 50,
+        prepTime: 5,
+        cookTime: 10,
+        difficulty: "EASY",
+        category: "BEVERAGE",
+        instructions: "Boil water, add tea and spices, add milk, serve hot",
+        userId: "user-3",
+        ingredients: {
+          create: [
+            {
+              name: "Tea Leaves",
+              quantity: 200,
+              unit: "GRAMS",
+              costPerUnit: 0.3,
+            },
+            {
+              name: "Milk",
+              quantity: 2000,
+              unit: "ML",
+              costPerUnit: 0.05,
+            },
+            {
+              name: "Sugar",
+              quantity: 500,
+              unit: "GRAMS",
+              costPerUnit: 0.04,
+            },
+            {
+              name: "Spices",
+              quantity: 50,
+              unit: "GRAMS",
+              costPerUnit: 0.15,
             },
           ],
         },
@@ -310,150 +355,173 @@ async function main() {
     }),
   ])
 
-  console.log("✅ Created sample recipes")
-
-  // Create sample menus for today and tomorrow
+  // Create daily menus
+  console.log("Creating daily menus...")
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 
-  const sampleMenus = await Promise.all([
-    // Today's menus
-    prisma.menu.upsert({
+  const menus = await Promise.all([
+    prisma.dailyMenu.upsert({
       where: {
-        id: "menu_1",
+        kitchenId_menuDate_mealType_recipeId: {
+          kitchenId: "kitchen-1",
+          menuDate: today,
+          mealType: "BREAKFAST",
+          recipeId: "recipe-5",
+        },
       },
       update: {},
       create: {
-        id: "menu_1",
-        date: today,
+        kitchenId: "kitchen-1",
+        menuDate: today,
         mealType: "BREAKFAST",
-        recipeId: "recipe_1",
-        kitchenId: "kitchen_1",
-        userId: adminUser.id,
-        servings: 100,
-        ghanFactor: 1.0,
-        status: "PLANNED",
+        recipeId: "recipe-5",
+        plannedServings: 150,
+        actualServings: 145,
+        ghanMultiplier: 3.0,
+        status: "COMPLETED",
+        createdBy: "user-2",
       },
     }),
-    prisma.menu.upsert({
+    prisma.dailyMenu.upsert({
       where: {
-        id: "menu_2",
+        kitchenId_menuDate_mealType_recipeId: {
+          kitchenId: "kitchen-1",
+          menuDate: today,
+          mealType: "LUNCH",
+          recipeId: "recipe-1",
+        },
       },
       update: {},
       create: {
-        id: "menu_2",
-        date: today,
+        kitchenId: "kitchen-1",
+        menuDate: today,
         mealType: "LUNCH",
-        recipeId: "recipe_3",
-        kitchenId: "kitchen_1",
-        userId: managerUser.id,
-        servings: 120,
-        ghanFactor: 1.2,
-        status: "PLANNED",
+        recipeId: "recipe-1",
+        plannedServings: 200,
+        actualServings: 195,
+        ghanMultiplier: 2.0,
+        status: "COMPLETED",
+        createdBy: "user-2",
       },
     }),
-    prisma.menu.upsert({
+    prisma.dailyMenu.upsert({
       where: {
-        id: "menu_3",
+        kitchenId_menuDate_mealType_recipeId: {
+          kitchenId: "kitchen-1",
+          menuDate: today,
+          mealType: "LUNCH",
+          recipeId: "recipe-2",
+        },
       },
       update: {},
       create: {
-        id: "menu_3",
-        date: today,
+        kitchenId: "kitchen-1",
+        menuDate: today,
+        mealType: "LUNCH",
+        recipeId: "recipe-2",
+        plannedServings: 200,
+        actualServings: 190,
+        ghanMultiplier: 2.0,
+        status: "COMPLETED",
+        createdBy: "user-2",
+      },
+    }),
+    prisma.dailyMenu.upsert({
+      where: {
+        kitchenId_menuDate_mealType_recipeId: {
+          kitchenId: "kitchen-1",
+          menuDate: tomorrow,
+          mealType: "BREAKFAST",
+          recipeId: "recipe-5",
+        },
+      },
+      update: {},
+      create: {
+        kitchenId: "kitchen-1",
+        menuDate: tomorrow,
+        mealType: "BREAKFAST",
+        recipeId: "recipe-5",
+        plannedServings: 160,
+        ghanMultiplier: 3.2,
+        status: "PLANNED",
+        createdBy: "user-2",
+      },
+    }),
+    prisma.dailyMenu.upsert({
+      where: {
+        kitchenId_menuDate_mealType_recipeId: {
+          kitchenId: "kitchen-2",
+          menuDate: today,
+          mealType: "DINNER",
+          recipeId: "recipe-4",
+        },
+      },
+      update: {},
+      create: {
+        kitchenId: "kitchen-2",
+        menuDate: today,
         mealType: "DINNER",
-        recipeId: "recipe_5",
-        kitchenId: "kitchen_2",
-        userId: chefUser.id,
-        servings: 90,
-        ghanFactor: 1.1,
-        status: "PLANNED",
-      },
-    }),
-    // Tomorrow's menus
-    prisma.menu.upsert({
-      where: {
-        id: "menu_4",
-      },
-      update: {},
-      create: {
-        id: "menu_4",
-        date: tomorrow,
-        mealType: "BREAKFAST",
-        recipeId: "recipe_2",
-        kitchenId: "kitchen_2",
-        userId: chefUser.id,
-        servings: 80,
-        ghanFactor: 1.0,
-        status: "PLANNED",
-      },
-    }),
-    prisma.menu.upsert({
-      where: {
-        id: "menu_5",
-      },
-      update: {},
-      create: {
-        id: "menu_5",
-        date: tomorrow,
-        mealType: "LUNCH",
-        recipeId: "recipe_4",
-        kitchenId: "kitchen_3",
-        userId: staffUser.id,
-        servings: 150,
-        ghanFactor: 1.5,
-        status: "PLANNED",
+        recipeId: "recipe-4",
+        plannedServings: 100,
+        actualServings: 98,
+        ghanMultiplier: 1.0,
+        status: "COMPLETED",
+        createdBy: "user-4",
       },
     }),
   ])
 
-  console.log("✅ Created sample menus")
-
-  // Create sample reports
-  const sampleReports = await Promise.all([
+  // Create reports
+  console.log("Creating reports...")
+  const reports = await Promise.all([
     prisma.report.upsert({
-      where: { id: "report_1" },
+      where: { id: "report-1" },
       update: {},
       create: {
-        id: "report_1",
+        id: "report-1",
+        title: "Daily Kitchen Report - Main Kitchen",
+        type: "DAILY",
         date: today,
-        kitchenId: "kitchen_1",
-        userId: adminUser.id,
-        visitorCount: 250,
-        mealsCounted: 220,
-        notes: "Good turnout for breakfast and lunch. Ran out of sambhar by 2 PM.",
+        kitchenId: "kitchen-1",
+        totalVisitors: 345,
+        totalMeals: 545,
+        totalCost: 12500.5,
+        notes: "Successful day with high visitor turnout. All meals served on time.",
+        createdBy: "user-2",
       },
     }),
     prisma.report.upsert({
-      where: { id: "report_2" },
+      where: { id: "report-2" },
       update: {},
       create: {
-        id: "report_2",
+        id: "report-2",
+        title: "Daily Kitchen Report - Secondary Kitchen",
+        type: "DAILY",
         date: today,
-        kitchenId: "kitchen_2",
-        userId: chefUser.id,
-        visitorCount: 180,
-        mealsCounted: 170,
-        notes: "Smooth operations. All meals served on time.",
+        kitchenId: "kitchen-2",
+        totalVisitors: 98,
+        totalMeals: 98,
+        totalCost: 2800.25,
+        notes: "Smooth operations with dinner service completed successfully.",
+        createdBy: "user-4",
       },
     }),
   ])
 
-  console.log("✅ Created sample reports")
-
-  console.log("🎉 Database seeded successfully!")
-  console.log("\n📧 Login credentials:")
-  console.log("Admin: admin@kitchen.com / admin123")
-  console.log("Manager: manager1@kitchen.com / password123")
-  console.log("Chef: chef1@kitchen.com / password123")
-  console.log("Staff: staff1@kitchen.com / password123")
+  console.log("✅ Database seeded successfully!")
+  console.log(`Created:`)
+  console.log(`- ${kitchens.length} kitchens`)
+  console.log(`- ${users.length} users`)
+  console.log(`- ${recipes.length} recipes`)
+  console.log(`- ${menus.length} menu items`)
+  console.log(`- ${reports.length} reports`)
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Error seeding database:", e)
+    console.error("❌ Seed failed:", e)
     process.exit(1)
   })
   .finally(async () => {

@@ -1,15 +1,21 @@
 import { z } from "zod"
 
-export const menuSchema = z.object({
-  date: z.date(),
+export const CreateDailyMenuSchema = z.object({
+  kitchenId: z.string().min(1, "Kitchen is required"),
+  menuDate: z.date(),
   mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]),
   recipeId: z.string().min(1, "Recipe is required"),
-  kitchenId: z.string().min(1, "Kitchen is required"),
-  servings: z.number().positive("Servings must be positive"),
-  ghanFactor: z.number().positive("Ghan factor must be positive").default(1.0),
-  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).default("PLANNED"),
+  plannedServings: z.number().min(1, "Planned servings must be at least 1").max(10000),
+  ghanMultiplier: z.number().min(0.1, "Ghan multiplier must be at least 0.1").max(100),
 })
 
-export const updateMenuSchema = menuSchema.partial()
+export const UpdateDailyMenuSchema = z.object({
+  id: z.string().min(1, "Menu ID is required"),
+  actualServings: z.number().min(0).max(10000).optional(),
+  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
+  plannedServings: z.number().min(1).max(10000).optional(),
+  ghanMultiplier: z.number().min(0.1).max(100).optional(),
+})
 
-export type MenuFormData = z.infer<typeof menuSchema>
+export type CreateDailyMenuInput = z.infer<typeof CreateDailyMenuSchema>
+export type UpdateDailyMenuInput = z.infer<typeof UpdateDailyMenuSchema>
