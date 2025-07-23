@@ -1,31 +1,35 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
+import { z } from "zod"
+
+const ReportSchema = z.object({
+  type: z.enum(["DAILY", "WEEKLY", "MONTHLY"]),
+  title: z.string().min(1),
+  content: z.string(),
+})
 
 export async function getReports() {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
   const reports = await prisma.report.findMany({
     where: {
-      ...(session.user.kitchenId && { kitchenId: session.user.kitchenId }),
+      kitchenId: session.user.kitchenId,
     },
     include: {
-      kitchen: true,
-      user: {
+      createdBy: {
         select: {
           name: true,
-          email: true,
         },
       },
     },
     orderBy: {
-      date: "desc",
+      createdAt: "desc",
     },
   })
 
@@ -34,198 +38,139 @@ export async function getReports() {
 
 export async function getReport(id: string) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  const report = await prisma.report.findUnique({
-    where: { id },
+  const report = await prisma.report.findFirst({
+    where: {
+      id,
+      kitchenId: session.user.kitchenId,
+    },
     include: {
-      kitchen: true,
-      user: {
+      createdBy: {
         select: {
           name: true,
-          email: true,
         },
       },
     },
   })
 
-  if (!report) {
-    return null
-  }
-
-  // Check permissions
-  if (session.user.kitchenId && session.user.kitchenId !== report.kitchenId) {
-    throw new Error("You can only view reports for your assigned kitchen")
-  }
-
   return report
 }
 
-export async function createReport(data: {
-  date: Date
-  kitchenId: string
-  visitorCount: number
-  mealsCounted: number
-  notes?: string
-}) {
+export async function createReport(data: z.infer<typeof ReportSchema>) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.id || !session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  // Check permissions
-  if (session.user.kitchenId && session.user.kitchenId !== data.kitchenId) {
-    throw new Error("You can only create reports for your assigned kitchen")
+  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
   }
 
-  try {
-    const report = await prisma.report.create({
-      data: {
-        date: data.date,
-        kitchenId: data.kitchenId,
-        userId: session.user.id,
-        visitorCount: data.visitorCount,
-        mealsCounted: data.mealsCounted,
-        notes: data.notes,
-      },
-      include: {
-        kitchen: true,
-      },
-    })
+  const validatedData = ReportSchema.parse(data)
 
-    revalidatePath("/reports")
-    return { success: true, report }
-  } catch (error) {
-    console.error("Error creating report:", error)
-    return { success: false, error: "Failed to create report" }
-  }
+  const report = await prisma.report.create({
+    data: {
+      ...validatedData,
+      date: new Date(),
+      kitchenId: session.user.kitchenId,
+      createdById: session.user.id,
+    },
+  })
+
+  revalidatePath("/reports")
+  return report
 }
 
-export async function updateReport(
-  id: string,
-  data: {
-    visitorCount?: number
-    mealsCounted?: number
-    notes?: string
-  },
-) {
+export async function updateReport(id: string, data: z.infer<typeof ReportSchema>) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.id || !session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  try {
-    const existingReport = await prisma.report.findUnique({
-      where: { id },
-    })
-
-    if (!existingReport) {
-      return { success: false, error: "Report not found" }
-    }
-
-    // Check permissions
-    if (session.user.kitchenId && session.user.kitchenId !== existingReport.kitchenId) {
-      throw new Error("You can only update reports for your assigned kitchen")
-    }
-
-    const report = await prisma.report.update({
-      where: { id },
-      data,
-      include: {
-        kitchen: true,
-      },
-    })
-
-    revalidatePath("/reports")
-    return { success: true, report }
-  } catch (error) {
-    console.error("Error updating report:", error)
-    return { success: false, error: "Failed to update report" }
+  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
   }
+
+  const validatedData = ReportSchema.parse(data)
+
+  const report = await prisma.report.update({
+    where: {
+      id,
+      kitchenId: session.user.kitchenId,
+    },
+    data: validatedData,
+  })
+
+  revalidatePath("/reports")
+  return report
 }
 
 export async function deleteReport(id: string) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  try {
-    const existingReport = await prisma.report.findUnique({
-      where: { id },
-    })
-
-    if (!existingReport) {
-      return { success: false, error: "Report not found" }
-    }
-
-    // Check permissions
-    if (session.user.kitchenId && session.user.kitchenId !== existingReport.kitchenId) {
-      throw new Error("You can only delete reports for your assigned kitchen")
-    }
-
-    await prisma.report.delete({
-      where: { id },
-    })
-
-    revalidatePath("/reports")
-    return { success: true }
-  } catch (error) {
-    console.error("Error deleting report:", error)
-    return { success: false, error: "Failed to delete report" }
+  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
   }
+
+  await prisma.report.delete({
+    where: {
+      id,
+      kitchenId: session.user.kitchenId,
+    },
+  })
+
+  revalidatePath("/reports")
 }
 
 export async function getReportStats() {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
 
-  const thirtyDaysAgo = new Date(today)
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-  const [totalReports, todayReports, monthlyStats] = await Promise.all([
+  const [totalReports, monthlyReports, recentReports] = await Promise.all([
     prisma.report.count({
       where: {
-        ...(session.user.kitchenId && { kitchenId: session.user.kitchenId }),
+        kitchenId: session.user.kitchenId,
       },
     }),
     prisma.report.count({
       where: {
-        date: today,
-        ...(session.user.kitchenId && { kitchenId: session.user.kitchenId }),
-      },
-    }),
-    prisma.report.aggregate({
-      where: {
-        date: {
-          gte: thirtyDaysAgo,
+        kitchenId: session.user.kitchenId,
+        createdAt: {
+          gte: startOfMonth,
         },
-        ...(session.user.kitchenId && { kitchenId: session.user.kitchenId }),
       },
-      _sum: {
-        visitorCount: true,
-        mealsCounted: true,
+    }),
+    prisma.report.findMany({
+      where: {
+        kitchenId: session.user.kitchenId,
       },
-      _avg: {
-        visitorCount: true,
-        mealsCounted: true,
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        createdAt: true,
       },
     }),
   ])
 
   return {
     totalReports,
-    todayReports,
-    monthlyVisitors: monthlyStats._sum.visitorCount || 0,
-    monthlyMeals: monthlyStats._sum.mealsCounted || 0,
-    avgDailyVisitors: Math.round(monthlyStats._avg.visitorCount || 0),
-    avgDailyMeals: Math.round(monthlyStats._avg.mealsCounted || 0),
+    monthlyReports,
+    recentReports,
   }
 }

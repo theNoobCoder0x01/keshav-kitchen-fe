@@ -1,38 +1,49 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
+import { z } from "zod"
 
-export async function getDailyMenus(date?: Date) {
+const MenuSchema = z.object({
+  date: z.string(),
+  mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]),
+  recipeId: z.string(),
+  plannedServings: z.number().min(1),
+})
+
+export async function getDailyMenus(date?: string) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  const targetDate = date || new Date()
-  targetDate.setHours(0, 0, 0, 0)
+  const targetDate = date ? new Date(date) : new Date()
 
   const menus = await prisma.menu.findMany({
     where: {
-      date: targetDate,
-      ...(session.user.kitchenId && { kitchenId: session.user.kitchenId }),
+      kitchenId: session.user.kitchenId,
+      date: {
+        gte: new Date(targetDate.setHours(0, 0, 0, 0)),
+        lt: new Date(targetDate.setHours(23, 59, 59, 999)),
+      },
     },
     include: {
       recipe: {
-        include: {
-          ingredients: true,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          costPerServing: true,
         },
       },
-      kitchen: true,
-      user: true,
     },
-    orderBy: [{ mealType: "asc" }, { createdAt: "asc" }],
+    orderBy: {
+      mealType: "asc",
+    },
   })
 
-  // Group by meal type
-  const groupedMenus = menus.reduce(
+  return menus.reduce(
     (acc, menu) => {
       if (!acc[menu.mealType]) {
         acc[menu.mealType] = []
@@ -42,175 +53,128 @@ export async function getDailyMenus(date?: Date) {
     },
     {} as Record<string, typeof menus>,
   )
-
-  return groupedMenus
 }
 
 export async function getMenuStats() {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()))
+  const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6))
 
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  const [todayMenus, tomorrowMenus, totalRecipes, totalKitchens] = await Promise.all([
+  const [todayMenus, weekMenus, totalRecipes] = await Promise.all([
     prisma.menu.count({
       where: {
-        date: today,
-        ...(session.user.kitchenId && { kitchenId: session.user.kitchenId }),
+        kitchenId: session.user.kitchenId,
+        date: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          lt: new Date(new Date().setHours(23, 59, 59, 999)),
+        },
       },
     }),
-    prisma.menu.count({
+    prisma.menu.findMany({
       where: {
-        date: tomorrow,
-        ...(session.user.kitchenId && { kitchenId: session.user.kitchenId }),
+        kitchenId: session.user.kitchenId,
+        date: {
+          gte: startOfWeek,
+          lte: endOfWeek,
+        },
+      },
+      select: {
+        plannedServings: true,
+        actualServings: true,
       },
     }),
     prisma.recipe.count({
-      ...(session.user.kitchenId && {
-        where: {
-          user: {
-            kitchenId: session.user.kitchenId,
-          },
+      where: {
+        user: {
+          kitchenId: session.user.kitchenId,
         },
-      }),
+      },
     }),
-    session.user.role === "ADMIN" ? prisma.kitchen.count() : 1,
   ])
+
+  const totalPlannedServings = weekMenus.reduce((sum, menu) => sum + (menu.plannedServings || 0), 0)
+  const totalActualServings = weekMenus.reduce((sum, menu) => sum + (menu.actualServings || 0), 0)
 
   return {
     todayMenus,
-    tomorrowMenus,
+    weeklyServings: totalPlannedServings,
+    actualServings: totalActualServings,
     totalRecipes,
-    totalKitchens,
   }
 }
 
-export async function createDailyMenu(data: {
-  date: Date
-  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK"
-  recipeId: string
-  kitchenId: string
-  servings: number
-  ghanFactor: number
-  notes?: string
-}) {
+export async function createDailyMenu(data: z.infer<typeof MenuSchema>) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  // Check permissions
-  if (session.user.kitchenId && session.user.kitchenId !== data.kitchenId) {
-    throw new Error("You can only create menus for your assigned kitchen")
+  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
   }
 
-  try {
-    const menu = await prisma.menu.create({
-      data: {
-        date: data.date,
-        mealType: data.mealType,
-        recipeId: data.recipeId,
-        kitchenId: data.kitchenId,
-        userId: session.user.id,
-        servings: data.servings,
-        ghanFactor: data.ghanFactor,
-        status: "PLANNED",
-        notes: data.notes,
+  const validatedData = MenuSchema.parse(data)
+
+  const menu = await prisma.menu.create({
+    data: {
+      ...validatedData,
+      date: new Date(validatedData.date),
+      kitchenId: session.user.kitchenId,
+    },
+    include: {
+      recipe: {
+        select: {
+          name: true,
+          costPerServing: true,
+        },
       },
-      include: {
-        recipe: true,
-        kitchen: true,
-      },
-    })
+    },
+  })
 
-    revalidatePath("/")
-    return { success: true, menu }
-  } catch (error) {
-    console.error("Error creating menu:", error)
-    return { success: false, error: "Failed to create menu" }
-  }
+  revalidatePath("/")
+  return menu
 }
 
-export async function updateDailyMenu(
-  id: string,
-  data: {
-    servings?: number
-    ghanFactor?: number
-    status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
-    actualCount?: number
-    notes?: string
-  },
-) {
+export async function updateDailyMenu(id: string, data: Partial<z.infer<typeof MenuSchema>>) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  try {
-    const existingMenu = await prisma.menu.findUnique({
-      where: { id },
-    })
-
-    if (!existingMenu) {
-      return { success: false, error: "Menu not found" }
-    }
-
-    // Check permissions
-    if (session.user.kitchenId && session.user.kitchenId !== existingMenu.kitchenId) {
-      throw new Error("You can only update menus for your assigned kitchen")
-    }
-
-    const menu = await prisma.menu.update({
-      where: { id },
-      data,
-      include: {
-        recipe: true,
-        kitchen: true,
-      },
-    })
-
-    revalidatePath("/")
-    return { success: true, menu }
-  } catch (error) {
-    console.error("Error updating menu:", error)
-    return { success: false, error: "Failed to update menu" }
+  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
   }
+
+  const menu = await prisma.menu.update({
+    where: { id },
+    data: {
+      ...data,
+      date: data.date ? new Date(data.date) : undefined,
+    },
+  })
+
+  revalidatePath("/")
+  return menu
 }
 
 export async function deleteDailyMenu(id: string) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  try {
-    const existingMenu = await prisma.menu.findUnique({
-      where: { id },
-    })
-
-    if (!existingMenu) {
-      return { success: false, error: "Menu not found" }
-    }
-
-    // Check permissions
-    if (session.user.kitchenId && session.user.kitchenId !== existingMenu.kitchenId) {
-      throw new Error("You can only delete menus for your assigned kitchen")
-    }
-
-    await prisma.menu.delete({
-      where: { id },
-    })
-
-    revalidatePath("/")
-    return { success: true }
-  } catch (error) {
-    console.error("Error deleting menu:", error)
-    return { success: false, error: "Failed to delete menu" }
+  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
   }
+
+  await prisma.menu.delete({
+    where: { id },
+  })
+
+  revalidatePath("/")
 }

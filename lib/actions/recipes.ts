@@ -1,23 +1,35 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
+import { z } from "zod"
+
+const RecipeSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(1),
+  ingredients: z.string(),
+  instructions: z.string().min(1),
+  servings: z.number().min(1),
+  costPerServing: z.number().min(0),
+})
 
 export async function getRecipes() {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
   const recipes = await prisma.recipe.findMany({
+    where: {
+      user: {
+        kitchenId: session.user.kitchenId,
+      },
+    },
     include: {
-      ingredients: true,
       user: {
         select: {
           name: true,
-          email: true,
         },
       },
       _count: {
@@ -36,28 +48,22 @@ export async function getRecipes() {
 
 export async function getRecipe(id: string) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  const recipe = await prisma.recipe.findUnique({
-    where: { id },
+  const recipe = await prisma.recipe.findFirst({
+    where: {
+      id,
+      user: {
+        kitchenId: session.user.kitchenId,
+      },
+    },
     include: {
-      ingredients: true,
       user: {
         select: {
           name: true,
-          email: true,
         },
-      },
-      menus: {
-        include: {
-          kitchen: true,
-        },
-        orderBy: {
-          date: "desc",
-        },
-        take: 10,
       },
     },
   })
@@ -65,183 +71,150 @@ export async function getRecipe(id: string) {
   return recipe
 }
 
-export async function createRecipe(data: {
-  name: string
-  description?: string
-  instructions?: string
-  prepTime?: number
-  cookTime?: number
-  servings?: number
-  category?: string
-  ingredients: Array<{
-    name: string
-    quantity: number
-    unit: string
-    costPerUnit?: number
-  }>
-}) {
+export async function createRecipe(data: z.infer<typeof RecipeSchema>) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized")
   }
 
-  try {
-    const recipe = await prisma.recipe.create({
-      data: {
-        name: data.name,
-        description: data.description,
-        instructions: data.instructions,
-        prepTime: data.prepTime,
-        cookTime: data.cookTime,
-        servings: data.servings,
-        category: data.category,
-        userId: session.user.id,
-        ingredients: {
-          create: data.ingredients,
-        },
-      },
-      include: {
-        ingredients: true,
-      },
-    })
+  const validatedData = RecipeSchema.parse(data)
 
-    revalidatePath("/recipes")
-    return { success: true, recipe }
-  } catch (error) {
-    console.error("Error creating recipe:", error)
-    return { success: false, error: "Failed to create recipe" }
-  }
+  const recipe = await prisma.recipe.create({
+    data: {
+      ...validatedData,
+      userId: session.user.id,
+    },
+  })
+
+  revalidatePath("/recipes")
+  return recipe
 }
 
-export async function updateRecipe(
-  id: string,
-  data: {
-    name?: string
-    description?: string
-    instructions?: string
-    prepTime?: number
-    cookTime?: number
-    servings?: number
-    category?: string
-    ingredients?: Array<{
-      id?: string
-      name: string
-      quantity: number
-      unit: string
-      costPerUnit?: number
-    }>
-  },
-) {
+export async function updateRecipe(id: string, data: z.infer<typeof RecipeSchema>) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized")
   }
 
-  try {
-    const existingRecipe = await prisma.recipe.findUnique({
-      where: { id },
-      include: { ingredients: true },
-    })
+  const validatedData = RecipeSchema.parse(data)
 
-    if (!existingRecipe) {
-      return { success: false, error: "Recipe not found" }
-    }
-
-    // Check permissions
-    if (existingRecipe.userId !== session.user.id && session.user.role !== "ADMIN") {
-      throw new Error("You can only update your own recipes")
-    }
-
-    const recipe = await prisma.recipe.update({
-      where: { id },
-      data: {
-        name: data.name,
-        description: data.description,
-        instructions: data.instructions,
-        prepTime: data.prepTime,
-        cookTime: data.cookTime,
-        servings: data.servings,
-        category: data.category,
-        ...(data.ingredients && {
-          ingredients: {
-            deleteMany: {},
-            create: data.ingredients.map((ing) => ({
-              name: ing.name,
-              quantity: ing.quantity,
-              unit: ing.unit,
-              costPerUnit: ing.costPerUnit,
-            })),
+  // Check if user owns the recipe or has admin/manager role
+  const recipe = await prisma.recipe.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: session.user.id },
+        {
+          user: {
+            kitchenId: session.user.kitchenId,
           },
-        }),
-      },
-      include: {
-        ingredients: true,
-      },
-    })
+        },
+      ],
+    },
+  })
 
-    revalidatePath("/recipes")
-    return { success: true, recipe }
-  } catch (error) {
-    console.error("Error updating recipe:", error)
-    return { success: false, error: "Failed to update recipe" }
+  if (!recipe) {
+    throw new Error("Recipe not found or unauthorized")
   }
+
+  if (recipe.userId !== session.user.id && session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
+  }
+
+  const updatedRecipe = await prisma.recipe.update({
+    where: { id },
+    data: validatedData,
+  })
+
+  revalidatePath("/recipes")
+  return updatedRecipe
 }
 
 export async function deleteRecipe(id: string) {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized")
   }
 
-  try {
-    const existingRecipe = await prisma.recipe.findUnique({
-      where: { id },
-    })
+  // Check if user owns the recipe or has admin/manager role
+  const recipe = await prisma.recipe.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: session.user.id },
+        {
+          user: {
+            kitchenId: session.user.kitchenId,
+          },
+        },
+      ],
+    },
+  })
 
-    if (!existingRecipe) {
-      return { success: false, error: "Recipe not found" }
-    }
-
-    // Check permissions
-    if (existingRecipe.userId !== session.user.id && session.user.role !== "ADMIN") {
-      throw new Error("You can only delete your own recipes")
-    }
-
-    await prisma.recipe.delete({
-      where: { id },
-    })
-
-    revalidatePath("/recipes")
-    return { success: true }
-  } catch (error) {
-    console.error("Error deleting recipe:", error)
-    return { success: false, error: "Failed to delete recipe" }
+  if (!recipe) {
+    throw new Error("Recipe not found or unauthorized")
   }
+
+  if (recipe.userId !== session.user.id && session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+    throw new Error("Insufficient permissions")
+  }
+
+  await prisma.recipe.delete({
+    where: { id },
+  })
+
+  revalidatePath("/recipes")
 }
 
 export async function getRecipeStats() {
   const session = await auth()
-  if (!session?.user) {
-    redirect("/auth/signin")
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
   }
 
-  const [totalRecipes, myRecipes, totalIngredients, avgCookTime] = await Promise.all([
-    prisma.recipe.count(),
+  const [totalRecipes, avgCost, mostUsed] = await Promise.all([
     prisma.recipe.count({
-      where: { userId: session.user.id },
-    }),
-    prisma.ingredient.count(),
-    prisma.recipe.aggregate({
-      _avg: {
-        cookTime: true,
+      where: {
+        user: {
+          kitchenId: session.user.kitchenId,
+        },
       },
+    }),
+    prisma.recipe.aggregate({
+      where: {
+        user: {
+          kitchenId: session.user.kitchenId,
+        },
+      },
+      _avg: {
+        costPerServing: true,
+      },
+    }),
+    prisma.recipe.findMany({
+      where: {
+        user: {
+          kitchenId: session.user.kitchenId,
+        },
+      },
+      include: {
+        _count: {
+          select: {
+            menus: true,
+          },
+        },
+      },
+      orderBy: {
+        menus: {
+          _count: "desc",
+        },
+      },
+      take: 1,
     }),
   ])
 
   return {
     totalRecipes,
-    myRecipes,
-    totalIngredients,
-    avgCookTime: Math.round(avgCookTime._avg.cookTime || 0),
+    avgCostPerServing: avgCost._avg.costPerServing || 0,
+    mostUsedRecipe: mostUsed[0] || null,
   }
 }
