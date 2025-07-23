@@ -2,6 +2,7 @@
   "name": "keshav-kitchen-fe",
   "version": "0.1.0",
   "private": true,
+  "description": "Keshav Kitchen Frontend",
   "scripts": {
     "build": "next build",
     "db:generate": "dotenv -e .env.local -- prisma generate",
