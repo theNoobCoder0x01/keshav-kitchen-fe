@@ -1,16 +1,23 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ChevronDown, Mail, Eye, MoreHorizontal } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ChevronDown, Mail, Eye, MoreHorizontal } from "lucide-react";
 
 interface Recipe {
-  name: string
-  type: string
-  issuedDate: string
+  name: string;
+  type: string;
+  issuedDate: string;
 }
 
 interface RecipesTableProps {
-  recipes: Recipe[]
+  recipes: Recipe[];
 }
 
 export function RecipesTable({ recipes }: RecipesTableProps) {
@@ -38,24 +45,47 @@ export function RecipesTable({ recipes }: RecipesTableProps) {
                   <ChevronDown className="w-4 h-4" />
                 </div>
               </TableHead>
-              <TableHead className="text-[#4b465c] font-semibold py-4 px-6">ACTIONS</TableHead>
+              <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
+                ACTIONS
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {recipes.map((recipe, index) => (
-              <TableRow key={index} className="border-[#dbdade] hover:bg-[#f8f7fa]">
-                <TableCell className="py-4 px-6 text-[#4b465c]">{recipe.name}</TableCell>
-                <TableCell className="py-4 px-6 text-[#4b465c]">{recipe.type}</TableCell>
-                <TableCell className="py-4 px-6 text-[#4b465c]">{recipe.issuedDate}</TableCell>
+              <TableRow
+                key={index}
+                className="border-[#dbdade] hover:bg-[#f8f7fa]"
+              >
+                <TableCell className="py-4 px-6 text-[#4b465c]">
+                  {recipe.name}
+                </TableCell>
+                <TableCell className="py-4 px-6 text-[#4b465c]">
+                  {recipe.type}
+                </TableCell>
+                <TableCell className="py-4 px-6 text-[#4b465c]">
+                  {recipe.issuedDate}
+                </TableCell>
                 <TableCell className="py-4 px-6">
                   <div className="flex items-center space-x-2">
-                    <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                    >
                       <Mail className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                    >
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                    >
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </div>
@@ -67,7 +97,9 @@ export function RecipesTable({ recipes }: RecipesTableProps) {
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-[#dbdade]">
-          <p className="text-sm text-[#4b465c]/70">Showing 1 to 10 of 100 entries</p>
+          <p className="text-sm text-[#4b465c]/70">
+            Showing 1 to 10 of 100 entries
+          </p>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -76,7 +108,10 @@ export function RecipesTable({ recipes }: RecipesTableProps) {
             >
               Previous
             </Button>
-            <Button size="sm" className="bg-[#674af5] hover:bg-[#674af5]/90 text-white w-8 h-8 p-0">
+            <Button
+              size="sm"
+              className="bg-[#674af5] hover:bg-[#674af5]/90 text-white w-8 h-8 p-0"
+            >
               1
             </Button>
             {[2, 3, 4, 5].map((page) => (
@@ -100,5 +135,5 @@ export function RecipesTable({ recipes }: RecipesTableProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

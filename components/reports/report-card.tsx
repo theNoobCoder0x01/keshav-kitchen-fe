@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Download } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Download } from "lucide-react";
 
 interface ReportItem {
-  name: string
-  weight: string
-  quantity: string
+  name: string;
+  weight: string;
+  quantity: string;
 }
 
 interface ReportCardProps {
-  title: string
-  items: ReportItem[]
-  onDownload: () => void
+  title: string;
+  items: ReportItem[];
+  onDownload: () => void;
 }
 
 export function ReportCard({ title, items, onDownload }: ReportCardProps) {
@@ -55,5 +55,5 @@ export function ReportCard({ title, items, onDownload }: ReportCardProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

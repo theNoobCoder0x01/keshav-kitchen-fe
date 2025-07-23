@@ -1,9 +1,15 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Mail, Github, Twitter, Shield } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Mail, Github, Twitter, Shield } from "lucide-react";
 
 export default function Component() {
   return (
@@ -16,9 +22,12 @@ export default function Component() {
           </div>
 
           <div className="space-y-2">
-            <CardTitle className="text-2xl font-bold text-[#4b465c]">Subscribe to Our Newsletter</CardTitle>
+            <CardTitle className="text-2xl font-bold text-[#4b465c]">
+              Subscribe to Our Newsletter
+            </CardTitle>
             <CardDescription className="text-[#4b465c]/70 text-base">
-              Get the latest updates, exclusive content, and insider tips delivered straight to your inbox.
+              Get the latest updates, exclusive content, and insider tips
+              delivered straight to your inbox.
             </CardDescription>
           </div>
         </CardHeader>
@@ -27,11 +36,17 @@ export default function Component() {
           {/* Social Sign-up Options */}
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="h-11 border-[#dbdade] hover:bg-[#f8f7fa] bg-transparent">
+              <Button
+                variant="outline"
+                className="h-11 border-[#dbdade] hover:bg-[#f8f7fa] bg-transparent"
+              >
                 <Github className="w-4 h-4 mr-2" />
                 GitHub
               </Button>
-              <Button variant="outline" className="h-11 border-[#dbdade] hover:bg-[#f8f7fa] bg-transparent">
+              <Button
+                variant="outline"
+                className="h-11 border-[#dbdade] hover:bg-[#f8f7fa] bg-transparent"
+              >
                 <Twitter className="w-4 h-4 mr-2" />
                 Twitter
               </Button>
@@ -42,7 +57,9 @@ export default function Component() {
                 <Separator className="w-full bg-[#dbdade]" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-[#4b465c]/60">Or continue with email</span>
+                <span className="bg-white px-2 text-[#4b465c]/60">
+                  Or continue with email
+                </span>
               </div>
             </div>
           </div>
@@ -73,15 +90,24 @@ export default function Component() {
           {/* Additional Links */}
           <div className="text-center space-y-3">
             <div className="flex justify-center space-x-4 text-sm">
-              <a href="#" className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors">
+              <a
+                href="#"
+                className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors"
+              >
                 Terms
               </a>
               <span className="text-[#dbdade]">•</span>
-              <a href="#" className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors">
+              <a
+                href="#"
+                className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors"
+              >
                 Privacy
               </a>
               <span className="text-[#dbdade]">•</span>
-              <a href="#" className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors">
+              <a
+                href="#"
+                className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors"
+              >
                 Help
               </a>
             </div>
@@ -95,5 +121,5 @@ export default function Component() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

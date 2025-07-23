@@ -1,20 +1,29 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Home, ChefHat, Utensils, ChevronDown, Calendar, Users, Download, Bell } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import {
+  Home,
+  ChefHat,
+  Utensils,
+  ChevronDown,
+  Calendar,
+  Users,
+  Download,
+  Bell,
+} from "lucide-react";
 
 export default function ReportsPage() {
-  const tabs = ["Thakorji", "Premvati", "Aarsh", "Mandir", "Prasad"]
+  const tabs = ["Thakorji", "Premvati", "Aarsh", "Mandir", "Prasad"];
 
   const menuItems = {
     breakfast: Array(6).fill("Idali Sambhar"),
     lunch: Array(6).fill("Idali Sambhar"),
     dinner: Array(6).fill("Idali Sambhar"),
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#f8f7fa]">
@@ -25,7 +34,9 @@ export default function ReportsPage() {
             {/* Logo */}
             <div className="flex items-center space-x-2">
               <h1 className="text-2xl font-bold text-[#e26b2b]">KESHAV</h1>
-              <span className="text-lg font-medium text-[#e26b2b] italic">Kitchen</span>
+              <span className="text-lg font-medium text-[#e26b2b] italic">
+                Kitchen
+              </span>
             </div>
           </div>
 
@@ -39,7 +50,9 @@ export default function ReportsPage() {
             </div>
             <Avatar className="w-8 h-8">
               <AvatarImage src="/placeholder.svg?height=32&width=32" />
-              <AvatarFallback className="bg-[#674af5] text-white text-sm">U</AvatarFallback>
+              <AvatarFallback className="bg-[#674af5] text-white text-sm">
+                U
+              </AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -55,7 +68,9 @@ export default function ReportsPage() {
                 <span>Menu</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Badge className="bg-[#674af5] text-white text-xs px-2 py-1">3</Badge>
+                <Badge className="bg-[#674af5] text-white text-xs px-2 py-1">
+                  3
+                </Badge>
                 <ChevronDown className="w-4 h-4" />
               </div>
             </div>
@@ -87,7 +102,9 @@ export default function ReportsPage() {
                 <div className="flex items-center space-x-3">
                   <Calendar className="w-5 h-5 text-[#674af5]" />
                   <div>
-                    <h3 className="text-lg font-semibold text-[#674af5]">Sunday, 20 , Jan 2021</h3>
+                    <h3 className="text-lg font-semibold text-[#674af5]">
+                      Sunday, 20 , Jan 2021
+                    </h3>
                     <p className="text-sm text-[#4b465c]/70">Pagan Sud Panam</p>
                   </div>
                 </div>
@@ -100,14 +117,21 @@ export default function ReportsPage() {
                   { label: "Lunch", value: "200", icon: Users },
                   { label: "Dinner", value: "150", icon: Users },
                 ].map((stat, index) => (
-                  <Card key={index} className="bg-white border-[#dbdade] p-4 min-w-[120px]">
+                  <Card
+                    key={index}
+                    className="bg-white border-[#dbdade] p-4 min-w-[120px]"
+                  >
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-[#00cfe8]/10 rounded-lg flex items-center justify-center">
                         <stat.icon className="w-5 h-5 text-[#00cfe8]" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-[#4b465c]">{stat.value}</p>
-                        <p className="text-sm text-[#4b465c]/70">{stat.label}</p>
+                        <p className="text-2xl font-bold text-[#4b465c]">
+                          {stat.value}
+                        </p>
+                        <p className="text-sm text-[#4b465c]/70">
+                          {stat.label}
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -148,7 +172,9 @@ export default function ReportsPage() {
               <Card className="bg-white border-[#dbdade]">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-[#4b465c]">Breakfast</h3>
+                    <h3 className="text-lg font-semibold text-[#4b465c]">
+                      Breakfast
+                    </h3>
                     <Button
                       size="sm"
                       variant="outline"
@@ -168,7 +194,9 @@ export default function ReportsPage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-xs text-[#4b465c]/70">Quantity</label>
+                          <label className="text-xs text-[#4b465c]/70">
+                            Quantity
+                          </label>
                           <Input
                             defaultValue="500 Kg"
                             className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20 text-sm"
@@ -185,7 +213,9 @@ export default function ReportsPage() {
               <Card className="bg-white border-[#dbdade]">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-[#4b465c]">Lunch</h3>
+                    <h3 className="text-lg font-semibold text-[#4b465c]">
+                      Lunch
+                    </h3>
                     <Button
                       size="sm"
                       variant="outline"
@@ -205,7 +235,9 @@ export default function ReportsPage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-xs text-[#4b465c]/70">Quantity</label>
+                          <label className="text-xs text-[#4b465c]/70">
+                            Quantity
+                          </label>
                           <Input
                             defaultValue="500 Kg"
                             className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20 text-sm"
@@ -222,7 +254,9 @@ export default function ReportsPage() {
               <Card className="bg-white border-[#dbdade]">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-[#4b465c]">Dinner</h3>
+                    <h3 className="text-lg font-semibold text-[#4b465c]">
+                      Dinner
+                    </h3>
                     <Button
                       size="sm"
                       variant="outline"
@@ -242,7 +276,9 @@ export default function ReportsPage() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-xs text-[#4b465c]/70">Quantity</label>
+                          <label className="text-xs text-[#4b465c]/70">
+                            Quantity
+                          </label>
                           <Input
                             defaultValue="500 Kg"
                             className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20 text-sm"
@@ -259,5 +295,5 @@ export default function ReportsPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }

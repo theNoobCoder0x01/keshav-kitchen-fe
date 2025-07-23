@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { MenuCard } from "./menu-card"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2 } from "lucide-react"
-import { useState } from "react"
+import { MenuCard } from "./menu-card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 interface MenuItem {
-  id: string
-  name: string
-  weight?: string
-  isAddItem?: boolean
+  id: string;
+  name: string;
+  weight?: string;
+  isAddItem?: boolean;
 }
 
 interface MenuGridProps {
-  onAddMeal: (mealType: string) => void
+  onAddMeal: (mealType: string) => void;
 }
 
 export function MenuGrid({ onAddMeal }: MenuGridProps) {
@@ -42,40 +42,56 @@ export function MenuGrid({ onAddMeal }: MenuGridProps) {
       { id: "d5", name: "Idali Sambhar", weight: "25 Kg" },
       { id: "d6", name: "Idali Sambhar", weight: "25 Kg" },
     ],
-  })
+  });
 
-  const [extraItems, setExtraItems] = useState([{ id: "e1", name: "Save", weight: "1000 Kg" }])
+  const [extraItems, setExtraItems] = useState([
+    { id: "e1", name: "Save", weight: "1000 Kg" },
+  ]);
 
-  const handleEditItem = (mealType: keyof typeof menuData, updatedItem: MenuItem) => {
+  const handleEditItem = (
+    mealType: keyof typeof menuData,
+    updatedItem: MenuItem,
+  ) => {
     setMenuData((prev) => ({
       ...prev,
-      [mealType]: prev[mealType].map((item) => (item.id === updatedItem.id ? updatedItem : item)),
-    }))
-  }
+      [mealType]: prev[mealType].map((item) =>
+        item.id === updatedItem.id ? updatedItem : item,
+      ),
+    }));
+  };
 
-  const handleDeleteItem = (mealType: keyof typeof menuData, itemId: string) => {
+  const handleDeleteItem = (
+    mealType: keyof typeof menuData,
+    itemId: string,
+  ) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       setMenuData((prev) => ({
         ...prev,
         [mealType]: prev[mealType].filter((item) => item.id !== itemId),
-      }))
+      }));
     }
-  }
+  };
 
   const handleEditExtraItem = (updatedItem: MenuItem) => {
-    setExtraItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)))
-  }
+    setExtraItems((prev) =>
+      prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+    );
+  };
 
   const handleDeleteExtraItem = (itemId: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      setExtraItems((prev) => prev.filter((item) => item.id !== itemId))
+      setExtraItems((prev) => prev.filter((item) => item.id !== itemId));
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-6">
-        <MenuCard title="Breakfast" items={menuData.breakfast} onAdd={() => onAddMeal("Breakfast")} />
+        <MenuCard
+          title="Breakfast"
+          items={menuData.breakfast}
+          onAdd={() => onAddMeal("Breakfast")}
+        />
         <MenuCard
           title="Lunch"
           items={menuData.lunch}
@@ -111,7 +127,10 @@ export function MenuGrid({ onAddMeal }: MenuGridProps) {
           </div>
           <div className="mt-4 space-y-3">
             {extraItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-2 hover:bg-[#f8f7fa] rounded-lg">
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-2 hover:bg-[#f8f7fa] rounded-lg"
+              >
                 <div>
                   <p className="text-[#4b465c] font-medium">{item.name}</p>
                   <p className="text-sm text-[#4b465c]/70">{item.weight}</p>
@@ -122,9 +141,9 @@ export function MenuGrid({ onAddMeal }: MenuGridProps) {
                     variant="ghost"
                     className="w-8 h-8 p-0 text-[#674af5] hover:bg-[#674af5]/10"
                     onClick={() => {
-                      const newName = prompt("Edit item name:", item.name)
+                      const newName = prompt("Edit item name:", item.name);
                       if (newName && newName.trim()) {
-                        handleEditExtraItem({ ...item, name: newName.trim() })
+                        handleEditExtraItem({ ...item, name: newName.trim() });
                       }
                     }}
                   >
@@ -145,5 +164,5 @@ export function MenuGrid({ onAddMeal }: MenuGridProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

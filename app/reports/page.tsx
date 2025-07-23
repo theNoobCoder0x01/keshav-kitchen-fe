@@ -1,40 +1,64 @@
-"use client"
+"use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { DateSelector } from "@/components/ui/date-selector"
-import { StatsGrid } from "@/components/ui/stats-grid"
-import { TabNavigation } from "@/components/ui/tab-navigation"
-import { PageHeader } from "@/components/ui/page-header"
-import { ReportsGrid } from "@/components/reports/reports-grid"
-import { Button } from "@/components/ui/button"
-import { Users, Download } from "lucide-react"
-import { useState } from "react"
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { DateSelector } from "@/components/ui/date-selector";
+import { StatsGrid } from "@/components/ui/stats-grid";
+import { TabNavigation } from "@/components/ui/tab-navigation";
+import { PageHeader } from "@/components/ui/page-header";
+import { ReportsGrid } from "@/components/reports/reports-grid";
+import { Button } from "@/components/ui/button";
+import { Users, Download } from "lucide-react";
+import { useState } from "react";
 
 export default function ReportsPage() {
-  const [activeTab, setActiveTab] = useState(0)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const tabs = ["Thakorji", "Premvati", "Aarsh", "Mandir", "Prasad"]
+  const [activeTab, setActiveTab] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const tabs = ["Thakorji", "Premvati", "Aarsh", "Mandir", "Prasad"];
 
   const statsData = [
-    { label: "Total Served", value: "500", icon: Users, iconColor: "#00cfe8", trend: { value: 15, isPositive: true } },
-    { label: "Breakfast", value: "350", icon: Users, iconColor: "#28c76f", trend: { value: 8, isPositive: true } },
-    { label: "Lunch", value: "200", icon: Users, iconColor: "#ff9f43", trend: { value: 12, isPositive: true } },
-    { label: "Dinner", value: "150", icon: Users, iconColor: "#ea5455", trend: { value: 5, isPositive: false } },
-  ]
+    {
+      label: "Total Served",
+      value: "500",
+      icon: Users,
+      iconColor: "#00cfe8",
+      trend: { value: 15, isPositive: true },
+    },
+    {
+      label: "Breakfast",
+      value: "350",
+      icon: Users,
+      iconColor: "#28c76f",
+      trend: { value: 8, isPositive: true },
+    },
+    {
+      label: "Lunch",
+      value: "200",
+      icon: Users,
+      iconColor: "#ff9f43",
+      trend: { value: 12, isPositive: true },
+    },
+    {
+      label: "Dinner",
+      value: "150",
+      icon: Users,
+      iconColor: "#ea5455",
+      trend: { value: 5, isPositive: false },
+    },
+  ];
 
   const handleDownload = (type: string) => {
-    console.log(`Downloading ${type} report`)
-  }
+    console.log(`Downloading ${type} report`);
+  };
 
   const handleTabChange = (index: number) => {
-    setActiveTab(index)
-    console.log(`Switched to tab: ${tabs[index]}`)
-  }
+    setActiveTab(index);
+    console.log(`Switched to tab: ${tabs[index]}`);
+  };
 
   const handleDateChange = (date: Date) => {
-    setSelectedDate(date)
-    console.log(`Reports date changed to: ${date.toDateString()}`)
-  }
+    setSelectedDate(date);
+    console.log(`Reports date changed to: ${date.toDateString()}`);
+  };
 
   return (
     <DashboardLayout>
@@ -59,13 +83,21 @@ export default function ReportsPage() {
       <div className="mb-6 sm:mb-8">
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
           <div className="xl:col-span-2">
-            <DateSelector date={selectedDate} onDateChange={handleDateChange} className="h-full min-h-[120px]" />
+            <DateSelector
+              date={selectedDate}
+              onDateChange={handleDateChange}
+              className="h-full min-h-[120px]"
+            />
           </div>
           <div className="xl:col-span-3">
             <StatsGrid stats={statsData} />
           </div>
         </div>
-        <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
+        <TabNavigation
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
       </div>
 
       {/* Reports Section */}
@@ -73,5 +105,5 @@ export default function ReportsPage() {
         <ReportsGrid onDownload={handleDownload} />
       </div>
     </DashboardLayout>
-  )
+  );
 }

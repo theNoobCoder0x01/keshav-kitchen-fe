@@ -1,49 +1,57 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2 } from "lucide-react"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface MenuItem {
-  id: string
-  name: string
-  weight?: string
-  isAddItem?: boolean
+  id: string;
+  name: string;
+  weight?: string;
+  isAddItem?: boolean;
 }
 
 interface MenuCardProps {
-  title: string
-  items: MenuItem[]
-  onAdd: () => void
-  onEdit?: (item: MenuItem) => void
-  onDelete?: (itemId: string) => void
-  showActions?: boolean
-  className?: string
+  title: string;
+  items: MenuItem[];
+  onAdd: () => void;
+  onEdit?: (item: MenuItem) => void;
+  onDelete?: (itemId: string) => void;
+  showActions?: boolean;
+  className?: string;
 }
 
-export function MenuCard({ title, items, onAdd, onEdit, onDelete, showActions = false, className }: MenuCardProps) {
-  const [editingItem, setEditingItem] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState("")
+export function MenuCard({
+  title,
+  items,
+  onAdd,
+  onEdit,
+  onDelete,
+  showActions = false,
+  className,
+}: MenuCardProps) {
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const handleEditStart = (item: MenuItem) => {
-    setEditingItem(item.id)
-    setEditValue(item.name)
-  }
+    setEditingItem(item.id);
+    setEditValue(item.name);
+  };
 
   const handleEditSave = (item: MenuItem) => {
     if (editValue.trim()) {
-      onEdit?.({ ...item, name: editValue.trim() })
+      onEdit?.({ ...item, name: editValue.trim() });
     }
-    setEditingItem(null)
-    setEditValue("")
-  }
+    setEditingItem(null);
+    setEditValue("");
+  };
 
   const handleEditCancel = () => {
-    setEditingItem(null)
-    setEditValue("")
-  }
+    setEditingItem(null);
+    setEditValue("");
+  };
 
   return (
     <Card
@@ -55,7 +63,9 @@ export function MenuCard({ title, items, onAdd, onEdit, onDelete, showActions = 
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[#4b465c] mb-1">{title}</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-[#4b465c] mb-1">
+              {title}
+            </h3>
             <p className="text-sm text-[#4b465c]/60">{items.length} items</p>
           </div>
           <Button
@@ -82,7 +92,9 @@ export function MenuCard({ title, items, onAdd, onEdit, onDelete, showActions = 
                   <div className="w-10 h-10 bg-gradient-to-br from-[#674af5]/10 to-[#856ef7]/5 rounded-xl flex items-center justify-center border border-[#674af5]/10">
                     <Plus className="w-5 h-5 text-[#674af5]" />
                   </div>
-                  <span className="text-[#4b465c] flex-1 font-medium">{item.name}</span>
+                  <span className="text-[#4b465c] flex-1 font-medium">
+                    {item.name}
+                  </span>
                 </>
               ) : (
                 <>
@@ -95,8 +107,8 @@ export function MenuCard({ title, items, onAdd, onEdit, onDelete, showActions = 
                           onChange={(e) => setEditValue(e.target.value)}
                           className="w-full px-3 py-2 text-sm border border-[#674af5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#674af5]/20 bg-white"
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") handleEditSave(item)
-                            if (e.key === "Escape") handleEditCancel()
+                            if (e.key === "Enter") handleEditSave(item);
+                            if (e.key === "Escape") handleEditCancel();
                           }}
                           autoFocus
                         />
@@ -120,8 +132,14 @@ export function MenuCard({ title, items, onAdd, onEdit, onDelete, showActions = 
                       </div>
                     ) : (
                       <>
-                        <p className="text-[#4b465c] font-medium truncate">{item.name}</p>
-                        {item.weight && <p className="text-sm text-[#4b465c]/60 mt-1">{item.weight}</p>}
+                        <p className="text-[#4b465c] font-medium truncate">
+                          {item.name}
+                        </p>
+                        {item.weight && (
+                          <p className="text-sm text-[#4b465c]/60 mt-1">
+                            {item.weight}
+                          </p>
+                        )}
                       </>
                     )}
                   </div>
@@ -153,5 +171,5 @@ export function MenuCard({ title, items, onAdd, onEdit, onDelete, showActions = 
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import { sql } from "./db"
+import { sql } from "./db";
 
 export async function createTables() {
   try {
-    console.log("🔧 Creating database tables...")
+    console.log("🔧 Creating database tables...");
 
     // Create kitchens table
     await sql`
@@ -13,7 +13,7 @@ export async function createTables() {
         is_active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `
+    `;
 
     // Create users table
     await sql`
@@ -27,7 +27,7 @@ export async function createTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `
+    `;
 
     // Create recipes table
     await sql`
@@ -46,7 +46,7 @@ export async function createTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `
+    `;
 
     // Create recipe_ingredients table
     await sql`
@@ -59,7 +59,7 @@ export async function createTables() {
         cost_per_unit DECIMAL(10,2),
         notes TEXT
       )
-    `
+    `;
 
     // Create daily_menus table
     await sql`
@@ -78,7 +78,7 @@ export async function createTables() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(kitchen_id, menu_date, meal_type, recipe_id)
       )
-    `
+    `;
 
     // Create daily_reports table
     await sql`
@@ -96,19 +96,19 @@ export async function createTables() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(kitchen_id, report_date)
       )
-    `
+    `;
 
-    console.log("✅ Database tables created successfully")
-    return true
+    console.log("✅ Database tables created successfully");
+    return true;
   } catch (error) {
-    console.error("❌ Error creating tables:", error)
-    throw error
+    console.error("❌ Error creating tables:", error);
+    throw error;
   }
 }
 
 export async function seedDatabase() {
   try {
-    console.log("🌱 Seeding database...")
+    console.log("🌱 Seeding database...");
 
     // Create kitchens
     await sql`
@@ -119,15 +119,16 @@ export async function seedDatabase() {
         ('kitchen_4', 'Mandir', 'Temple Complex'),
         ('kitchen_5', 'Prasad', 'Central Kitchen')
       ON CONFLICT (id) DO NOTHING
-    `
+    `;
 
     // Create admin user (password: admin123 - bcrypt hash)
-    const hashedPassword = "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi"
+    const hashedPassword =
+      "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi";
     await sql`
       INSERT INTO users (id, email, name, password, role, kitchen_id) VALUES 
         ('user_admin', 'admin@kitchen.com', 'Admin User', ${hashedPassword}, 'ADMIN', 'kitchen_1')
       ON CONFLICT (email) DO NOTHING
-    `
+    `;
 
     // Create sample recipes
     await sql`
@@ -136,7 +137,7 @@ export async function seedDatabase() {
         ('recipe_2', 'Poha', 'BREAKFAST', 'Flattened rice with vegetables', 'user_admin', 15, 20, 80),
         ('recipe_3', 'Dal Rice', 'LUNCH', 'Lentils with rice', 'user_admin', 20, 40, 120)
       ON CONFLICT (id) DO NOTHING
-    `
+    `;
 
     // Add ingredients for recipes
     await sql`
@@ -151,21 +152,21 @@ export async function seedDatabase() {
         ('ing_8', 'recipe_3', 'Toor Dal', 1.0, 'kg', 100.00),
         ('ing_9', 'recipe_3', 'Turmeric', 0.05, 'kg', 200.00)
       ON CONFLICT (id) DO NOTHING
-    `
+    `;
 
     // Create sample daily menus for today
-    const today = new Date().toISOString().split("T")[0]
+    const today = new Date().toISOString().split("T")[0];
     await sql`
       INSERT INTO daily_menus (id, kitchen_id, menu_date, meal_type, recipe_id, planned_servings, ghan_multiplier, created_by) VALUES 
         ('menu_1', 'kitchen_1', ${today}, 'BREAKFAST', 'recipe_1', 100, 1.0, 'user_admin'),
         ('menu_2', 'kitchen_1', ${today}, 'LUNCH', 'recipe_3', 120, 1.2, 'user_admin')
       ON CONFLICT (kitchen_id, menu_date, meal_type, recipe_id) DO NOTHING
-    `
+    `;
 
-    console.log("✅ Database seeded successfully")
-    return true
+    console.log("✅ Database seeded successfully");
+    return true;
   } catch (error) {
-    console.error("❌ Error seeding database:", error)
-    throw error
+    console.error("❌ Error seeding database:", error);
+    throw error;
   }
 }

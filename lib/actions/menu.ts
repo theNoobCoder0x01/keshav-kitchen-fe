@@ -1,29 +1,29 @@
-"use server"
+"use server";
 
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { revalidatePath } from "next/cache"
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export async function getDailyMenus(date?: Date, kitchenId?: string) {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session?.user) {
-      return {}
+      return {};
     }
 
-    const targetDate = date || new Date()
-    const targetKitchenId = kitchenId || session.user.kitchenId
+    const targetDate = date || new Date();
+    const targetKitchenId = kitchenId || session.user.kitchenId;
 
     if (!targetKitchenId) {
-      return {}
+      return {};
     }
 
-    const startOfDay = new Date(targetDate)
-    startOfDay.setHours(0, 0, 0, 0)
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
 
-    const endOfDay = new Date(targetDate)
-    endOfDay.setHours(23, 59, 59, 999)
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
 
     const menus = await prisma.menu.findMany({
       where: {
@@ -64,7 +64,7 @@ export async function getDailyMenus(date?: Date, kitchenId?: string) {
         },
       },
       orderBy: [{ mealType: "asc" }, { createdAt: "asc" }],
-    })
+    });
 
     // Group by meal type
     const groupedMenus = {
@@ -72,41 +72,41 @@ export async function getDailyMenus(date?: Date, kitchenId?: string) {
       LUNCH: menus.filter((m) => m.mealType === "LUNCH"),
       DINNER: menus.filter((m) => m.mealType === "DINNER"),
       SNACK: menus.filter((m) => m.mealType === "SNACK"),
-    }
+    };
 
-    return groupedMenus
+    return groupedMenus;
   } catch (error) {
-    console.error("Get daily menus error:", error)
-    return {}
+    console.error("Get daily menus error:", error);
+    return {};
   }
 }
 
 export async function getMenuStats(date?: Date, kitchenId?: string) {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session?.user) {
       return {
         total: { planned: 0 },
         byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 },
-      }
+      };
     }
 
-    const targetDate = date || new Date()
-    const targetKitchenId = kitchenId || session.user.kitchenId
+    const targetDate = date || new Date();
+    const targetKitchenId = kitchenId || session.user.kitchenId;
 
     if (!targetKitchenId) {
       return {
         total: { planned: 0 },
         byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 },
-      }
+      };
     }
 
-    const startOfDay = new Date(targetDate)
-    startOfDay.setHours(0, 0, 0, 0)
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
 
-    const endOfDay = new Date(targetDate)
-    endOfDay.setHours(23, 59, 59, 999)
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
 
     const [totalPlanned, mealTypeStats] = await Promise.all([
       prisma.menu.aggregate({
@@ -134,51 +134,54 @@ export async function getMenuStats(date?: Date, kitchenId?: string) {
           servings: true,
         },
       }),
-    ])
+    ]);
 
     const byMealType = {
       BREAKFAST: 0,
       LUNCH: 0,
       DINNER: 0,
       SNACK: 0,
-    }
+    };
 
     mealTypeStats.forEach((stat) => {
-      byMealType[stat.mealType] = stat._sum.servings || 0
-    })
+      byMealType[stat.mealType] = stat._sum.servings || 0;
+    });
 
     return {
       total: { planned: totalPlanned._sum.servings || 0 },
       byMealType,
-    }
+    };
   } catch (error) {
-    console.error("Get menu stats error:", error)
+    console.error("Get menu stats error:", error);
     return {
       total: { planned: 0 },
       byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 },
-    }
+    };
   }
 }
 
 export async function createDailyMenu(data: {
-  date: Date
-  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK"
-  recipeId: string
-  kitchenId: string
-  servings: number
-  ghanFactor?: number
-  notes?: string
+  date: Date;
+  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+  recipeId: string;
+  kitchenId: string;
+  servings: number;
+  ghanFactor?: number;
+  notes?: string;
 }) {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session?.user) {
-      return { success: false, error: "Unauthorized" }
+      return { success: false, error: "Unauthorized" };
     }
 
     // Check permissions
-    if (session.user.role === "STAFF" && data.kitchenId !== session.user.kitchenId) {
-      return { success: false, error: "Access denied for this kitchen" }
+    if (
+      session.user.role === "STAFF" &&
+      data.kitchenId !== session.user.kitchenId
+    ) {
+      return { success: false, error: "Access denied for this kitchen" };
     }
 
     const menu = await prisma.menu.create({
@@ -206,46 +209,49 @@ export async function createDailyMenu(data: {
           },
         },
       },
-    })
+    });
 
-    revalidatePath("/")
-    return { success: true, data: menu }
+    revalidatePath("/");
+    return { success: true, data: menu };
   } catch (error) {
-    console.error("Create daily menu error:", error)
-    return { success: false, error: "Failed to create menu item" }
+    console.error("Create daily menu error:", error);
+    return { success: false, error: "Failed to create menu item" };
   }
 }
 
 export async function updateDailyMenu(
   id: string,
   data: {
-    servings?: number
-    ghanFactor?: number
-    status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
-    actualCount?: number
-    notes?: string
+    servings?: number;
+    ghanFactor?: number;
+    status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+    actualCount?: number;
+    notes?: string;
   },
 ) {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session?.user) {
-      return { success: false, error: "Unauthorized" }
+      return { success: false, error: "Unauthorized" };
     }
 
     // Check if menu exists and user has permission
     const existingMenu = await prisma.menu.findUnique({
       where: { id },
       select: { kitchenId: true, userId: true },
-    })
+    });
 
     if (!existingMenu) {
-      return { success: false, error: "Menu item not found" }
+      return { success: false, error: "Menu item not found" };
     }
 
     // Check permissions
-    if (session.user.role === "STAFF" && existingMenu.userId !== session.user.id) {
-      return { success: false, error: "Access denied" }
+    if (
+      session.user.role === "STAFF" &&
+      existingMenu.userId !== session.user.id
+    ) {
+      return { success: false, error: "Access denied" };
     }
 
     const menu = await prisma.menu.update({
@@ -264,47 +270,50 @@ export async function updateDailyMenu(
           },
         },
       },
-    })
+    });
 
-    revalidatePath("/")
-    return { success: true, data: menu }
+    revalidatePath("/");
+    return { success: true, data: menu };
   } catch (error) {
-    console.error("Update daily menu error:", error)
-    return { success: false, error: "Failed to update menu item" }
+    console.error("Update daily menu error:", error);
+    return { success: false, error: "Failed to update menu item" };
   }
 }
 
 export async function deleteDailyMenu(id: string) {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session?.user) {
-      return { success: false, error: "Unauthorized" }
+      return { success: false, error: "Unauthorized" };
     }
 
     // Check if menu exists and user has permission
     const existingMenu = await prisma.menu.findUnique({
       where: { id },
       select: { kitchenId: true, userId: true },
-    })
+    });
 
     if (!existingMenu) {
-      return { success: false, error: "Menu item not found" }
+      return { success: false, error: "Menu item not found" };
     }
 
     // Check permissions
-    if (session.user.role === "STAFF" && existingMenu.userId !== session.user.id) {
-      return { success: false, error: "Access denied" }
+    if (
+      session.user.role === "STAFF" &&
+      existingMenu.userId !== session.user.id
+    ) {
+      return { success: false, error: "Access denied" };
     }
 
     await prisma.menu.delete({
       where: { id },
-    })
+    });
 
-    revalidatePath("/")
-    return { success: true }
+    revalidatePath("/");
+    return { success: true };
   } catch (error) {
-    console.error("Delete daily menu error:", error)
-    return { success: false, error: "Failed to delete menu item" }
+    console.error("Delete daily menu error:", error);
+    return { success: false, error: "Failed to delete menu item" };
   }
 }

@@ -1,25 +1,31 @@
-"use server"
+"use server";
 
-import { prisma } from "@/lib/prisma"
-import { requireAuth } from "@/lib/auth-utils"
-import { CreateDailyMenuSchema, UpdateDailyMenuSchema } from "@/lib/validations/menu"
-import { revalidatePath } from "next/cache"
-import { startOfDay, endOfDay } from "date-fns"
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-utils";
+import {
+  CreateDailyMenuSchema,
+  UpdateDailyMenuSchema,
+} from "@/lib/validations/menu";
+import { revalidatePath } from "next/cache";
+import { startOfDay, endOfDay } from "date-fns";
 
 export async function createDailyMenu(formData: FormData) {
   try {
-    const session = await requireAuth()
+    const session = await requireAuth();
 
     const rawData = {
       kitchenId: formData.get("kitchenId") as string,
       menuDate: new Date(formData.get("menuDate") as string),
       mealType: formData.get("mealType") as string,
       recipeId: formData.get("recipeId") as string,
-      plannedServings: Number.parseInt(formData.get("plannedServings") as string),
-      ghanMultiplier: Number.parseFloat(formData.get("ghanMultiplier") as string) || 1,
-    }
+      plannedServings: Number.parseInt(
+        formData.get("plannedServings") as string,
+      ),
+      ghanMultiplier:
+        Number.parseFloat(formData.get("ghanMultiplier") as string) || 1,
+    };
 
-    const validatedData = CreateDailyMenuSchema.parse(rawData)
+    const validatedData = CreateDailyMenuSchema.parse(rawData);
 
     // Check for existing menu item
     const existing = await prisma.dailyMenu.findUnique({
@@ -31,10 +37,13 @@ export async function createDailyMenu(formData: FormData) {
           recipeId: validatedData.recipeId,
         },
       },
-    })
+    });
 
     if (existing) {
-      return { success: false, error: "Menu item already exists for this date and meal type" }
+      return {
+        success: false,
+        error: "Menu item already exists for this date and meal type",
+      };
     }
 
     const menuItem = await prisma.dailyMenu.create({
@@ -57,20 +66,20 @@ export async function createDailyMenu(formData: FormData) {
           select: { name: true },
         },
       },
-    })
+    });
 
-    revalidatePath("/")
-    revalidatePath("/reports")
-    return { success: true, menuItem }
+    revalidatePath("/");
+    revalidatePath("/reports");
+    return { success: true, menuItem };
   } catch (error) {
-    console.error("Create daily menu error:", error)
-    return { success: false, error: "Failed to create menu item" }
+    console.error("Create daily menu error:", error);
+    return { success: false, error: "Failed to create menu item" };
   }
 }
 
 export async function updateDailyMenu(formData: FormData) {
   try {
-    const session = await requireAuth()
+    const session = await requireAuth();
 
     const rawData = {
       id: formData.get("id") as string,
@@ -84,9 +93,9 @@ export async function updateDailyMenu(formData: FormData) {
       ghanMultiplier: formData.get("ghanMultiplier")
         ? Number.parseFloat(formData.get("ghanMultiplier") as string)
         : undefined,
-    }
+    };
 
-    const validatedData = UpdateDailyMenuSchema.parse(rawData)
+    const validatedData = UpdateDailyMenuSchema.parse(rawData);
 
     const menuItem = await prisma.dailyMenu.update({
       where: { id: validatedData.id },
@@ -106,37 +115,37 @@ export async function updateDailyMenu(formData: FormData) {
           select: { name: true },
         },
       },
-    })
+    });
 
-    revalidatePath("/")
-    revalidatePath("/reports")
-    return { success: true, menuItem }
+    revalidatePath("/");
+    revalidatePath("/reports");
+    return { success: true, menuItem };
   } catch (error) {
-    console.error("Update daily menu error:", error)
-    return { success: false, error: "Failed to update menu item" }
+    console.error("Update daily menu error:", error);
+    return { success: false, error: "Failed to update menu item" };
   }
 }
 
 export async function deleteDailyMenu(menuId: string) {
   try {
-    const session = await requireAuth()
+    const session = await requireAuth();
 
     await prisma.dailyMenu.delete({
       where: { id: menuId },
-    })
+    });
 
-    revalidatePath("/")
-    revalidatePath("/reports")
-    return { success: true }
+    revalidatePath("/");
+    revalidatePath("/reports");
+    return { success: true };
   } catch (error) {
-    console.error("Delete daily menu error:", error)
-    return { success: false, error: "Failed to delete menu item" }
+    console.error("Delete daily menu error:", error);
+    return { success: false, error: "Failed to delete menu item" };
   }
 }
 
 export async function getDailyMenus(date: Date, kitchenId?: string) {
   try {
-    const session = await requireAuth()
+    const session = await requireAuth();
 
     const where = {
       menuDate: {
@@ -144,8 +153,9 @@ export async function getDailyMenus(date: Date, kitchenId?: string) {
         lte: endOfDay(date),
       },
       ...(kitchenId && { kitchenId }),
-      ...(session.user.kitchenId && session.user.role !== "ADMIN" && { kitchenId: session.user.kitchenId }),
-    }
+      ...(session.user.kitchenId &&
+        session.user.role !== "ADMIN" && { kitchenId: session.user.kitchenId }),
+    };
 
     const menus = await prisma.dailyMenu.findMany({
       where,
@@ -163,7 +173,7 @@ export async function getDailyMenus(date: Date, kitchenId?: string) {
         },
       },
       orderBy: [{ mealType: "asc" }, { createdAt: "asc" }],
-    })
+    });
 
     // Group by meal type
     const groupedMenus = {
@@ -171,24 +181,24 @@ export async function getDailyMenus(date: Date, kitchenId?: string) {
       LUNCH: menus.filter((m) => m.mealType === "LUNCH"),
       DINNER: menus.filter((m) => m.mealType === "DINNER"),
       SNACK: menus.filter((m) => m.mealType === "SNACK"),
-    }
+    };
 
-    return groupedMenus
+    return groupedMenus;
   } catch (error) {
-    console.error("Get daily menus error:", error)
+    console.error("Get daily menus error:", error);
     // Return empty structure instead of throwing
     return {
       BREAKFAST: [],
       LUNCH: [],
       DINNER: [],
       SNACK: [],
-    }
+    };
   }
 }
 
 export async function getMenuStats(date: Date, kitchenId?: string) {
   try {
-    const session = await requireAuth()
+    const session = await requireAuth();
 
     const where = {
       menuDate: {
@@ -196,8 +206,9 @@ export async function getMenuStats(date: Date, kitchenId?: string) {
         lte: endOfDay(date),
       },
       ...(kitchenId && { kitchenId }),
-      ...(session.user.kitchenId && session.user.role !== "ADMIN" && { kitchenId: session.user.kitchenId }),
-    }
+      ...(session.user.kitchenId &&
+        session.user.role !== "ADMIN" && { kitchenId: session.user.kitchenId }),
+    };
 
     const stats = await prisma.dailyMenu.groupBy({
       by: ["mealType"],
@@ -209,10 +220,16 @@ export async function getMenuStats(date: Date, kitchenId?: string) {
       _count: {
         id: true,
       },
-    })
+    });
 
-    const totalPlanned = stats.reduce((sum, stat) => sum + (stat._sum.plannedServings || 0), 0)
-    const totalActual = stats.reduce((sum, stat) => sum + (stat._sum.actualServings || 0), 0)
+    const totalPlanned = stats.reduce(
+      (sum, stat) => sum + (stat._sum.plannedServings || 0),
+      0,
+    );
+    const totalActual = stats.reduce(
+      (sum, stat) => sum + (stat._sum.actualServings || 0),
+      0,
+    );
 
     return {
       total: {
@@ -221,14 +238,19 @@ export async function getMenuStats(date: Date, kitchenId?: string) {
         items: stats.reduce((sum, stat) => sum + stat._count.id, 0),
       },
       byMealType: {
-        BREAKFAST: stats.find((s) => s.mealType === "BREAKFAST")?._sum.plannedServings || 0,
-        LUNCH: stats.find((s) => s.mealType === "LUNCH")?._sum.plannedServings || 0,
-        DINNER: stats.find((s) => s.mealType === "DINNER")?._sum.plannedServings || 0,
-        SNACK: stats.find((s) => s.mealType === "SNACK")?._sum.plannedServings || 0,
+        BREAKFAST:
+          stats.find((s) => s.mealType === "BREAKFAST")?._sum.plannedServings ||
+          0,
+        LUNCH:
+          stats.find((s) => s.mealType === "LUNCH")?._sum.plannedServings || 0,
+        DINNER:
+          stats.find((s) => s.mealType === "DINNER")?._sum.plannedServings || 0,
+        SNACK:
+          stats.find((s) => s.mealType === "SNACK")?._sum.plannedServings || 0,
       },
-    }
+    };
   } catch (error) {
-    console.error("Get menu stats error:", error)
+    console.error("Get menu stats error:", error);
     // Return default stats instead of throwing
     return {
       total: {
@@ -242,6 +264,6 @@ export async function getMenuStats(date: Date, kitchenId?: string) {
         DINNER: 0,
         SNACK: 0,
       },
-    }
+    };
   }
 }

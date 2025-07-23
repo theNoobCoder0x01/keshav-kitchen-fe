@@ -1,60 +1,77 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, X } from "lucide-react"
-import { useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
 
 interface Ingredient {
-  name: string
-  quantity: string
-  unit: string
+  name: string;
+  quantity: string;
+  unit: string;
 }
 
 interface AddRecipeDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
-  const [recipeName, setRecipeName] = useState("Poha")
-  const [recipeType, setRecipeType] = useState("breakfast")
-  const [selectedRecipe, setSelectedRecipe] = useState("poha")
-  const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: "Potato", quantity: "5", unit: "Kg" }])
+  const [recipeName, setRecipeName] = useState("Poha");
+  const [recipeType, setRecipeType] = useState("breakfast");
+  const [selectedRecipe, setSelectedRecipe] = useState("poha");
+  const [ingredients, setIngredients] = useState<Ingredient[]>([
+    { name: "Potato", quantity: "5", unit: "Kg" },
+  ]);
 
   const addIngredient = () => {
-    setIngredients([...ingredients, { name: "", quantity: "", unit: "Kg" }])
-  }
+    setIngredients([...ingredients, { name: "", quantity: "", unit: "Kg" }]);
+  };
 
-  const updateIngredient = (index: number, field: keyof Ingredient, value: string) => {
+  const updateIngredient = (
+    index: number,
+    field: keyof Ingredient,
+    value: string,
+  ) => {
     const updated = ingredients.map((ingredient, i) => {
       if (i === index) {
-        return { ...ingredient, [field]: value }
+        return { ...ingredient, [field]: value };
       }
-      return ingredient
-    })
-    setIngredients(updated)
-  }
+      return ingredient;
+    });
+    setIngredients(updated);
+  };
 
   const removeIngredient = (index: number) => {
     if (ingredients.length > 1) {
-      setIngredients(ingredients.filter((_, i) => i !== index))
+      setIngredients(ingredients.filter((_, i) => i !== index));
     }
-  }
+  };
 
   const handleSubmit = () => {
     // Validate form
     if (!recipeName.trim()) {
-      alert("Please enter a recipe name")
-      return
+      alert("Please enter a recipe name");
+      return;
     }
 
     if (ingredients.some((ing) => !ing.name.trim() || !ing.quantity.trim())) {
-      alert("Please fill in all ingredient details")
-      return
+      alert("Please fill in all ingredient details");
+      return;
     }
 
     console.log("Submitting recipe:", {
@@ -62,29 +79,33 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
       recipeType,
       selectedRecipe,
       ingredients,
-    })
+    });
 
-    handleClose()
-  }
+    handleClose();
+  };
 
   const handleClose = () => {
     // Reset form
-    setRecipeName("Poha")
-    setRecipeType("breakfast")
-    setSelectedRecipe("poha")
-    setIngredients([{ name: "Potato", quantity: "5", unit: "Kg" }])
-    onOpenChange(false)
-  }
+    setRecipeName("Poha");
+    setRecipeType("breakfast");
+    setSelectedRecipe("poha");
+    setIngredients([{ name: "Potato", quantity: "5", unit: "Kg" }]);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-[#4b465c]">Add New Recipe</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-[#4b465c]">
+            Add New Recipe
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-6 py-4">
           <div>
-            <Label className="text-base font-medium text-[#4b465c] mb-2 block">Recipe Name</Label>
+            <Label className="text-base font-medium text-[#4b465c] mb-2 block">
+              Recipe Name
+            </Label>
             <Input
               value={recipeName}
               onChange={(e) => setRecipeName(e.target.value)}
@@ -95,7 +116,9 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-base font-medium text-[#4b465c] mb-2 block">Recipe Type</Label>
+              <Label className="text-base font-medium text-[#4b465c] mb-2 block">
+                Recipe Type
+              </Label>
               <Select value={recipeType} onValueChange={setRecipeType}>
                 <SelectTrigger className="border-[#dbdade]">
                   <SelectValue />
@@ -110,7 +133,9 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
             </div>
 
             <div>
-              <Label className="text-base font-medium text-[#4b465c] mb-2 block">Recipe</Label>
+              <Label className="text-base font-medium text-[#4b465c] mb-2 block">
+                Recipe
+              </Label>
               <Select value={selectedRecipe} onValueChange={setSelectedRecipe}>
                 <SelectTrigger className="border-[#dbdade]">
                   <SelectValue />
@@ -127,7 +152,9 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-medium text-[#4b465c]">Ingredients</Label>
+              <Label className="text-base font-medium text-[#4b465c]">
+                Ingredients
+              </Label>
               <Button
                 type="button"
                 variant="ghost"
@@ -143,19 +170,27 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
             {ingredients.map((ingredient, index) => (
               <div key={index} className="grid grid-cols-12 gap-2 items-end">
                 <div className="col-span-5">
-                  <Label className="text-sm font-medium text-[#4b465c] mb-1 block">Ingredients</Label>
+                  <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
+                    Ingredients
+                  </Label>
                   <Input
                     value={ingredient.name}
-                    onChange={(e) => updateIngredient(index, "name", e.target.value)}
+                    onChange={(e) =>
+                      updateIngredient(index, "name", e.target.value)
+                    }
                     placeholder="Ingredient name"
                     className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                   />
                 </div>
                 <div className="col-span-4">
-                  <Label className="text-sm font-medium text-[#4b465c] mb-1 block">Quantity</Label>
+                  <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
+                    Quantity
+                  </Label>
                   <Input
                     value={ingredient.quantity}
-                    onChange={(e) => updateIngredient(index, "quantity", e.target.value)}
+                    onChange={(e) =>
+                      updateIngredient(index, "quantity", e.target.value)
+                    }
                     placeholder="5"
                     className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                     type="number"
@@ -163,8 +198,15 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-sm font-medium text-[#4b465c] mb-1 block">Unit</Label>
-                  <Select value={ingredient.unit} onValueChange={(value) => updateIngredient(index, "unit", value)}>
+                  <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
+                    Unit
+                  </Label>
+                  <Select
+                    value={ingredient.unit}
+                    onValueChange={(value) =>
+                      updateIngredient(index, "unit", value)
+                    }
+                  >
                     <SelectTrigger className="border-[#dbdade] h-9">
                       <SelectValue />
                     </SelectTrigger>
@@ -201,11 +243,14 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
           >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} className="bg-[#674af5] hover:bg-[#674af5]/90 text-white">
+          <Button
+            onClick={handleSubmit}
+            className="bg-[#674af5] hover:bg-[#674af5]/90 text-white"
+          >
             Save
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

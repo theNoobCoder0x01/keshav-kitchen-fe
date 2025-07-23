@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface TabNavigationProps {
-  tabs: string[]
-  activeTab?: number
-  onTabChange?: (index: number) => void
-  className?: string
+  tabs: string[];
+  activeTab?: number;
+  onTabChange?: (index: number) => void;
+  className?: string;
 }
 
 export function TabNavigation({
@@ -16,16 +16,17 @@ export function TabNavigation({
   onTabChange,
   className = "",
 }: TabNavigationProps) {
-  const [internalActiveTab, setInternalActiveTab] = useState(0)
+  const [internalActiveTab, setInternalActiveTab] = useState(0);
 
-  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : internalActiveTab
+  const activeTab =
+    controlledActiveTab !== undefined ? controlledActiveTab : internalActiveTab;
 
   const handleTabClick = (index: number) => {
     if (controlledActiveTab === undefined) {
-      setInternalActiveTab(index)
+      setInternalActiveTab(index);
     }
-    onTabChange?.(index)
-  }
+    onTabChange?.(index);
+  };
 
   return (
     <div className={cn("mb-6 sm:mb-8", className)}>
@@ -62,5 +63,5 @@ export function TabNavigation({
         ))}
       </div>
     </div>
-  )
+  );
 }

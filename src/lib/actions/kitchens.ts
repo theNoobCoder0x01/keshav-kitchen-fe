@@ -1,11 +1,11 @@
-"use server"
+"use server";
 
-import { prisma } from "@/lib/prisma"
-import { requireAuth, requireRole } from "@/lib/auth-utils"
+import { prisma } from "@/lib/prisma";
+import { requireAuth, requireRole } from "@/lib/auth-utils";
 
 export async function getKitchens() {
   try {
-    const session = await requireAuth()
+    const session = await requireAuth();
 
     // If user is not admin, only return their kitchen
     if (session.user.role !== "ADMIN" && session.user.kitchenId) {
@@ -16,8 +16,8 @@ export async function getKitchens() {
             select: { users: true, dailyMenus: true },
           },
         },
-      })
-      return kitchen ? [kitchen] : []
+      });
+      return kitchen ? [kitchen] : [];
     }
 
     const kitchens = await prisma.kitchen.findMany({
@@ -28,25 +28,25 @@ export async function getKitchens() {
         },
       },
       orderBy: { name: "asc" },
-    })
+    });
 
-    return kitchens
+    return kitchens;
   } catch (error) {
-    console.error("Get kitchens error:", error)
+    console.error("Get kitchens error:", error);
     // Return empty array instead of throwing
-    return []
+    return [];
   }
 }
 
 export async function createKitchen(formData: FormData) {
   try {
-    await requireRole(["ADMIN"])
+    await requireRole(["ADMIN"]);
 
-    const name = formData.get("name") as string
-    const location = formData.get("location") as string
+    const name = formData.get("name") as string;
+    const location = formData.get("location") as string;
 
     if (!name?.trim()) {
-      return { success: false, error: "Kitchen name is required" }
+      return { success: false, error: "Kitchen name is required" };
     }
 
     const kitchen = await prisma.kitchen.create({
@@ -54,11 +54,11 @@ export async function createKitchen(formData: FormData) {
         name: name.trim(),
         location: location?.trim(),
       },
-    })
+    });
 
-    return { success: true, kitchen }
+    return { success: true, kitchen };
   } catch (error) {
-    console.error("Create kitchen error:", error)
-    return { success: false, error: "Failed to create kitchen" }
+    console.error("Create kitchen error:", error);
+    return { success: false, error: "Failed to create kitchen" };
   }
 }

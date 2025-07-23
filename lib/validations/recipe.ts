@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 export const IngredientSchema = z.object({
   id: z.string().optional(),
@@ -6,7 +6,7 @@ export const IngredientSchema = z.object({
   quantity: z.number().min(0.1, "Quantity must be greater than 0"),
   unit: z.string().min(1, "Unit is required"),
   costPerUnit: z.number().min(0).optional(),
-})
+});
 
 export const RecipeSchema = z.object({
   name: z.string().min(1, "Recipe name is required"),
@@ -16,8 +16,10 @@ export const RecipeSchema = z.object({
   cookTime: z.number().min(0).optional(),
   servings: z.number().min(1).optional(),
   category: z.string().optional(),
-  ingredients: z.array(IngredientSchema).min(1, "At least one ingredient is required"),
-})
+  ingredients: z
+    .array(IngredientSchema)
+    .min(1, "At least one ingredient is required"),
+});
 
-export type RecipeFormData = z.infer<typeof RecipeSchema>
-export type IngredientFormData = z.infer<typeof IngredientSchema>
+export type RecipeFormData = z.infer<typeof RecipeSchema>;
+export type IngredientFormData = z.infer<typeof IngredientSchema>;

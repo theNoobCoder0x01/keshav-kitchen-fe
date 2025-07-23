@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Home, ChefHat, Utensils, ChevronDown, X } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Home, ChefHat, Utensils, ChevronDown, X } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
-  activeItem?: string
-  isOpen?: boolean
-  onClose?: () => void
+  activeItem?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const menuItems = [
     {
@@ -42,12 +42,17 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
       isActive: pathname === "/reports",
       description: "Analytics & reports",
     },
-  ]
+  ];
 
   return (
     <>
       {/* Mobile Overlay */}
-      {isOpen && <div className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={onClose} />}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          onClick={onClose}
+        />
+      )}
 
       {/* Sidebar */}
       <aside
@@ -101,7 +106,9 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
                     </div>
                     <div>
                       <span className="font-medium">{item.label}</span>
-                      <p className="text-xs text-[#4b465c]/60 mt-0.5">{item.description}</p>
+                      <p className="text-xs text-[#4b465c]/60 mt-0.5">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -137,7 +144,9 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
                   <ChefHat className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#4b465c]">Need Help?</p>
+                  <p className="text-sm font-medium text-[#4b465c]">
+                    Need Help?
+                  </p>
                   <p className="text-xs text-[#4b465c]/60">Contact support</p>
                 </div>
               </div>
@@ -146,5 +155,5 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
         </div>
       </aside>
     </>
-  )
+  );
 }

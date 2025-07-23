@@ -1,22 +1,29 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import type { LucideIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card";
+import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
-  label: string
-  value: string
-  icon: LucideIcon
-  iconColor?: string
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  iconColor?: string;
   trend?: {
-    value: number
-    isPositive: boolean
-  }
-  className?: string
+    value: number;
+    isPositive: boolean;
+  };
+  className?: string;
 }
 
-export function StatsCard({ label, value, icon: Icon, iconColor = "#00cfe8", trend, className }: StatsCardProps) {
+export function StatsCard({
+  label,
+  value,
+  icon: Icon,
+  iconColor = "#00cfe8",
+  trend,
+  className,
+}: StatsCardProps) {
   return (
     <Card
       className={cn(
@@ -35,16 +42,23 @@ export function StatsCard({ label, value, icon: Icon, iconColor = "#00cfe8", tre
                 border: `1px solid ${iconColor}20`,
               }}
             >
-              <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: iconColor }} />
+              <Icon
+                className="w-5 h-5 sm:w-6 sm:h-6"
+                style={{ color: iconColor }}
+              />
             </div>
             <div className="text-right">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#4b465c] leading-none">{value}</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#4b465c] leading-none">
+                {value}
+              </p>
             </div>
           </div>
 
           {/* Label and Trend */}
           <div className="flex items-center justify-between">
-            <p className="text-xs sm:text-sm text-[#4b465c]/70 font-medium leading-tight">{label}</p>
+            <p className="text-xs sm:text-sm text-[#4b465c]/70 font-medium leading-tight">
+              {label}
+            </p>
             {trend && (
               <div
                 className={cn(
@@ -52,7 +66,9 @@ export function StatsCard({ label, value, icon: Icon, iconColor = "#00cfe8", tre
                   trend.isPositive ? "text-green-600" : "text-red-500",
                 )}
               >
-                <span className="text-sm">{trend.isPositive ? "↗" : "↘"}</span>
+                <span className="text-sm">
+                  {trend.isPositive ? "↗" : "↘"}
+                </span>
                 <span>{Math.abs(trend.value)}%</span>
               </div>
             )}
@@ -60,5 +76,5 @@ export function StatsCard({ label, value, icon: Icon, iconColor = "#00cfe8", tre
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,9 +1,10 @@
-import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       name: "credentials",
@@ -13,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          return null;
         }
 
         try {
@@ -29,16 +30,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 },
               },
             },
-          })
+          });
 
           if (!user || !user.password) {
-            return null
+            return null;
           }
 
-          const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password)
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password,
+          );
 
           if (!isPasswordValid) {
-            return null
+            return null;
           }
 
           return {
@@ -48,10 +52,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role: user.role,
             kitchenId: user.kitchenId,
             kitchenName: user.kitchen?.name,
-          }
+          };
         } catch (error) {
-          console.error("Auth error:", error)
-          return null
+          console.error("Auth error:", error);
+          return null;
         }
       },
     }),
@@ -62,23 +66,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
-        token.kitchenId = user.kitchenId
-        token.kitchenName = user.kitchenName
+        token.role = user.role;
+        token.kitchenId = user.kitchenId;
+        token.kitchenName = user.kitchenName;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.sub!
-        session.user.role = token.role as string
-        session.user.kitchenId = token.kitchenId as string
-        session.user.kitchenName = token.kitchenName as string
+        session.user.id = token.sub!;
+        session.user.role = token.role as string;
+        session.user.kitchenId = token.kitchenId as string;
+        session.user.kitchenName = token.kitchenName as string;
       }
-      return session
+      return session;
     },
   },
   pages: {
     signIn: "/auth/signin",
   },
-})
+});

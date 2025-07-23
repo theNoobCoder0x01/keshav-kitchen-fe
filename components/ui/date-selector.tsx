@@ -1,19 +1,23 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { useState } from "react"
-import { format, addDays, subDays } from "date-fns"
-import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useState } from "react";
+import { format, addDays, subDays } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface DateSelectorProps {
-  date?: Date
-  onDateChange?: (date: Date) => void
-  subtitle?: string
-  className?: string
+  date?: Date;
+  onDateChange?: (date: Date) => void;
+  subtitle?: string;
+  className?: string;
 }
 
 export function DateSelector({
@@ -22,34 +26,36 @@ export function DateSelector({
   subtitle = "Pagan Sud Panam",
   className,
 }: DateSelectorProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date())
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    initialDate || new Date(),
+  );
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const handleDateChange = (newDate: Date) => {
-    setSelectedDate(newDate)
-    onDateChange?.(newDate)
-  }
+    setSelectedDate(newDate);
+    onDateChange?.(newDate);
+  };
 
   const goToPreviousDay = () => {
-    const newDate = subDays(selectedDate, 1)
-    handleDateChange(newDate)
-  }
+    const newDate = subDays(selectedDate, 1);
+    handleDateChange(newDate);
+  };
 
   const goToNextDay = () => {
-    const newDate = addDays(selectedDate, 1)
-    handleDateChange(newDate)
-  }
+    const newDate = addDays(selectedDate, 1);
+    handleDateChange(newDate);
+  };
 
   const handleCalendarSelect = (date: Date | undefined) => {
     if (date) {
-      handleDateChange(date)
-      setIsCalendarOpen(false)
+      handleDateChange(date);
+      setIsCalendarOpen(false);
     }
-  }
+  };
 
   const formatDate = (date: Date) => {
-    return format(date, "EEEE, dd MMM yyyy")
-  }
+    return format(date, "EEEE, dd MMM yyyy");
+  };
 
   return (
     <Card
@@ -67,12 +73,17 @@ export function DateSelector({
             <div>
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" className="p-0 h-auto hover:bg-transparent text-left justify-start">
+                  <Button
+                    variant="ghost"
+                    className="p-0 h-auto hover:bg-transparent text-left justify-start"
+                  >
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-[#674af5] mb-1 hover:text-[#856ef7] transition-colors">
                         {formatDate(selectedDate)}
                       </h3>
-                      <p className="text-sm text-[#4b465c]/70 font-medium">{subtitle}</p>
+                      <p className="text-sm text-[#4b465c]/70 font-medium">
+                        {subtitle}
+                      </p>
                     </div>
                   </Button>
                 </PopoverTrigger>
@@ -110,5 +121,5 @@ export function DateSelector({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

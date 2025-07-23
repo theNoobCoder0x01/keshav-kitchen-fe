@@ -1,21 +1,27 @@
-"use client"
+"use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { DateSelector } from "@/components/ui/date-selector"
-import { StatsGrid } from "@/components/ui/stats-grid"
-import { PageHeader } from "@/components/ui/page-header"
-import { RecipesTable } from "@/components/recipes/recipes-table"
-import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog"
-import { Button } from "@/components/ui/button"
-import { Users, ShoppingCart, DollarSign, Plus } from "lucide-react"
-import { useState } from "react"
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { DateSelector } from "@/components/ui/date-selector";
+import { StatsGrid } from "@/components/ui/stats-grid";
+import { PageHeader } from "@/components/ui/page-header";
+import { RecipesTable } from "@/components/recipes/recipes-table";
+import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
+import { Button } from "@/components/ui/button";
+import { Users, ShoppingCart, DollarSign, Plus } from "lucide-react";
+import { useState } from "react";
 
 export default function RecipesPage() {
-  const [addRecipeDialog, setAddRecipeDialog] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [addRecipeDialog, setAddRecipeDialog] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const statsData = [
-    { label: "Total Recipes", value: "156", icon: Users, iconColor: "#00cfe8", trend: { value: 12, isPositive: true } },
+    {
+      label: "Total Recipes",
+      value: "156",
+      icon: Users,
+      iconColor: "#00cfe8",
+      trend: { value: 12, isPositive: true },
+    },
     {
       label: "Active Recipes",
       value: "89",
@@ -30,18 +36,18 @@ export default function RecipesPage() {
       iconColor: "#28c76f",
       trend: { value: 3, isPositive: false },
     },
-  ]
+  ];
 
   const recipes = Array(6).fill({
     name: "Idali Sambhar",
     type: "Breakfast",
     issuedDate: "09 May 2022",
-  })
+  });
 
   const handleDateChange = (date: Date) => {
-    setSelectedDate(date)
-    console.log(`Recipes date changed to: ${date.toDateString()}`)
-  }
+    setSelectedDate(date);
+    console.log(`Recipes date changed to: ${date.toDateString()}`);
+  };
 
   return (
     <DashboardLayout>
@@ -66,7 +72,11 @@ export default function RecipesPage() {
       <div className="mb-6 sm:mb-8">
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
           <div className="xl:col-span-2">
-            <DateSelector date={selectedDate} onDateChange={handleDateChange} className="h-full min-h-[120px]" />
+            <DateSelector
+              date={selectedDate}
+              onDateChange={handleDateChange}
+              className="h-full min-h-[120px]"
+            />
           </div>
           <div className="xl:col-span-3">
             <StatsGrid stats={statsData} />
@@ -80,7 +90,10 @@ export default function RecipesPage() {
       </div>
 
       {/* Dialog */}
-      <AddRecipeDialog open={addRecipeDialog} onOpenChange={setAddRecipeDialog} />
+      <AddRecipeDialog
+        open={addRecipeDialog}
+        onOpenChange={setAddRecipeDialog}
+      />
     </DashboardLayout>
-  )
+  );
 }

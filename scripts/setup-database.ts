@@ -1,14 +1,14 @@
-import { PrismaClient } from "@prisma/client"
-import { hash } from "bcryptjs"
+import { PrismaClient } from "@prisma/client";
+import { hash } from "bcryptjs";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
   try {
-    console.log("Starting database setup...")
+    console.log("Starting database setup...");
 
     // Create kitchens
-    console.log("Creating kitchens...")
+    console.log("Creating kitchens...");
     const thakorjiKitchen = await prisma.kitchen.upsert({
       where: { id: "kitchen-thakorji" },
       update: {},
@@ -18,7 +18,7 @@ async function main() {
         location: "Main Temple",
         description: "Primary kitchen for Thakorji",
       },
-    })
+    });
 
     const premvatiKitchen = await prisma.kitchen.upsert({
       where: { id: "kitchen-premvati" },
@@ -29,7 +29,7 @@ async function main() {
         location: "Premvati Hall",
         description: "Kitchen for Premvati dining hall",
       },
-    })
+    });
 
     const aarshKitchen = await prisma.kitchen.upsert({
       where: { id: "kitchen-aarsh" },
@@ -40,12 +40,12 @@ async function main() {
         location: "Aarsh Building",
         description: "Kitchen for Aarsh residents",
       },
-    })
+    });
 
     // Create users
-    console.log("Creating users...")
-    const adminPassword = await hash("admin123", 12)
-    const userPassword = await hash("password123", 12)
+    console.log("Creating users...");
+    const adminPassword = await hash("admin123", 12);
+    const userPassword = await hash("password123", 12);
 
     const admin = await prisma.user.upsert({
       where: { email: "admin@kitchen.com" },
@@ -56,7 +56,7 @@ async function main() {
         password: adminPassword,
         role: "ADMIN",
       },
-    })
+    });
 
     const manager1 = await prisma.user.upsert({
       where: { email: "manager1@kitchen.com" },
@@ -68,7 +68,7 @@ async function main() {
         role: "MANAGER",
         kitchenId: thakorjiKitchen.id,
       },
-    })
+    });
 
     const chef1 = await prisma.user.upsert({
       where: { email: "chef1@kitchen.com" },
@@ -80,7 +80,7 @@ async function main() {
         role: "CHEF",
         kitchenId: thakorjiKitchen.id,
       },
-    })
+    });
 
     const staff1 = await prisma.user.upsert({
       where: { email: "staff1@kitchen.com" },
@@ -92,10 +92,10 @@ async function main() {
         role: "STAFF",
         kitchenId: thakorjiKitchen.id,
       },
-    })
+    });
 
     // Create recipes
-    console.log("Creating recipes...")
+    console.log("Creating recipes...");
     const recipe1 = await prisma.recipe.upsert({
       where: { id: "recipe-1" },
       update: {},
@@ -138,7 +138,7 @@ async function main() {
           ],
         },
       },
-    })
+    });
 
     const recipe2 = await prisma.recipe.upsert({
       where: { id: "recipe-2" },
@@ -147,7 +147,8 @@ async function main() {
         id: "recipe-2",
         name: "Kadhi",
         description: "Yogurt based curry",
-        instructions: "1. Mix yogurt and besan\n2. Cook with spices\n3. Serve hot",
+        instructions:
+          "1. Mix yogurt and besan\n2. Cook with spices\n3. Serve hot",
         prepTime: 20,
         cookTime: 25,
         servings: 10,
@@ -182,15 +183,15 @@ async function main() {
           ],
         },
       },
-    })
+    });
 
     // Create menus
-    console.log("Creating menus...")
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    console.log("Creating menus...");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     await prisma.menu.upsert({
       where: { id: "menu-1" },
@@ -206,7 +207,7 @@ async function main() {
         ghanFactor: 1.0,
         status: "PLANNED",
       },
-    })
+    });
 
     await prisma.menu.upsert({
       where: { id: "menu-2" },
@@ -222,7 +223,7 @@ async function main() {
         ghanFactor: 1.0,
         status: "PLANNED",
       },
-    })
+    });
 
     await prisma.menu.upsert({
       where: { id: "menu-3" },
@@ -238,12 +239,12 @@ async function main() {
         ghanFactor: 1.2,
         status: "PLANNED",
       },
-    })
+    });
 
     // Create reports
-    console.log("Creating reports...")
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    console.log("Creating reports...");
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
     await prisma.report.upsert({
       where: { id: "report-1" },
@@ -257,7 +258,7 @@ async function main() {
         mealsCounted: 115,
         notes: "Regular day, no special events",
       },
-    })
+    });
 
     await prisma.report.upsert({
       where: { id: "report-2" },
@@ -271,15 +272,15 @@ async function main() {
         mealsCounted: 80,
         notes: "Lower attendance due to rain",
       },
-    })
+    });
 
-    console.log("Database setup completed successfully!")
+    console.log("Database setup completed successfully!");
   } catch (error) {
-    console.error("Error during database setup:", error)
-    process.exit(1)
+    console.error("Error during database setup:", error);
+    process.exit(1);
   } finally {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   }
 }
 
-main()
+main();

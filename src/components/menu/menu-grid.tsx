@@ -1,24 +1,28 @@
-"use client"
+"use client";
 
-import { MenuCard } from "./menu-card"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { MenuCard } from "./menu-card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface MenuItem {
-  id: string
-  name: string
-  weight?: string
-  isAddItem?: boolean
+  id: string;
+  name: string;
+  weight?: string;
+  isAddItem?: boolean;
 }
 
 interface MenuGridProps {
-  onAddMeal: (mealType: string) => void
-  dailyMenus?: any
-  selectedDate: Date
+  onAddMeal: (mealType: string) => void;
+  dailyMenus?: any;
+  selectedDate: Date;
 }
 
-export function MenuGrid({ onAddMeal, dailyMenus = {}, selectedDate }: MenuGridProps) {
+export function MenuGrid({
+  onAddMeal,
+  dailyMenus = {},
+  selectedDate,
+}: MenuGridProps) {
   // Convert daily menus to the format expected by MenuCard
   const convertMenusToItems = (menus: any[] = []) => {
     return menus.map((menu) => ({
@@ -27,24 +31,24 @@ export function MenuGrid({ onAddMeal, dailyMenus = {}, selectedDate }: MenuGridP
       weight: `${menu.plannedServings} servings`,
       actualServings: menu.actualServings,
       status: menu.status,
-    }))
-  }
+    }));
+  };
 
-  const breakfastItems = convertMenusToItems(dailyMenus.BREAKFAST)
-  const lunchItems = convertMenusToItems(dailyMenus.LUNCH)
-  const dinnerItems = convertMenusToItems(dailyMenus.DINNER)
+  const breakfastItems = convertMenusToItems(dailyMenus.BREAKFAST);
+  const lunchItems = convertMenusToItems(dailyMenus.LUNCH);
+  const dinnerItems = convertMenusToItems(dailyMenus.DINNER);
 
   const handleEditItem = (mealType: string, updatedItem: MenuItem) => {
     // TODO: Implement edit functionality
-    console.log("Edit item:", mealType, updatedItem)
-  }
+    console.log("Edit item:", mealType, updatedItem);
+  };
 
   const handleDeleteItem = (mealType: string, itemId: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       // TODO: Implement delete functionality
-      console.log("Delete item:", mealType, itemId)
+      console.log("Delete item:", mealType, itemId);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -79,7 +83,9 @@ export function MenuGrid({ onAddMeal, dailyMenus = {}, selectedDate }: MenuGridP
       <Card className="bg-white border-[#dbdade]">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-[#4b465c]">Extra Items</h3>
+            <h3 className="text-lg font-semibold text-[#4b465c]">
+              Extra Items
+            </h3>
             <Button
               size="sm"
               variant="outline"
@@ -91,10 +97,12 @@ export function MenuGrid({ onAddMeal, dailyMenus = {}, selectedDate }: MenuGridP
             </Button>
           </div>
           <div className="mt-4">
-            <p className="text-sm text-[#4b465c]/60">No extra items for {selectedDate.toDateString()}</p>
+            <p className="text-sm text-[#4b465c]/60">
+              No extra items for {selectedDate.toDateString()}
+            </p>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

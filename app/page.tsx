@@ -1,59 +1,59 @@
-"use client"
+"use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { DateSelector } from "@/components/ui/date-selector"
-import { StatsGrid } from "@/components/ui/stats-grid"
-import { TabNavigation } from "@/components/ui/tab-navigation"
-import { PageHeader } from "@/components/ui/page-header"
-import { MenuGrid } from "@/components/menu/menu-grid"
-import { AddMealDialog } from "@/components/dialogs/add-meal-dialog"
-import { ReportDialog } from "@/components/dialogs/report-dialog"
-import { Button } from "@/components/ui/button"
-import { Users, Eye, FileText, Upload } from "lucide-react"
-import { useState, useEffect } from "react"
-import { getDailyMenus, getMenuStats } from "@/lib/actions/menu"
-import { getKitchens } from "@/lib/actions/kitchens"
-import { toast } from "sonner"
-import { useSession } from "next-auth/react"
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { DateSelector } from "@/components/ui/date-selector";
+import { StatsGrid } from "@/components/ui/stats-grid";
+import { TabNavigation } from "@/components/ui/tab-navigation";
+import { PageHeader } from "@/components/ui/page-header";
+import { MenuGrid } from "@/components/menu/menu-grid";
+import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
+import { ReportDialog } from "@/components/dialogs/report-dialog";
+import { Button } from "@/components/ui/button";
+import { Users, Eye, FileText, Upload } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getDailyMenus, getMenuStats } from "@/lib/actions/menu";
+import { getKitchens } from "@/lib/actions/kitchens";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 export default function MenuPage() {
-  const { data: session } = useSession()
-  const [addMealDialog, setAddMealDialog] = useState(false)
-  const [reportDialog, setReportDialog] = useState(false)
-  const [selectedMealType, setSelectedMealType] = useState("")
-  const [activeTab, setActiveTab] = useState(0)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [kitchens, setKitchens] = useState<any[]>([])
-  const [menuStats, setMenuStats] = useState<any>(null)
-  const [dailyMenus, setDailyMenus] = useState<any>({})
-  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession();
+  const [addMealDialog, setAddMealDialog] = useState(false);
+  const [reportDialog, setReportDialog] = useState(false);
+  const [selectedMealType, setSelectedMealType] = useState("");
+  const [activeTab, setActiveTab] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [kitchens, setKitchens] = useState<any[]>([]);
+  const [menuStats, setMenuStats] = useState<any>(null);
+  const [dailyMenus, setDailyMenus] = useState<any>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData()
-  }, [selectedDate, activeTab])
+    loadData();
+  }, [selectedDate, activeTab]);
 
   const loadData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const [kitchensData, statsData, menusData] = await Promise.all([
         getKitchens(),
         getMenuStats(selectedDate, kitchens[activeTab]?.id),
         getDailyMenus(selectedDate, kitchens[activeTab]?.id),
-      ])
+      ]);
 
-      setKitchens(kitchensData)
-      setMenuStats(statsData)
-      setDailyMenus(menusData)
+      setKitchens(kitchensData);
+      setMenuStats(statsData);
+      setDailyMenus(menusData);
     } catch (error) {
-      toast.error("Failed to load data")
+      toast.error("Failed to load data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Dynamic stats based on active tab and date
   const getStatsForTab = () => {
-    if (!menuStats) return []
+    if (!menuStats) return [];
 
     return [
       {
@@ -84,29 +84,29 @@ export default function MenuPage() {
         iconColor: "#ea5455",
         trend: { value: 0, isPositive: true },
       },
-    ]
-  }
+    ];
+  };
 
   const handleAddMeal = (mealType: string) => {
-    setSelectedMealType(mealType)
-    setAddMealDialog(true)
-  }
+    setSelectedMealType(mealType);
+    setAddMealDialog(true);
+  };
 
   const handleTabChange = (index: number) => {
-    setActiveTab(index)
-  }
+    setActiveTab(index);
+  };
 
   const handleDateChange = (date: Date) => {
-    setSelectedDate(date)
-  }
+    setSelectedDate(date);
+  };
 
   const handleMealDialogClose = (open: boolean) => {
-    setAddMealDialog(open)
+    setAddMealDialog(open);
     if (!open) {
       // Reload data when dialog closes
-      loadData()
+      loadData();
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -118,7 +118,7 @@ export default function MenuPage() {
           </div>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
   return (
@@ -152,7 +152,11 @@ export default function MenuPage() {
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
           {/* Date Selector */}
           <div className="xl:col-span-2">
-            <DateSelector date={selectedDate} onDateChange={handleDateChange} className="h-full min-h-[120px]" />
+            <DateSelector
+              date={selectedDate}
+              onDateChange={handleDateChange}
+              className="h-full min-h-[120px]"
+            />
           </div>
 
           {/* Stats Grid */}
@@ -161,12 +165,20 @@ export default function MenuPage() {
           </div>
         </div>
 
-        <TabNavigation tabs={kitchens.map((k) => k.name)} activeTab={activeTab} onTabChange={handleTabChange} />
+        <TabNavigation
+          tabs={kitchens.map((k) => k.name)}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
       </div>
 
       {/* Menu Section */}
       <div className="space-y-6">
-        <MenuGrid onAddMeal={handleAddMeal} dailyMenus={dailyMenus} selectedDate={selectedDate} />
+        <MenuGrid
+          onAddMeal={handleAddMeal}
+          dailyMenus={dailyMenus}
+          selectedDate={selectedDate}
+        />
       </div>
 
       {/* Dialogs */}
@@ -178,5 +190,5 @@ export default function MenuPage() {
       />
       <ReportDialog open={reportDialog} onOpenChange={setReportDialog} />
     </DashboardLayout>
-  )
+  );
 }

@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    if (status === "loading") return // Still loading
+    if (status === "loading") return; // Still loading
 
     if (!session) {
-      router.push("/auth/signin")
-      return
+      router.push("/auth/signin");
+      return;
     }
-  }, [session, status, router])
+  }, [session, status, router]);
 
   if (status === "loading") {
     return (
@@ -27,12 +27,12 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
           <p className="text-[#4b465c]/70">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!session) {
-    return null // Will redirect
+    return null; // Will redirect
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

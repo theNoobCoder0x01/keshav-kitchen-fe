@@ -1,13 +1,13 @@
-const { PrismaClient } = require("@prisma/client")
-const bcrypt = require("bcryptjs")
+const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting database seed...")
+  console.log("🌱 Starting database seed...");
 
   // Create kitchens first
-  console.log("Creating kitchens...")
+  console.log("Creating kitchens...");
   const kitchens = await Promise.all([
     prisma.kitchen.upsert({
       where: { id: "kitchen-1" },
@@ -39,12 +39,12 @@ async function main() {
         location: "Ground Floor, Building C",
       },
     }),
-  ])
+  ]);
 
   // Create users with proper kitchen references
-  console.log("Creating users...")
-  const hashedPassword = await bcrypt.hash("admin123", 12)
-  const hashedPassword2 = await bcrypt.hash("password123", 12)
+  console.log("Creating users...");
+  const hashedPassword = await bcrypt.hash("admin123", 12);
+  const hashedPassword2 = await bcrypt.hash("password123", 12);
 
   const users = await Promise.all([
     prisma.user.upsert({
@@ -95,10 +95,10 @@ async function main() {
         kitchenId: kitchens[2].id,
       },
     }),
-  ])
+  ]);
 
   // Create recipes with proper nested ingredients
-  console.log("Creating recipes...")
+  console.log("Creating recipes...");
   const recipes = await Promise.all([
     prisma.recipe.upsert({
       where: { id: "recipe-1" },
@@ -291,13 +291,13 @@ async function main() {
         },
       },
     }),
-  ])
+  ]);
 
   // Create menus
-  console.log("Creating menus...")
-  const today = new Date()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+  console.log("Creating menus...");
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
   await Promise.all([
     prisma.menu.create({
@@ -360,10 +360,10 @@ async function main() {
         status: "PLANNED",
       },
     }),
-  ])
+  ]);
 
   // Create reports
-  console.log("Creating reports...")
+  console.log("Creating reports...");
   await Promise.all([
     prisma.report.create({
       data: {
@@ -385,22 +385,22 @@ async function main() {
         notes: "Normal operations",
       },
     }),
-  ])
+  ]);
 
-  console.log("✅ Database seeded successfully!")
-  console.log("🔑 Login credentials:")
-  console.log("  Admin: admin@kitchen.com / admin123")
-  console.log("  Manager: manager1@kitchen.com / password123")
-  console.log("  Chef: chef1@kitchen.com / password123")
-  console.log("  Staff: staff1@kitchen.com / password123")
+  console.log("✅ Database seeded successfully!");
+  console.log("🔑 Login credentials:");
+  console.log("  Admin: admin@kitchen.com / admin123");
+  console.log("  Manager: manager1@kitchen.com / password123");
+  console.log("  Chef: chef1@kitchen.com / password123");
+  console.log("  Staff: staff1@kitchen.com / password123");
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error("❌ Seed failed:", e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error("❌ Seed failed:", e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
