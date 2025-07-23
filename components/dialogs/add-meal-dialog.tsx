@@ -1,18 +1,18 @@
 "use client"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Plus } from "lucide-react"
-import { useState, useEffect, useTransition } from "react"
+import { getKitchens } from "@/lib/actions/kitchens"
 import { createDailyMenu } from "@/lib/actions/menu"
 import { getRecipes } from "@/lib/actions/recipes"
-import { getKitchens } from "@/lib/actions/kitchens"
-import { toast } from "sonner"
+import { Plus } from "lucide-react"
 import { useSession } from "next-auth/react"
+import { useEffect, useState, useTransition } from "react"
+import { toast } from "sonner"
 
 interface Ingredient {
   name: string
@@ -65,7 +65,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, selectedDate }: Ad
     try {
       const [recipesData, kitchensData] = await Promise.all([getRecipes(1, 100), getKitchens()])
 
-      setRecipes(recipesData.recipes)
+      setRecipes(recipesData)
       setKitchens(kitchensData)
 
       // Set default kitchen if user has one
