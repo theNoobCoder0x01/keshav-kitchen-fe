@@ -1,4 +1,5 @@
-import type { DefaultSession } from "next-auth"
+import type { DefaultSession, DefaultUser } from "next-auth"
+import type { DefaultJWT } from "next-auth/jwt"
 
 declare module "next-auth" {
   interface Session {
@@ -6,17 +7,17 @@ declare module "next-auth" {
       id: string
       role: string
       kitchenId: string | null
-      kitchen?: {
+      kitchen: {
         id: string
         name: string
       } | null
     } & DefaultSession["user"]
   }
 
-  interface User {
+  interface User extends DefaultUser {
     role: string
     kitchenId: string | null
-    kitchen?: {
+    kitchen: {
       id: string
       name: string
     } | null
@@ -24,10 +25,10 @@ declare module "next-auth" {
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
+  interface JWT extends DefaultJWT {
     role: string
     kitchenId: string | null
-    kitchen?: {
+    kitchen: {
       id: string
       name: string
     } | null

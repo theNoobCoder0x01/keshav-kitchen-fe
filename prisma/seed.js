@@ -40,7 +40,6 @@ async function main() {
       where: { email: "admin@kitchen.com" },
       update: {},
       create: {
-        id: "user-1",
         name: "Admin User",
         email: "admin@kitchen.com",
         password: hashedPassword,
@@ -52,7 +51,6 @@ async function main() {
       where: { email: "manager1@kitchen.com" },
       update: {},
       create: {
-        id: "user-2",
         name: "Kitchen Manager",
         email: "manager1@kitchen.com",
         password: hashedPassword2,
@@ -64,7 +62,6 @@ async function main() {
       where: { email: "chef1@kitchen.com" },
       update: {},
       create: {
-        id: "user-3",
         name: "Head Chef",
         email: "chef1@kitchen.com",
         password: hashedPassword2,
@@ -76,7 +73,6 @@ async function main() {
       where: { email: "staff1@kitchen.com" },
       update: {},
       create: {
-        id: "user-4",
         name: "Kitchen Staff",
         email: "staff1@kitchen.com",
         password: hashedPassword2,
@@ -95,16 +91,40 @@ async function main() {
         id: "recipe-1",
         name: "Dal Tadka",
         description: "Traditional lentil curry with spices",
-        ingredients: JSON.stringify([
-          { name: "Toor Dal", quantity: "2 cups", cost: 80 },
-          { name: "Onions", quantity: "2 medium", cost: 20 },
-          { name: "Tomatoes", quantity: "3 medium", cost: 30 },
-          { name: "Spices", quantity: "mixed", cost: 25 },
-        ]),
         instructions: "Cook dal, prepare tadka, mix and serve",
-        servings: 10,
-        costPerServing: 15.5,
+        prepTime: 15,
+        cookTime: 30,
+        servings: 100,
+        category: "Main Course",
         userId: users[2].id, // Chef
+        ingredients: {
+          create: [
+            {
+              name: "Toor Dal",
+              quantity: 2.0,
+              unit: "kg",
+              costPerUnit: 80.0,
+            },
+            {
+              name: "Onions",
+              quantity: 0.5,
+              unit: "kg",
+              costPerUnit: 25.0,
+            },
+            {
+              name: "Tomatoes",
+              quantity: 0.8,
+              unit: "kg",
+              costPerUnit: 30.0,
+            },
+            {
+              name: "Spices",
+              quantity: 0.1,
+              unit: "kg",
+              costPerUnit: 150.0,
+            },
+          ],
+        },
       },
     }),
     prisma.recipe.upsert({
@@ -114,16 +134,40 @@ async function main() {
         id: "recipe-2",
         name: "Vegetable Biryani",
         description: "Aromatic rice dish with mixed vegetables",
-        ingredients: JSON.stringify([
-          { name: "Basmati Rice", quantity: "3 cups", cost: 120 },
-          { name: "Mixed Vegetables", quantity: "2 cups", cost: 80 },
-          { name: "Spices & Herbs", quantity: "assorted", cost: 50 },
-          { name: "Ghee", quantity: "4 tbsp", cost: 40 },
-        ]),
         instructions: "Layer rice and vegetables, cook with dum method",
-        servings: 12,
-        costPerServing: 24.2,
+        prepTime: 45,
+        cookTime: 60,
+        servings: 120,
+        category: "Main Course",
         userId: users[2].id, // Chef
+        ingredients: {
+          create: [
+            {
+              name: "Basmati Rice",
+              quantity: 3.0,
+              unit: "kg",
+              costPerUnit: 120.0,
+            },
+            {
+              name: "Mixed Vegetables",
+              quantity: 2.0,
+              unit: "kg",
+              costPerUnit: 40.0,
+            },
+            {
+              name: "Spices & Herbs",
+              quantity: 0.2,
+              unit: "kg",
+              costPerUnit: 250.0,
+            },
+            {
+              name: "Ghee",
+              quantity: 0.3,
+              unit: "liter",
+              costPerUnit: 400.0,
+            },
+          ],
+        },
       },
     }),
     prisma.recipe.upsert({
@@ -133,16 +177,34 @@ async function main() {
         id: "recipe-3",
         name: "Chapati",
         description: "Fresh whole wheat flatbread",
-        ingredients: JSON.stringify([
-          { name: "Wheat Flour", quantity: "4 cups", cost: 60 },
-          { name: "Water", quantity: "1.5 cups", cost: 0 },
-          { name: "Salt", quantity: "1 tsp", cost: 2 },
-          { name: "Oil", quantity: "2 tbsp", cost: 8 },
-        ]),
         instructions: "Make dough, roll and cook on tawa",
-        servings: 20,
-        costPerServing: 3.5,
+        prepTime: 30,
+        cookTime: 45,
+        servings: 200,
+        category: "Bread",
         userId: users[3].id, // Staff
+        ingredients: {
+          create: [
+            {
+              name: "Wheat Flour",
+              quantity: 4.0,
+              unit: "kg",
+              costPerUnit: 35.0,
+            },
+            {
+              name: "Salt",
+              quantity: 0.05,
+              unit: "kg",
+              costPerUnit: 20.0,
+            },
+            {
+              name: "Oil",
+              quantity: 0.2,
+              unit: "liter",
+              costPerUnit: 100.0,
+            },
+          ],
+        },
       },
     }),
   ])
@@ -162,8 +224,12 @@ async function main() {
         mealType: "LUNCH",
         recipeId: recipes[0].id,
         kitchenId: kitchens[0].id,
-        plannedServings: 100,
-        actualServings: 95,
+        userId: users[1].id, // Manager
+        servings: 100,
+        ghanFactor: 1.0,
+        status: "COMPLETED",
+        actualCount: 95,
+        notes: "Good response to Dal Tadka",
       },
     }),
     prisma.menu.upsert({
@@ -175,8 +241,12 @@ async function main() {
         mealType: "DINNER",
         recipeId: recipes[1].id,
         kitchenId: kitchens[0].id,
-        plannedServings: 80,
-        actualServings: 78,
+        userId: users[1].id, // Manager
+        servings: 80,
+        ghanFactor: 1.2,
+        status: "COMPLETED",
+        actualCount: 78,
+        notes: "Biryani was popular",
       },
     }),
     prisma.menu.upsert({
@@ -185,11 +255,14 @@ async function main() {
       create: {
         id: "menu-3",
         date: tomorrow,
-        mealType: "LUNCH",
+        mealType: "BREAKFAST",
         recipeId: recipes[2].id,
         kitchenId: kitchens[1].id,
-        plannedServings: 120,
-        actualServings: null,
+        userId: users[3].id, // Staff
+        servings: 120,
+        ghanFactor: 1.5,
+        status: "PLANNED",
+        notes: "Fresh chapatis for breakfast",
       },
     }),
   ])
@@ -202,16 +275,11 @@ async function main() {
       create: {
         id: "report-1",
         date: today,
-        type: "DAILY",
-        title: "Daily Kitchen Report",
-        content: JSON.stringify({
-          totalMeals: 173,
-          totalCost: 4250,
-          wastePercentage: 3.2,
-          feedback: "Good response to Dal Tadka",
-        }),
         kitchenId: kitchens[0].id,
-        createdById: users[1].id, // Manager
+        userId: users[1].id, // Manager
+        visitorCount: 173,
+        mealsCounted: 173,
+        notes: "Good response to Dal Tadka and Biryani. No major issues.",
       },
     }),
     prisma.report.upsert({
@@ -220,16 +288,11 @@ async function main() {
       create: {
         id: "report-2",
         date: today,
-        type: "WEEKLY",
-        title: "Weekly Summary",
-        content: JSON.stringify({
-          totalMeals: 1200,
-          totalCost: 28500,
-          averageWaste: 2.8,
-          popularDishes: ["Dal Tadka", "Vegetable Biryani"],
-        }),
-        kitchenId: kitchens[0].id,
-        createdById: users[0].id, // Admin
+        kitchenId: kitchens[1].id,
+        userId: users[3].id, // Staff
+        visitorCount: 45,
+        mealsCounted: 45,
+        notes: "Smooth operations in secondary kitchen.",
       },
     }),
   ])
@@ -238,7 +301,7 @@ async function main() {
   console.log("📊 Created:")
   console.log("  - 2 Kitchens")
   console.log("  - 4 Users")
-  console.log("  - 3 Recipes")
+  console.log("  - 3 Recipes with ingredients")
   console.log("  - 3 Menus")
   console.log("  - 2 Reports")
   console.log("")

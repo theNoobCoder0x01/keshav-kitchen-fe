@@ -1,9 +1,10 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-import { prisma } from "./prisma"
+import { prisma } from "@/lib/prisma"
+import type { NextAuthConfig } from "next-auth"
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const config = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -76,4 +77,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
-})
+} satisfies NextAuthConfig
+
+export const { handlers, auth, signIn, signOut } = NextAuth(config)

@@ -6,27 +6,28 @@ import { auth } from "@/lib/auth"
 import { z } from "zod"
 
 const MenuSchema = z.object({
-  date: z.string(),
+  date: z.date(),
   mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]),
   recipeId: z.string(),
-  plannedServings: z.number().min(1),
+  kitchenId: z.string(),
+  servings: z.number().min(1),
+  ghanFactor: z.number().min(0.1).max(5.0),
+  notes: z.string().optional(),
 })
 
-export async function getDailyMenus(date?: string) {
+export async function getDailyMenus(date?: Date) {
   const session = await auth()
   if (!session?.user?.kitchenId) {
     throw new Error("Unauthorized")
   }
 
-  const targetDate = date ? new Date(date) : new Date()
+  const targetDate = date || new Date()
+  targetDate.setHours(0, 0, 0, 0)
 
   const menus = await prisma.menu.findMany({
     where: {
+      date: targetDate,
       kitchenId: session.user.kitchenId,
-      date: {
-        gte: new Date(targetDate.setHours(0, 0, 0, 0)),
-        lt: new Date(targetDate.setHours(23, 59, 59, 999)),
-      },
     },
     include: {
       recipe: {
@@ -34,25 +35,47 @@ export async function getDailyMenus(date?: string) {
           id: true,
           name: true,
           description: true,
-          costPerServing: true,
+          category: true,
+          ingredients: {
+            select: {
+              name: true,
+              quantity: true,
+              unit: true,
+              costPerUnit: true,
+            },
+          },
+        },
+      },
+      kitchen: {
+        select: {
+          name: true,
+        },
+      },
+      user: {
+        select: {
+          name: true,
         },
       },
     },
-    orderBy: {
-      mealType: "asc",
-    },
+    orderBy: [
+      {
+        mealType: "asc",
+      },
+      {
+        createdAt: "asc",
+      },
+    ],
   })
 
-  return menus.reduce(
-    (acc, menu) => {
-      if (!acc[menu.mealType]) {
-        acc[menu.mealType] = []
-      }
-      acc[menu.mealType].push(menu)
-      return acc
-    },
-    {} as Record<string, typeof menus>,
-  )
+  // Group by meal type
+  const groupedMenus = {
+    BREAKFAST: menus.filter((m) => m.mealType === "BREAKFAST"),
+    LUNCH: menus.filter((m) => m.mealType === "LUNCH"),
+    DINNER: menus.filter((m) => m.mealType === "DINNER"),
+    SNACK: menus.filter((m) => m.mealType === "SNACK"),
+  }
+
+  return groupedMenus
 }
 
 export async function getMenuStats() {
@@ -62,59 +85,58 @@ export async function getMenuStats() {
   }
 
   const today = new Date()
-  const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()))
-  const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6))
+  today.setHours(0, 0, 0, 0)
 
-  const [todayMenus, weekMenus, totalRecipes] = await Promise.all([
+  const [todayMenus, weekMenus, totalServings, avgGhanFactor] = await Promise.all([
     prisma.menu.count({
       where: {
+        date: today,
         kitchenId: session.user.kitchenId,
-        date: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lt: new Date(new Date().setHours(23, 59, 59, 999)),
-        },
       },
     }),
-    prisma.menu.findMany({
+    prisma.menu.count({
       where: {
-        kitchenId: session.user.kitchenId,
         date: {
-          gte: startOfWeek,
-          lte: endOfWeek,
+          gte: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000),
         },
-      },
-      select: {
-        plannedServings: true,
-        actualServings: true,
+        kitchenId: session.user.kitchenId,
       },
     }),
-    prisma.recipe.count({
+    prisma.menu.aggregate({
       where: {
-        user: {
-          kitchenId: session.user.kitchenId,
-        },
+        date: today,
+        kitchenId: session.user.kitchenId,
+      },
+      _sum: {
+        servings: true,
+      },
+    }),
+    prisma.menu.aggregate({
+      where: {
+        kitchenId: session.user.kitchenId,
+      },
+      _avg: {
+        ghanFactor: true,
       },
     }),
   ])
 
-  const totalPlannedServings = weekMenus.reduce((sum, menu) => sum + (menu.plannedServings || 0), 0)
-  const totalActualServings = weekMenus.reduce((sum, menu) => sum + (menu.actualServings || 0), 0)
-
   return {
     todayMenus,
-    weeklyServings: totalPlannedServings,
-    actualServings: totalActualServings,
-    totalRecipes,
+    weekMenus,
+    totalServingsToday: totalServings._sum.servings || 0,
+    avgGhanFactor: Math.round((avgGhanFactor._avg.ghanFactor || 1.0) * 100) / 100,
   }
 }
 
 export async function createDailyMenu(data: z.infer<typeof MenuSchema>) {
   const session = await auth()
-  if (!session?.user?.kitchenId) {
+  if (!session?.user?.id) {
     throw new Error("Unauthorized")
   }
 
-  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+  // Check if user has permission to create menus for this kitchen
+  if (session.user.role === "STAFF" && data.kitchenId !== session.user.kitchenId) {
     throw new Error("Insufficient permissions")
   }
 
@@ -123,14 +145,14 @@ export async function createDailyMenu(data: z.infer<typeof MenuSchema>) {
   const menu = await prisma.menu.create({
     data: {
       ...validatedData,
-      date: new Date(validatedData.date),
-      kitchenId: session.user.kitchenId,
+      userId: session.user.id,
+      status: "PLANNED",
     },
     include: {
       recipe: {
         select: {
           name: true,
-          costPerServing: true,
+          category: true,
         },
       },
     },
@@ -140,21 +162,45 @@ export async function createDailyMenu(data: z.infer<typeof MenuSchema>) {
   return menu
 }
 
-export async function updateDailyMenu(id: string, data: Partial<z.infer<typeof MenuSchema>>) {
+export async function updateDailyMenu(
+  id: string,
+  data: Partial<z.infer<typeof MenuSchema>> & {
+    status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+    actualCount?: number
+  },
+) {
   const session = await auth()
-  if (!session?.user?.kitchenId) {
+  if (!session?.user?.id) {
     throw new Error("Unauthorized")
   }
 
-  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+  // Check if menu exists and user has permission
+  const existingMenu = await prisma.menu.findFirst({
+    where: {
+      id,
+      OR: [{ userId: session.user.id }, { kitchenId: session.user.kitchenId }],
+    },
+  })
+
+  if (!existingMenu) {
+    throw new Error("Menu not found or unauthorized")
+  }
+
+  // Staff can only update their own menus
+  if (session.user.role === "STAFF" && existingMenu.userId !== session.user.id) {
     throw new Error("Insufficient permissions")
   }
 
   const menu = await prisma.menu.update({
     where: { id },
-    data: {
-      ...data,
-      date: data.date ? new Date(data.date) : undefined,
+    data,
+    include: {
+      recipe: {
+        select: {
+          name: true,
+          category: true,
+        },
+      },
     },
   })
 
@@ -164,11 +210,24 @@ export async function updateDailyMenu(id: string, data: Partial<z.infer<typeof M
 
 export async function deleteDailyMenu(id: string) {
   const session = await auth()
-  if (!session?.user?.kitchenId) {
+  if (!session?.user?.id) {
     throw new Error("Unauthorized")
   }
 
-  if (session.user.role !== "ADMIN" && session.user.role !== "MANAGER") {
+  // Check if menu exists and user has permission
+  const existingMenu = await prisma.menu.findFirst({
+    where: {
+      id,
+      OR: [{ userId: session.user.id }, { kitchenId: session.user.kitchenId }],
+    },
+  })
+
+  if (!existingMenu) {
+    throw new Error("Menu not found or unauthorized")
+  }
+
+  // Staff can only delete their own menus, others need manager+ role
+  if (session.user.role === "STAFF" && existingMenu.userId !== session.user.id) {
     throw new Error("Insufficient permissions")
   }
 
@@ -177,4 +236,37 @@ export async function deleteDailyMenu(id: string) {
   })
 
   revalidatePath("/")
+}
+
+export async function getMenuHistory(recipeId?: string, limit = 10) {
+  const session = await auth()
+  if (!session?.user?.kitchenId) {
+    throw new Error("Unauthorized")
+  }
+
+  const menus = await prisma.menu.findMany({
+    where: {
+      kitchenId: session.user.kitchenId,
+      ...(recipeId && { recipeId }),
+    },
+    include: {
+      recipe: {
+        select: {
+          name: true,
+          category: true,
+        },
+      },
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      date: "desc",
+    },
+    take: limit,
+  })
+
+  return menus
 }
