@@ -1,301 +1,238 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { z } from "zod"
+import { revalidatePath } from "next/cache"
 
-const ReportSchema = z.object({
-  date: z.date(),
-  kitchenId: z.string(),
-  visitorCount: z.number().min(0),
-  mealsCounted: z.number().min(0),
-  notes: z.string().optional(),
-})
+export async function getReports(kitchenId?: string) {
+  try {
+    const session = await auth()
 
-export async function getReports(limit = 10) {
-  const session = await auth()
-  if (!session?.user?.kitchenId) {
-    throw new Error("Unauthorized")
+    if (!session?.user) {
+      return []
+    }
+
+    const targetKitchenId = kitchenId || session.user.kitchenId
+
+    if (!targetKitchenId && session.user.role !== "ADMIN") {
+      return []
+    }
+
+    const whereClause: any = {}
+
+    if (targetKitchenId) {
+      whereClause.kitchenId = targetKitchenId
+    }
+
+    const reports = await prisma.report.findMany({
+      where: whereClause,
+      include: {
+        kitchen: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { date: "desc" },
+    })
+
+    return reports
+  } catch (error) {
+    console.error("Get reports error:", error)
+    return []
   }
-
-  const reports = await prisma.report.findMany({
-    where: {
-      kitchenId: session.user.kitchenId,
-    },
-    include: {
-      kitchen: {
-        select: {
-          name: true,
-        },
-      },
-      user: {
-        select: {
-          name: true,
-          role: true,
-        },
-      },
-    },
-    orderBy: {
-      date: "desc",
-    },
-    take: limit,
-  })
-
-  return reports
 }
 
 export async function getReport(id: string) {
-  const session = await auth()
-  if (!session?.user?.kitchenId) {
-    throw new Error("Unauthorized")
+  try {
+    const session = await auth()
+
+    if (!session?.user) {
+      return null
+    }
+
+    const report = await prisma.report.findUnique({
+      where: { id },
+      include: {
+        kitchen: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    })
+
+    return report
+  } catch (error) {
+    console.error("Get report error:", error)
+    return null
   }
-
-  const report = await prisma.report.findFirst({
-    where: {
-      id,
-      kitchenId: session.user.kitchenId,
-    },
-    include: {
-      kitchen: {
-        select: {
-          name: true,
-          location: true,
-        },
-      },
-      user: {
-        select: {
-          name: true,
-          role: true,
-        },
-      },
-    },
-  })
-
-  return report
 }
 
-export async function createReport(data: z.infer<typeof ReportSchema>) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+export async function createReport(formData: FormData) {
+  try {
+    const session = await auth()
 
-  // Check if user has permission to create reports for this kitchen
-  if (session.user.role === "STAFF" && data.kitchenId !== session.user.kitchenId) {
-    throw new Error("Insufficient permissions")
-  }
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
 
-  const validatedData = ReportSchema.parse(data)
+    const date = formData.get("date") as string
+    const visitorCount = Number.parseInt(formData.get("visitorCount") as string)
+    const mealsCounted = Number.parseInt(formData.get("mealsCounted") as string)
+    const notes = formData.get("notes") as string
 
-  const report = await prisma.report.create({
-    data: {
-      ...validatedData,
-      userId: session.user.id,
-    },
-    include: {
-      kitchen: {
-        select: {
-          name: true,
-        },
+    if (!date || isNaN(visitorCount) || isNaN(mealsCounted)) {
+      return { success: false, error: "Missing required fields" }
+    }
+
+    if (!session.user.kitchenId) {
+      return { success: false, error: "No kitchen assigned" }
+    }
+
+    const report = await prisma.report.create({
+      data: {
+        date: new Date(date),
+        kitchenId: session.user.kitchenId,
+        userId: session.user.id,
+        visitorCount,
+        mealsCounted,
+        notes: notes || null,
       },
-    },
-  })
+    })
 
-  revalidatePath("/reports")
-  return report
+    revalidatePath("/reports")
+    return { success: true, report }
+  } catch (error) {
+    console.error("Create report error:", error)
+    return { success: false, error: "Failed to create report" }
+  }
 }
 
-export async function updateReport(id: string, data: Partial<z.infer<typeof ReportSchema>>) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+export async function updateReport(id: string, formData: FormData) {
+  try {
+    const session = await auth()
 
-  // Check if report exists and user has permission
-  const existingReport = await prisma.report.findFirst({
-    where: {
-      id,
-      kitchenId: session.user.kitchenId,
-    },
-  })
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
 
-  if (!existingReport) {
-    throw new Error("Report not found or unauthorized")
-  }
+    const visitorCount = Number.parseInt(formData.get("visitorCount") as string)
+    const mealsCounted = Number.parseInt(formData.get("mealsCounted") as string)
+    const notes = formData.get("notes") as string
 
-  // Staff can only update their own reports
-  if (session.user.role === "STAFF" && existingReport.userId !== session.user.id) {
-    throw new Error("Insufficient permissions")
-  }
+    if (isNaN(visitorCount) || isNaN(mealsCounted)) {
+      return { success: false, error: "Invalid visitor count or meals counted" }
+    }
 
-  const report = await prisma.report.update({
-    where: { id },
-    data,
-    include: {
-      kitchen: {
-        select: {
-          name: true,
-        },
+    const report = await prisma.report.update({
+      where: { id },
+      data: {
+        visitorCount,
+        mealsCounted,
+        notes: notes || null,
       },
-    },
-  })
+    })
 
-  revalidatePath("/reports")
-  return report
+    revalidatePath("/reports")
+    return { success: true, report }
+  } catch (error) {
+    console.error("Update report error:", error)
+    return { success: false, error: "Failed to update report" }
+  }
 }
 
 export async function deleteReport(id: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  try {
+    const session = await auth()
 
-  // Check if report exists and user has permission
-  const existingReport = await prisma.report.findFirst({
-    where: {
-      id,
-      kitchenId: session.user.kitchenId,
-    },
-  })
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
 
-  if (!existingReport) {
-    throw new Error("Report not found or unauthorized")
-  }
+    await prisma.report.delete({
+      where: { id },
+    })
 
-  // Staff can only delete their own reports, others need manager+ role
-  if (session.user.role === "STAFF" && existingReport.userId !== session.user.id) {
-    throw new Error("Insufficient permissions")
-  }
-
-  await prisma.report.delete({
-    where: { id },
-  })
-
-  revalidatePath("/reports")
-}
-
-export async function getReportStats() {
-  const session = await auth()
-  if (!session?.user?.kitchenId) {
-    throw new Error("Unauthorized")
-  }
-
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-
-  const [todayReports, weekReports, monthReports, totalVisitors, totalMeals] = await Promise.all([
-    prisma.report.count({
-      where: {
-        date: today,
-        kitchenId: session.user.kitchenId,
-      },
-    }),
-    prisma.report.count({
-      where: {
-        date: {
-          gte: weekAgo,
-        },
-        kitchenId: session.user.kitchenId,
-      },
-    }),
-    prisma.report.count({
-      where: {
-        date: {
-          gte: monthAgo,
-        },
-        kitchenId: session.user.kitchenId,
-      },
-    }),
-    prisma.report.aggregate({
-      where: {
-        date: {
-          gte: weekAgo,
-        },
-        kitchenId: session.user.kitchenId,
-      },
-      _sum: {
-        visitorCount: true,
-      },
-    }),
-    prisma.report.aggregate({
-      where: {
-        date: {
-          gte: weekAgo,
-        },
-        kitchenId: session.user.kitchenId,
-      },
-      _sum: {
-        mealsCounted: true,
-      },
-    }),
-  ])
-
-  return {
-    todayReports,
-    weekReports,
-    monthReports,
-    totalVisitorsThisWeek: totalVisitors._sum.visitorCount || 0,
-    totalMealsThisWeek: totalMeals._sum.mealsCounted || 0,
+    revalidatePath("/reports")
+    return { success: true }
+  } catch (error) {
+    console.error("Delete report error:", error)
+    return { success: false, error: "Failed to delete report" }
   }
 }
 
-export async function getDailyReportSummary(date?: Date) {
-  const session = await auth()
-  if (!session?.user?.kitchenId) {
-    throw new Error("Unauthorized")
-  }
+export async function getReportStats(kitchenId?: string) {
+  try {
+    const session = await auth()
 
-  const targetDate = date || new Date()
-  targetDate.setHours(0, 0, 0, 0)
+    if (!session?.user) {
+      return {
+        totalReports: 0,
+        totalVisitors: 0,
+        totalMeals: 0,
+        averageVisitorsPerDay: 0,
+      }
+    }
 
-  const [reports, menus] = await Promise.all([
-    prisma.report.findMany({
-      where: {
-        date: targetDate,
-        kitchenId: session.user.kitchenId,
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-          },
+    const targetKitchenId = kitchenId || session.user.kitchenId
+
+    if (!targetKitchenId && session.user.role !== "ADMIN") {
+      return {
+        totalReports: 0,
+        totalVisitors: 0,
+        totalMeals: 0,
+        averageVisitorsPerDay: 0,
+      }
+    }
+
+    const whereClause: any = {}
+
+    if (targetKitchenId) {
+      whereClause.kitchenId = targetKitchenId
+    }
+
+    const [reportCount, aggregates] = await Promise.all([
+      prisma.report.count({ where: whereClause }),
+      prisma.report.aggregate({
+        where: whereClause,
+        _sum: {
+          visitorCount: true,
+          mealsCounted: true,
         },
-      },
-    }),
-    prisma.menu.findMany({
-      where: {
-        date: targetDate,
-        kitchenId: session.user.kitchenId,
-      },
-      include: {
-        recipe: {
-          select: {
-            name: true,
-            category: true,
-          },
+        _avg: {
+          visitorCount: true,
         },
-      },
-    }),
-  ])
+      }),
+    ])
 
-  const totalVisitors = reports.reduce((sum, report) => sum + report.visitorCount, 0)
-  const totalMeals = reports.reduce((sum, report) => sum + report.mealsCounted, 0)
-  const plannedServings = menus.reduce((sum, menu) => sum + menu.servings, 0)
-  const actualServings = menus.reduce((sum, menu) => sum + (menu.actualCount || 0), 0)
-
-  return {
-    reports,
-    menus,
-    summary: {
-      totalVisitors,
-      totalMeals,
-      plannedServings,
-      actualServings,
-      efficiency: plannedServings > 0 ? Math.round((actualServings / plannedServings) * 100) : 0,
-    },
+    return {
+      totalReports: reportCount,
+      totalVisitors: aggregates._sum.visitorCount || 0,
+      totalMeals: aggregates._sum.mealsCounted || 0,
+      averageVisitorsPerDay: Math.round(aggregates._avg.visitorCount || 0),
+    }
+  } catch (error) {
+    console.error("Get report stats error:", error)
+    return {
+      totalReports: 0,
+      totalVisitors: 0,
+      totalMeals: 0,
+      averageVisitorsPerDay: 0,
+    }
   }
 }

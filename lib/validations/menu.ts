@@ -1,22 +1,23 @@
 import { z } from "zod"
 
 export const menuSchema = z.object({
-  date: z.date(),
-  mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]),
+  date: z.string().min(1, "Date is required"),
+  mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"], {
+    required_error: "Meal type is required",
+  }),
   recipeId: z.string().min(1, "Recipe is required"),
-  kitchenId: z.string().min(1, "Kitchen is required"),
   servings: z.number().positive("Servings must be positive"),
-  ghanFactor: z.number().min(0.1).max(5.0),
+  ghanFactor: z.number().positive("Ghan factor must be positive").default(1.0),
   notes: z.string().optional(),
 })
 
-export const reportSchema = z.object({
-  date: z.date(),
-  kitchenId: z.string().min(1, "Kitchen is required"),
-  visitorCount: z.number().min(0, "Visitor count must be non-negative"),
-  mealsCounted: z.number().min(0, "Meals counted must be non-negative"),
+export const menuUpdateSchema = z.object({
+  servings: z.number().positive("Servings must be positive"),
+  ghanFactor: z.number().positive("Ghan factor must be positive"),
+  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
+  actualCount: z.number().min(0).optional(),
   notes: z.string().optional(),
 })
 
 export type MenuFormData = z.infer<typeof menuSchema>
-export type ReportFormData = z.infer<typeof reportSchema>
+export type MenuUpdateData = z.infer<typeof menuUpdateSchema>
