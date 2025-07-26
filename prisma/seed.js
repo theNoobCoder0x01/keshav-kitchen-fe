@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const crypto = require("crypto").webcrypto; // Use webcrypto for browser compatibility
 
 // Import the crypto utilities for password hashing
 // Note: This is a workaround since we can't directly import ES modules in CommonJS
@@ -12,39 +13,39 @@ async function hashPasswordForSeed(password) {
   const iterations = 100000;
   const saltLength = 32;
   const hashLength = 32;
-  
+
   // Generate salt
   const salt = crypto.getRandomValues(new Uint8Array(saltLength));
-  
+
   // Convert password to ArrayBuffer
   const passwordBuffer = new TextEncoder().encode(password);
-  
+
   // Import key
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     passwordBuffer,
-    { name: 'PBKDF2' },
+    { name: "PBKDF2" },
     false,
-    ['deriveBits']
+    ["deriveBits"]
   );
-  
+
   // Derive hash
   const hashBuffer = await crypto.subtle.deriveBits(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt: salt,
       iterations: iterations,
-      hash: 'SHA-256'
+      hash: "SHA-256",
     },
     key,
     hashLength * 8
   );
-  
+
   // Convert to base64
   const hashArray = new Uint8Array(hashBuffer);
   const saltBase64 = btoa(String.fromCharCode(...salt));
   const hashBase64 = btoa(String.fromCharCode(...hashArray));
-  
+
   return `${saltBase64}.${hashBase64}`;
 }
 
@@ -88,7 +89,36 @@ async function main() {
     }),
   ]);
 
-  // Create users with proper kitchen references
+  // Create daily menus for each kitchen for today and tomorrow
+  console.log("Creating daily menus...");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const allDates = [today, tomorrow];
+
+  // Create a daily menu for each kitchen and date
+  const dailyMenus = [];
+  for (const kitchen of kitchens) {
+    for (const date of allDates) {
+      const dm = await prisma.dailyMenu.upsert({
+        where: {
+          date_kitchenId: {
+            date,
+            kitchenId: kitchen.id,
+          },
+        },
+        update: {},
+        create: {
+          date,
+          kitchenId: kitchen.id,
+        },
+      });
+      dailyMenus.push(dm);
+    }
+  }
+
+// Create users with proper kitchen references
   console.log("Creating users...");
   const hashedPassword = await hashPasswordForSeed("admin123");
   const hashedPassword2 = await hashPasswordForSeed("password123");
@@ -167,12 +197,6 @@ async function main() {
               quantity: 2,
               unit: "cups",
               costPerUnit: 40,
-            },
-            {
-              name: "Onions",
-              quantity: 2,
-              unit: "medium",
-              costPerUnit: 10,
             },
             {
               name: "Tomatoes",
@@ -342,9 +366,10 @@ async function main() {
 
   // Create menus
   console.log("Creating menus...");
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // Helper to find the right dailyMenuId for a given kitchenId and date
+  function findDailyMenuId(kitchenId, date) {
+    return dailyMenus.find(dm => dm.kitchenId === kitchenId && dm.date.getTime() === date.getTime())?.id;
+  }
 
   await Promise.all([
     prisma.menu.create({
@@ -357,6 +382,7 @@ async function main() {
         servings: 50,
         ghanFactor: 1.2,
         status: "PLANNED",
+        dailyMenuId: findDailyMenuId(kitchens[0].id, today),
       },
     }),
     prisma.menu.create({
@@ -369,6 +395,7 @@ async function main() {
         servings: 100,
         ghanFactor: 1.0,
         status: "PLANNED",
+        dailyMenuId: findDailyMenuId(kitchens[0].id, today),
       },
     }),
     prisma.menu.create({
@@ -381,6 +408,7 @@ async function main() {
         servings: 80,
         ghanFactor: 1.1,
         status: "PLANNED",
+        dailyMenuId: findDailyMenuId(kitchens[0].id, today),
       },
     }),
     prisma.menu.create({

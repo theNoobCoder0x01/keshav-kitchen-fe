@@ -8,9 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, Mail, Eye, MoreHorizontal } from "lucide-react";
+import { ChevronDown, Mail, Eye, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Recipe {
+  id: string;
   name: string;
   type: string;
   issuedDate: string;
@@ -18,9 +20,12 @@ interface Recipe {
 
 interface RecipesTableProps {
   recipes: Recipe[];
+  onEdit?: (recipe: Recipe) => void;
+  onDelete?: (recipe: Recipe) => void;
+  deletingId?: string | null;
 }
 
-export function RecipesTable({ recipes }: RecipesTableProps) {
+export function RecipesTable({ recipes, onEdit, onDelete, deletingId }: RecipesTableProps) {
   return (
     <Card className="bg-white border-[#dbdade]">
       <CardContent className="p-0">
@@ -87,6 +92,29 @@ export function RecipesTable({ recipes }: RecipesTableProps) {
                       className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
                     >
                       <MoreHorizontal className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                      onClick={() => onEdit && onEdit(recipe)}
+                      aria-label="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                      onClick={() => onDelete && onDelete(recipe)}
+                      aria-label="Delete"
+                      disabled={deletingId === recipe.id}
+                    >
+                      {deletingId === recipe.id ? (
+                        <span className="w-4 h-4 animate-spin border-2 border-[#674af5] border-t-transparent rounded-full inline-block" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </TableCell>

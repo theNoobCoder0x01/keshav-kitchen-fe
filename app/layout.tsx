@@ -1,7 +1,7 @@
 import type React from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "next-auth/react";
+import { SessionProviderWrapper } from "@/components/providers/session-provider";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -14,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SessionProvider>
+        <SessionProviderWrapper>
           {children}
           <Toaster
             position="top-right"
@@ -26,7 +26,7 @@ export default function RootLayout({
               },
             }}
           />
-        </SessionProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );

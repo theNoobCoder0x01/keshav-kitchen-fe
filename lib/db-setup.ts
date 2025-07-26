@@ -146,7 +146,7 @@ export async function seedDatabase() {
         ('ing_2', 'recipe_1', 'Urad Dal', 0.5, 'kg', 120.00),
         ('ing_3', 'recipe_1', 'Toor Dal', 0.3, 'kg', 100.00),
         ('ing_4', 'recipe_2', 'Poha', 1.0, 'kg', 40.00),
-        ('ing_5', 'recipe_2', 'Onion', 0.5, 'kg', 25.00),
+        ('ing_5', 'recipe_2', 'Tomato', 0.5, 'kg', 25.00),
         ('ing_6', 'recipe_2', 'Potato', 0.3, 'kg', 20.00),
         ('ing_7', 'recipe_3', 'Rice', 3.0, 'kg', 30.00),
         ('ing_8', 'recipe_3', 'Toor Dal', 1.0, 'kg', 100.00),

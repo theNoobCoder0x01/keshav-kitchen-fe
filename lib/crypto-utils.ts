@@ -173,12 +173,3 @@ export async function migrateBcryptHash(password: string, bcryptHash: string): P
     return null;
   }
 }
-
-/**
- * Utility function to check if a hash is in the old bcrypt format
- * @param hash - The hash to check
- * @returns boolean - True if it's a bcrypt hash
- */
-export function isBcryptHash(hash: string): boolean {
-  return hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$');
-}

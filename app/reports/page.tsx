@@ -8,46 +8,52 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ReportsGrid } from "@/components/reports/reports-grid";
 import { Button } from "@/components/ui/button";
 import { Users, Download } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const tabs = ["Thakorji", "Premvati", "Aarsh", "Mandir", "Prasad"];
 
-  const statsData = [
-    {
-      label: "Total Served",
-      value: "500",
-      icon: Users,
-      iconColor: "#00cfe8",
-      trend: { value: 15, isPositive: true },
-    },
-    {
-      label: "Breakfast",
-      value: "350",
-      icon: Users,
-      iconColor: "#28c76f",
-      trend: { value: 8, isPositive: true },
-    },
-    {
-      label: "Lunch",
-      value: "200",
-      icon: Users,
-      iconColor: "#ff9f43",
-      trend: { value: 12, isPositive: true },
-    },
-    {
-      label: "Dinner",
-      value: "150",
-      icon: Users,
-      iconColor: "#ea5455",
-      trend: { value: 5, isPositive: false },
-    },
-  ];
+  const [statsData, setStatsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDownload = (type: string) => {
-    console.log(`Downloading ${type} report`);
+  useEffect(() => {
+    async function fetchStats() {
+      setLoading(true);
+      setError(null);
+      try {
+        const { fetchStats } = await import('@/lib/api/stats');
+        const stats = await fetchStats();
+        setStatsData(stats);
+      } catch (err: any) {
+        setError('Failed to load stats data.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  const handleDownload = async (type: string, format: string = "xlsx") => {
+    try {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      const response = await fetch(`/api/reports/download?type=${type}&date=${dateStr}&format=${format}`);
+      if (!response.ok) throw new Error('Failed to download report');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type}-report-${dateStr}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      import('sonner').then(({ toast }) => toast.success('Report downloaded!'));
+    } catch (err) {
+      import('sonner').then(({ toast }) => toast.error('Failed to download report.'));
+    }
   };
 
   const handleTabChange = (index: number) => {

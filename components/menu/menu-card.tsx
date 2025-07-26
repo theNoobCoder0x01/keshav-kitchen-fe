@@ -66,7 +66,7 @@ export function MenuCard({
             <h3 className="text-lg sm:text-xl font-bold text-[#4b465c] mb-1">
               {title}
             </h3>
-            <p className="text-sm text-[#4b465c]/60">{items.length} items</p>
+            <p className="text-sm text-[#4b465c]/60">{items?.length} items</p>
           </div>
           <Button
             size="sm"
@@ -79,7 +79,7 @@ export function MenuCard({
         </div>
 
         <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
-          {items.map((item) => (
+          {items?.map((item) => (
             <div
               key={item.id}
               className={cn(

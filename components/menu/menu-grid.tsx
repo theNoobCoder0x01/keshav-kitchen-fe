@@ -4,7 +4,7 @@ import { MenuCard } from "./menu-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface MenuItem {
   id: string;
@@ -18,57 +18,74 @@ interface MenuGridProps {
 }
 
 export function MenuGrid({ onAddMeal }: MenuGridProps) {
-  const [menuData, setMenuData] = useState({
-    breakfast: [
-      { id: "b1", name: "Add Mistan", isAddItem: true },
-      { id: "b2", name: "Add Farshan", isAddItem: true },
-      { id: "b3", name: "Add Saak -01", isAddItem: true },
-      { id: "b4", name: "Add Saak -02", isAddItem: true },
-      { id: "b5", name: "Add Saak -02", isAddItem: true },
-    ],
-    lunch: [
-      { id: "l1", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "l2", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "l3", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "l4", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "l5", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "l6", name: "Idali Sambhar", weight: "25 Kg" },
-    ],
-    dinner: [
-      { id: "d1", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "d2", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "d3", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "d4", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "d5", name: "Idali Sambhar", weight: "25 Kg" },
-      { id: "d6", name: "Idali Sambhar", weight: "25 Kg" },
-    ],
-  });
+  const [menuData, setMenuData] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchMenuData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const { fetchMenus } = await import('@/lib/api/menus');
+        const menus = await fetchMenus();
+        setMenuData(menus);
+      } catch (err: any) {
+        setError('Failed to load menu data.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMenuData();
+  }, []);
 
   const [extraItems, setExtraItems] = useState([
     { id: "e1", name: "Save", weight: "1000 Kg" },
   ]);
 
-  const handleEditItem = (
+  const handleEditItem = async (
     mealType: keyof typeof menuData,
     updatedItem: MenuItem,
   ) => {
-    setMenuData((prev) => ({
-      ...prev,
-      [mealType]: prev[mealType].map((item) =>
-        item.id === updatedItem.id ? updatedItem : item,
-      ),
-    }));
+    try {
+      const { updateMenu } = await import('@/lib/api/menus');
+      const result = await updateMenu(updatedItem.id, updatedItem);
+      if (result && !result.error) {
+        setMenuData((prev) => ({
+          ...prev,
+          [mealType]: prev[mealType].map((item) =>
+            item.id === updatedItem.id ? updatedItem : item,
+          ),
+        }));
+        window.toast && window.toast.success('Menu updated!');
+      } else {
+        window.toast && window.toast.error(result.error || 'Failed to update menu.');
+      }
+    } catch (err) {
+      window.toast && window.toast.error('Failed to update menu.');
+    }
   };
 
-  const handleDeleteItem = (
+  const handleDeleteItem = async (
     mealType: keyof typeof menuData,
     itemId: string,
   ) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      setMenuData((prev) => ({
-        ...prev,
-        [mealType]: prev[mealType].filter((item) => item.id !== itemId),
-      }));
+      try {
+        const { deleteMenu } = await import('@/lib/api/menus');
+        const result = await deleteMenu(itemId);
+        if (result && !result.error) {
+          setMenuData((prev) => ({
+            ...prev,
+            [mealType]: prev[mealType].filter((item) => item.id !== itemId),
+          }));
+          window.toast && window.toast.success('Menu deleted!');
+        } else {
+          window.toast && window.toast.error(result.error || 'Failed to delete menu.');
+        }
+      } catch (err) {
+        window.toast && window.toast.error('Failed to delete menu.');
+      }
     }
   };
 

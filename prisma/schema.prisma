@@ -40,6 +40,7 @@ model Kitchen {
   users       User[]
   menus       Menu[]
   reports     Report[]
+  dailyMenus  DailyMenu[]
 }
 
 model Recipe {
@@ -75,6 +76,19 @@ model Ingredient {
   @@index([recipeId])
 }
 
+model DailyMenu {
+  id         String   @id @default(cuid())
+  date       DateTime
+  kitchenId  String
+  kitchen    Kitchen  @relation(fields: [kitchenId], references: [id])
+  menus      Menu[]   // All menus (meals) for this day in this kitchen
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([kitchenId])
+  @@unique([date, kitchenId]) // Only one daily menu per kitchen per day
+}
+
 model Menu {
   id          String    @id @default(cuid())
   date        DateTime
@@ -96,6 +110,8 @@ model Menu {
   @@index([recipeId])
   @@index([kitchenId])
   @@index([userId])
+  dailyMenuId String?
+  dailyMenu   DailyMenu? @relation(fields: [dailyMenuId], references: [id])
 }
 
 model Report {

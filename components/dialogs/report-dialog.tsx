@@ -24,17 +24,19 @@ interface ReportDialogProps {
 }
 
 export function ReportDialog({ open, onOpenChange }: ReportDialogProps) {
-  const [selectedKitchens, setSelectedKitchens] = useState<string[]>([
-    "thakorji",
-  ]);
-  const [selectedRecipe, setSelectedRecipe] = useState("chef");
+  const [selectedKitchens, setSelectedKitchens] = useState<string[]>([]);
+  const [selectedRecipe, setSelectedRecipe] = useState("");
 
-  const kitchens = [
-    { id: "thakorji", label: "Thakorji" },
-    { id: "premvati", label: "Premvati" },
-    { id: "mandir", label: "Mandir" },
-    { id: "aarsh", label: "Aarsh" },
-  ];
+  const [kitchens, setKitchens] = useState<{ id: string; label: string }[]>([]);
+
+  // Optionally: Fetch kitchens and recipes from backend here using axios utilities
+  // useEffect(() => {
+  //   async function fetchOptions() {
+  //     // Fetch kitchens and recipes from backend if needed
+  //   }
+  //   fetchOptions();
+  // }, []);
+
 
   const handleKitchenChange = (kitchenId: string, checked: boolean) => {
     if (checked) {
@@ -53,8 +55,8 @@ export function ReportDialog({ open, onOpenChange }: ReportDialogProps) {
   };
 
   const handleClose = () => {
-    setSelectedKitchens(["thakorji"]);
-    setSelectedRecipe("chef");
+    setSelectedKitchens([]);
+    setSelectedRecipe("");
     onOpenChange(false);
   };
 

@@ -1,52 +1,111 @@
 "use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { DateSelector } from "@/components/ui/date-selector";
-import { StatsGrid } from "@/components/ui/stats-grid";
-import { PageHeader } from "@/components/ui/page-header";
-import { RecipesTable } from "@/components/recipes/recipes-table";
 import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { RecipesTable } from "@/components/recipes/recipes-table";
 import { Button } from "@/components/ui/button";
-import { Users, ShoppingCart, DollarSign, Plus } from "lucide-react";
-import { useState } from "react";
+import { DateSelector } from "@/components/ui/date-selector";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatsGrid } from "@/components/ui/stats-grid";
+import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { toast } from "sonner";
 
 export default function RecipesPage() {
   const [addRecipeDialog, setAddRecipeDialog] = useState(false);
+  const [editRecipe, setEditRecipe] = useState<any | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [statsData, setStatsData] = useState<any[]>([]);
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const statsData = [
-    {
-      label: "Total Recipes",
-      value: "156",
-      icon: Users,
-      iconColor: "#00cfe8",
-      trend: { value: 12, isPositive: true },
-    },
-    {
-      label: "Active Recipes",
-      value: "89",
-      icon: ShoppingCart,
-      iconColor: "#ea5455",
-      trend: { value: 5, isPositive: true },
-    },
-    {
-      label: "Avg Cost",
-      value: "$12.50",
-      icon: DollarSign,
-      iconColor: "#28c76f",
-      trend: { value: 3, isPositive: false },
-    },
-  ];
+  // Edit handler
+  const handleEditRecipe = (recipe: any) => {
+    setEditRecipe(recipe);
+    setAddRecipeDialog(true);
+  };
 
-  const recipes = Array(6).fill({
-    name: "Idali Sambhar",
-    type: "Breakfast",
-    issuedDate: "09 May 2022",
-  });
+  // Delete handler
+  const handleDeleteRecipe = async (recipe: any) => {
+    if (!window.confirm(`Delete recipe "${recipe.name}"?`)) return;
+    setDeletingId(recipe.id);
+    try {
+      const { deleteRecipe } = await import("@/lib/api/recipes");
+      const result = await deleteRecipe(recipe.id);
+      if (!result.error) {
+        setRecipes((prev: any[]) => prev.filter((r) => r.id !== recipe.id));
+        toast.success("Recipe deleted!");
+      } else {
+        toast.error(result.error || "Failed to delete recipe.");
+      }
+    } catch (err) {
+      toast.error("Failed to delete recipe.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Save handler (for both add and edit)
+  const handleSaveRecipe = async (data: any) => {
+    try {
+      const payload = {
+        name: data.recipeName,
+        type: data.recipeType,
+        ingredients: data.ingredients,
+      };
+      let result;
+      if (editRecipe) {
+        const { updateRecipe } = await import("@/lib/api/recipes");
+        result = await updateRecipe(editRecipe.id, payload);
+      } else {
+        const { createRecipe } = await import("@/lib/api/recipes");
+        result = await createRecipe(payload);
+      }
+      if (!result.error) {
+        if (editRecipe) {
+          setRecipes((prev: any[]) =>
+            prev.map((r) => (r.id === editRecipe.id ? result : r))
+          );
+          toast.success("Recipe updated!");
+        } else {
+          setRecipes((prev: any[]) => [result, ...prev]);
+          toast.success("Recipe added!");
+        }
+        setAddRecipeDialog(false);
+        setEditRecipe(null);
+      } else {
+        toast.error(result.error || "Failed to save recipe.");
+      }
+    } catch (err) {
+      toast.error("Failed to save recipe.");
+    }
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [recipesRes, statsRes] = await Promise.all([
+          import("@/lib/api/recipes").then((m) => m.fetchRecipes()),
+          import("@/lib/api/stats").then((m) => m.fetchStats()),
+        ]);
+        setRecipes(recipesRes);
+        setStatsData(statsRes);
+      } catch (err: any) {
+        setError("Failed to load recipes or stats.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
-    console.log(`Recipes date changed to: ${date.toDateString()}`);
   };
 
   return (
@@ -86,13 +145,37 @@ export default function RecipesPage() {
 
       {/* Recipes Section */}
       <div className="space-y-6">
-        <RecipesTable recipes={recipes} />
+        <RecipesTable
+          recipes={recipes}
+          onEdit={(recipe) => {
+            setEditRecipe(recipe);
+            setAddRecipeDialog(true);
+          }}
+          onDelete={handleDeleteRecipe}
+          deletingId={deletingId}
+        />
       </div>
 
       {/* Dialog */}
       <AddRecipeDialog
         open={addRecipeDialog}
-        onOpenChange={setAddRecipeDialog}
+        onOpenChange={(open) => {
+          setAddRecipeDialog(open);
+          if (!open) setEditRecipe(null);
+        }}
+        initialRecipe={
+          editRecipe
+            ? {
+                recipeName: editRecipe.name,
+                recipeType: editRecipe.type,
+                selectedRecipe: editRecipe.name,
+                ingredients: editRecipe.ingredients || [
+                  { name: "", quantity: "", unit: "Kg" },
+                ],
+              }
+            : null
+        }
+        onSave={handleSaveRecipe}
       />
     </DashboardLayout>
   );

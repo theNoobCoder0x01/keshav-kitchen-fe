@@ -17,26 +17,59 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Ingredient {
   name: string;
   quantity: string;
   unit: string;
+  costPerUnit?: string;
 }
 
 interface AddRecipeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialRecipe?: {
+    recipeName: string;
+    recipeType: string;
+    selectedRecipe: string;
+    ingredients: Ingredient[];
+  } | null;
+  onSave?: (data: any) => void;
 }
 
-export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
-  const [recipeName, setRecipeName] = useState("Poha");
-  const [recipeType, setRecipeType] = useState("breakfast");
-  const [selectedRecipe, setSelectedRecipe] = useState("poha");
-  const [ingredients, setIngredients] = useState<Ingredient[]>([
-    { name: "Potato", quantity: "5", unit: "Kg" },
-  ]);
+export function AddRecipeDialog({ open, onOpenChange, initialRecipe = null, onSave }: AddRecipeDialogProps) {
+  const [recipeName, setRecipeName] = useState(initialRecipe?.recipeName || "");
+  const [recipeType, setRecipeType] = useState(initialRecipe?.recipeType || "");
+  const [selectedRecipe, setSelectedRecipe] = useState(initialRecipe?.selectedRecipe || "");
+  const [ingredients, setIngredients] = useState<Ingredient[]>(initialRecipe?.ingredients || [{ name: "", quantity: "", unit: "Kg" }]);
+
+  // Reset state when dialog opens/closes or initialRecipe changes
+  useEffect(() => {
+    if (open) {
+      setRecipeName(initialRecipe?.recipeName || "");
+      setRecipeType(initialRecipe?.recipeType || "");
+      setSelectedRecipe(initialRecipe?.selectedRecipe || "");
+      setIngredients(
+  initialRecipe?.ingredients
+    ? initialRecipe.ingredients.map((ing) => ({
+        ...ing,
+        quantity: ing.quantity !== undefined ? String(ing.quantity) : "",
+        costPerUnit: ing.costPerUnit !== undefined ? String(ing.costPerUnit) : "",
+      }))
+    : [{ name: "", quantity: "", unit: "Kg", costPerUnit: "" }]
+);
+    }
+  }, [open, initialRecipe]);
+
+  // Optionally: Fetch recipe/ingredient options from backend here using axios utilities
+  // useEffect(() => {
+  //   async function fetchOptions() {
+  //     // Fetch recipes/ingredients from backend if needed
+  //   }
+  //   fetchOptions();
+  // }, []);
+
 
   const addIngredient = () => {
     setIngredients([...ingredients, { name: "", quantity: "", unit: "Kg" }]);
@@ -73,25 +106,41 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
       alert("Please fill in all ingredient details");
       return;
     }
+    if (ingredients.some((ing) => ing.costPerUnit === undefined || ing.costPerUnit === "" || isNaN(Number(ing.costPerUnit)) || Number(ing.costPerUnit) < 0)) {
+      alert("Please enter a valid cost per unit (zero or positive number) for all ingredients");
+      return;
+    }
 
-    console.log("Submitting recipe:", {
+    // Map quantity to number for backend
+    const mappedIngredients = ingredients.map((ing) => ({
+      ...ing,
+      quantity: Number(ing.quantity),
+      costPerUnit: ing.costPerUnit ? Number(ing.costPerUnit) : undefined,
+    }));
+
+    const recipeData = {
       recipeName,
       recipeType,
       selectedRecipe,
-      ingredients,
-    });
-
+      ingredients: mappedIngredients,
+    };
+    if (onSave) {
+      onSave(recipeData);
+    } else {
+      console.log("Submitting recipe:", recipeData);
+    }
     handleClose();
   };
 
   const handleClose = () => {
-    // Reset form
-    setRecipeName("Poha");
-    setRecipeType("breakfast");
-    setSelectedRecipe("poha");
-    setIngredients([{ name: "Potato", quantity: "5", unit: "Kg" }]);
+    // Reset form to blank/defaults for next open
+    setRecipeName("");
+    setRecipeType("");
+    setSelectedRecipe("");
+    setIngredients([{ name: "", quantity: "", unit: "Kg" }]);
     onOpenChange(false);
   };
+
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -195,6 +244,21 @@ export function AddRecipeDialog({ open, onOpenChange }: AddRecipeDialogProps) {
                     className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                     type="number"
                     step="0.1"
+                  />
+                </div>
+                <div className="col-span-3">
+                  <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
+                    Cost/Unit
+                  </Label>
+                  <Input
+                    value={ingredient.costPerUnit}
+                    onChange={(e) =>
+                      updateIngredient(index, "costPerUnit", e.target.value)
+                    }
+                    placeholder="30"
+                    className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
+                    type="number"
+                    step="0.01"
                   />
                 </div>
                 <div className="col-span-2">

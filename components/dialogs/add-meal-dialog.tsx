@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { createDailyMenu } from "@/lib/actions/menu";
 import { getRecipes } from "@/lib/actions/recipes";
+import { fetchIngredients } from "@/lib/api/ingredients";
 import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useTransition } from "react";
@@ -51,15 +52,11 @@ export function AddMealDialog({
   const [kitchens, setKitchens] = useState<any[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState("");
   const [selectedKitchen, setSelectedKitchen] = useState("");
-  const [followRecipe, setFollowRecipe] = useState(true);
-  const [ghan, setGhan] = useState("10");
-  const [plannedServings, setPlannedServings] = useState("100");
-  const [ingredients, setIngredients] = useState<Ingredient[]>([
-    { name: "Potato", ghan: "5", quantity: "500", costPerKg: 30 },
-    { name: "Onion", ghan: "3", quantity: "300", costPerKg: 25 },
-  ]);
-
-  // Calculations
+  const [followRecipe, setFollowRecipe] = useState(false);
+  const [ghan, setGhan] = useState("");
+  const [plannedServings, setPlannedServings] = useState("");
+  const [ingredients, setIngredients] = useState<any[]>([]);
+  const [ingredientOptions, setIngredientOptions] = useState<any[]>([]);
   const [calculations, setCalculations] = useState({
     perPerson: 100, // grams per person
     perPersonCost: 0,
@@ -79,13 +76,15 @@ export function AddMealDialog({
 
   const loadData = async () => {
     try {
-      const [recipesData, kitchensData] = await Promise.all([
+      const [recipesData, kitchensData, ingredientsData] = await Promise.all([
         getRecipes(1, 100),
         getKitchens(),
+        fetchIngredients(),
       ]);
 
       setRecipes(recipesData);
       setKitchens(kitchensData);
+      setIngredientOptions(ingredientsData);
 
       // Set default kitchen if user has one
       if (session?.user?.kitchenId) {
@@ -135,7 +134,15 @@ export function AddMealDialog({
   ) => {
     const updated = ingredients.map((ingredient, i) => {
       if (i === index) {
-        const newIngredient = { ...ingredient, [field]: value };
+        let newIngredient = { ...ingredient, [field]: value };
+        // Auto-populate costPerKg and other fields when name changes
+        if (field === "name") {
+          const selected = ingredientOptions.find(opt => opt.name === value);
+          if (selected) {
+            newIngredient.costPerKg = selected.costPerKg ?? 0;
+            // Add more fields here if needed (e.g., unit, default quantity)
+          }
+        }
         // Auto-calculate quantity based on ghan when ghan changes
         if (field === "ghan") {
           const ghanValue = Number.parseFloat(value as string) || 0;
@@ -159,18 +166,51 @@ export function AddMealDialog({
       toast.error("Please select a recipe and kitchen");
       return;
     }
-
+    // Ingredient validation
+    if (ingredients.some(ing => !ing.name || !ingredientOptions.some(opt => opt.name === ing.name))) {
+      toast.error("Please select a valid ingredient for each row");
+      return;
+    }
+    if (ingredients.some(ing => ing.costPerKg === undefined || isNaN(Number(ing.costPerKg)) || Number(ing.costPerKg) < 0)) {
+      toast.error("Please enter a valid cost per kg (zero or positive number) for all ingredients");
+      return;
+    }
     startTransition(async () => {
       try {
-        const formData = new FormData();
-        formData.append("kitchenId", selectedKitchen);
-        formData.append("menuDate", selectedDate.toISOString());
-        formData.append("mealType", mealType.toUpperCase());
-        formData.append("recipeId", selectedRecipe);
-        formData.append("plannedServings", plannedServings);
-        formData.append("ghanMultiplier", ghan);
+        // Find or create the DailyMenu for the selected date and kitchen
+        let dailyMenuId = null;
+        try {
+          const res = await fetch(`/api/daily-menus?id=${selectedKitchen}&date=${selectedDate.toISOString().split('T')[0]}`);
+          const data = await res.json();
+          if (data && data.id) {
+            dailyMenuId = data.id;
+          } else {
+            // Create if not found
+            const createRes = await fetch('/api/daily-menus', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                date: selectedDate,
+                kitchenId: selectedKitchen,
+              }),
+            });
+            const createData = await createRes.json();
+            dailyMenuId = createData.id;
+          }
+        } catch (e) {
+          toast.error("Failed to find or create daily menu");
+          return;
+        }
 
-        const result = await createDailyMenu(formData);
+        const result = await createDailyMenu({
+          date: selectedDate,
+          mealType: mealType.toUpperCase(),
+          recipeId: selectedRecipe,
+          kitchenId: selectedKitchen,
+          servings: Number(plannedServings),
+          ghanFactor: Number(ghan) || 1.0,
+          dailyMenuId,
+        });
 
         if (result.success) {
           toast.success("Menu item added successfully!");
@@ -184,16 +224,15 @@ export function AddMealDialog({
     });
   };
 
+
   const handleClose = () => {
     // Reset form when closing
     setSelectedRecipe("");
-    setFollowRecipe(true);
-    setGhan("10");
-    setPlannedServings("100");
-    setIngredients([
-      { name: "Potato", ghan: "5", quantity: "500", costPerKg: 30 },
-      { name: "Onion", ghan: "3", quantity: "300", costPerKg: 25 },
-    ]);
+    setSelectedKitchen("");
+    setFollowRecipe(false);
+    setGhan("");
+    setPlannedServings("");
+    setIngredients([]);
     onOpenChange(false);
   };
 
@@ -297,14 +336,16 @@ export function AddMealDialog({
                   <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
                     Name
                   </Label>
-                  <Input
+                  <select
                     value={ingredient.name}
-                    onChange={(e) =>
-                      updateIngredient(index, "name", e.target.value)
-                    }
-                    placeholder="Ingredient name"
-                    className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
-                  />
+                    onChange={(e) => updateIngredient(index, "name", e.target.value)}
+                    className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20 rounded-md h-9 px-2"
+                  >
+                    <option value="">Select ingredient</option>
+                    {ingredientOptions.map((opt) => (
+                      <option key={opt.id} value={opt.name}>{opt.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
