@@ -1,59 +1,109 @@
-"use client"
+"use client";
 
-import { AddMealDialog } from "@/components/dialogs/add-meal-dialog"
-import { ReportDialog } from "@/components/dialogs/report-dialog"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { MenuGrid } from "@/components/menu/menu-grid"
-import { Button } from "@/components/ui/button"
-import { DateSelector } from "@/components/ui/date-selector"
-import { PageHeader } from "@/components/ui/page-header"
-import { StatsGrid } from "@/components/ui/stats-grid"
-import { TabNavigation } from "@/components/ui/tab-navigation"
-import { getKitchens } from "@/lib/actions/kitchens"
-import { getDailyMenus, getMenuStats } from "@/lib/actions/menu"
-import { Eye, FileText, Upload, Users } from "lucide-react"
-import { useSession } from "next-auth/react"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { DateSelector } from "@/components/ui/date-selector";
+import { StatsGrid } from "@/components/ui/stats-grid";
+import { TabNavigation } from "@/components/ui/tab-navigation";
+import { PageHeader } from "@/components/ui/page-header";
+import { MenuGrid } from "@/components/menu/menu-grid";
+import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
+import { ReportDialog } from "@/components/dialogs/report-dialog";
+import { Button } from "@/components/ui/button";
+import { Users, Eye, FileText, Upload } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getDailyMenus, getMenuStats } from "@/lib/actions/menu";
+import { getKitchens } from "@/lib/actions/kitchens";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function MenuPage() {
-  const { data: session } = useSession()
-  const [addMealDialog, setAddMealDialog] = useState(false)
-  const [reportDialog, setReportDialog] = useState(false)
-  const [selectedMealType, setSelectedMealType] = useState("")
-  const [activeTab, setActiveTab] = useState(0)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [kitchens, setKitchens] = useState<any[]>([])
-  const [menuStats, setMenuStats] = useState<any>(null)
-  const [dailyMenus, setDailyMenus] = useState<any>({})
-  const [loading, setLoading] = useState(true)
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [addMealDialog, setAddMealDialog] = useState(false);
+  const [reportDialog, setReportDialog] = useState(false);
+  const [selectedMealType, setSelectedMealType] = useState("");
+  const [activeTab, setActiveTab] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [kitchens, setKitchens] = useState<any[]>([]);
+  const [menuStats, setMenuStats] = useState<any>(null);
+  const [dailyMenus, setDailyMenus] = useState<any>({});
+  const [loading, setLoading] = useState(true);
 
+  // Redirect if not authenticated
   useEffect(() => {
-    loadData()
-  }, [selectedDate, activeTab])
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
+      return;
+    }
+  }, [status, router]);
+
+  // Load data only when authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      loadData();
+    }
+  }, [selectedDate, activeTab, status]);
 
   const loadData = async () => {
     try {
-      setLoading(true)
-      const [kitchensData, statsData, menusData] = await Promise.all([
-        getKitchens(),
-        getMenuStats(selectedDate, kitchens[activeTab]?.id),
-        getDailyMenus(selectedDate, kitchens[activeTab]?.id),
-      ])
+      setLoading(true);
 
-      setKitchens(kitchensData)
-      setMenuStats(statsData)
-      setDailyMenus(menusData)
+      // Load kitchens first
+      const kitchensData = await getKitchens();
+      setKitchens(kitchensData);
+
+      // Then load stats and menus for the selected kitchen
+      const selectedKitchenId = kitchensData[activeTab]?.id;
+
+      const [statsData, menusData] = await Promise.all([
+        getMenuStats(selectedDate, selectedKitchenId),
+        getDailyMenus(selectedDate, selectedKitchenId),
+      ]);
+
+      setMenuStats(statsData);
+      setDailyMenus(menusData);
     } catch (error) {
-      toast.error("Failed to load data")
+      console.error("Load data error:", error);
+      toast.error("Failed to load data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
+  };
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5] mx-auto mb-4"></div>
+          <p className="text-[#4b465c]/70">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (status === "unauthenticated") {
+    return null;
   }
 
   // Dynamic stats based on active tab and date
   const getStatsForTab = () => {
-    if (!menuStats) return []
+    if (!menuStats) {
+      return [
+        {
+          label: "Total Planned",
+          value: "0",
+          icon: Users,
+          iconColor: "#00cfe8",
+        },
+        { label: "Breakfast", value: "0", icon: Users, iconColor: "#28c76f" },
+        { label: "Lunch", value: "0", icon: Eye, iconColor: "#ff9f43" },
+        { label: "Dinner", value: "0", icon: Eye, iconColor: "#ea5455" },
+      ];
+    }
 
     return [
       {
@@ -84,29 +134,29 @@ export default function MenuPage() {
         iconColor: "#ea5455",
         trend: { value: 0, isPositive: true },
       },
-    ]
-  }
+    ];
+  };
 
   const handleAddMeal = (mealType: string) => {
-    setSelectedMealType(mealType)
-    setAddMealDialog(true)
-  }
+    setSelectedMealType(mealType);
+    setAddMealDialog(true);
+  };
 
   const handleTabChange = (index: number) => {
-    setActiveTab(index)
-  }
+    setActiveTab(index);
+  };
 
   const handleDateChange = (date: Date) => {
-    setSelectedDate(date)
-  }
+    setSelectedDate(date);
+  };
 
   const handleMealDialogClose = (open: boolean) => {
-    setAddMealDialog(open)
+    setAddMealDialog(open);
     if (!open) {
       // Reload data when dialog closes
-      loadData()
+      loadData();
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -118,7 +168,7 @@ export default function MenuPage() {
           </div>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
   return (
@@ -152,7 +202,11 @@ export default function MenuPage() {
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
           {/* Date Selector */}
           <div className="xl:col-span-2">
-            <DateSelector date={selectedDate} onDateChange={handleDateChange} className="h-full min-h-[120px]" />
+            <DateSelector
+              date={selectedDate}
+              onDateChange={handleDateChange}
+              className="h-full min-h-[120px]"
+            />
           </div>
 
           {/* Stats Grid */}
@@ -161,12 +215,22 @@ export default function MenuPage() {
           </div>
         </div>
 
-        <TabNavigation tabs={kitchens.map((k) => k.name)} activeTab={activeTab} onTabChange={handleTabChange} />
+        {kitchens.length > 0 && (
+          <TabNavigation
+            tabs={kitchens.map((k) => k.name)}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
+        )}
       </div>
 
       {/* Menu Section */}
       <div className="space-y-6">
-        <MenuGrid onAddMeal={handleAddMeal} dailyMenus={dailyMenus} selectedDate={selectedDate} />
+        <MenuGrid
+          onAddMeal={handleAddMeal}
+          dailyMenus={dailyMenus}
+          selectedDate={selectedDate}
+        />
       </div>
 
       {/* Dialogs */}
@@ -178,5 +242,5 @@ export default function MenuPage() {
       />
       <ReportDialog open={reportDialog} onOpenChange={setReportDialog} />
     </DashboardLayout>
-  )
+  );
 }

@@ -22,5 +22,5 @@ INSERT INTO recipe_ingredients (recipe_id, ingredient_name, quantity, unit, cost
   ('recipe_1', 'Urad Dal', 0.5, 'kg', 120.00),
   ('recipe_1', 'Toor Dal', 0.3, 'kg', 100.00),
   ('recipe_2', 'Poha', 1.0, 'kg', 40.00),
-  ('recipe_2', 'Onion', 0.5, 'kg', 25.00),
+  ('recipe_2', 'Tomato', 0.5, 'kg', 25.00),
   ('recipe_2', 'Potato', 0.3, 'kg', 20.00);

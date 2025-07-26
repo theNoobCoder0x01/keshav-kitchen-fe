@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Home,
   ChefHat,
@@ -17,23 +17,44 @@ import {
   Eye,
   MoreHorizontal,
   Bell,
-} from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useState } from "react"
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useState } from "react";
 
 export default function RecipesPage() {
-  const [addRecipeDialog, setAddRecipeDialog] = useState(false)
-  const [ingredients, setIngredients] = useState([{ name: "Potato", quantity: "5 Kg" }])
+  const [addRecipeDialog, setAddRecipeDialog] = useState(false);
+  const [ingredients, setIngredients] = useState([
+    { name: "Potato", quantity: "5 Kg" },
+  ]);
 
   const recipes = Array(6).fill({
     name: "Idali Sambhar",
     type: "Breakfast",
     issuedDate: "09 May 2022",
-  })
+  });
 
   return (
     <div className="min-h-screen bg-[#f8f7fa]">
@@ -44,7 +65,9 @@ export default function RecipesPage() {
             {/* Logo */}
             <div className="flex items-center space-x-2">
               <h1 className="text-2xl font-bold text-[#e26b2b]">KESHAV</h1>
-              <span className="text-lg font-medium text-[#e26b2b] italic">Kitchen</span>
+              <span className="text-lg font-medium text-[#e26b2b] italic">
+                Kitchen
+              </span>
             </div>
           </div>
 
@@ -58,7 +81,9 @@ export default function RecipesPage() {
             </div>
             <Avatar className="w-8 h-8">
               <AvatarImage src="/placeholder.svg?height=32&width=32" />
-              <AvatarFallback className="bg-[#674af5] text-white text-sm">U</AvatarFallback>
+              <AvatarFallback className="bg-[#674af5] text-white text-sm">
+                U
+              </AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -74,7 +99,9 @@ export default function RecipesPage() {
                 <span>Dashboard</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Badge className="bg-[#674af5] text-white text-xs px-2 py-1">3</Badge>
+                <Badge className="bg-[#674af5] text-white text-xs px-2 py-1">
+                  3
+                </Badge>
                 <ChevronDown className="w-4 h-4" />
               </div>
             </div>
@@ -98,7 +125,9 @@ export default function RecipesPage() {
                 <div className="flex items-center space-x-3">
                   <Calendar className="w-5 h-5 text-[#674af5]" />
                   <div>
-                    <h3 className="text-lg font-semibold text-[#674af5]">Sunday, 20 , Jan 2021</h3>
+                    <h3 className="text-lg font-semibold text-[#674af5]">
+                      Sunday, 20 , Jan 2021
+                    </h3>
                     <p className="text-sm text-[#4b465c]/70">Pagan Sud Panam</p>
                   </div>
                 </div>
@@ -123,7 +152,9 @@ export default function RecipesPage() {
                       <ShoppingCart className="w-5 h-5 text-[#ea5455]" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-[#4b465c]">1.423k</p>
+                      <p className="text-2xl font-bold text-[#4b465c]">
+                        1.423k
+                      </p>
                       <p className="text-sm text-[#4b465c]/70">Products</p>
                     </div>
                   </div>
@@ -157,11 +188,15 @@ export default function RecipesPage() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold text-[#4b465c]">Add New Recipe</DialogTitle>
+                    <DialogTitle className="text-xl font-semibold text-[#4b465c]">
+                      Add New Recipe
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-6 py-4">
                     <div>
-                      <Label className="text-base font-medium text-[#4b465c] mb-2 block">Recipe Name</Label>
+                      <Label className="text-base font-medium text-[#4b465c] mb-2 block">
+                        Recipe Name
+                      </Label>
                       <Input
                         defaultValue="Poha"
                         placeholder="Enter recipe name"
@@ -171,7 +206,9 @@ export default function RecipesPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-base font-medium text-[#4b465c] mb-2 block">Recipe Type</Label>
+                        <Label className="text-base font-medium text-[#4b465c] mb-2 block">
+                          Recipe Type
+                        </Label>
                         <Select defaultValue="breakfast">
                           <SelectTrigger className="border-[#dbdade]">
                             <SelectValue />
@@ -186,7 +223,9 @@ export default function RecipesPage() {
                       </div>
 
                       <div>
-                        <Label className="text-base font-medium text-[#4b465c] mb-2 block">Recipe</Label>
+                        <Label className="text-base font-medium text-[#4b465c] mb-2 block">
+                          Recipe
+                        </Label>
                         <Select defaultValue="poha">
                           <SelectTrigger className="border-[#dbdade]">
                             <SelectValue />
@@ -201,7 +240,9 @@ export default function RecipesPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <Label className="text-base font-medium text-[#4b465c]">Ingredients</Label>
+                      <Label className="text-base font-medium text-[#4b465c]">
+                        Ingredients
+                      </Label>
                       {ingredients.map((ingredient, index) => (
                         <div key={index} className="grid grid-cols-2 gap-4">
                           <Input
@@ -215,7 +256,9 @@ export default function RecipesPage() {
                               placeholder="Quantity"
                               className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                             />
-                            <span className="text-sm text-[#4b465c]/70 whitespace-nowrap">Quantity</span>
+                            <span className="text-sm text-[#4b465c]/70 whitespace-nowrap">
+                              Quantity
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -223,7 +266,12 @@ export default function RecipesPage() {
                       <Button
                         variant="ghost"
                         className="text-[#674af5] hover:bg-[#674af5]/10 p-0 h-auto font-medium"
-                        onClick={() => setIngredients([...ingredients, { name: "", quantity: "" }])}
+                        onClick={() =>
+                          setIngredients([
+                            ...ingredients,
+                            { name: "", quantity: "" },
+                          ])
+                        }
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Ingredients
@@ -273,24 +321,47 @@ export default function RecipesPage() {
                           <ChevronDown className="w-4 h-4" />
                         </div>
                       </TableHead>
-                      <TableHead className="text-[#4b465c] font-semibold py-4 px-6">ACTIONS</TableHead>
+                      <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
+                        ACTIONS
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {recipes.map((recipe, index) => (
-                      <TableRow key={index} className="border-[#dbdade] hover:bg-[#f8f7fa]">
-                        <TableCell className="py-4 px-6 text-[#4b465c]">{recipe.name}</TableCell>
-                        <TableCell className="py-4 px-6 text-[#4b465c]">{recipe.type}</TableCell>
-                        <TableCell className="py-4 px-6 text-[#4b465c]">{recipe.issuedDate}</TableCell>
+                      <TableRow
+                        key={index}
+                        className="border-[#dbdade] hover:bg-[#f8f7fa]"
+                      >
+                        <TableCell className="py-4 px-6 text-[#4b465c]">
+                          {recipe.name}
+                        </TableCell>
+                        <TableCell className="py-4 px-6 text-[#4b465c]">
+                          {recipe.type}
+                        </TableCell>
+                        <TableCell className="py-4 px-6 text-[#4b465c]">
+                          {recipe.issuedDate}
+                        </TableCell>
                         <TableCell className="py-4 px-6">
                           <div className="flex items-center space-x-2">
-                            <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                            >
                               <Mail className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                            >
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </div>
@@ -302,7 +373,9 @@ export default function RecipesPage() {
 
                 {/* Pagination */}
                 <div className="flex items-center justify-between px-6 py-4 border-t border-[#dbdade]">
-                  <p className="text-sm text-[#4b465c]/70">Showing 1 to 10 of 100 entries</p>
+                  <p className="text-sm text-[#4b465c]/70">
+                    Showing 1 to 10 of 100 entries
+                  </p>
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
@@ -311,7 +384,10 @@ export default function RecipesPage() {
                     >
                       Previous
                     </Button>
-                    <Button size="sm" className="bg-[#674af5] hover:bg-[#674af5]/90 text-white w-8 h-8 p-0">
+                    <Button
+                      size="sm"
+                      className="bg-[#674af5] hover:bg-[#674af5]/90 text-white w-8 h-8 p-0"
+                    >
                       1
                     </Button>
                     {[2, 3, 4, 5].map((page) => (
@@ -339,5 +415,5 @@ export default function RecipesPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }
