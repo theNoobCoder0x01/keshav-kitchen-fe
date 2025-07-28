@@ -15,11 +15,9 @@ import { getDailyMenus, getMenuStats } from "@/lib/actions/menu";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 export default function MenuPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data: session } = useSession();
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportDialog, setReportDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState("");
@@ -30,80 +28,32 @@ export default function MenuPage() {
   const [dailyMenus, setDailyMenus] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
-  // Redirect if not authenticated
   useEffect(() => {
-    if (status === "loading") return;
-    if (status === "unauthenticated") {
-      router.push("/auth/signin");
-      return;
-    }
-  }, [status, router]);
-
-  // Load data only when authenticated
-  useEffect(() => {
-    if (status === "authenticated") {
-      loadData();
-    }
-  }, [selectedDate, activeTab, status]);
+    loadData();
+  }, [selectedDate, activeTab]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-
-      // Load kitchens first
-      const kitchensData = await getKitchens();
-      setKitchens(kitchensData);
-
-      // Then load stats and menus for the selected kitchen
-      const selectedKitchenId = kitchensData[activeTab]?.id;
-
-      const [statsData, menusData] = await Promise.all([
-        getMenuStats(selectedDate, selectedKitchenId),
-        getDailyMenus(selectedDate, selectedKitchenId),
+      const [kitchensData, statsData, menusData] = await Promise.all([
+        getKitchens(),
+        getMenuStats(selectedDate, kitchens[activeTab]?.id),
+        getDailyMenus(selectedDate, kitchens[activeTab]?.id),
       ]);
 
+      setKitchens(kitchensData);
       setMenuStats(statsData);
       setDailyMenus(menusData);
     } catch (error) {
-      console.error("Load data error:", error);
       toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
-  // Show loading while checking authentication
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5] mx-auto mb-4"></div>
-          <p className="text-[#4b465c]/70">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render anything if not authenticated (will redirect)
-  if (status === "unauthenticated") {
-    return null;
-  }
-
   // Dynamic stats based on active tab and date
   const getStatsForTab = () => {
-    if (!menuStats) {
-      return [
-        {
-          label: "Total Planned",
-          value: "0",
-          icon: Users,
-          iconColor: "#00cfe8",
-        },
-        { label: "Breakfast", value: "0", icon: Users, iconColor: "#28c76f" },
-        { label: "Lunch", value: "0", icon: Eye, iconColor: "#ff9f43" },
-        { label: "Dinner", value: "0", icon: Eye, iconColor: "#ea5455" },
-      ];
-    }
+    if (!menuStats) return [];
 
     return [
       {
@@ -215,13 +165,11 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {kitchens.length > 0 && (
-          <TabNavigation
-            tabs={kitchens.map((k) => k.name)}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-        )}
+        <TabNavigation
+          tabs={kitchens.map((k) => k.name)}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
       </div>
 
       {/* Menu Section */}

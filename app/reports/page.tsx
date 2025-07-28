@@ -58,12 +58,10 @@ export default function ReportsPage() {
 
   const handleTabChange = (index: number) => {
     setActiveTab(index);
-    console.log(`Switched to tab: ${tabs[index]}`);
   };
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
-    console.log(`Reports date changed to: ${date.toDateString()}`);
   };
 
   return (

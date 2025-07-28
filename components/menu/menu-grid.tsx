@@ -4,21 +4,33 @@ import { MenuCard } from "./menu-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { toast } from 'sonner';
 
 interface MenuItem {
   id: string;
   name: string;
+  weight: string;
+}
+
+interface InputMenuItem {
+  id: string;
+  name: string;
   weight?: string;
-  isAddItem?: boolean;
 }
 
 interface MenuGridProps {
   onAddMeal: (mealType: string) => void;
+  dailyMenus?: any;
+  selectedDate: any;
 }
 
-export function MenuGrid({ onAddMeal }: MenuGridProps) {
-  const [menuData, setMenuData] = useState<any>({});
+export function MenuGrid({
+  onAddMeal,
+  dailyMenus = {},
+  selectedDate,
+}: MenuGridProps) {
+  const [menuData, setMenuData] = useState<Record<string, MenuItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,31 +55,32 @@ export function MenuGrid({ onAddMeal }: MenuGridProps) {
     { id: "e1", name: "Save", weight: "1000 Kg" },
   ]);
 
-  const handleEditItem = async (
-    mealType: keyof typeof menuData,
-    updatedItem: MenuItem,
+  const handleEditItem = useCallback(async (
+    mealType: string,
+    updatedItem: InputMenuItem,
   ) => {
     try {
       const { updateMenu } = await import('@/lib/api/menus');
-      const result = await updateMenu(updatedItem.id, updatedItem);
+      const itemWithWeight = { ...updatedItem, weight: updatedItem.weight || '' };
+      const result = await updateMenu(updatedItem.id, itemWithWeight);
       if (result && !result.error) {
-        setMenuData((prev) => ({
+        setMenuData((prev: Record<string, MenuItem[]>) => ({
           ...prev,
           [mealType]: prev[mealType].map((item) =>
-            item.id === updatedItem.id ? updatedItem : item,
+            item.id === updatedItem.id ? itemWithWeight : item,
           ),
         }));
-        window.toast && window.toast.success('Menu updated!');
+        toast.success('Menu updated!');
       } else {
-        window.toast && window.toast.error(result.error || 'Failed to update menu.');
+        toast.error(result.error || 'Failed to update menu.');
       }
     } catch (err) {
-      window.toast && window.toast.error('Failed to update menu.');
+      toast.error('Failed to update menu.');
     }
-  };
+  }, []);
 
-  const handleDeleteItem = async (
-    mealType: keyof typeof menuData,
+  const handleDeleteItem = useCallback(async (
+    mealType: string,
     itemId: string,
   ) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
@@ -75,31 +88,54 @@ export function MenuGrid({ onAddMeal }: MenuGridProps) {
         const { deleteMenu } = await import('@/lib/api/menus');
         const result = await deleteMenu(itemId);
         if (result && !result.error) {
-          setMenuData((prev) => ({
+          setMenuData((prev: Record<string, MenuItem[]>) => ({
             ...prev,
             [mealType]: prev[mealType].filter((item) => item.id !== itemId),
           }));
-          window.toast && window.toast.success('Menu deleted!');
+          toast.success('Menu deleted!');
         } else {
-          window.toast && window.toast.error(result.error || 'Failed to delete menu.');
+          toast.error(result.error || 'Failed to delete menu.');
         }
       } catch (err) {
-        window.toast && window.toast.error('Failed to delete menu.');
+        toast.error('Failed to delete menu.');
       }
     }
-  };
+  }, []);
 
-  const handleEditExtraItem = (updatedItem: MenuItem) => {
+  const handleAddMenuItem = useCallback((mealType: string, item: InputMenuItem) => {
+    const itemWithWeight = { ...item, weight: item.weight ?? '' };
+    setMenuData((prev: Record<string, MenuItem[]>) => {
+      const currentItems = prev[mealType] || [];
+      return {
+        ...prev,
+        [mealType]: [...currentItems, itemWithWeight],
+      };
+    });
+  }, []);
+
+  const handleAddRecipe = useCallback((mealType: string, recipe: InputMenuItem) => {
+    const recipeWithWeight = { ...recipe, weight: recipe.weight ?? '' };
+    setMenuData((prev: Record<string, MenuItem[]>) => {
+      const currentItems = prev[mealType] || [];
+      return {
+        ...prev,
+        [mealType]: [...currentItems, recipeWithWeight],
+      };
+    });
+  }, []);
+
+  const handleEditExtraItem = useCallback((updatedItem: InputMenuItem) => {
+    const itemWithWeight = { ...updatedItem, weight: updatedItem.weight ?? '' };
     setExtraItems((prev) =>
-      prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+      prev.map((item) => (item.id === updatedItem.id ? itemWithWeight : item)),
     );
-  };
+  }, []);
 
-  const handleDeleteExtraItem = (itemId: string) => {
+  const handleDeleteExtraItem = useCallback((itemId: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       setExtraItems((prev) => prev.filter((item) => item.id !== itemId));
     }
-  };
+  }, []);
 
   return (
     <div className="space-y-6">

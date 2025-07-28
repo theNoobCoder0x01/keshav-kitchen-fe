@@ -1,5 +1,11 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -8,67 +14,131 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, Mail, Eye, MoreHorizontal, Edit, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
 
-interface Recipe {
+export interface Recipe {
   id: string;
   name: string;
-  type: string;
-  issuedDate: string;
+  category: string;
+  subcategory: string;
+  cost: number;
+  ingredients?: Array<{
+    name: string;
+    quantity: number | string;
+    unit: string;
+    costPerUnit?: number | string;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface RecipesTableProps {
   recipes: Recipe[];
-  onEdit?: (recipe: Recipe) => void;
-  onDelete?: (recipe: Recipe) => void;
-  deletingId?: string | null;
+  onEdit: (recipe: Recipe) => void;
+  onDelete: (id: string) => void;
+  deletingId: string | null;
+  itemsPerPageOptions?: number[];
 }
 
-export function RecipesTable({ recipes, onEdit, onDelete, deletingId }: RecipesTableProps) {
+export function RecipesTable({
+  recipes,
+  onEdit,
+  onDelete,
+  deletingId,
+  itemsPerPageOptions = [5, 10, 20],
+}: RecipesTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 5);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Recipe;
+    direction: "ascending" | "descending" | null;
+  }>({
+    key: "name",
+    direction: "ascending",
+  });
+
+  const handleSort = (key: keyof Recipe) => {
+    setSortConfig((prevConfig) => ({
+      key,
+      direction:
+        prevConfig.key === key && prevConfig.direction === "ascending"
+          ? "descending"
+          : "ascending",
+    }));
+  };
+
+  const getSortIcon = (key: keyof Recipe) => {
+    if (sortConfig.key !== key || sortConfig.direction === null) {
+      return <ChevronDown className="w-4 h-4 opacity-50" />;
+    }
+    return sortConfig.direction === "ascending" ? (
+      <ChevronUp className="w-4 h-4" />
+    ) : (
+      <ChevronDown className="w-4 h-4" />
+    );
+  };
+
+  const sortedRecipes = [...recipes].sort((a, b) => {
+    if (sortConfig.direction === null) return 0;
+    const multiplier = sortConfig.direction === "ascending" ? 1 : -1;
+    return a[sortConfig.key] > b[sortConfig.key] ? multiplier : -multiplier;
+  });
+
+  const paginatedRecipes = sortedRecipes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <Card className="bg-white border-[#dbdade]">
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-[#dbdade]">
-              <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
-                <div className="flex items-center space-x-2">
-                  <span>NAME</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-              </TableHead>
-              <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
-                <div className="flex items-center space-x-2">
-                  <span>TYPE</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-              </TableHead>
-              <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
-                <div className="flex items-center space-x-2">
-                  <span>ISSUED DATE</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-              </TableHead>
-              <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
-                ACTIONS
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recipes.map((recipe, index) => (
-              <TableRow
-                key={index}
-                className="border-[#dbdade] hover:bg-[#f8f7fa]"
-              >
-                <TableCell className="py-4 px-6 text-[#4b465c]">
+    <div className="rounded-lg border shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead
+              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              onClick={() => handleSort("name")}
+            >
+              <div className="flex items-center space-x-2">
+                <span>NAME</span>
+                {getSortIcon("name")}
+              </div>
+            </TableHead>
+            <TableHead
+              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              onClick={() => handleSort("category")}
+            >
+              <div className="flex items-center space-x-2">
+                <span>CATEGORY</span>
+                {getSortIcon("category")}
+              </div>
+            </TableHead>
+            <TableHead
+              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              onClick={() => handleSort("subcategory")}
+            >
+              <div className="flex items-center space-x-2">
+                <span>SUBCATEGORY</span>
+                {getSortIcon("subcategory")}
+              </div>
+            </TableHead>
+            <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
+              ACTIONS
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {paginatedRecipes.length > 0 ? (
+            paginatedRecipes.map((recipe: Recipe) => (
+              <TableRow key={recipe.id}>
+                <TableCell className="py-4 px-6 font-medium text-[#4b465c]">
                   {recipe.name}
                 </TableCell>
                 <TableCell className="py-4 px-6 text-[#4b465c]">
-                  {recipe.type}
+                  {recipe.category}
                 </TableCell>
                 <TableCell className="py-4 px-6 text-[#4b465c]">
-                  {recipe.issuedDate}
+                  {recipe.subcategory}
                 </TableCell>
                 <TableCell className="py-4 px-6">
                   <div className="flex items-center space-x-2">
@@ -76,28 +146,7 @@ export function RecipesTable({ recipes, onEdit, onDelete, deletingId }: RecipesT
                       size="sm"
                       variant="ghost"
                       className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
-                    >
-                      <Mail className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
-                      onClick={() => onEdit && onEdit(recipe)}
+                      onClick={() => onEdit(recipe)}
                       aria-label="Edit"
                     >
                       <Edit className="w-4 h-4" />
@@ -105,63 +154,92 @@ export function RecipesTable({ recipes, onEdit, onDelete, deletingId }: RecipesT
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
-                      onClick={() => onDelete && onDelete(recipe)}
-                      aria-label="Delete"
+                      className="w-8 h-8 p-0 text-red-500 hover:bg-red-50"
+                      onClick={() => onDelete(recipe.id)}
                       disabled={deletingId === recipe.id}
+                      aria-label="Delete"
                     >
-                      {deletingId === recipe.id ? (
-                        <span className="w-4 h-4 animate-spin border-2 border-[#674af5] border-t-transparent rounded-full inline-block" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[#dbdade]">
-          <p className="text-sm text-[#4b465c]/70">
-            Showing 1 to 10 of 100 entries
-          </p>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
-            >
-              Previous
-            </Button>
-            <Button
-              size="sm"
-              className="bg-[#674af5] hover:bg-[#674af5]/90 text-white w-8 h-8 p-0"
-            >
-              1
-            </Button>
-            {[2, 3, 4, 5].map((page) => (
-              <Button
-                key={page}
-                variant="outline"
-                size="sm"
-                className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent w-8 h-8 p-0"
-              >
-                {page}
-              </Button>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
-            >
-              Next
-            </Button>
-          </div>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} className="h-24 text-center">
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t">
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, sortedRecipes.length)} of{" "}
+          {sortedRecipes.length} recipes
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          {Array.from(
+            { length: Math.ceil(sortedRecipes.length / itemsPerPage) },
+            (_, i) => i + 1
+          ).map((page) => (
+            <Button
+              key={page}
+              variant={page === currentPage ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentPage(page)}
+              className={page === currentPage ? "bg-[#674af5] text-white" : ""}
+            >
+              {page}
+            </Button>
+          ))}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setCurrentPage((prev) =>
+                Math.min(
+                  Math.ceil(sortedRecipes.length / itemsPerPage),
+                  prev + 1
+                )
+              )
+            }
+            disabled={
+              currentPage === Math.ceil(sortedRecipes.length / itemsPerPage)
+            }
+          >
+            Next
+          </Button>
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(value) => {
+              setItemsPerPage(Number(value));
+              setCurrentPage(1); // Reset to first page when changing items per page
+            }}
+          >
+            <SelectTrigger className="w-[100px] h-8">
+              <SelectValue placeholder="Items" />
+            </SelectTrigger>
+            <SelectContent>
+              {itemsPerPageOptions.map((option) => (
+                <SelectItem key={option} value={option.toString()}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
   );
 }

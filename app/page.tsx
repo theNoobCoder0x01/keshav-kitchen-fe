@@ -15,9 +15,18 @@ import { getDailyMenus, getMenuStats } from "@/lib/actions/menu";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+// Temporary interface for MenuGrid props to resolve lint errors
+interface MenuGridProps {
+  onAddMeal: (mealType: string) => void;
+  dailyMenus: any;
+  selectedDate: Date;
+}
 
 export default function MenuPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportDialog, setReportDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState("");
@@ -28,9 +37,21 @@ export default function MenuPage() {
   const [dailyMenus, setDailyMenus] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
+  // Redirect if not authenticated
   useEffect(() => {
-    loadData();
-  }, [selectedDate, activeTab]);
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
+      return;
+    }
+  }, [status, router]);
+
+  // Load data only when authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      loadData();
+    }
+  }, [selectedDate, activeTab, status]);
 
   const loadData = async () => {
     try {
@@ -107,6 +128,23 @@ export default function MenuPage() {
       loadData();
     }
   };
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5] mx-auto mb-4"></div>
+          <p className="text-[#4b465c]/70">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (status === "unauthenticated") {
+    return null;
+  }
 
   if (loading) {
     return (

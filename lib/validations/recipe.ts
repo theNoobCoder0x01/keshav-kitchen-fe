@@ -12,10 +12,9 @@ export const RecipeSchema = z.object({
   name: z.string().min(1, "Recipe name is required"),
   description: z.string().optional(),
   instructions: z.string().optional(),
-  prepTime: z.number().min(0).optional(),
-  cookTime: z.number().min(0).optional(),
   servings: z.number().min(1).optional(),
   category: z.string().optional(),
+  subcategory: z.string().optional(),
   ingredients: z
     .array(IngredientSchema)
     .min(1, "At least one ingredient is required"),

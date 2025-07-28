@@ -23,7 +23,7 @@
     "@auth/core": "latest",
     "@auth/prisma-adapter": "^2.10.0",
     "@neondatabase/serverless": "^0.10.4",
-    "@prisma/client": "latest",
+    "@prisma/client": "^6.12.0",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",
@@ -60,6 +60,7 @@
     "embla-carousel-react": "latest",
     "exceljs": "^4.4.0",
     "fast-csv": "^5.0.2",
+    "formik": "^2.4.6",
     "input-otp": "latest",
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
@@ -78,6 +79,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "latest",
+    "yup": "^1.6.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {

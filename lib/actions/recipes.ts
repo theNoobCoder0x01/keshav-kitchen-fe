@@ -92,10 +92,9 @@ export async function createRecipe(data: {
   name: string;
   description?: string;
   instructions?: string;
-  prepTime?: number;
-  cookTime?: number;
   servings?: number;
-  category?: string;
+  category: string;
+  subcategory: string;
   ingredients: Array<{
     name: string;
     quantity: number;
@@ -115,10 +114,9 @@ export async function createRecipe(data: {
         name: data.name,
         description: data.description,
         instructions: data.instructions,
-        prepTime: data.prepTime,
-        cookTime: data.cookTime,
         servings: data.servings,
         category: data.category,
+        subcategory: data.subcategory,
         userId: session.user.id,
         ingredients: {
           create: data.ingredients,
@@ -143,10 +141,9 @@ export async function updateRecipe(
     name?: string;
     description?: string;
     instructions?: string;
-    prepTime?: number;
-    cookTime?: number;
     servings?: number;
     category?: string;
+    subcategory?: string;
     ingredients?: Array<{
       id?: string;
       name: string;
@@ -163,7 +160,6 @@ export async function updateRecipe(
       throw new Error("Unauthorized");
     }
 
-    // Check if user owns this recipe or is admin
     const existingRecipe = await prisma.recipe.findUnique({
       where: { id },
       select: { userId: true },
@@ -177,32 +173,34 @@ export async function updateRecipe(
       existingRecipe.userId !== session.user.id &&
       session.user.role !== "ADMIN"
     ) {
-      throw new Error("Access denied");
+      throw new Error("Unauthorized to update this recipe");
     }
 
-    const updateData: any = {
+    const updateData = {
       name: data.name,
       description: data.description,
       instructions: data.instructions,
-      prepTime: data.prepTime,
-      cookTime: data.cookTime,
       servings: data.servings,
       category: data.category,
+      subcategory: data.subcategory,
     };
 
-    // Handle ingredients update if provided
     if (data.ingredients) {
-      // Delete existing ingredients and create new ones
       await prisma.ingredient.deleteMany({
         where: { recipeId: id },
       });
-
-      updateData.ingredients = {
-        create: data.ingredients.map(({ id, ...ingredient }) => ingredient),
-      };
+      await prisma.ingredient.createMany({
+        data: data.ingredients.map(ingredient => ({
+          recipeId: id,
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          costPerUnit: ingredient.costPerUnit,
+        })),
+      });
     }
 
-    const recipe = await prisma.recipe.update({
+    const updatedRecipe = await prisma.recipe.update({
       where: { id },
       data: updateData,
       include: {
@@ -211,7 +209,7 @@ export async function updateRecipe(
     });
 
     revalidatePath("/recipes");
-    return recipe;
+    return updatedRecipe;
   } catch (error) {
     console.error("Update recipe error:", error);
     throw error;
@@ -226,15 +224,11 @@ export async function deleteRecipe(id: string) {
       throw new Error("Unauthorized");
     }
 
-    // Check if user owns this recipe or is admin
     const existingRecipe = await prisma.recipe.findUnique({
       where: { id },
-      select: { userId: true },
       include: {
         _count: {
-          select: {
-            menus: true,
-          },
+          select: { menus: true },
         },
       },
     });
@@ -247,11 +241,11 @@ export async function deleteRecipe(id: string) {
       existingRecipe.userId !== session.user.id &&
       session.user.role !== "ADMIN"
     ) {
-      throw new Error("Access denied");
+      throw new Error("Unauthorized to delete this recipe");
     }
 
     if (existingRecipe._count.menus > 0) {
-      throw new Error("Cannot delete recipe that is used in menus");
+      throw new Error("Cannot delete recipe that is part of a menu. Remove it from all menus first.");
     }
 
     await prisma.recipe.delete({
@@ -259,9 +253,45 @@ export async function deleteRecipe(id: string) {
     });
 
     revalidatePath("/recipes");
-    return { success: true };
   } catch (error) {
     console.error("Delete recipe error:", error);
+    throw error;
+  }
+}
+
+export async function getRecipeById(id: string) {
+  try {
+    const recipe = await prisma.recipe.findUnique({
+      where: { id },
+      include: {
+        ingredients: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        menus: {
+          select: {
+            id: true,
+            date: true,
+            mealType: true,
+            kitchen: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            date: "desc",
+          },
+          take: 10,
+        },
+      },
+    });
+    return recipe;
+  } catch (error) {
+    console.error("Get recipe by ID error:", error);
     throw error;
   }
 }

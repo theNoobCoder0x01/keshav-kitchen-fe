@@ -104,8 +104,7 @@ async function main() {
         name: "Khichdi",
         description: "Traditional rice and lentil dish",
         instructions: "1. Wash rice and dal\n2. Cook with spices\n3. Serve hot",
-        prepTime: 15,
-        cookTime: 30,
+
         servings: 10,
         category: "LUNCH",
         userId: chef1.id,
@@ -149,8 +148,7 @@ async function main() {
         description: "Yogurt based curry",
         instructions:
           "1. Mix yogurt and besan\n2. Cook with spices\n3. Serve hot",
-        prepTime: 20,
-        cookTime: 25,
+
         servings: 10,
         category: "LUNCH",
         userId: chef1.id,

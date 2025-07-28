@@ -1,14 +1,14 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -37,7 +37,6 @@ export function ReportDialog({ open, onOpenChange }: ReportDialogProps) {
   //   fetchOptions();
   // }, []);
 
-
   const handleKitchenChange = (kitchenId: string, checked: boolean) => {
     if (checked) {
       setSelectedKitchens([...selectedKitchens, kitchenId]);
@@ -47,10 +46,6 @@ export function ReportDialog({ open, onOpenChange }: ReportDialogProps) {
   };
 
   const handleSubmit = () => {
-    console.log("Generating report:", {
-      kitchens: selectedKitchens,
-      recipe: selectedRecipe,
-    });
     onOpenChange(false);
   };
 

@@ -24,9 +24,7 @@ export function StatsGrid({ stats, className }: StatsGridProps) {
     <div
       className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 ${className}`}
     >
-      {stats.map((stat, index) => (
-        <StatsCard key={index} {...stat} />
-      ))}
+      {stats.map((stat, index) => stat && <StatsCard key={index} {...stat} />)}
     </div>
   );
 }

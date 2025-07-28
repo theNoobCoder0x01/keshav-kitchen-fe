@@ -5,7 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
-  label: string;
+  label?: string;
   value: string;
   icon: LucideIcon;
   iconColor?: string;
@@ -57,7 +57,7 @@ export function StatsCard({
           {/* Label and Trend */}
           <div className="flex items-center justify-between">
             <p className="text-xs sm:text-sm text-[#4b465c]/70 font-medium leading-tight">
-              {label}
+              {label ?? "-"}
             </p>
             {trend && (
               <div

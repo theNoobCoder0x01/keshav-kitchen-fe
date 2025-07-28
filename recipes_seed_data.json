@@ -1,0 +1,56 @@
+[
+  {
+    "id": "recipe-1",
+    "name": "હરિભક્તો માટે દૂધ પાક",
+    "category": "Liquid Dessert",
+    "subcategory": "Gujarati",
+    "description": "Traditional Gujarati હરિભક્તો માટે દૂધ પાક",
+    "instructions": "Prepare હરિભક્તો માટે દૂધ પાક according to traditional Gujarati recipe",
+    "servings": 10
+  },
+  {
+    "id": "recipe-2",
+    "name": "ઠાકોરજી માટે દૂધ પાક",
+    "category": "Liquid Dessert",
+    "subcategory": "Gujarati",
+    "description": "Traditional Gujarati ઠાકોરજી માટે દૂધ પાક",
+    "instructions": "Prepare ઠાકોરજી માટે દૂધ પાક according to traditional Gujarati recipe",
+    "servings": 10
+  },
+  {
+    "id": "recipe-3",
+    "name": "ખીર",
+    "category": "Liquid Dessert",
+    "subcategory": "Gujarati",
+    "description": "Traditional Gujarati ખીર",
+    "instructions": "Prepare ખીર according to traditional Gujarati recipe",
+    "servings": 10
+  },
+  {
+    "id": "recipe-4",
+    "name": "ફ્રુટ સલાડ",
+    "category": "Liquid Dessert",
+    "subcategory": "Gujarati",
+    "description": "Traditional Gujarati ફ્રુટ સલાડ",
+    "instructions": "Prepare ફ્રુટ સલાડ according to traditional Gujarati recipe",
+    "servings": 10
+  },
+  {
+    "id": "recipe-5",
+    "name": "બાસુંદી",
+    "category": "Liquid Dessert",
+    "subcategory": "Gujarati",
+    "description": "Traditional Gujarati બાસુંદી",
+    "instructions": "Prepare બાસુંદી according to traditional Gujarati recipe",
+    "servings": 10
+  },
+  {
+    "id": "recipe-6",
+    "name": "રસ માધુરી",
+    "category": "Liquid Dessert",
+    "subcategory": "Gujarati",
+    "description": "Traditional Gujarati રસ માધુરી",
+    "instructions": "Prepare રસ માધુરી according to traditional Gujarati recipe",
+    "servings": 10
+  }
+]
