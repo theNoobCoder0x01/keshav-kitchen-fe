@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 interface MenuItem {
   id: string;
@@ -39,11 +39,11 @@ export function MenuGrid({
       setLoading(true);
       setError(null);
       try {
-        const { fetchMenus } = await import('@/lib/api/menus');
+        const { fetchMenus } = await import("@/lib/api/menus");
         const menus = await fetchMenus();
         setMenuData(menus);
       } catch (err: any) {
-        setError('Failed to load menu data.');
+        setError("Failed to load menu data.");
       } finally {
         setLoading(false);
       }
@@ -55,77 +55,86 @@ export function MenuGrid({
     { id: "e1", name: "Save", weight: "1000 Kg" },
   ]);
 
-  const handleEditItem = useCallback(async (
-    mealType: string,
-    updatedItem: InputMenuItem,
-  ) => {
-    try {
-      const { updateMenu } = await import('@/lib/api/menus');
-      const itemWithWeight = { ...updatedItem, weight: updatedItem.weight || '' };
-      const result = await updateMenu(updatedItem.id, itemWithWeight);
-      if (result && !result.error) {
-        setMenuData((prev: Record<string, MenuItem[]>) => ({
-          ...prev,
-          [mealType]: prev[mealType].map((item) =>
-            item.id === updatedItem.id ? itemWithWeight : item,
-          ),
-        }));
-        toast.success('Menu updated!');
-      } else {
-        toast.error(result.error || 'Failed to update menu.');
-      }
-    } catch (err) {
-      toast.error('Failed to update menu.');
-    }
-  }, []);
-
-  const handleDeleteItem = useCallback(async (
-    mealType: string,
-    itemId: string,
-  ) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
+  const handleEditItem = useCallback(
+    async (mealType: string, updatedItem: InputMenuItem) => {
       try {
-        const { deleteMenu } = await import('@/lib/api/menus');
-        const result = await deleteMenu(itemId);
+        const { updateMenu } = await import("@/lib/api/menus");
+        const itemWithWeight = {
+          ...updatedItem,
+          weight: updatedItem.weight || "",
+        };
+        const result = await updateMenu(updatedItem.id, itemWithWeight);
         if (result && !result.error) {
           setMenuData((prev: Record<string, MenuItem[]>) => ({
             ...prev,
-            [mealType]: prev[mealType].filter((item) => item.id !== itemId),
+            [mealType]: prev[mealType].map((item) =>
+              item.id === updatedItem.id ? itemWithWeight : item,
+            ),
           }));
-          toast.success('Menu deleted!');
+          toast.success("Menu updated!");
         } else {
-          toast.error(result.error || 'Failed to delete menu.');
+          toast.error(result.error || "Failed to update menu.");
         }
       } catch (err) {
-        toast.error('Failed to delete menu.');
+        toast.error("Failed to update menu.");
       }
-    }
-  }, []);
+    },
+    [],
+  );
 
-  const handleAddMenuItem = useCallback((mealType: string, item: InputMenuItem) => {
-    const itemWithWeight = { ...item, weight: item.weight ?? '' };
-    setMenuData((prev: Record<string, MenuItem[]>) => {
-      const currentItems = prev[mealType] || [];
-      return {
-        ...prev,
-        [mealType]: [...currentItems, itemWithWeight],
-      };
-    });
-  }, []);
+  const handleDeleteItem = useCallback(
+    async (mealType: string, itemId: string) => {
+      if (window.confirm("Are you sure you want to delete this item?")) {
+        try {
+          const { deleteMenu } = await import("@/lib/api/menus");
+          const result = await deleteMenu(itemId);
+          if (result && !result.error) {
+            setMenuData((prev: Record<string, MenuItem[]>) => ({
+              ...prev,
+              [mealType]: prev[mealType].filter((item) => item.id !== itemId),
+            }));
+            toast.success("Menu deleted!");
+          } else {
+            toast.error(result.error || "Failed to delete menu.");
+          }
+        } catch (err) {
+          toast.error("Failed to delete menu.");
+        }
+      }
+    },
+    [],
+  );
 
-  const handleAddRecipe = useCallback((mealType: string, recipe: InputMenuItem) => {
-    const recipeWithWeight = { ...recipe, weight: recipe.weight ?? '' };
-    setMenuData((prev: Record<string, MenuItem[]>) => {
-      const currentItems = prev[mealType] || [];
-      return {
-        ...prev,
-        [mealType]: [...currentItems, recipeWithWeight],
-      };
-    });
-  }, []);
+  const handleAddMenuItem = useCallback(
+    (mealType: string, item: InputMenuItem) => {
+      const itemWithWeight = { ...item, weight: item.weight ?? "" };
+      setMenuData((prev: Record<string, MenuItem[]>) => {
+        const currentItems = prev[mealType] || [];
+        return {
+          ...prev,
+          [mealType]: [...currentItems, itemWithWeight],
+        };
+      });
+    },
+    [],
+  );
+
+  const handleAddRecipe = useCallback(
+    (mealType: string, recipe: InputMenuItem) => {
+      const recipeWithWeight = { ...recipe, weight: recipe.weight ?? "" };
+      setMenuData((prev: Record<string, MenuItem[]>) => {
+        const currentItems = prev[mealType] || [];
+        return {
+          ...prev,
+          [mealType]: [...currentItems, recipeWithWeight],
+        };
+      });
+    },
+    [],
+  );
 
   const handleEditExtraItem = useCallback((updatedItem: InputMenuItem) => {
-    const itemWithWeight = { ...updatedItem, weight: updatedItem.weight ?? '' };
+    const itemWithWeight = { ...updatedItem, weight: updatedItem.weight ?? "" };
     setExtraItems((prev) =>
       prev.map((item) => (item.id === updatedItem.id ? itemWithWeight : item)),
     );

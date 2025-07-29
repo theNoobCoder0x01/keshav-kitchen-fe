@@ -22,7 +22,14 @@ interface ReportCardProps {
 
 import { useState } from "react";
 
-export function ReportCard({ title, items, onDownload, onAdd, onEdit, onDelete }: ReportCardProps) {
+export function ReportCard({
+  title,
+  items,
+  onDownload,
+  onAdd,
+  onEdit,
+  onDelete,
+}: ReportCardProps) {
   const [format, setFormat] = useState("xlsx");
   return (
     <Card className="bg-white border-[#dbdade]">
@@ -36,7 +43,7 @@ export function ReportCard({ title, items, onDownload, onAdd, onEdit, onDelete }
             <select
               className="mr-2 px-2 py-1 border rounded text-sm"
               value={format}
-              onChange={e => setFormat(e.target.value)}
+              onChange={(e) => setFormat(e.target.value)}
             >
               <option value="xlsx">Excel</option>
               <option value="csv">CSV</option>
@@ -62,8 +69,20 @@ export function ReportCard({ title, items, onDownload, onAdd, onEdit, onDelete }
                   <p className="text-sm text-[#4b465c]/70">{item.weight}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => onEdit(item)}>Edit</Button>
-                  <Button size="sm" variant="destructive" onClick={() => onDelete(item)}>Delete</Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onEdit(item)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => onDelete(item)}
+                  >
+                    Delete
+                  </Button>
                 </div>
               </div>
               <div className="space-y-1">

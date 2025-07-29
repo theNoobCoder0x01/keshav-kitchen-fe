@@ -26,7 +26,7 @@ async function hashPasswordForSeed(password) {
     passwordBuffer,
     { name: "PBKDF2" },
     false,
-    ["deriveBits"]
+    ["deriveBits"],
   );
 
   // Derive hash
@@ -38,7 +38,7 @@ async function hashPasswordForSeed(password) {
       hash: "SHA-256",
     },
     key,
-    hashLength * 8
+    hashLength * 8,
   );
 
   // Convert to base64
@@ -118,7 +118,7 @@ async function main() {
     }
   }
 
-// Create users with proper kitchen references
+  // Create users with proper kitchen references
   console.log("Creating users...");
   const hashedPassword = await hashPasswordForSeed("admin123");
   const hashedPassword2 = await hashPasswordForSeed("password123");
@@ -184,7 +184,8 @@ async function main() {
         id: "recipe-1",
         name: "હરિભક્તો માટે દૂધ પાક",
         description: "Traditional Gujarati હરિભક્તો માટે દૂધ પાક",
-        instructions: "Prepare હરિભક્તો માટે દૂધ પાક according to traditional Gujarati recipe",
+        instructions:
+          "Prepare હરિભક્તો માટે દૂધ પાક according to traditional Gujarati recipe",
         servings: 10,
         category: "Liquid Dessert",
         subcategory: "Gujarati",
@@ -220,7 +221,8 @@ async function main() {
         id: "recipe-2",
         name: "ઠાકોરજી માટે દૂધ પાક",
         description: "Traditional Gujarati ઠાકોરજી માટે દૂધ પાક",
-        instructions: "Prepare ઠાકોરજી માટે દૂધ પાક according to traditional Gujarati recipe",
+        instructions:
+          "Prepare ઠાકોરજી માટે દૂધ પાક according to traditional Gujarati recipe",
         servings: 10,
         category: "Liquid Dessert",
         subcategory: "Gujarati",
@@ -292,7 +294,8 @@ async function main() {
         id: "recipe-4",
         name: "ફ્રુટ સલાડ",
         description: "Traditional Gujarati ફ્રુટ સલાડ",
-        instructions: "Prepare ફ્રુટ સલાડ according to traditional Gujarati recipe",
+        instructions:
+          "Prepare ફ્રુટ સલાડ according to traditional Gujarati recipe",
         servings: 10,
         category: "Liquid Dessert",
         subcategory: "Gujarati",
@@ -364,7 +367,10 @@ async function main() {
   console.log("Creating menus...");
   // Helper to find the right dailyMenuId for a given kitchenId and date
   function findDailyMenuId(kitchenId, date) {
-    return dailyMenus.find(dm => dm.kitchenId === kitchenId && dm.date.getTime() === date.getTime())?.id;
+    return dailyMenus.find(
+      (dm) =>
+        dm.kitchenId === kitchenId && dm.date.getTime() === date.getTime(),
+    )?.id;
   }
 
   await Promise.all([

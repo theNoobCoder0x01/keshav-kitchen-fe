@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchKitchens, createKitchen, updateKitchen, deleteKitchen } from "@/lib/api/kitchens";
+import {
+  fetchKitchens,
+  createKitchen,
+  updateKitchen,
+  deleteKitchen,
+} from "@/lib/api/kitchens";
 import { Button } from "@/components/ui/button";
 import { AddEditKitchenDialog } from "@/components/dialogs/add-edit-kitchen-dialog";
 import { toast } from "sonner";
@@ -9,7 +14,10 @@ import { toast } from "sonner";
 export default function KitchensPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingKitchen, setEditingKitchen] = useState<any | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id?: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    open: boolean;
+    id?: string;
+  } | null>(null);
   const [kitchens, setKitchens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +39,11 @@ export default function KitchensPage() {
     loadKitchens();
   }, []);
 
-  const handleSave = async (kitchen: { name: string; location: string; id?: string }) => {
+  const handleSave = async (kitchen: {
+    name: string;
+    location: string;
+    id?: string;
+  }) => {
     try {
       if (kitchen.id) {
         await updateKitchen(kitchen.id, kitchen);
@@ -51,10 +63,21 @@ export default function KitchensPage() {
   return (
     <div className="max-w-3xl mx-auto py-8">
       <h1 className="text-2xl font-bold mb-6">Kitchens Management</h1>
-      <Button className="mb-4" onClick={() => { setEditingKitchen(null); setDialogOpen(true); }}>Add Kitchen</Button>
+      <Button
+        className="mb-4"
+        onClick={() => {
+          setEditingKitchen(null);
+          setDialogOpen(true);
+        }}
+      >
+        Add Kitchen
+      </Button>
       <AddEditKitchenDialog
         open={dialogOpen}
-        onOpenChange={open => { setDialogOpen(open); if (!open) setEditingKitchen(null); }}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setEditingKitchen(null);
+        }}
         initialKitchen={editingKitchen}
         onSave={handleSave}
       />
@@ -77,8 +100,26 @@ export default function KitchensPage() {
                 <td className="py-2 px-4 border">{kitchen.name}</td>
                 <td className="py-2 px-4 border">{kitchen.location ?? "-"}</td>
                 <td className="py-2 px-4 border">
-                  <Button size="sm" variant="outline" className="mr-2" onClick={() => { setEditingKitchen(kitchen); setDialogOpen(true); }}>Edit</Button>
-                  <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ open: true, id: kitchen.id })}>Delete</Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mr-2"
+                    onClick={() => {
+                      setEditingKitchen(kitchen);
+                      setDialogOpen(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() =>
+                      setDeleteConfirm({ open: true, id: kitchen.id })
+                    }
+                  >
+                    Delete
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -90,19 +131,29 @@ export default function KitchensPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
             <h2 className="text-lg font-semibold mb-4">Delete Kitchen</h2>
-            <p className="mb-6">Are you sure you want to delete this kitchen? This action cannot be undone.</p>
+            <p className="mb-6">
+              Are you sure you want to delete this kitchen? This action cannot
+              be undone.
+            </p>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
-              <Button variant="destructive" onClick={async () => {
-                try {
-                  await deleteKitchen(deleteConfirm.id!);
-                  toast.success("Kitchen deleted");
-                  setDeleteConfirm(null);
-                  loadKitchens();
-                } catch {
-                  toast.error("Failed to delete kitchen");
-                }
-              }}>Delete</Button>
+              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  try {
+                    await deleteKitchen(deleteConfirm.id!);
+                    toast.success("Kitchen deleted");
+                    setDeleteConfirm(null);
+                    loadKitchens();
+                  } catch {
+                    toast.error("Failed to delete kitchen");
+                  }
+                }}
+              >
+                Delete
+              </Button>
             </div>
           </div>
         </div>

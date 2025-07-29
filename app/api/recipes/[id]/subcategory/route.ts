@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 import * as console from "node:console";
-import {auth} from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const session = await auth();
@@ -33,7 +33,7 @@ export async function PATCH(
     ) {
       return NextResponse.json(
         { error: "Unauthorized to update this recipe" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -49,7 +49,7 @@ export async function PATCH(
     console.error("PATCH /api/recipes/[id]/subcategory error:", error);
     return NextResponse.json(
       { error: "Failed to update recipe subcategory" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

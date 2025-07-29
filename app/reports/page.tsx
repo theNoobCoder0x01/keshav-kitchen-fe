@@ -24,11 +24,11 @@ export default function ReportsPage() {
       setLoading(true);
       setError(null);
       try {
-        const { fetchStats } = await import('@/lib/api/stats');
+        const { fetchStats } = await import("@/lib/api/stats");
         const stats = await fetchStats();
         setStatsData(stats);
       } catch (err: any) {
-        setError('Failed to load stats data.');
+        setError("Failed to load stats data.");
       } finally {
         setLoading(false);
       }
@@ -38,21 +38,25 @@ export default function ReportsPage() {
 
   const handleDownload = async (type: string, format: string = "xlsx") => {
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0];
-      const response = await fetch(`/api/reports/download?type=${type}&date=${dateStr}&format=${format}`);
-      if (!response.ok) throw new Error('Failed to download report');
+      const dateStr = selectedDate.toISOString().split("T")[0];
+      const response = await fetch(
+        `/api/reports/download?type=${type}&date=${dateStr}&format=${format}`,
+      );
+      if (!response.ok) throw new Error("Failed to download report");
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `${type}-report-${dateStr}.${format}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      import('sonner').then(({ toast }) => toast.success('Report downloaded!'));
+      import("sonner").then(({ toast }) => toast.success("Report downloaded!"));
     } catch (err) {
-      import('sonner').then(({ toast }) => toast.error('Failed to download report.'));
+      import("sonner").then(({ toast }) =>
+        toast.error("Failed to download report."),
+      );
     }
   };
 

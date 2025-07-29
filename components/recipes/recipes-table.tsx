@@ -87,7 +87,7 @@ export function RecipesTable({
 
   const paginatedRecipes = sortedRecipes.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   return (
@@ -191,7 +191,7 @@ export function RecipesTable({
           </Button>
           {Array.from(
             { length: Math.ceil(sortedRecipes.length / itemsPerPage) },
-            (_, i) => i + 1
+            (_, i) => i + 1,
           ).map((page) => (
             <Button
               key={page}
@@ -210,8 +210,8 @@ export function RecipesTable({
               setCurrentPage((prev) =>
                 Math.min(
                   Math.ceil(sortedRecipes.length / itemsPerPage),
-                  prev + 1
-                )
+                  prev + 1,
+                ),
               )
             }
             disabled={

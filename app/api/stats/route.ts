@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
@@ -17,15 +17,19 @@ export async function GET() {
     // const volunteers = await prisma.user.count({ where: { role: 'volunteer' } });
     const volunteers = 0; // Placeholder value until role type is fixed
     const stats = [
-      { label: 'Meals Served', value: mealsServed },
-      { label: 'Active Kitchens', value: activeKitchens },
-      { label: 'Recipes', value: recipes },
-      { label: 'Volunteers', value: volunteers }
+      { label: "Meals Served", value: mealsServed },
+      { label: "Active Kitchens", value: activeKitchens },
+      { label: "Recipes", value: recipes },
+      { label: "Volunteers", value: volunteers },
     ];
     return NextResponse.json(stats);
   } catch (error: unknown) {
     console.error("Error in stats endpoint:", error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return NextResponse.json({ error: 'Failed to fetch stats.', details: errorMessage }, { status: 500 });
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    return NextResponse.json(
+      { error: "Failed to fetch stats.", details: errorMessage },
+      { status: 500 },
+    );
   }
 }

@@ -69,9 +69,9 @@ const validationSchema = Yup.object({
         costPerUnit: Yup.string().test(
           "is-number-or-empty",
           "Must be a valid non-negative number.",
-          (value) => !value || (!isNaN(Number(value)) && Number(value) >= 0)
+          (value) => !value || (!isNaN(Number(value)) && Number(value) >= 0),
         ),
-      })
+      }),
     )
     .min(1, "At least one ingredient is required."),
 });
@@ -99,7 +99,7 @@ export function AddRecipeDialog({
 
   const handleSubmit = (
     values: typeof initialValues,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => {
     const mappedIngredients = values.ingredients.map((ingredient) => ({
       name: ingredient.name,
@@ -305,7 +305,7 @@ export function AddRecipeDialog({
                                     })
                                   }
                                 >
-                                  <SelectTrigger className="border-[#dbdade] h-9">
+                                  <SelectTrigger className="border-[#dbdade] h-10">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>

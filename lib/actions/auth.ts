@@ -31,7 +31,7 @@ export async function signupUser(formData: FormData) {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       password: formData.get("password") as string,
-      kitchenId: formData.get("kitchenId") as string || undefined,
+      kitchenId: (formData.get("kitchenId") as string) || undefined,
     };
 
     // Validate input data
@@ -76,7 +76,7 @@ export async function signupUser(formData: FormData) {
     };
   } catch (error) {
     console.error("Signup error:", error);
-    
+
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -121,7 +121,7 @@ export async function changePassword(userId: string, formData: FormData) {
     // Verify current password
     const isCurrentPasswordValid = await verifyPassword(
       validatedData.currentPassword,
-      user.password
+      user.password,
     );
 
     if (!isCurrentPasswordValid) {
@@ -146,7 +146,7 @@ export async function changePassword(userId: string, formData: FormData) {
     };
   } catch (error) {
     console.error("Change password error:", error);
-    
+
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -168,8 +168,9 @@ export async function changePassword(userId: string, formData: FormData) {
 export async function resetUserPassword(userId: string) {
   try {
     // Generate a random password
-    const newPassword = crypto.getRandomValues(new Uint8Array(12))
-      .reduce((acc, byte) => acc + String.fromCharCode(33 + (byte % 94)), '');
+    const newPassword = crypto
+      .getRandomValues(new Uint8Array(12))
+      .reduce((acc, byte) => acc + String.fromCharCode(33 + (byte % 94)), "");
 
     // Hash the new password
     const hashedPassword = await hashPassword(newPassword);

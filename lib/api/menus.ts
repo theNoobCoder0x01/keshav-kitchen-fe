@@ -1,7 +1,7 @@
-import api from './axios';
+import api from "./axios";
 
 export async function fetchMenus(params = {}) {
-  const response = await api.get('/menus', { params });
+  const response = await api.get("/menus", { params });
   return response.data;
 }
 

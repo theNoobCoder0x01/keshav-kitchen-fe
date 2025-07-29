@@ -1,16 +1,23 @@
-import api from './axios';
+import api from "./axios";
 
 export async function fetchIngredients() {
-  const response = await api.get('/ingredients');
+  const response = await api.get("/ingredients");
   return response.data;
 }
 
-export async function createIngredient(data: { name: string; costPerKg: number; unit: string }) {
-  const response = await api.post('/ingredients', data);
+export async function createIngredient(data: {
+  name: string;
+  costPerKg: number;
+  unit: string;
+}) {
+  const response = await api.post("/ingredients", data);
   return response.data;
 }
 
-export async function updateIngredient(id: string, data: { name: string; costPerKg: number; unit: string }) {
+export async function updateIngredient(
+  id: string,
+  data: { name: string; costPerKg: number; unit: string },
+) {
   const response = await api.put(`/ingredients?id=${id}`, data);
   return response.data;
 }

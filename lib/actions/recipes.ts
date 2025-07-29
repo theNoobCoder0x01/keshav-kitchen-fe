@@ -190,7 +190,7 @@ export async function updateRecipe(
         where: { recipeId: id },
       });
       await prisma.ingredient.createMany({
-        data: data.ingredients.map(ingredient => ({
+        data: data.ingredients.map((ingredient) => ({
           recipeId: id,
           name: ingredient.name,
           quantity: ingredient.quantity,
@@ -245,7 +245,9 @@ export async function deleteRecipe(id: string) {
     }
 
     if (existingRecipe._count.menus > 0) {
-      throw new Error("Cannot delete recipe that is part of a menu. Remove it from all menus first.");
+      throw new Error(
+        "Cannot delete recipe that is part of a menu. Remove it from all menus first.",
+      );
     }
 
     await prisma.recipe.delete({

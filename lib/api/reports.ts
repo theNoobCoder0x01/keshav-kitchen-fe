@@ -1,12 +1,12 @@
-import axiosInstance from './axios';
+import axiosInstance from "./axios";
 
 export async function fetchReports() {
-  const response = await axiosInstance.get('/reports');
+  const response = await axiosInstance.get("/reports");
   return response.data;
 }
 
 export async function createReport(data: any) {
-  const response = await axiosInstance.post('/reports', data);
+  const response = await axiosInstance.post("/reports", data);
   return response.data;
 }
 
