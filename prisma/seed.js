@@ -208,7 +208,7 @@ async function main() {
 
   // Create recipes with proper nested ingredients
   console.log("Creating recipes...");
-  const recipes = await Promise.all([
+  await Promise.all([
     prisma.recipe.upsert({
       where: { id: "recipe-1" },
       update: {},
@@ -395,6 +395,23 @@ async function main() {
     }),
   ]);
 
+  // Fetch recipes with their ingredients
+  const recipes = await prisma.recipe.findMany({
+    include: {
+      ingredients: true
+    }
+  });
+
+  // Function to create menu ingredients from recipe ingredients
+  function createMenuIngredients(recipe, servings) {
+    return recipe.ingredients.map(ingredient => ({
+      name: ingredient.name,
+      quantity: (ingredient.quantity * servings) / recipe.servings,
+      unit: ingredient.unit,
+      costPerUnit: ingredient.costPerUnit || 0
+    }));
+  }
+
   // Create menus
   console.log("Creating menus...");
 
@@ -410,6 +427,9 @@ async function main() {
         servings: 50,
         ghanFactor: 1.2,
         status: "PLANNED",
+        ingredients: {
+          create: createMenuIngredients(recipes[2], 50)
+        }
       },
     }),
     prisma.menu.create({
@@ -422,6 +442,9 @@ async function main() {
         servings: 100,
         ghanFactor: 1.0,
         status: "PLANNED",
+        ingredients: {
+          create: createMenuIngredients(recipes[0], 100)
+        }
       },
     }),
     
@@ -436,6 +459,9 @@ async function main() {
         servings: 80,
         ghanFactor: 1.1,
         status: "PLANNED",
+        ingredients: {
+          create: createMenuIngredients(recipes[1], 80)
+        }
       },
     }),
     prisma.menu.create({
@@ -448,6 +474,9 @@ async function main() {
         servings: 120,
         ghanFactor: 0.9,
         status: "PLANNED",
+        ingredients: {
+          create: createMenuIngredients(recipes[4], 120)
+        }
       },
     }),
 
@@ -463,6 +492,9 @@ async function main() {
         ghanFactor: 1.0,
         status: "COMPLETED",
         actualCount: 58,
+        ingredients: {
+          create: createMenuIngredients(recipes[3], 60)
+        }
       },
     }),
 
@@ -477,6 +509,9 @@ async function main() {
         servings: 60,
         ghanFactor: 1.0,
         status: "PLANNED",
+        ingredients: {
+          create: createMenuIngredients(recipes[2], 60)
+        }
       },
     }),
     prisma.menu.create({
@@ -489,6 +524,9 @@ async function main() {
         servings: 90,
         ghanFactor: 1.1,
         status: "PLANNED",
+        ingredients: {
+          create: createMenuIngredients(recipes[4], 90)
+        }
       },
     }),
   ]);
