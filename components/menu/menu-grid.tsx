@@ -1,11 +1,12 @@
 "use client";
 
-import { MenuCard } from "./menu-card";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { MealType } from "@prisma/client";
+import { Edit, Plus, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { MenuCard } from "./menu-card";
 
 interface MenuItem {
   id: string;
@@ -20,40 +21,53 @@ interface InputMenuItem {
 }
 
 interface MenuGridProps {
-  onAddMeal: (mealType: string) => void;
-  dailyMenus?: any;
-  selectedDate: any;
+  onAddMeal: (mealType: MealType) => void;
+  onEditMeal: (mealType: MealType, meal: any) => void;
+  onDeleteMeal: (mealId: string) => void;
+  dailyMenus: any;
+  selectedDate: Date;
 }
 
 export function MenuGrid({
   onAddMeal,
+  onEditMeal,
+  onDeleteMeal,
   dailyMenus = {},
   selectedDate,
 }: MenuGridProps) {
   const [menuData, setMenuData] = useState<Record<string, MenuItem[]>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Transform dailyMenus to the format expected by MenuCard
   useEffect(() => {
-    async function fetchMenuData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const { fetchMenus } = await import("@/lib/api/menus");
-        const menus = await fetchMenus();
-        setMenuData(menus);
-      } catch (err: any) {
-        setError("Failed to load menu data.");
-      } finally {
-        setLoading(false);
-      }
+    if (dailyMenus) {
+      const transformedData: Record<string, MenuItem[]> = {
+        breakfast: (dailyMenus.BREAKFAST || []).map((menu: any) => ({
+          id: menu.id,
+          name: menu.recipe?.name || 'Unknown Recipe',
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+        })),
+        lunch: (dailyMenus.LUNCH || []).map((menu: any) => ({
+          id: menu.id,
+          name: menu.recipe?.name || 'Unknown Recipe',
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+        })),
+        dinner: (dailyMenus.DINNER || []).map((menu: any) => ({
+          id: menu.id,
+          name: menu.recipe?.name || 'Unknown Recipe',
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+        })),
+        snack: (dailyMenus.SNACK || []).map((menu: any) => ({
+          id: menu.id,
+          name: menu.recipe?.name || 'Unknown Recipe',
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+        })),
+      };
+      setMenuData(transformedData);
     }
-    fetchMenuData();
-  }, []);
+  }, [dailyMenus]);
 
-  const [extraItems, setExtraItems] = useState([
-    { id: "e1", name: "Save", weight: "1000 Kg" },
-  ]);
 
   const handleEditItem = useCallback(
     async (mealType: string, updatedItem: InputMenuItem) => {
@@ -68,7 +82,7 @@ export function MenuGrid({
           setMenuData((prev: Record<string, MenuItem[]>) => ({
             ...prev,
             [mealType]: prev[mealType].map((item) =>
-              item.id === updatedItem.id ? itemWithWeight : item,
+              item.id === updatedItem.id ? itemWithWeight : item
             ),
           }));
           toast.success("Menu updated!");
@@ -79,7 +93,7 @@ export function MenuGrid({
         toast.error("Failed to update menu.");
       }
     },
-    [],
+    []
   );
 
   const handleDeleteItem = useCallback(
@@ -102,7 +116,7 @@ export function MenuGrid({
         }
       }
     },
-    [],
+    []
   );
 
   const handleAddMenuItem = useCallback(
@@ -116,7 +130,7 @@ export function MenuGrid({
         };
       });
     },
-    [],
+    []
   );
 
   const handleAddRecipe = useCallback(
@@ -130,21 +144,9 @@ export function MenuGrid({
         };
       });
     },
-    [],
+    []
   );
 
-  const handleEditExtraItem = useCallback((updatedItem: InputMenuItem) => {
-    const itemWithWeight = { ...updatedItem, weight: updatedItem.weight ?? "" };
-    setExtraItems((prev) =>
-      prev.map((item) => (item.id === updatedItem.id ? itemWithWeight : item)),
-    );
-  }, []);
-
-  const handleDeleteExtraItem = useCallback((itemId: string) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      setExtraItems((prev) => prev.filter((item) => item.id !== itemId));
-    }
-  }, []);
 
   return (
     <div className="space-y-6">
@@ -152,79 +154,64 @@ export function MenuGrid({
         <MenuCard
           title="Breakfast"
           items={menuData.breakfast}
-          onAdd={() => onAddMeal("Breakfast")}
+          onAdd={() => onAddMeal(MealType.BREAKFAST)}
+          onEdit={(item) => {
+            // Find the actual meal data from dailyMenus
+            const meal = dailyMenus.BREAKFAST?.find((m: any) => m.id === item.id);
+            if (meal) {
+              onEditMeal(MealType.BREAKFAST, meal);
+            }
+          }}
+          onDelete={(itemId) => onDeleteMeal(itemId)}
+          showActions
         />
         <MenuCard
           title="Lunch"
           items={menuData.lunch}
-          onAdd={() => onAddMeal("Lunch")}
-          onEdit={(item) => handleEditItem("lunch", item)}
-          onDelete={(itemId) => handleDeleteItem("lunch", itemId)}
+          onAdd={() => onAddMeal(MealType.LUNCH)}
+          onEdit={(item) => {
+            // Find the actual meal data from dailyMenus
+            const meal = dailyMenus.LUNCH?.find((m: any) => m.id === item.id);
+            if (meal) {
+              onEditMeal(MealType.LUNCH, meal);
+            }
+          }}
+          onDelete={(itemId) => onDeleteMeal(itemId)}
           showActions
         />
         <MenuCard
           title="Dinner"
           items={menuData.dinner}
-          onAdd={() => onAddMeal("Dinner")}
-          onEdit={(item) => handleEditItem("dinner", item)}
-          onDelete={(itemId) => handleDeleteItem("dinner", itemId)}
+          onAdd={() => onAddMeal(MealType.DINNER)}
+          onEdit={(item) => {
+            // Find the actual meal data from dailyMenus
+            const meal = dailyMenus.DINNER?.find((m: any) => m.id === item.id);
+            if (meal) {
+              onEditMeal(MealType.DINNER, meal);
+            }
+          }}
+          onDelete={(itemId) => onDeleteMeal(itemId)}
           showActions
         />
       </div>
 
-      {/* Extra Section */}
-      <Card className="bg-white border-[#dbdade]">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-[#4b465c]">Extra</h3>
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-[#674af5] text-[#674af5] hover:bg-[#674af5]/10 bg-transparent"
-              onClick={() => onAddMeal("Extra")}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Add
-            </Button>
-          </div>
-          <div className="mt-4 space-y-3">
-            {extraItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-2 hover:bg-[#f8f7fa] rounded-lg"
-              >
-                <div>
-                  <p className="text-[#4b465c] font-medium">{item.name}</p>
-                  <p className="text-sm text-[#4b465c]/70">{item.weight}</p>
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="w-8 h-8 p-0 text-[#674af5] hover:bg-[#674af5]/10"
-                    onClick={() => {
-                      const newName = prompt("Edit item name:", item.name);
-                      if (newName && newName.trim()) {
-                        handleEditExtraItem({ ...item, name: newName.trim() });
-                      }
-                    }}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="w-8 h-8 p-0 text-[#ea5455] hover:bg-[#ea5455]/10"
-                    onClick={() => handleDeleteExtraItem(item.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Extra Section - Now using MenuCard like other meal types */}
+      <div className="grid grid-cols-1">
+        <MenuCard
+          title="Extra"
+          items={menuData.snack || []}
+          onAdd={() => onAddMeal(MealType.SNACK)}
+          onEdit={(item) => {
+            // Find the actual meal data from dailyMenus
+            const meal = dailyMenus.SNACK?.find((m: any) => m.id === item.id);
+            if (meal) {
+              onEditMeal(MealType.SNACK, meal);
+            }
+          }}
+          onDelete={(itemId) => onDeleteMeal(itemId)}
+          showActions
+        />
+      </div>
     </div>
   );
 }

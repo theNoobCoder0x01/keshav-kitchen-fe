@@ -46,17 +46,6 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </div>
         </div>
 
-        {/* Search Bar - Desktop */}
-        <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#4b465c]/50" />
-            <Input
-              placeholder="Search recipes, ingredients..."
-              className="pl-10 border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20 bg-[#f8f7fa]/50"
-            />
-          </div>
-        </div>
-
         {/* Right Side Actions */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Mobile Search Button */}

@@ -1,63 +1,35 @@
-import api from "./axios";
+import axios from 'axios';
 
-export async function fetchRecipes() {
-  const response = await api.get("/recipes");
-  return response.data;
-}
-
-export async function createRecipe(data: {
+export interface Recipe {
+  id: string;
   name: string;
-  description?: string;
-  instructions?: string;
-  servings?: number;
+  description: string | null;
+  instructions: string | null;
+  servings: number | null;
   category: string;
-  subcategory: string;
+  subcategory: string | null;
   ingredients: Array<{
+    id: string;
     name: string;
     quantity: number;
     unit: string;
-    costPerUnit?: number;
+    costPerUnit: number | null;
   }>;
-}) {
-  const response = await api.post("/recipes", data);
-  return response.data;
+  user: {
+    name: string;
+    email: string;
+  };
+  _count: {
+    menus: number;
+  };
 }
 
-export async function updateRecipe(
-  id: string,
-  data: {
-    name?: string;
-    description?: string;
-    instructions?: string;
-    servings?: number;
-    category?: string;
-    subcategory?: string;
-    ingredients?: Array<{
-      id?: string;
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit?: number;
-    }>;
-  },
-) {
+export async function fetchRecipes(): Promise<Recipe[]> {
   try {
-    const result = await api.put(`/recipes?id=${id}`, data);
-    return result;
-  } catch (error: unknown) {
-    console.error("API updateRecipe error:", error);
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to update recipe",
-    );
+    const response = await axios.get('/api/recipes');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recipes:', error);
+    throw new Error('Failed to fetch recipes');
   }
-}
-
-export async function deleteRecipe(id: string) {
-  const response = await api.delete(`/recipes?id=${id}`);
-  return response.data;
-}
-
-export async function updateRecipeIngredients(id: string, ingredients: any) {
-  const response = await api.put(`/recipes/${id}/ingredients`, ingredients);
-  return response.data;
 }

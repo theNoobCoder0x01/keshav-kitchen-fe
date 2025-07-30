@@ -150,7 +150,7 @@ export function MenuCard({
                         size="sm"
                         variant="ghost"
                         className="w-8 h-8 p-0 text-[#674af5] hover:bg-[#674af5]/10"
-                        onClick={() => handleEditStart(item)}
+                        onClick={() => onEdit?.(item)}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>

@@ -40,7 +40,6 @@ model Kitchen {
   users       User[]
   menus       Menu[]
   reports     Report[]
-  dailyMenus  DailyMenu[]
 }
 
 model Recipe {
@@ -75,42 +74,42 @@ model Ingredient {
   @@index([recipeId])
 }
 
-model DailyMenu {
-  id         String   @id @default(cuid())
-  date       DateTime
-  kitchenId  String
-  kitchen    Kitchen  @relation(fields: [kitchenId], references: [id])
-  menus      Menu[]   // All menus (meals) for this day in this kitchen
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([kitchenId])
-  @@unique([date, kitchenId]) // Only one daily menu per kitchen per day
-}
-
 model Menu {
-  id          String    @id @default(cuid())
+  id          String           @id @default(cuid())
   date        DateTime
   mealType    MealType
   recipeId    String
-  recipe      Recipe    @relation(fields: [recipeId], references: [id])
+  recipe      Recipe           @relation(fields: [recipeId], references: [id])
   kitchenId   String
-  kitchen     Kitchen   @relation(fields: [kitchenId], references: [id])
+  kitchen     Kitchen          @relation(fields: [kitchenId], references: [id])
   userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  user        User             @relation(fields: [userId], references: [id])
   servings    Int
-  ghanFactor  Float     @default(1.0)
-  status      Status    @default(PLANNED)
+  ghanFactor  Float            @default(1.0)
+  status      Status           @default(PLANNED)
   actualCount Int?
   notes       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  ingredients MenuIngredient[] // Store ingredients separately for each menu
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@index([recipeId])
   @@index([kitchenId])
   @@index([userId])
-  dailyMenuId String?
-  dailyMenu   DailyMenu? @relation(fields: [dailyMenuId], references: [id])
+}
+
+model MenuIngredient {
+  id          String   @id @default(cuid())
+  name        String
+  quantity    Float
+  unit        String
+  costPerUnit Float
+  menuId      String
+  menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([menuId])
 }
 
 model Report {

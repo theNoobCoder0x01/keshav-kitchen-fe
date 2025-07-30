@@ -71,7 +71,7 @@ export default function SignInPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@kitchen.com"
+                placeholder="Enter you email"
                 required
                 className="border-[#dbdade] focus:border-[#674af5]"
               />

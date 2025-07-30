@@ -62,9 +62,9 @@ async function main() {
       update: {},
       create: {
         id: "kitchen-1",
-        name: "Main Kitchen",
-        description: "Primary kitchen facility for daily operations",
-        location: "Ground Floor, Building A",
+        name: "Thakorji",
+        description: "Thakorji kitchen facility",
+        location: "Thakorji Kitchen",
       },
     }),
     prisma.kitchen.upsert({
@@ -72,9 +72,9 @@ async function main() {
       update: {},
       create: {
         id: "kitchen-2",
-        name: "Secondary Kitchen",
-        description: "Secondary kitchen for overflow and special events",
-        location: "First Floor, Building B",
+        name: "Premvati",
+        description: "Premvati kitchen facility",
+        location: "Premvati Kitchen",
       },
     }),
     prisma.kitchen.upsert({
@@ -82,41 +82,49 @@ async function main() {
       update: {},
       create: {
         id: "kitchen-3",
-        name: "Catering Kitchen",
-        description: "Specialized kitchen for catering services",
-        location: "Ground Floor, Building C",
+        name: "Aarsh",
+        description: "Aarsh kitchen facility",
+        location: "Aarsh Kitchen",
+      },
+    }),
+    prisma.kitchen.upsert({
+      where: { id: "kitchen-4" },
+      update: {},
+      create: {
+        id: "kitchen-4",
+        name: "Mandir",
+        description: "Mandir kitchen facility",
+        location: "Mandir Kitchen",
+      },
+    }),
+    prisma.kitchen.upsert({
+      where: { id: "kitchen-5" },
+      update: {},
+      create: {
+        id: "kitchen-5",
+        name: "Prasad",
+        description: "Prasad kitchen facility",
+        location: "Prasad Kitchen",
+      },
+    }),
+    prisma.kitchen.upsert({
+      where: { id: "kitchen-6" },
+      update: {},
+      create: {
+        id: "kitchen-6",
+        name: "Gurukul",
+        description: "Gurukul kitchen facility",
+        location: "Gurukul Kitchen",
       },
     }),
   ]);
 
-  // Create daily menus for each kitchen for today and tomorrow
-  console.log("Creating daily menus...");
+  // Set up dates for menu creation
+  console.log("Setting up dates...");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  const allDates = [today, tomorrow];
-
-  // Create a daily menu for each kitchen and date
-  const dailyMenus = [];
-  for (const kitchen of kitchens) {
-    for (const date of allDates) {
-      const dm = await prisma.dailyMenu.upsert({
-        where: {
-          date_kitchenId: {
-            date,
-            kitchenId: kitchen.id,
-          },
-        },
-        update: {},
-        create: {
-          date,
-          kitchenId: kitchen.id,
-        },
-      });
-      dailyMenus.push(dm);
-    }
-  }
 
   // Create users with proper kitchen references
   console.log("Creating users...");
@@ -133,7 +141,7 @@ async function main() {
         email: "admin@kitchen.com",
         password: hashedPassword,
         role: "ADMIN",
-        kitchenId: kitchens[0].id,
+        kitchenId: kitchens[0].id, // Thakorji
       },
     }),
     prisma.user.upsert({
@@ -145,7 +153,7 @@ async function main() {
         email: "manager1@kitchen.com",
         password: hashedPassword2,
         role: "MANAGER",
-        kitchenId: kitchens[0].id,
+        kitchenId: kitchens[1].id, // Premvati
       },
     }),
     prisma.user.upsert({
@@ -157,7 +165,7 @@ async function main() {
         email: "chef1@kitchen.com",
         password: hashedPassword2,
         role: "CHEF",
-        kitchenId: kitchens[1].id,
+        kitchenId: kitchens[2].id, // Aarsh
       },
     }),
     prisma.user.upsert({
@@ -169,7 +177,31 @@ async function main() {
         email: "staff1@kitchen.com",
         password: hashedPassword2,
         role: "STAFF",
-        kitchenId: kitchens[2].id,
+        kitchenId: kitchens[3].id, // Mandir
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "chef2@kitchen.com" },
+      update: {},
+      create: {
+        id: "user-5",
+        name: "Prasad Chef",
+        email: "chef2@kitchen.com",
+        password: hashedPassword2,
+        role: "CHEF",
+        kitchenId: kitchens[4].id, // Prasad
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "staff2@kitchen.com" },
+      update: {},
+      create: {
+        id: "user-6",
+        name: "Gurukul Staff",
+        email: "staff2@kitchen.com",
+        password: hashedPassword2,
+        role: "STAFF",
+        kitchenId: kitchens[5].id, // Gurukul
       },
     }),
   ]);
@@ -365,52 +397,45 @@ async function main() {
 
   // Create menus
   console.log("Creating menus...");
-  // Helper to find the right dailyMenuId for a given kitchenId and date
-  function findDailyMenuId(kitchenId, date) {
-    return dailyMenus.find(
-      (dm) =>
-        dm.kitchenId === kitchenId && dm.date.getTime() === date.getTime(),
-    )?.id;
-  }
 
   await Promise.all([
+    // Thakorji Kitchen - Today
     prisma.menu.create({
       data: {
         date: today,
         mealType: "BREAKFAST",
-        recipeId: recipes[2].id, // Chapati
-        kitchenId: kitchens[0].id,
+        recipeId: recipes[2].id, // ખીર
+        kitchenId: kitchens[0].id, // Thakorji
         userId: users[0].id,
         servings: 50,
         ghanFactor: 1.2,
         status: "PLANNED",
-        dailyMenuId: findDailyMenuId(kitchens[0].id, today),
       },
     }),
     prisma.menu.create({
       data: {
         date: today,
         mealType: "LUNCH",
-        recipeId: recipes[0].id, // Dal Tadka
-        kitchenId: kitchens[0].id,
-        userId: users[1].id,
+        recipeId: recipes[0].id, // હરિભક્તો માટે દૂધ પાક
+        kitchenId: kitchens[0].id, // Thakorji
+        userId: users[0].id,
         servings: 100,
         ghanFactor: 1.0,
         status: "PLANNED",
-        dailyMenuId: findDailyMenuId(kitchens[0].id, today),
       },
     }),
+    
+    // Premvati Kitchen - Today
     prisma.menu.create({
       data: {
         date: today,
-        mealType: "LUNCH",
-        recipeId: recipes[1].id, // Vegetable Biryani
-        kitchenId: kitchens[0].id,
+        mealType: "BREAKFAST",
+        recipeId: recipes[1].id, // ઠાકોરજી માટે દૂધ પાક
+        kitchenId: kitchens[1].id, // Premvati
         userId: users[1].id,
         servings: 80,
         ghanFactor: 1.1,
         status: "PLANNED",
-        dailyMenuId: findDailyMenuId(kitchens[0].id, today),
       },
     }),
     prisma.menu.create({
@@ -418,22 +443,51 @@ async function main() {
         date: today,
         mealType: "DINNER",
         recipeId: recipes[4].id, // Sambar
-        kitchenId: kitchens[0].id,
-        userId: users[2].id,
+        kitchenId: kitchens[1].id, // Premvati
+        userId: users[1].id,
         servings: 120,
         ghanFactor: 0.9,
+        status: "PLANNED",
+      },
+    }),
+
+    // Aarsh Kitchen - Today
+    prisma.menu.create({
+      data: {
+        date: today,
+        mealType: "LUNCH",
+        recipeId: recipes[3].id, // ફ્રુટ સલાડ
+        kitchenId: kitchens[2].id, // Aarsh
+        userId: users[2].id,
+        servings: 60,
+        ghanFactor: 1.0,
+        status: "COMPLETED",
+        actualCount: 58,
+      },
+    }),
+
+    // Tomorrow's menus
+    prisma.menu.create({
+      data: {
+        date: tomorrow,
+        mealType: "BREAKFAST",
+        recipeId: recipes[2].id, // ખીર
+        kitchenId: kitchens[0].id, // Thakorji
+        userId: users[0].id,
+        servings: 60,
+        ghanFactor: 1.0,
         status: "PLANNED",
       },
     }),
     prisma.menu.create({
       data: {
         date: tomorrow,
-        mealType: "BREAKFAST",
-        recipeId: recipes[2].id, // Chapati
-        kitchenId: kitchens[0].id,
-        userId: users[0].id,
-        servings: 60,
-        ghanFactor: 1.0,
+        mealType: "LUNCH",
+        recipeId: recipes[4].id, // Sambar
+        kitchenId: kitchens[3].id, // Mandir
+        userId: users[3].id,
+        servings: 90,
+        ghanFactor: 1.1,
         status: "PLANNED",
       },
     }),
@@ -442,34 +496,73 @@ async function main() {
   // Create reports
   console.log("Creating reports...");
   await Promise.all([
+    // Thakorji Kitchen Reports
     prisma.report.create({
       data: {
         date: today,
-        kitchenId: kitchens[0].id,
+        kitchenId: kitchens[0].id, // Thakorji
         userId: users[0].id,
         visitorCount: 150,
         mealsCounted: 145,
-        notes: "Good day with high attendance",
+        notes: "Good day with high attendance at Thakorji kitchen",
       },
     }),
     prisma.report.create({
       data: {
         date: new Date(today.getTime() - 24 * 60 * 60 * 1000), // Yesterday
-        kitchenId: kitchens[0].id,
-        userId: users[1].id,
+        kitchenId: kitchens[0].id, // Thakorji
+        userId: users[0].id,
         visitorCount: 120,
         mealsCounted: 118,
-        notes: "Normal operations",
+        notes: "Normal operations at Thakorji kitchen",
+      },
+    }),
+    
+    // Premvati Kitchen Reports
+    prisma.report.create({
+      data: {
+        date: today,
+        kitchenId: kitchens[1].id, // Premvati
+        userId: users[1].id,
+        visitorCount: 95,
+        mealsCounted: 92,
+        notes: "Steady operations at Premvati kitchen",
+      },
+    }),
+    
+    // Aarsh Kitchen Reports
+    prisma.report.create({
+      data: {
+        date: today,
+        kitchenId: kitchens[2].id, // Aarsh
+        userId: users[2].id,
+        visitorCount: 75,
+        mealsCounted: 73,
+        notes: "Smooth operations at Aarsh kitchen",
+      },
+    }),
+    
+    // Mandir Kitchen Reports
+    prisma.report.create({
+      data: {
+        date: new Date(today.getTime() - 24 * 60 * 60 * 1000), // Yesterday
+        kitchenId: kitchens[3].id, // Mandir
+        userId: users[3].id,
+        visitorCount: 110,
+        mealsCounted: 108,
+        notes: "Good attendance at Mandir kitchen",
       },
     }),
   ]);
 
   console.log("✅ Database seeded successfully!");
   console.log("🔑 Login credentials:");
-  console.log("  Admin: admin@kitchen.com / admin123");
-  console.log("  Manager: manager1@kitchen.com / password123");
-  console.log("  Chef: chef1@kitchen.com / password123");
-  console.log("  Staff: staff1@kitchen.com / password123");
+  console.log("  Admin (Thakorji): admin@kitchen.com / admin123");
+  console.log("  Manager (Premvati): manager1@kitchen.com / password123");
+  console.log("  Chef (Aarsh): chef1@kitchen.com / password123");
+  console.log("  Staff (Mandir): staff1@kitchen.com / password123");
+  console.log("  Chef (Prasad): chef2@kitchen.com / password123");
+  console.log("  Staff (Gurukul): staff2@kitchen.com / password123");
 }
 
 main()

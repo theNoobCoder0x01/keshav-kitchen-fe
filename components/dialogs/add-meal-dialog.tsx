@@ -22,9 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createDailyMenu } from "@/lib/actions/menu";
-import { getRecipes } from "@/lib/actions/recipes";
+import { fetchRecipes } from "@/lib/api/recipes";
 import { fetchIngredients } from "@/lib/api/ingredients";
+import { createMenu, updateMenu } from "@/lib/api/menus";
 import { Plus, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
@@ -57,50 +57,99 @@ interface Recipe {
   ingredients: RecipeIngredient[];
 }
 
-export interface MealFormValues {
-  recipeId: string;
-  followRecipe: boolean;
-  ghan: string;
-  servingAmount: string;
-  servingUnit: string;
-  ingredients: IngredientFormValue[];
-}
-
 const validationSchema = Yup.object().shape({
   recipeId: Yup.string().required("Recipe is required"),
   followRecipe: Yup.boolean().default(false),
-  ghan: Yup.string()
+  ghan: Yup.number()
     .required("Ghan is required")
-    .matches(/^\d+(\.\d+)?$/, "Must be a valid number"),
-  servingAmount: Yup.string()
+    .positive("Ghan must be a positive number")
+    .max(100, "Ghan cannot exceed 100"),
+  servingAmount: Yup.number()
     .required("Serving amount is required")
-    .matches(/^\d+(\.\d+)?$/, "Must be a valid number"),
+    .positive("Serving amount must be a positive number")
+    .max(10000, "Serving amount cannot exceed 10,000"),
   servingUnit: Yup.string().required("Serving unit is required"),
   ingredients: Yup.array()
     .of(
       Yup.object().shape({
         name: Yup.string().required("Ingredient name is required"),
-        quantityPerGhan: Yup.object().shape({
-          amount: Yup.string()
-            .required("Quantity is required")
-            .matches(/^\d+(\.\d+)?$/, "Must be a valid number"),
-          unit: Yup.string().required("Unit is required"),
-        }),
-        cost: Yup.number()
-          .required("Cost is required")
+        quantity: Yup.number()
+          .required("Quantity is required")
+          .positive("Quantity must be a positive number"),
+        unit: Yup.string().required("Unit is required"),
+        costPerUnit: Yup.number()
+          .required("Cost per unit is required")
           .min(0, "Cost cannot be negative"),
       })
     )
     .min(1, "At least one ingredient is required"),
 });
 
-const initialValues: MealFormValues = {
-  recipeId: "",
-  followRecipe: false,
-  ghan: "1.0",
-  servingAmount: "100",
-  servingUnit: "g",
-  ingredients: [],
+// This will be computed dynamically based on editMeal prop
+const getInitialValues = (editMeal?: AddMealDialogProps['editMeal'], recipes?: Recipe[]): MealFormValues => {
+  if (editMeal) {
+    // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
+    let ingredients;
+    
+    if (editMeal.ingredients && editMeal.ingredients.length > 0) {
+      // Load ingredients from the saved menu
+      ingredients = editMeal.ingredients.map((ingredient) => ({
+        id: ingredient.id,
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+        costPerUnit: ingredient.costPerUnit,
+      }));
+    } else {
+      // Fall back to recipe ingredients if menu doesn't have ingredients saved
+      const selectedRecipe = recipes?.find((r) => r.id === editMeal.recipeId);
+      const recipeIngredients = selectedRecipe?.ingredients || [];
+      
+      ingredients = recipeIngredients.length > 0 
+        ? recipeIngredients.map((ingredient) => ({
+            id: ingredient.id,
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit || 0,
+          }))
+        : [
+            {
+              id: undefined,
+              name: "",
+              quantity: 0,
+              unit: "Kg",
+              costPerUnit: 0,
+            }
+          ];
+    }
+
+    return {
+      recipeId: editMeal.recipeId,
+      followRecipe: true,
+      ghan: editMeal.ghanFactor || 1.0,
+      servingAmount: editMeal.servings,
+      servingUnit: "g", // Default unit, could be enhanced to store this in the database
+      ingredients,
+    };
+  }
+
+  return {
+    recipeId: "",
+    followRecipe: false,
+    ghan: 1.0,
+    servingAmount: 100,
+    servingUnit: "g",
+    ingredients: [
+      {
+        id: undefined,
+        name: "",
+        quantity: 0,
+        unit: "Kg",
+        costPerUnit: 0,
+      }
+    ],
+  };
 };
 
 type MealType = "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
@@ -110,6 +159,24 @@ interface AddMealDialogProps {
   onOpenChange: (open: boolean) => void;
   mealType: MealType;
   selectedDate: Date;
+  kitchenId?: string;
+  editMeal?: {
+    id: string;
+    recipeId: string;
+    servings: number;
+    ghanFactor: number;
+    recipe?: {
+      id: string;
+      name: string;
+    };
+    ingredients?: Array<{
+      id: string;
+      name: string;
+      quantity: number;
+      unit: string;
+      costPerUnit: number;
+    }>;
+  } | null;
 }
 
 interface IngredientOption {
@@ -146,16 +213,16 @@ interface IngredientOption {
 export interface IngredientFormValue {
   id: string | undefined;
   name: string;
-  quantity: string;
+  quantity: number;
   unit: string;
-  costPerUnit: string;
+  costPerUnit: number;
 }
 
 export interface MealFormValues {
   recipeId: string;
   followRecipe: boolean;
-  ghan: string;
-  servingAmount: string;
+  ghan: number;
+  servingAmount: number;
   servingUnit: string;
   ingredients: IngredientFormValue[];
 }
@@ -170,6 +237,8 @@ export function AddMealDialog({
   onOpenChange,
   mealType,
   selectedDate,
+  kitchenId,
+  editMeal,
 }: AddMealDialogProps) {
   const { data: session } = useSession();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -182,7 +251,7 @@ export function AddMealDialog({
     const loadData = async () => {
       try {
         const [recipesData, ingredientsData] = await Promise.all([
-          getRecipes(),
+          fetchRecipes(),
           fetchIngredients(),
         ]);
         setRecipes(recipesData);
@@ -220,42 +289,83 @@ export function AddMealDialog({
     values: MealFormValues,
     { resetForm }: { resetForm: () => void }
   ) => {
-    if (!session?.user?.id) {
-      toast.error("User not authenticated");
-      return;
-    }
-
-    setIsFormSubmitting(true);
-
     try {
-      const menuItemData = {
-        date: selectedDate,
-        mealType,
-        recipeId: values.recipeId,
-        kitchenId: session.user.id,
-        servings: parseFloat(values.ghan),
-        ghanFactor: 1.0,
-        notes: `Follow recipe: ${values.followRecipe ? "Yes" : "No"}`,
-        ingredients: values.ingredients.map((ing) => ({
-          name: ing.name,
-          quantity: parseFloat(ing.quantity) * parseFloat(values.ghan),
-          unit: ing.unit,
-          costPerUnit: ing.costPerUnit,
-        })),
-      };
-
-      const result = await createDailyMenu(menuItemData);
-
-      if (result.success) {
-        toast.success("Meal added successfully!");
-        resetForm();
-        onOpenChange(false);
-      } else {
-        toast.error(result.error || "Failed to add meal");
+      setIsFormSubmitting(true);
+      
+      // Use the passed kitchenId or fall back to session kitchenId
+      const targetKitchenId = kitchenId || session?.user?.kitchenId;
+      
+      // Validate required fields
+      if (!targetKitchenId) {
+        throw new Error("Kitchen information not found. Please try again.");
       }
-    } catch (error) {
-      console.error("Error saving meal:", error);
-      toast.error("An error occurred while saving the meal");
+      
+      if (!session?.user?.id) {
+        throw new Error("User information not found. Please log in again.");
+      }
+      
+      if (!values.recipeId) {
+        throw new Error("Please select a recipe from the dropdown.");
+      }
+
+      // Additional validation for positive values
+      if (values.servingAmount <= 0) {
+        throw new Error("Serving amount must be greater than zero.");
+      }
+      
+      if (values.ghan <= 0) {
+        throw new Error("Ghan factor must be greater than zero.");
+      }
+
+      if (editMeal) {
+        // Update existing meal
+        console.log(`Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`);
+
+        const updateData = {
+          recipeId: values.recipeId,
+          servings: values.servingAmount,
+          ghanFactor: values.ghan,
+          notes: `Meal updated for ${mealType.toLowerCase()} with ${values.servingAmount} ${values.servingUnit} servings and ${values.ghan} ghan factor.`,
+          ingredients: values.ingredients.map(ingredient => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit,
+          }))
+        };
+
+        const result = await updateMenu(editMeal.id, updateData);
+        toast.success(`Meal updated successfully for ${mealType.toLowerCase()}!`);
+      } else {
+        // Create new meal
+        console.log(`Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`);
+
+        const menuData = {
+          date: selectedDate,
+          mealType: mealType,
+          recipeId: values.recipeId,
+          kitchenId: targetKitchenId,
+          userId: session.user.id,
+          servings: values.servingAmount,
+          ghanFactor: values.ghan,
+          status: "PLANNED" as const,
+          notes: `Meal planned for ${mealType.toLowerCase()} with ${values.servingAmount} ${values.servingUnit} servings and ${values.ghan} ghan factor.`,
+          ingredients: values.ingredients.map(ingredient => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit,
+          }))
+        };
+
+        const result = await createMenu(menuData);
+        toast.success(`Meal added successfully for ${mealType.toLowerCase()}!`);
+      }
+      resetForm();
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error("Error creating menu:", error);
+      toast.error(error.message || "Failed to add meal. Please check your inputs and try again.");
     } finally {
       setIsFormSubmitting(false);
     }
@@ -268,10 +378,11 @@ export function AddMealDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <Formik
-        initialValues={initialValues}
+        initialValues={getInitialValues(editMeal, recipes)}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
         enableReinitialize
+        key={editMeal?.id || 'new'} // Force re-initialization when switching between add/edit
       >
         {({
           isSubmitting,
@@ -281,11 +392,13 @@ export function AddMealDialog({
           touched,
           handleChange,
           handleBlur,
+          handleSubmit: formikHandleSubmit,
+          resetForm,
         }) => {
           // Calculate derived values based on form values
           const calculateValues = () => {
-            const ghanValue = parseFloat(values.ghan) || 0;
-            const servingAmount = parseFloat(values.servingAmount) || 0;
+            const ghanValue = values.ghan || 0;
+            const servingAmount = values.servingAmount || 0;
 
             // Calculate per person quantity (default to 100g per person if serving amount is 0)
             const perPerson = servingAmount > 0 ? servingAmount : 100;
@@ -301,8 +414,8 @@ export function AddMealDialog({
 
             // Calculate total cost and per person cost
             const totalCost = values.ingredients.reduce((sum, ing) => {
-              const quantity = parseFloat(ing.quantity) || 0;
-              const costPerUnit = parseFloat(ing.costPerUnit) || 0;
+              const quantity = ing.quantity || 0;
+              const costPerUnit = ing.costPerUnit || 0;
               return sum + quantity * costPerUnit * ghanValue;
             }, 0);
 
@@ -350,10 +463,15 @@ export function AddMealDialog({
           return (
             <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add {mealType.toLowerCase()} meal</DialogTitle>
+                <DialogTitle>
+                  {editMeal ? 'Edit' : 'Add'} {mealType.toLowerCase()} meal
+                </DialogTitle>
               </DialogHeader>
 
-              <form>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit(values, { resetForm });
+              }}>
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-6 sm:col-span-9">
                     <Label
@@ -498,9 +616,9 @@ export function AddMealDialog({
                           const newIngredient = {
                             id: undefined,
                             name: "",
-                            quantity: "",
+                            quantity: 0,
                             unit: "Kg",
-                            costPerUnit: "",
+                            costPerUnit: 0,
                           };
                           values.ingredients.push(newIngredient);
                         }}
@@ -545,6 +663,7 @@ export function AddMealDialog({
                                   placeholder="5"
                                   type="number"
                                   step="0.1"
+                                  min="0"
                                   className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                                 />
                                 <ErrorMessage
@@ -563,6 +682,7 @@ export function AddMealDialog({
                                   placeholder="30"
                                   type="number"
                                   step="0.01"
+                                  min="0"
                                   className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                                 />
                                 <ErrorMessage
@@ -605,13 +725,13 @@ export function AddMealDialog({
                               <div className="col-span-1">
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="destructive"
                                   size="sm"
                                   onClick={() => remove(index)}
-                                  className="w-8 h-8 p-0 text-[#ea5455] hover:bg-[#ea5455]/10"
+                                  className="w-10 h-10 p-0"
                                   disabled={values.ingredients.length === 1}
                                 >
-                                  <X className="w-4 h-4" />
+                                  <X/>
                                 </Button>
                               </div>
                             </div>
