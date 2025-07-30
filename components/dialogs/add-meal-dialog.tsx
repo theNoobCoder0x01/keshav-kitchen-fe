@@ -28,6 +28,7 @@ import { createMenu, updateMenu } from "@/lib/api/menus";
 import { Plus, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
+import { calculateMealMetrics, validateMealInputs, type MealCalculationInput } from "@/lib/utils/meal-calculations";
 
 interface RecipeIngredient {
   id: string;
@@ -395,43 +396,25 @@ export function AddMealDialog({
           handleSubmit: formikHandleSubmit,
           resetForm,
         }) => {
-          // Calculate derived values based on form values
-          const calculateValues = () => {
-            const ghanValue = values.ghan || 0;
-            const servingAmount = values.servingAmount || 0;
-
-            // Calculate per person quantity (default to 100g per person if serving amount is 0)
-            const perPerson = servingAmount > 0 ? servingAmount : 100;
-
-            // Calculate persons per 1 ghan (1000g / perPerson)
-            const oneGhanPersons =
-              perPerson > 0 ? (1000 / perPerson).toFixed(2) : "0.00";
-
-            // Calculate total persons for the specified ghan
-            const totalPersons = (
-              parseFloat(oneGhanPersons) * ghanValue
-            ).toFixed(2);
-
-            // Calculate total cost and per person cost
-            const totalCost = values.ingredients.reduce((sum, ing) => {
-              const quantity = ing.quantity || 0;
-              const costPerUnit = ing.costPerUnit || 0;
-              return sum + quantity * costPerUnit * ghanValue;
-            }, 0);
-
-            const perPersonCost = (
-              totalCost / parseFloat(totalPersons) || 0
-            ).toFixed(2);
-
-            return {
-              perPerson: perPerson.toFixed(2),
-              perPersonCost,
-              oneGhanPersons,
-              totalPersons,
-            };
+          // Calculate meal metrics using our utility functions
+          const calculationInput: MealCalculationInput = {
+            ghan: values.ghan || 1,
+            servingAmount: values.servingAmount || 100,
+            servingUnit: values.servingUnit || 'g',
+            ingredients: values.ingredients.map(ing => ({
+              name: ing.name || '',
+              quantity: ing.quantity || 0,
+              unit: ing.unit || 'g',
+              costPerUnit: ing.costPerUnit || 0,
+            })),
+            mealType,
           };
 
-          const calculations = calculateValues();
+          // Validate inputs before calculating
+          const validation = validateMealInputs(calculationInput);
+          const calculations = validation.isValid 
+            ? calculateMealMetrics(calculationInput)
+            : null;
 
           const getError = (field: string) => {
             const error = Yup.getIn(errors, field);
@@ -742,42 +725,79 @@ export function AddMealDialog({
                   </div>
 
                   <div className="col-span-12 bg-[#f8f7fa] p-4 rounded-lg space-y-2">
-                    <div className="grid grid-cols-12 gap-8 text-sm">
-                      <div className="col-span-6 flex justify-between">
-                        <span className="font-medium text-[#4b465c]">
-                          Per Person
-                        </span>
-                        <span className="text-[#4b465c]">
-                          {calculations.perPerson} {values.servingUnit}
-                        </span>
+                    {calculations ? (
+                      <>
+                        <div className="grid grid-cols-12 gap-8 text-sm">
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-[#4b465c]">
+                              Per Person
+                            </span>
+                            <span className="text-[#4b465c]">
+                              {calculations.display.perPersonServing}
+                            </span>
+                          </div>
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-[#4b465c]">
+                              Per Person cost
+                            </span>
+                            <span className="text-[#4b465c]">
+                              {calculations.display.costPerPerson}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-12 gap-8 text-sm">
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-[#4b465c]">
+                              1 Ghan
+                            </span>
+                            <span className="text-[#4b465c]">
+                              {calculations.display.personsPerGhan}
+                            </span>
+                          </div>
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-[#4b465c]">
+                              {values.ghan} Ghan
+                            </span>
+                            <span className="text-[#4b465c]">
+                              {calculations.display.totalPersons}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-12 gap-8 text-sm">
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-[#4b465c]">
+                              Total Cost
+                            </span>
+                            <span className="text-[#4b465c]">
+                              {calculations.display.totalCost}
+                            </span>
+                          </div>
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-[#4b465c]">
+                              Total Weight
+                            </span>
+                            <span className="text-[#4b465c]">
+                              {calculations.display.totalWeight}
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center text-sm text-gray-500 py-4">
+                        {validation.errors.length > 0 ? (
+                          <div className="space-y-1">
+                            <p>Please fix the following issues to see calculations:</p>
+                            <ul className="text-xs text-red-500 list-disc list-inside">
+                              {validation.errors.map((error, index) => (
+                                <li key={index}>{error}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <p>Enter ingredient details to see calculations</p>
+                        )}
                       </div>
-                      <div className="col-span-6 flex justify-between">
-                        <span className="font-medium text-[#4b465c]">
-                          Per Person cost
-                        </span>
-                        <span className="text-[#4b465c]">
-                          ₹{calculations.perPersonCost}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-12 gap-8 text-sm">
-                      <div className="col-span-6 flex justify-between">
-                        <span className="font-medium text-[#4b465c]">
-                          1 Ghan
-                        </span>
-                        <span className="text-[#4b465c]">
-                          {calculations.oneGhanPersons} Person
-                        </span>
-                      </div>
-                      <div className="col-span-6 flex justify-between">
-                        <span className="font-medium text-[#4b465c]">
-                          {values.ghan} Ghan
-                        </span>
-                        <span className="text-[#4b465c]">
-                          {calculations.totalPersons} Person
-                        </span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
