@@ -42,11 +42,11 @@ CREATE TABLE "Recipe" (
     "description" TEXT,
     "instructions" TEXT,
     "servings" INTEGER,
-    "category" TEXT,
-    "subcategory" TEXT,
+    "category" TEXT NOT NULL,
+    "subcategory" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Recipe_pkey" PRIMARY KEY ("id")
 );
@@ -66,17 +66,6 @@ CREATE TABLE "Ingredient" (
 );
 
 -- CreateTable
-CREATE TABLE "DailyMenu" (
-    "id" TEXT NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
-    "kitchenId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "DailyMenu_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Menu" (
     "id" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
@@ -91,9 +80,22 @@ CREATE TABLE "Menu" (
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "dailyMenuId" TEXT,
 
     CONSTRAINT "Menu_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MenuIngredient" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "quantity" DOUBLE PRECISION NOT NULL,
+    "unit" TEXT NOT NULL,
+    "costPerUnit" DOUBLE PRECISION NOT NULL,
+    "menuId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MenuIngredient_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -124,12 +126,6 @@ CREATE INDEX "Recipe_userId_idx" ON "Recipe"("userId");
 CREATE INDEX "Ingredient_recipeId_idx" ON "Ingredient"("recipeId");
 
 -- CreateIndex
-CREATE INDEX "DailyMenu_kitchenId_idx" ON "DailyMenu"("kitchenId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "DailyMenu_date_kitchenId_key" ON "DailyMenu"("date", "kitchenId");
-
--- CreateIndex
 CREATE INDEX "Menu_recipeId_idx" ON "Menu"("recipeId");
 
 -- CreateIndex
@@ -137,6 +133,9 @@ CREATE INDEX "Menu_kitchenId_idx" ON "Menu"("kitchenId");
 
 -- CreateIndex
 CREATE INDEX "Menu_userId_idx" ON "Menu"("userId");
+
+-- CreateIndex
+CREATE INDEX "MenuIngredient_menuId_idx" ON "MenuIngredient"("menuId");
 
 -- CreateIndex
 CREATE INDEX "Report_kitchenId_idx" ON "Report"("kitchenId");
@@ -154,9 +153,6 @@ ALTER TABLE "Recipe" ADD CONSTRAINT "Recipe_userId_fkey" FOREIGN KEY ("userId") 
 ALTER TABLE "Ingredient" ADD CONSTRAINT "Ingredient_recipeId_fkey" FOREIGN KEY ("recipeId") REFERENCES "Recipe"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DailyMenu" ADD CONSTRAINT "DailyMenu_kitchenId_fkey" FOREIGN KEY ("kitchenId") REFERENCES "Kitchen"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Menu" ADD CONSTRAINT "Menu_recipeId_fkey" FOREIGN KEY ("recipeId") REFERENCES "Recipe"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -166,10 +162,11 @@ ALTER TABLE "Menu" ADD CONSTRAINT "Menu_kitchenId_fkey" FOREIGN KEY ("kitchenId"
 ALTER TABLE "Menu" ADD CONSTRAINT "Menu_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Menu" ADD CONSTRAINT "Menu_dailyMenuId_fkey" FOREIGN KEY ("dailyMenuId") REFERENCES "DailyMenu"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "MenuIngredient" ADD CONSTRAINT "MenuIngredient_menuId_fkey" FOREIGN KEY ("menuId") REFERENCES "Menu"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Report" ADD CONSTRAINT "Report_kitchenId_fkey" FOREIGN KEY ("kitchenId") REFERENCES "Kitchen"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Report" ADD CONSTRAINT "Report_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

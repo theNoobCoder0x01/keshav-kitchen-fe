@@ -8,6 +8,8 @@ import {
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/reports/download?type=TYPE&date=YYYY-MM-DD&format=xlsx|csv|pdf
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -21,12 +23,35 @@ export async function GET(req: NextRequest) {
     searchParams.get("date") || new Date().toISOString().split("T")[0];
   const format = searchParams.get("format") || "xlsx";
 
-  // Fetch report data from DB based on type/date
+  // Fetch report data from DB based on date
   let data;
   try {
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
     data = await prisma.report.findMany({
-      where: { type: type.toUpperCase(), date },
-      orderBy: { name: "asc" },
+      where: { 
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        }
+      },
+      include: {
+        kitchen: {
+          select: {
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
     });
   } catch (err) {
     return new NextResponse("Failed to fetch report data", { status: 500 });
