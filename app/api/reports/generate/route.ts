@@ -1,10 +1,10 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-  createReportCSV,
-  createReportPDF,
-  createReportWorkbook,
-} from "@/lib/reports/export";
+  createMenuReportCSV,
+  createMenuReportPDF,
+  createMenuReportWorkbook,
+} from "@/lib/reports/menu-export";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
           },
           recipe: {
             select: {
-              title: true,
+              name: true,
               description: true,
             },
           },
@@ -87,17 +87,6 @@ export async function POST(req: NextRequest) {
             select: {
               title: true,
               description: true,
-              ingredients: {
-                select: {
-                  ingredient: {
-                    select: {
-                      name: true,
-                      unit: true,
-                    },
-                  },
-                  quantity: true,
-                },
-              },
             },
           },
         },
@@ -107,7 +96,7 @@ export async function POST(req: NextRequest) {
       data = {
         type: mealType,
         date: targetDate,
-        totalQuantity: menus.reduce((sum, menu) => sum + (menu.quantity || 0), 0),
+        totalQuantity: menus.reduce((sum, menu) => sum + (menu.servings || 0), 0),
         menus: menus,
       };
     }
@@ -119,15 +108,15 @@ export async function POST(req: NextRequest) {
   let buffer, contentType, fileExt;
   try {
     if (format === "csv") {
-      buffer = await createReportCSV(data, type, date);
+      buffer = await createMenuReportCSV(data, type, date);
       contentType = "text/csv";
       fileExt = "csv";
     } else if (format === "pdf") {
-      buffer = await createReportPDF(data, type, date);
+      buffer = await createMenuReportPDF(data, type, date);
       contentType = "application/pdf";
       fileExt = "pdf";
     } else {
-      buffer = await createReportWorkbook(data, type, date);
+      buffer = await createMenuReportWorkbook(data, type, date);
       contentType =
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
       fileExt = "xlsx";
