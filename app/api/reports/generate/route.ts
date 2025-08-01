@@ -113,12 +113,25 @@ export async function POST(req: NextRequest) {
 
   let buffer, contentType, fileExt;
   try {
+    console.log(`Generating ${format} report for type: ${type}, date: ${date}`);
+    console.log(`Data structure:`, { 
+      type: data.type, 
+      menusCount: data.menus?.length || 0,
+      sampleMenu: data.menus?.[0] ? {
+        kitchen: data.menus[0].kitchen?.name,
+        recipe: data.menus[0].recipe?.name,
+        mealType: data.menus[0].mealType
+      } : null
+    });
+
     if (format === "csv") {
       buffer = await createMenuReportCSV(data, type, date);
       contentType = "text/csv";
       fileExt = "csv";
     } else if (format === "pdf") {
+      console.log("Attempting to generate PDF...");
       buffer = await createMenuReportPDF(data, type, date);
+      console.log("PDF generation completed, buffer size:", buffer?.length || 0);
       contentType = "application/pdf";
       fileExt = "pdf";
     } else {
@@ -129,7 +142,15 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("Failed to generate report file:", err);
-    return new NextResponse("Failed to generate report file", { status: 500 });
+    console.error("Error stack:", err instanceof Error ? err.stack : 'No stack trace');
+    return new NextResponse(JSON.stringify({ 
+      error: "Failed to generate report file", 
+      details: err instanceof Error ? err.message : "Unknown error",
+      stack: err instanceof Error ? err.stack : undefined
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   return new NextResponse(buffer, {
