@@ -1,12 +1,5 @@
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
-
-// Extend jsPDF type to include autoTable
-declare module "jspdf" {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+import jsPDF from "jspdf";
+import autoTable, { UserOptions } from "jspdf-autotable";
 
 interface MenuReportData {
   type: string;
@@ -112,7 +105,8 @@ export function createMenuReportPDFWithJsPDF(
         ])
       : [['No data available for this date', '', '', '', '', '']];
 
-    doc.autoTable({
+    // Use the imported autoTable function
+    autoTable(doc, {
       head: [['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']],
       body: tableData,
       startY: yPosition,
@@ -150,7 +144,8 @@ export function createMenuReportPDFWithJsPDF(
         ])
       : [['No data available for this date', '', '', '', '']];
 
-    doc.autoTable({
+    // Use the imported autoTable function
+    autoTable(doc, {
       head: [['Kitchen', 'Recipe', 'Servings', 'Ghan Factor', 'Status']],
       body: tableData,
       startY: yPosition,
