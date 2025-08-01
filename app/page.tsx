@@ -1,6 +1,7 @@
 "use client";
 
 import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
+import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation-dialog";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { MenuGrid } from "@/components/menu/menu-grid";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export default function MenuPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
+  const [reportsDialog, setReportsDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>(
     MealType.BREAKFAST,
   );
@@ -237,7 +239,14 @@ export default function MenuPage() {
           subtitle="Manage your daily menu and track kitchen operations"
           actions={
             <>
-
+              <Button
+                variant="outline"
+                className="border-[#674af5] text-[#674af5] hover:bg-[#674af5]/10 bg-white/80 backdrop-blur-sm"
+                onClick={() => setReportsDialog(true)}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Reports</span>
+              </Button>
               <Button className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                 <Upload className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Bulk Upload</span>
@@ -291,6 +300,10 @@ export default function MenuPage() {
         selectedDate={selectedDate}
         kitchenId={kitchens[activeTab]?.id || session?.user?.kitchenId}
         editMeal={editMeal}
+      />
+      <ReportsGenerationDialog
+        open={reportsDialog}
+        onOpenChange={setReportsDialog}
       />
     </DashboardLayout>
   );

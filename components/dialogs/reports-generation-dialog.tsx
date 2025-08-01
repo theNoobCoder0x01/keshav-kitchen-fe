@@ -102,29 +102,54 @@ export function ReportsGenerationDialog({
       
       // Generate reports for each selected type
       for (const report of selectedReports) {
-        const response = await fetch(
-          `/api/reports/generate?type=${report.id}&date=${dateStr}&format=${selectedFormat}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+        try {
+          const response = await fetch(
+            `/api/reports/generate?type=${report.id}&date=${dateStr}&format=${selectedFormat}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          
+          if (!response.ok) {
+            // Try to get error details from response
+            let errorMessage = `Failed to generate ${report.label}`;
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.details || errorData.error || errorMessage;
+            } catch {
+              // If response is not JSON, use status text
+              errorMessage = `${errorMessage}: ${response.status} ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
           }
-        );
-        
-        if (!response.ok) {
-          throw new Error(`Failed to generate ${report.label}`);
+          
+          const blob = await response.blob();
+          
+          // Check if the blob is actually a PDF/Excel/CSV and not an error page
+          if (blob.size === 0) {
+            throw new Error(`Empty file received for ${report.label}`);
+          }
+          
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${report.id}-report-${dateStr}.${selectedFormat}`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+          
+          // Add a small delay between downloads to prevent browser blocking
+          if (selectedReports.length > 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (reportError: any) {
+          console.error(`Error generating ${report.label}:`, reportError);
+          throw new Error(`${report.label}: ${reportError.message}`);
         }
-        
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${report.id}-report-${dateStr}.${selectedFormat}`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
       }
       
       toast.success(`${selectedReports.length} report(s) generated successfully!`);
@@ -146,26 +171,33 @@ export function ReportsGenerationDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto border-[#dbdade]">
+        <DialogHeader className="pb-4 border-b border-[#dbdade]">
           <DialogTitle className="text-xl font-semibold text-[#4b465c] flex items-center gap-2">
-            <Download className="w-5 h-5 text-[#674af5]" />
+            <div className="w-8 h-8 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-lg flex items-center justify-center">
+              <Download className="w-4 h-4 text-white" />
+            </div>
             Generate Reports
           </DialogTitle>
+          <p className="text-sm text-[#4b465c]/70 mt-2">
+            Create and download detailed reports for your kitchen operations
+          </p>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
           {/* Date Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium text-[#4b465c] flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-4 h-4 text-[#674af5]" />
               Report Date
             </Label>
-            <DateSelector
-              date={selectedDate}
-              onDateChange={setSelectedDate}
-              className="w-full"
-            />
+            <div className="bg-[#f8f7fa] border border-[#dbdade] rounded-lg p-4">
+              <DateSelector
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                className="w-full"
+              />
+            </div>
           </div>
 
           {/* Report Types Selection */}
