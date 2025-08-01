@@ -2,13 +2,14 @@
 
 import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
+import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { RecipesTable } from "@/components/recipes/recipes-table";
 import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -44,6 +45,7 @@ export default function RecipesPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [selectedRecipeForPrint, setSelectedRecipeForPrint] = useState<RecipeDetailData | null>(null);
   const [editRecipe, setEditRecipe] = useState<{
     recipeName: string;
@@ -283,13 +285,23 @@ export default function RecipesPage() {
           title="Recipe Management"
           subtitle="Create and manage your kitchen recipes"
           actions={
-            <Button
-              className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Recipe
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsImportDialogOpen(true)}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import Recipes
+              </Button>
+              <Button
+                className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                onClick={() => setIsAddDialogOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Recipe
+              </Button>
+            </div>
           }
         />
       </div>
@@ -362,6 +374,11 @@ export default function RecipesPage() {
         isOpen={isPrintDialogOpen}
         onOpenChange={setIsPrintDialogOpen}
         recipe={selectedRecipeForPrint}
+      />
+      <ImportRecipesDialog
+        isOpen={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+        onImportSuccess={getRecipes}
       />
     </DashboardLayout>
   );
