@@ -290,7 +290,8 @@ export function ReportsGenerationDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto border-[#dbdade]">
+      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         <DialogHeader className="pb-4 border-b border-[#dbdade]">
           <DialogTitle className="text-xl font-semibold text-[#4b465c] flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-lg flex items-center justify-center">
@@ -325,7 +326,7 @@ export function ReportsGenerationDialog({
               <Users className="w-4 h-4 text-[#674af5]" />
               Select Kitchens
             </Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4 bg-[#f8f7fa] border border-[#dbdade] rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 p-4 bg-[#f8f7fa] border border-[#dbdade] rounded-lg">
               {allKitchens.map((kitchen) => (
                 <div key={kitchen.id} className="flex items-center space-x-2">
                   <Checkbox
@@ -359,7 +360,7 @@ export function ReportsGenerationDialog({
                 </Badge>
               )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {reportTypes.map((report) => (
                 <div
                   key={report.id}
@@ -527,7 +528,7 @@ export function ReportsGenerationDialog({
           )}
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4 border-t border-[#dbdade]">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-[#dbdade] flex-wrap gap-2">
           <Button
             variant="outline"
             onClick={handleClose}
@@ -553,6 +554,7 @@ export function ReportsGenerationDialog({
               </>
             )}
           </Button>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
