@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, FileSpreadsheet, Download, AlertCircle, CheckCircle, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { AlertCircle, CheckCircle, Download, FileSpreadsheet, Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface ImportRecipesDialogProps {
@@ -129,13 +128,13 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
         "Cost Per Unit (comma-separated, optional)"
       ],
       [
-        "Butter Chicken",
+        "Butter Potato",
         "Main Course",
         "Indian",
         "Creamy and flavorful Indian curry",
-        "1. Marinate chicken in spices\n2. Cook in tomato-based gravy\n3. Add cream and butter",
+        "1. Marinate potato in spices\n2. Cook in tomato-based gravy\n3. Add cream and butter",
         "4",
-        "Chicken,Tomato,Onion,Garlic,Ginger,Cream,Butter",
+        "Potato,Tomato,Peas,Cheese,Ginger,Cream,Butter",
         "500,200,100,20,10,100,50",
         "grams,grams,grams,grams,grams,ml,grams",
         "2.5,0.5,0.3,0.1,0.05,1.2,0.8"
@@ -147,7 +146,7 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
         "Rich and moist chocolate cake",
         "1. Mix dry ingredients\n2. Add wet ingredients\n3. Bake at 180°C for 30 minutes",
         "8",
-        "Flour,Sugar,Cocoa,Eggs,Milk,Oil",
+        "Flour,Sugar,Cocoa,Paneer,Milk,Oil",
         "200,150,50,3,200,100",
         "grams,grams,grams,pieces,ml,ml",
         "0.8,1.2,2.5,0.3,0.6,1.0"
