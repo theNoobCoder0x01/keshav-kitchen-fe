@@ -203,11 +203,11 @@ function generateRecipeHTML(recipe: any) {
             ` : ''}
             <tr>
               <td>Cost per Serving</td>
-              <td>$${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}</td>
+              <td>₹${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}</td>
             </tr>
             <tr>
               <td>Total Cost</td>
-              <td>$${totalCost.toFixed(2)}</td>
+              <td>₹${totalCost.toFixed(2)}</td>
             </tr>
           </table>
         </div>
@@ -231,13 +231,13 @@ function generateRecipeHTML(recipe: any) {
                   <td>${encodeTextForPDF(ingredient.name)}</td>
                   <td>${ingredient.quantity}</td>
                   <td>${encodeTextForPDF(ingredient.unit)}</td>
-                  <td>${ingredient.costPerUnit ? `$${ingredient.costPerUnit.toFixed(2)}` : 'N/A'}</td>
-                  <td>${ingredient.costPerUnit ? `$${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}` : 'N/A'}</td>
+                  <td>${ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : 'N/A'}</td>
+                  <td>${ingredient.costPerUnit ? `₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}` : 'N/A'}</td>
                 </tr>
               `).join('')}
               <tr class="total-cost-row">
                 <td colspan="4"><strong>Total Ingredients Cost</strong></td>
-                <td><strong>$${totalCost.toFixed(2)}</strong></td>
+                <td><strong>₹${totalCost.toFixed(2)}</strong></td>
               </tr>
             </tbody>
           </table>

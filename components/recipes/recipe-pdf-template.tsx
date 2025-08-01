@@ -215,13 +215,13 @@ export const RecipePdfTemplate = forwardRef<HTMLDivElement, RecipePdfTemplatePro
               )}
               <tr>
                 <td>Cost per Serving</td>
-                <td>
-                  ${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}
-                </td>
+                                 <td>
+                   ₹${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}
+                 </td>
               </tr>
               <tr>
                 <td>Total Cost</td>
-                <td>${totalCost.toFixed(2)}</td>
+                <td>₹${totalCost.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -247,11 +247,11 @@ export const RecipePdfTemplate = forwardRef<HTMLDivElement, RecipePdfTemplatePro
                   <td>{ingredient.quantity}</td>
                   <td>{ingredient.unit}</td>
                   <td>
-                    {ingredient.costPerUnit ? `$${ingredient.costPerUnit.toFixed(2)}` : "N/A"}
+                    {ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : "N/A"}
                   </td>
                   <td>
                     {ingredient.costPerUnit
-                      ? `$${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}`
+                      ? `₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}`
                       : "N/A"}
                   </td>
                 </tr>
@@ -261,7 +261,7 @@ export const RecipePdfTemplate = forwardRef<HTMLDivElement, RecipePdfTemplatePro
                   <strong>Total Ingredients Cost</strong>
                 </td>
                 <td>
-                  <strong>${totalCost.toFixed(2)}</strong>
+                  <strong>₹${totalCost.toFixed(2)}</strong>
                 </td>
               </tr>
             </tbody>

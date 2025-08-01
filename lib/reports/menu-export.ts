@@ -116,7 +116,7 @@ export async function createMenuReportWorkbook(
       currentRow++;
 
       sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Total Cost:');
-      sheet.getCell(`B${currentRow}`).value = `$${data.summary.totalCost.toFixed(2)}`;
+      sheet.getCell(`B${currentRow}`).value = `₹${data.summary.totalCost.toFixed(2)}`;
       currentRow++;
 
       if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
@@ -167,7 +167,7 @@ export async function createMenuReportWorkbook(
           encodeTextForExport(ingredient.name),
           Math.round(ingredient.totalQuantity * 100) / 100,
           encodeTextForExport(ingredient.unit),
-          `$${Math.round(ingredient.totalCost * 100) / 100}`,
+          `₹${Math.round(ingredient.totalCost * 100) / 100}`,
           ingredient.sources.length,
           sourceDetails
         ]);
@@ -238,7 +238,7 @@ export async function createMenuReportWorkbook(
           encodeTextForExport(ingredient.name),
           Math.round(ingredient.totalQuantity * 100) / 100,
           encodeTextForExport(ingredient.unit),
-          `$${Math.round(ingredient.totalCost * 100) / 100}`,
+          `₹${Math.round(ingredient.totalCost * 100) / 100}`,
           ingredient.sources.length
         ]);
       });
@@ -433,7 +433,7 @@ export async function createMenuReportCSV(
         [encodeTextForExport('Ingredients Summary')],
         [encodeTextForExport('Total Ingredients'), data.summary.totalIngredients.toString()],
         [encodeTextForExport('Unique Ingredients'), data.summary.uniqueIngredients.toString()],
-        [encodeTextForExport('Total Cost'), `$${data.summary.totalCost.toFixed(2)}`],
+        [encodeTextForExport('Total Cost'), `₹${data.summary.totalCost.toFixed(2)}`],
       );
 
       if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
@@ -470,7 +470,7 @@ export async function createMenuReportCSV(
           encodeTextForExport(ingredient.name),
           (Math.round(ingredient.totalQuantity * 100) / 100).toString(),
           encodeTextForExport(ingredient.unit),
-          `$${(Math.round(ingredient.totalCost * 100) / 100)}`,
+          `₹${(Math.round(ingredient.totalCost * 100) / 100)}`,
           ingredient.sources.length.toString(),
           sourceDetails
         ];
@@ -513,7 +513,7 @@ export async function createMenuReportCSV(
           encodeTextForExport(ingredient.name),
           (Math.round(ingredient.totalQuantity * 100) / 100).toString(),
           encodeTextForExport(ingredient.unit),
-          `$${(Math.round(ingredient.totalCost * 100) / 100)}`,
+          `₹${(Math.round(ingredient.totalCost * 100) / 100)}`,
           ingredient.sources.length.toString()
         ]),
         []

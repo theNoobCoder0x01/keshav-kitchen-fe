@@ -53,13 +53,13 @@ export function createRecipeExcelWorksheet(recipe: RecipeExportData): XLSX.WorkS
       ingredient.name,
       ingredient.quantity,
       ingredient.unit,
-      ingredient.costPerUnit ? `$${ingredient.costPerUnit.toFixed(2)}` : 'N/A',
-      ingredient.costPerUnit ? `$${itemCost.toFixed(2)}` : 'N/A'
+      ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : 'N/A',
+      ingredient.costPerUnit ? `₹${itemCost.toFixed(2)}` : 'N/A'
     ]);
   });
   
   // Total cost row
-  data.push(['', '', '', 'TOTAL COST:', `$${totalCost.toFixed(2)}`]);
+  data.push(['', '', '', 'TOTAL COST:', `₹${totalCost.toFixed(2)}`]);
   data.push([]); // Empty row
   
   // Instructions section
@@ -74,8 +74,8 @@ export function createRecipeExcelWorksheet(recipe: RecipeExportData): XLSX.WorkS
   
   // Cost analysis
   data.push(['COST ANALYSIS']);
-  data.push(['Total Recipe Cost', `$${totalCost.toFixed(2)}`]);
-  data.push(['Cost per Serving', recipe.servings ? `$${(totalCost / recipe.servings).toFixed(2)}` : 'N/A']);
+  data.push(['Total Recipe Cost', `₹${totalCost.toFixed(2)}`]);
+  data.push(['Cost per Serving', recipe.servings ? `₹${(totalCost / recipe.servings).toFixed(2)}` : 'N/A']);
   data.push(['Number of Ingredients', recipe.ingredients.length]);
   
   // Create worksheet
@@ -124,7 +124,7 @@ export function createRecipesExcelWorkbook(recipes: RecipeExportData[]): Buffer 
       recipe.category,
       recipe.servings || 'N/A',
       recipe.ingredients.length,
-      `$${totalCost.toFixed(2)}`
+      `₹${totalCost.toFixed(2)}`
     ]);
   });
   
@@ -184,28 +184,28 @@ export function createRecipeCSV(recipe: RecipeExportData): string {
       `"${encodeTextForPDF(ingredient.name)}"`,
       ingredient.quantity,
       `"${ingredient.unit}"`,
-      ingredient.costPerUnit ? ingredient.costPerUnit.toFixed(2) : 'N/A',
-      ingredient.costPerUnit ? itemCost.toFixed(2) : 'N/A'
+              ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : 'N/A',
+        ingredient.costPerUnit ? `₹${itemCost.toFixed(2)}` : 'N/A'
     ].join(','));
   });
   
-  lines.push(`"","","",TOTAL COST,${totalCost.toFixed(2)}`);
-  lines.push(''); // Empty line
-  
-  // Instructions
-  if (recipe.instructions) {
-    lines.push('INSTRUCTIONS');
-    const instructions = recipe.instructions.split('\n').filter(line => line.trim());
-    instructions.forEach((instruction, index) => {
-      lines.push(`Step ${index + 1},"${encodeTextForPDF(instruction.trim())}"`);
-    });
+      lines.push(`"","","",TOTAL COST,₹${totalCost.toFixed(2)}`);
     lines.push(''); // Empty line
-  }
-  
-  // Cost analysis
-  lines.push('COST ANALYSIS');
-  lines.push(`Total Recipe Cost,${totalCost.toFixed(2)}`);
-  lines.push(`Cost per Serving,${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : 'N/A'}`);
+    
+    // Instructions
+    if (recipe.instructions) {
+      lines.push('INSTRUCTIONS');
+      const instructions = recipe.instructions.split('\n').filter(line => line.trim());
+      instructions.forEach((instruction, index) => {
+        lines.push(`Step ${index + 1},"${encodeTextForPDF(instruction.trim())}"`);
+      });
+      lines.push(''); // Empty line
+    }
+    
+    // Cost analysis
+    lines.push('COST ANALYSIS');
+    lines.push(`Total Recipe Cost,₹${totalCost.toFixed(2)}`);
+    lines.push(`Cost per Serving,${recipe.servings ? `₹${(totalCost / recipe.servings).toFixed(2)}` : 'N/A'}`);
   lines.push(`Number of Ingredients,${recipe.ingredients.length}`);
   
   return lines.join('\n');
@@ -226,7 +226,7 @@ export function createRecipesCSV(recipes: RecipeExportData[]): string {
   
   recipes.forEach(recipe => {
     const totalCost = recipe.ingredients.reduce((sum, ing) => sum + (ing.costPerUnit || 0) * ing.quantity, 0);
-    const costPerServing = recipe.servings ? (totalCost / recipe.servings).toFixed(2) : 'N/A';
+    const costPerServing = recipe.servings ? `₹${(totalCost / recipe.servings).toFixed(2)}` : 'N/A';
     
     lines.push([
       `"${encodeTextForPDF(recipe.name)}"`,
@@ -234,7 +234,7 @@ export function createRecipesCSV(recipes: RecipeExportData[]): string {
       `"${recipe.subcategory || 'N/A'}"`,
       recipe.servings || 'N/A',
       recipe.ingredients.length,
-      totalCost.toFixed(2),
+      `₹${totalCost.toFixed(2)}`,
       costPerServing
     ].join(','));
   });
@@ -265,7 +265,7 @@ export function createRecipesCSV(recipes: RecipeExportData[]): string {
 export function extractUniqueRecipes(menus: any[]): RecipeExportData[] {
   const uniqueRecipes = new Map<string, RecipeExportData>();
   
-  menus.forEach(menu => {
+  menus.forEach((menu, index) => {
     if (menu.recipe && !uniqueRecipes.has(menu.recipe.id || menu.recipeId)) {
       const recipe: RecipeExportData = {
         id: menu.recipe.id || menu.recipeId,
