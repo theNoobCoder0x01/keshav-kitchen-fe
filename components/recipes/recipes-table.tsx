@@ -14,7 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit, Printer, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export interface Recipe {
@@ -37,6 +38,7 @@ interface RecipesTableProps {
   recipes: Recipe[];
   onEdit: (recipe: Recipe) => void;
   onDelete: (id: string) => void;
+  onPrint: (recipe: Recipe) => void;
   deletingId: string | null;
   itemsPerPageOptions?: number[];
 }
@@ -45,6 +47,7 @@ export function RecipesTable({
   recipes,
   onEdit,
   onDelete,
+  onPrint,
   deletingId,
   itemsPerPageOptions = [5, 10, 20],
 }: RecipesTableProps) {
@@ -132,7 +135,12 @@ export function RecipesTable({
             paginatedRecipes.map((recipe: Recipe) => (
               <TableRow key={recipe.id}>
                 <TableCell className="py-4 px-6 font-medium text-[#4b465c]">
-                  {recipe.name}
+                  <Link 
+                    href={`/recipes/${recipe.id}`}
+                    className="hover:text-[#674af5] hover:underline cursor-pointer transition-colors"
+                  >
+                    {recipe.name}
+                  </Link>
                 </TableCell>
                 <TableCell className="py-4 px-6 text-[#4b465c]">
                   {recipe.category}
@@ -147,17 +155,31 @@ export function RecipesTable({
                       variant="ghost"
                       className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
                       onClick={() => onEdit(recipe)}
-                      aria-label="Edit"
+                      aria-label="Edit recipe"
+                      title="Edit recipe"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-8 h-8 p-0 text-blue-600 hover:bg-blue-50"
+                      onClick={() => onPrint(recipe)}
+                      aria-label="Print recipe"
+                      title="Print recipe"
+                    >
+                      <Printer className="w-4 h-4" />
+                    </Button>
+                    
                     <Button
                       size="sm"
                       variant="ghost"
                       className="w-8 h-8 p-0 text-red-500 hover:bg-red-50"
                       onClick={() => onDelete(recipe.id)}
                       disabled={deletingId === recipe.id}
-                      aria-label="Delete"
+                      aria-label="Delete recipe"
+                      title="Delete recipe"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
