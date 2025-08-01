@@ -39,7 +39,7 @@ async function testImportAPI() {
   "importedRecipes": [
     {
       "id": "recipe_id",
-      "name": "Butter Chicken",
+      "name": "Butter Potato",
       "category": "Main Course",
       "subcategory": "Indian",
       "ingredientsCount": 7
