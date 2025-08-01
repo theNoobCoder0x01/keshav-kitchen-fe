@@ -2,9 +2,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   createMenuReportCSV,
-  createMenuReportPDF,
   createMenuReportWorkbook,
 } from "@/lib/reports/menu-export";
+import { createMenuReportPDFWithJsPDF } from "@/lib/reports/jspdf-export";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -129,8 +129,8 @@ export async function POST(req: NextRequest) {
       contentType = "text/csv";
       fileExt = "csv";
     } else if (format === "pdf") {
-      console.log("Attempting to generate PDF...");
-      buffer = await createMenuReportPDF(data, type, date);
+      console.log("Attempting to generate PDF with jsPDF...");
+      buffer = createMenuReportPDFWithJsPDF(data, type, date);
       console.log("PDF generation completed, buffer size:", buffer?.length || 0);
       contentType = "application/pdf";
       fileExt = "pdf";
