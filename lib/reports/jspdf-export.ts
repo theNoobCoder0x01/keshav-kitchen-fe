@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable, { UserOptions } from "jspdf-autotable";
+import { addGujaratiFontSupport, containsGujaratiText, encodeTextForPDF } from "@/lib/fonts/gujarati-font";
 
 interface MenuReportData {
   type: string;
@@ -58,6 +59,38 @@ interface MenuReportData {
   }>;
 }
 
+// Helper function to safely add text with Unicode support
+function addUnicodeText(doc: jsPDF, text: string, x: number, y: number, options?: any) {
+  try {
+    const encodedText = encodeTextForPDF(text);
+    
+    // Check if text contains Gujarati characters
+    if (containsGujaratiText(text)) {
+      console.log('Gujarati text detected:', text);
+      // Ensure Gujarati font support is enabled
+      addGujaratiFontSupport(doc);
+    }
+    
+    doc.text(encodedText, x, y, options);
+  } catch (error) {
+    console.warn('Unicode text rendering failed, using fallback:', error);
+    // Fallback to original text
+    doc.text(text, x, y, options);
+  }
+}
+
+// Helper function to prepare table data with Unicode support
+function prepareTableData(data: any[][]): string[][] {
+  return data.map(row => 
+    row.map(cell => {
+      if (typeof cell === 'string') {
+        return encodeTextForPDF(cell);
+      }
+      return String(cell);
+    })
+  );
+}
+
 export function createMenuReportPDFWithJsPDF(
   data: MenuReportData,
   type: string,
@@ -65,19 +98,24 @@ export function createMenuReportPDFWithJsPDF(
 ): Buffer {
   console.log("Creating PDF with jsPDF for type:", type, "date:", date);
   
-  // Create new PDF document
+  // Create new PDF document with Unicode support
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
+    putOnlyUsedFonts: true,
+    compress: true,
   });
 
-  // Set document properties
+  // Add Gujarati font support
+  addGujaratiFontSupport(doc);
+
+  // Set document properties with Unicode support
   doc.setProperties({
-    title: `${type.charAt(0).toUpperCase() + type.slice(1)} Report`,
-    subject: 'Kitchen Report',
-    author: 'Keshav Kitchen',
-    creator: 'Keshav Kitchen System'
+    title: encodeTextForPDF(`${type.charAt(0).toUpperCase() + type.slice(1)} Report`),
+    subject: encodeTextForPDF('Kitchen Report'),
+    author: encodeTextForPDF('Keshav Kitchen'),
+    creator: encodeTextForPDF('Keshav Kitchen System')
   });
 
   // Add title
@@ -95,7 +133,7 @@ export function createMenuReportPDFWithJsPDF(
   
   const titleWidth = doc.getTextWidth(title);
   const pageWidth = doc.internal.pageSize.getWidth();
-  doc.text(title, (pageWidth - titleWidth) / 2, 20);
+  addUnicodeText(doc, title, (pageWidth - titleWidth) / 2, 20);
 
   // Add date
   doc.setFontSize(12);
@@ -103,7 +141,7 @@ export function createMenuReportPDFWithJsPDF(
   const dateStr = new Date(date).toLocaleDateString();
   const dateText = `Date: ${dateStr}`;
   const dateWidth = doc.getTextWidth(dateText);
-  doc.text(dateText, (pageWidth - dateWidth) / 2, 30);
+  addUnicodeText(doc, dateText, (pageWidth - dateWidth) / 2, 30);
 
   let yPosition = 45;
 
@@ -113,30 +151,30 @@ export function createMenuReportPDFWithJsPDF(
     if (data.summary) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Ingredients Summary', 20, yPosition);
+      addUnicodeText(doc, 'Ingredients Summary', 20, yPosition);
       yPosition += 10;
 
       doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Total Ingredients: ${data.summary.totalIngredients}`, 20, yPosition);
+      addUnicodeText(doc, `Total Ingredients: ${data.summary.totalIngredients}`, 20, yPosition);
       yPosition += 6;
-      doc.text(`Unique Ingredients: ${data.summary.uniqueIngredients}`, 20, yPosition);
+      addUnicodeText(doc, `Unique Ingredients: ${data.summary.uniqueIngredients}`, 20, yPosition);
       yPosition += 6;
-      doc.text(`Total Cost: $${data.summary.totalCost.toFixed(2)}`, 20, yPosition);
+      addUnicodeText(doc, `Total Cost: $${data.summary.totalCost.toFixed(2)}`, 20, yPosition);
       yPosition += 6;
       
       if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
-        doc.text(`Meal Types: ${data.selectedMealTypes.join(', ')}`, 20, yPosition);
+        addUnicodeText(doc, `Meal Types: ${data.selectedMealTypes.join(', ')}`, 20, yPosition);
         yPosition += 6;
       }
       
       if (data.summary.mealTypesCombined) {
-        doc.text('✓ Meal types combined', 20, yPosition);
+        addUnicodeText(doc, '✓ Meal types combined', 20, yPosition);
         yPosition += 6;
       }
       
       if (data.summary.kitchensCombined) {
-        doc.text('✓ Kitchens combined', 20, yPosition);
+        addUnicodeText(doc, '✓ Kitchens combined', 20, yPosition);
         yPosition += 6;
       }
       
@@ -154,13 +192,18 @@ export function createMenuReportPDFWithJsPDF(
         ingredient.sources.map(s => `${s.kitchen} - ${s.mealType}`).join(', ')
       ]);
 
+      // Prepare data with Unicode support
+      const unicodeTableData = prepareTableData(tableData);
+      const unicodeHeaders = prepareTableData([['Ingredient', 'Total Qty', 'Unit', 'Cost', 'Sources', 'Details']]);
+
       autoTable(doc, {
-        head: [['Ingredient', 'Total Qty', 'Unit', 'Cost', 'Sources', 'Details']],
-        body: tableData,
+        head: unicodeHeaders,
+        body: unicodeTableData,
         startY: yPosition,
         styles: {
           fontSize: 8,
-          cellPadding: 2
+          cellPadding: 2,
+          font: 'helvetica',
         },
         headStyles: {
           fillColor: [103, 74, 245],
@@ -177,31 +220,31 @@ export function createMenuReportPDFWithJsPDF(
         }
       });
     } else {
-      doc.text('No ingredients found for the selected criteria', 20, yPosition);
+      addUnicodeText(doc, 'No ingredients found for the selected criteria', 20, yPosition);
     }
 
   } else if (type === 'combined-meals') {
     // Combined Meal Types Report
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Combined Meals Summary', 20, yPosition);
+    addUnicodeText(doc, 'Combined Meals Summary', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Total Meals: ${data.totalMeals || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Total Meals: ${data.totalMeals || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Total Servings: ${data.totalQuantity || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Total Servings: ${data.totalQuantity || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Breakfast Count: ${data.breakfastCount || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Breakfast Count: ${data.breakfastCount || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Lunch Count: ${data.lunchCount || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Lunch Count: ${data.lunchCount || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Dinner Count: ${data.dinnerCount || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Dinner Count: ${data.dinnerCount || 0}`, 20, yPosition);
     yPosition += 6;
     
     if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
-      doc.text(`Selected Meal Types: ${data.selectedMealTypes.join(', ')}`, 20, yPosition);
+      addUnicodeText(doc, `Selected Meal Types: ${data.selectedMealTypes.join(', ')}`, 20, yPosition);
       yPosition += 6;
     }
     
@@ -211,7 +254,7 @@ export function createMenuReportPDFWithJsPDF(
     if (data.combinedIngredients && data.combinedIngredients.length > 0) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Combined Ingredients', 20, yPosition);
+      addUnicodeText(doc, 'Combined Ingredients', 20, yPosition);
       yPosition += 10;
 
       const ingredientsTableData = data.combinedIngredients.map(ingredient => [
@@ -222,13 +265,18 @@ export function createMenuReportPDFWithJsPDF(
         ingredient.sources.length.toString()
       ]);
 
+      // Prepare data with Unicode support
+      const unicodeIngredientsData = prepareTableData(ingredientsTableData);
+      const unicodeIngredientsHeaders = prepareTableData([['Ingredient', 'Total Quantity', 'Unit', 'Total Cost', 'Sources']]);
+
       autoTable(doc, {
-        head: [['Ingredient', 'Total Quantity', 'Unit', 'Total Cost', 'Sources']],
-        body: ingredientsTableData,
+        head: unicodeIngredientsHeaders,
+        body: unicodeIngredientsData,
         startY: yPosition,
         styles: {
           fontSize: 9,
-          cellPadding: 3
+          cellPadding: 3,
+          font: 'helvetica',
         },
         headStyles: {
           fillColor: [103, 74, 245],
@@ -250,7 +298,7 @@ export function createMenuReportPDFWithJsPDF(
     if (data.menus && data.menus.length > 0) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Detailed Menu Items', 20, yPosition);
+      addUnicodeText(doc, 'Detailed Menu Items', 20, yPosition);
       yPosition += 10;
 
       const tableData = data.menus.map(menu => [
@@ -262,13 +310,18 @@ export function createMenuReportPDFWithJsPDF(
         menu.notes || ''
       ]);
 
+      // Prepare data with Unicode support
+      const unicodeMenuData = prepareTableData(tableData);
+      const unicodeMenuHeaders = prepareTableData([['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']]);
+
       autoTable(doc, {
-        head: [['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']],
-        body: tableData,
+        head: unicodeMenuHeaders,
+        body: unicodeMenuData,
         startY: yPosition,
         styles: {
           fontSize: 8,
-          cellPadding: 3
+          cellPadding: 3,
+          font: 'helvetica',
         },
         headStyles: {
           fillColor: [103, 74, 245],
@@ -287,18 +340,18 @@ export function createMenuReportPDFWithJsPDF(
     // Summary section
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Daily Summary', 20, yPosition);
+    addUnicodeText(doc, 'Daily Summary', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Total Meals: ${data.totalMeals || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Total Meals: ${data.totalMeals || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Breakfast Count: ${data.breakfastCount || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Breakfast Count: ${data.breakfastCount || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Lunch Count: ${data.lunchCount || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Lunch Count: ${data.lunchCount || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Dinner Count: ${data.dinnerCount || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Dinner Count: ${data.dinnerCount || 0}`, 20, yPosition);
     yPosition += 15;
 
     // Create table data for summary
@@ -313,13 +366,18 @@ export function createMenuReportPDFWithJsPDF(
         ])
       : [['No data available for this date', '', '', '', '', '']];
 
+    // Prepare data with Unicode support
+    const unicodeSummaryData = prepareTableData(tableData);
+    const unicodeSummaryHeaders = prepareTableData([['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']]);
+
     autoTable(doc, {
-      head: [['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']],
-      body: tableData,
+      head: unicodeSummaryHeaders,
+      body: unicodeSummaryData,
       startY: yPosition,
       styles: {
         fontSize: 8,
-        cellPadding: 3
+        cellPadding: 3,
+        font: 'helvetica',
       },
       headStyles: {
         fillColor: [103, 74, 245],
@@ -337,7 +395,7 @@ export function createMenuReportPDFWithJsPDF(
     // Meal-specific report
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Total Servings: ${data.totalQuantity || 0}`, 20, yPosition);
+    addUnicodeText(doc, `Total Servings: ${data.totalQuantity || 0}`, 20, yPosition);
     yPosition += 15;
 
     // Create table data for meal-specific report
@@ -351,13 +409,18 @@ export function createMenuReportPDFWithJsPDF(
         ])
       : [['No data available for this date', '', '', '', '']];
 
+    // Prepare data with Unicode support
+    const unicodeMealData = prepareTableData(tableData);
+    const unicodeMealHeaders = prepareTableData([['Kitchen', 'Recipe', 'Servings', 'Ghan Factor', 'Status']]);
+
     autoTable(doc, {
-      head: [['Kitchen', 'Recipe', 'Servings', 'Ghan Factor', 'Status']],
-      body: tableData,
+      head: unicodeMealHeaders,
+      body: unicodeMealData,
       startY: yPosition,
       styles: {
         fontSize: 9,
-        cellPadding: 4
+        cellPadding: 4,
+        font: 'helvetica',
       },
       headStyles: {
         fillColor: [103, 74, 245],
@@ -380,7 +443,7 @@ export function createMenuReportPDFWithJsPDF(
     doc.setFont('helvetica', 'normal');
     const footerText = `Page ${i} of ${pageCount}`;
     const footerWidth = doc.getTextWidth(footerText);
-    doc.text(footerText, (pageWidth - footerWidth) / 2, doc.internal.pageSize.getHeight() - 10);
+    addUnicodeText(doc, footerText, (pageWidth - footerWidth) / 2, doc.internal.pageSize.getHeight() - 10);
   }
 
   // Convert to buffer
