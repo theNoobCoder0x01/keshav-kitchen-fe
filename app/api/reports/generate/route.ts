@@ -5,6 +5,7 @@ import {
   createMenuReportWorkbook,
 } from "@/lib/reports/menu-export";
 import { createMenuReportPDFWithJsPDF } from "@/lib/reports/jspdf-export";
+import { createReportPDFWithPuppeteer, generateReportFilename } from "@/lib/reports/puppeteer-export";
 import { 
   combineIngredients, 
   generateIngredientSummary, 
@@ -217,8 +218,8 @@ export async function POST(req: NextRequest) {
       contentType = "text/csv";
       fileExt = "csv";
     } else if (format === "pdf") {
-      console.log("Attempting to generate PDF with jsPDF...");
-      buffer = createMenuReportPDFWithJsPDF(data, type, date);
+      console.log("Attempting to generate PDF with Puppeteer...");
+      buffer = await createReportPDFWithPuppeteer(data, type, date);
       console.log("PDF generation completed, buffer size:", buffer?.length || 0);
       contentType = "application/pdf";
       fileExt = "pdf";
@@ -241,11 +242,13 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const filename = format === "pdf" ? generateReportFilename(type, date) : `${type}-report-${date}.${fileExt}`;
+  
   return new NextResponse(buffer, {
     status: 200,
     headers: {
       "Content-Type": contentType,
-      "Content-Disposition": `attachment; filename=${type}-report-${date}.${fileExt}`,
+      "Content-Disposition": `attachment; filename=${filename}`,
     },
   });
 }

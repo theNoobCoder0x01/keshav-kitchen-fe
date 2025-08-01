@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { RecipeDetailView, type RecipeDetailData } from "@/components/recipes/recipe-detail-view";
+import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
 import { Download, Eye, Loader2, Printer } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -37,79 +38,22 @@ export function RecipePrintDialog({ isOpen, onOpenChange, recipe }: RecipePrintD
               <meta charset="utf-8">
               <style>
                 body {
-                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                  line-height: 1.6;
+                  font-family: Arial, sans-serif;
+                  line-height: 1.5;
                   color: #333;
                   max-width: 800px;
                   margin: 0 auto;
                   padding: 20px;
-                }
-                .space-y-6 > * + * { margin-top: 1.5rem; }
-                .space-y-4 > * + * { margin-top: 1rem; }
-                .space-y-3 > * + * { margin-top: 0.75rem; }
-                .grid { display: grid; gap: 1rem; }
-                .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-                .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-                .flex { display: flex; }
-                .items-center { align-items: center; }
-                .justify-center { justify-content: center; }
-                .justify-between { justify-content: space-between; }
-                .text-center { text-align: center; }
-                .text-right { text-align: right; }
-                .font-bold { font-weight: bold; }
-                .font-semibold { font-weight: 600; }
-                .font-medium { font-weight: 500; }
-                .text-3xl { font-size: 1.875rem; }
-                .text-xl { font-size: 1.25rem; }
-                .text-lg { font-size: 1.125rem; }
-                .text-sm { font-size: 0.875rem; }
-                .rounded-lg { border-radius: 0.5rem; }
-                .rounded-full { border-radius: 9999px; }
-                .p-3 { padding: 0.75rem; }
-                .p-4 { padding: 1rem; }
-                .pt-6 { padding-top: 1.5rem; }
-                .mb-2 { margin-bottom: 0.5rem; }
-                .mb-4 { margin-bottom: 1rem; }
-                .mt-8 { margin-top: 2rem; }
-                .w-8 { width: 2rem; }
-                .h-8 { height: 2rem; }
-                .w-12 { width: 3rem; }
-                .h-12 { height: 3rem; }
-                .border { border: 1px solid #e5e7eb; }
-                .border-t { border-top: 1px solid #e5e7eb; }
-                .bg-gray-50 { background-color: #f9fafb; }
-                .bg-blue-100 { background-color: #dbeafe; }
-                .bg-green-100 { background-color: #dcfce7; }
-                .bg-purple-100 { background-color: #f3e8ff; }
-                .bg-orange-100 { background-color: #fed7aa; }
-                .bg-blue-600 { background-color: #2563eb; }
-                .text-white { color: white; }
-                .text-gray-500 { color: #6b7280; }
-                .text-gray-600 { color: #4b5563; }
-                .text-gray-700 { color: #374151; }
-                .text-gray-900 { color: #111827; }
-                .text-green-600 { color: #059669; }
-                .card {
                   background: white;
-                  border: 1px solid #e5e7eb;
-                  border-radius: 0.5rem;
-                  padding: 1.5rem;
-                  margin-bottom: 1rem;
-                }
-                .badge {
-                  display: inline-flex;
-                  align-items: center;
-                  border-radius: 9999px;
-                  padding: 0.25rem 0.75rem;
-                  font-size: 0.75rem;
-                  font-weight: 500;
-                  background-color: #f3f4f6;
-                  color: #374151;
-                  margin: 0.25rem;
                 }
                 @media print {
-                  body { margin: 0; padding: 1rem; }
-                  .no-print { display: none !important; }
+                  body { 
+                    margin: 0; 
+                    padding: 15px; 
+                  }
+                  .no-print { 
+                    display: none !important; 
+                  }
                 }
               </style>
             </head>
@@ -192,13 +136,13 @@ export function RecipePrintDialog({ isOpen, onOpenChange, recipe }: RecipePrintD
           {/* Preview Section */}
           {showPreview && (
             <div className="border rounded-lg p-4 bg-gray-50 max-h-[60vh] overflow-y-auto">
-              <RecipeDetailView recipe={recipe} isPrintMode={true} ref={printRef} />
+              <RecipePdfTemplate recipe={recipe} isPrintMode={true} ref={printRef} />
             </div>
           )}
 
           {/* Hidden print content */}
           <div className="hidden">
-            <RecipeDetailView recipe={recipe} isPrintMode={true} ref={printRef} />
+            <RecipePdfTemplate recipe={recipe} isPrintMode={true} ref={printRef} />
           </div>
         </div>
 
