@@ -186,7 +186,8 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5" />
@@ -312,7 +313,7 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
@@ -324,6 +325,7 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
             {isUploading ? "Importing..." : "Import Recipes"}
           </Button>
         </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

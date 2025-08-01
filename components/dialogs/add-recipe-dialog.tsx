@@ -127,7 +127,8 @@ export function AddRecipeDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialRecipe ? "Edit Recipe" : "Add New Recipe"}
@@ -140,7 +141,7 @@ export function AddRecipeDialog({
           enableReinitialize
         >
           {({ values, isSubmitting, dirty }) => (
-            <Form className="space-y-4 px-1 py-2">
+            <Form className="space-y-4 px-1 py-2 pb-6">
               <div>
                 <Label
                   htmlFor="recipeName"
@@ -237,9 +238,9 @@ export function AddRecipeDialog({
                       {values.ingredients.map((ingredient, index) => (
                         <div
                           key={index}
-                          className="grid grid-cols-12 gap-2 items-end mb-2"
+                          className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end mb-2"
                         >
-                          <div className="col-span-6 sm:col-span-4">
+                          <div className="sm:col-span-4">
                             <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
                               Ingredient
                             </Label>
@@ -255,7 +256,7 @@ export function AddRecipeDialog({
                               className="text-red-500 text-xs mt-1"
                             />
                           </div>
-                          <div className="col-span-6 sm:col-span-4">
+                          <div className="sm:col-span-4">
                             <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
                               Quantity
                             </Label>
@@ -273,7 +274,7 @@ export function AddRecipeDialog({
                               className="text-red-500 text-xs mt-1"
                             />
                           </div>
-                          <div className="col-span-4 sm:col-span-2">
+                          <div className="sm:col-span-2">
                             <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
                               Cost/Unit
                             </Label>
@@ -291,7 +292,7 @@ export function AddRecipeDialog({
                               className="text-red-500 text-xs mt-1"
                             />
                           </div>
-                          <div className="col-span-4 sm:col-span-2">
+                          <div className="sm:col-span-2">
                             <Label className="text-sm font-medium text-[#4b465c] mb-1 block">
                               Unit
                             </Label>
@@ -319,7 +320,7 @@ export function AddRecipeDialog({
                               )}
                             </Field>
                           </div>
-                          <div className="col-span-2 sm:col-span-1">
+                          <div className="sm:col-span-1">
                             <Button
                               type="button"
                               variant="ghost"
@@ -357,6 +358,7 @@ export function AddRecipeDialog({
             </Form>
           )}
         </Formik>
+        </div>
       </DialogContent>
     </Dialog>
   );

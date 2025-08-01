@@ -70,7 +70,8 @@ export function AddEditIngredientDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md h-auto max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialIngredient ? "Edit Ingredient" : "Add Ingredient"}
@@ -106,7 +107,7 @@ export function AddEditIngredientDialog({
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
         </div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-2 flex-wrap">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -117,6 +118,7 @@ export function AddEditIngredientDialog({
           <Button onClick={handleSubmit}>
             {initialIngredient ? "Save Changes" : "Add Ingredient"}
           </Button>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
