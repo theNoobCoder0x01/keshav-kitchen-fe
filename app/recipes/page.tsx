@@ -85,7 +85,7 @@ export default function RecipesPage() {
   const handlePrintRecipe = async (recipe: Recipe) => {
     try {
       // Fetch detailed recipe data from API
-      const response = await fetch(`/api/recipes?id=${recipe.id}`);
+      const response = await fetch(`/api/recipes/${recipe.id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch recipe details');
       }
@@ -101,16 +101,15 @@ export default function RecipesPage() {
         servings: detailedRecipe.servings,
         category: detailedRecipe.category,
         subcategory: detailedRecipe.subcategory,
-        cost: detailedRecipe.cost,
-        ingredients: detailedRecipe.ingredients?.map((ri: any) => ({
-          id: ri.ingredient?.id || ri.id,
-          name: ri.ingredient?.name || ri.name,
-          quantity: ri.quantity,
-          unit: ri.ingredient?.unit || ri.unit,
-          costPerUnit: ri.ingredient?.costPerUnit || ri.costPerUnit,
+        ingredients: detailedRecipe.ingredients?.map((ingredient: any) => ({
+          id: ingredient.id,
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          costPerUnit: ingredient.costPerUnit,
         })) || [],
-        createdAt: detailedRecipe.createdAt,
-        updatedAt: detailedRecipe.updatedAt,
+        createdAt: detailedRecipe.createdAt ? new Date(detailedRecipe.createdAt) : undefined,
+        updatedAt: detailedRecipe.updatedAt ? new Date(detailedRecipe.updatedAt) : undefined,
       };
 
       setSelectedRecipeForPrint(recipeData);
@@ -144,7 +143,7 @@ export default function RecipesPage() {
   const handleDeleteRecipe = async (id: string) => {
     setDeletingId(id);
     try {
-      const response = await fetch(`/api/recipes?id=${id}`, {
+      const response = await fetch(`/api/recipes/${id}`, {
         method: "DELETE",
       });
 
