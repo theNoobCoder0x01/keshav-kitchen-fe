@@ -109,7 +109,8 @@ export function RecipePrintDialog({ isOpen, onOpenChange, recipe }: RecipePrintD
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-7xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="w-5 h-5" />
@@ -135,7 +136,7 @@ export function RecipePrintDialog({ isOpen, onOpenChange, recipe }: RecipePrintD
 
           {/* Preview Section */}
           {showPreview && (
-            <div className="border rounded-lg p-4 bg-gray-50 max-h-[60vh] overflow-y-auto">
+            <div className="border rounded-lg p-4 bg-gray-50 max-h-[50vh] overflow-y-auto">
               <RecipePdfTemplate recipe={recipe} isPrintMode={true} ref={printRef} />
             </div>
           )}
@@ -146,7 +147,7 @@ export function RecipePrintDialog({ isOpen, onOpenChange, recipe }: RecipePrintD
           </div>
         </div>
 
-        <DialogFooter className="flex items-center gap-2">
+        <DialogFooter className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
@@ -169,6 +170,7 @@ export function RecipePrintDialog({ isOpen, onOpenChange, recipe }: RecipePrintD
             {isGenerating ? "Generating..." : "Download PDF"}
           </Button>
         </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

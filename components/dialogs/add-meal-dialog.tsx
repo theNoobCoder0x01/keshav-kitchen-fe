@@ -461,7 +461,8 @@ export function AddMealDialog({
             return touched[field as keyof typeof touched];
           };
           return (
-            <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] max-w-6xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="flex-1 overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editMeal ? "Edit" : "Add"} {mealType.toLowerCase()} meal
@@ -474,8 +475,8 @@ export function AddMealDialog({
                   handleSubmit(values, { resetForm });
                 }}
               >
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-6 sm:col-span-9">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                  <div className="sm:col-span-9">
                     <Label
                       htmlFor="recipe"
                       className="text-base font-medium text-[#4b465c] mb-2"
@@ -512,7 +513,7 @@ export function AddMealDialog({
                       className="text-red-500 text-xs mt-1"
                     />
                   </div>
-                  <div className="col-span-6 sm:col-span-3">
+                  <div className="sm:col-span-3">
                     <Label className="text-base font-medium text-[#4b465c]">
                       Follow Recipe
                     </Label>
@@ -533,7 +534,7 @@ export function AddMealDialog({
                     </Field>
                   </div>
 
-                  <div className="col-span-5">
+                  <div className="sm:col-span-4">
                     <Label className="text-base font-medium text-[#4b465c] mb-2 block">
                       Ghan
                     </Label>
@@ -552,7 +553,7 @@ export function AddMealDialog({
                     />
                   </div>
 
-                  <div className="col-span-4">
+                  <div className="sm:col-span-4">
                     <Label className="text-base font-medium text-[#4b465c] mb-2 block">
                       Serving amount
                     </Label>
@@ -571,7 +572,7 @@ export function AddMealDialog({
                     />
                   </div>
 
-                  <div className="col-span-3">
+                  <div className="sm:col-span-4">
                     <Label className="text-base font-medium text-[#4b465c] mb-2 block">
                       Serving unit
                     </Label>
@@ -823,13 +824,12 @@ export function AddMealDialog({
                   </div>
                 </div>
 
-                <DialogFooter className="mt-6">
+                <DialogFooter className="mt-6 flex flex-wrap gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleClose}
                     disabled={isFormSubmitting}
-                    className="mr-2"
                   >
                     Cancel
                   </Button>
@@ -842,6 +842,7 @@ export function AddMealDialog({
                   </Button>
                 </DialogFooter>
               </form>
+              </div>
             </DialogContent>
           );
         }}

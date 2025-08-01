@@ -55,7 +55,8 @@ export function AddEditKitchenDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md h-auto max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialKitchen ? "Edit Kitchen" : "Add Kitchen"}
@@ -80,7 +81,7 @@ export function AddEditKitchenDialog({
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
         </div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-2 flex-wrap">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -91,6 +92,7 @@ export function AddEditKitchenDialog({
           <Button onClick={handleSubmit}>
             {initialKitchen ? "Save Changes" : "Add Kitchen"}
           </Button>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
