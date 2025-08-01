@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DateSelector } from "@/components/ui/date-selector";
-import { Download, FileText, Calendar, Users } from "lucide-react";
-import { useState } from "react";
+import { Download, FileText, Calendar, Users, ChefHat, Combine } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface ReportsGenerationDialogProps {
@@ -35,6 +36,11 @@ interface ReportOption {
   checked: boolean;
 }
 
+interface Kitchen {
+  id: string;
+  name: string;
+}
+
 export function ReportsGenerationDialog({
   open,
   onOpenChange,
@@ -42,33 +48,38 @@ export function ReportsGenerationDialog({
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedFormat, setSelectedFormat] = useState("pdf");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [combineMealTypes, setCombineMealTypes] = useState(false);
+  const [combineKitchens, setCombineKitchens] = useState(false);
+  const [generateBothVersions, setGenerateBothVersions] = useState(false);
+  const [selectedKitchens, setSelectedKitchens] = useState<string[]>([]);
+  const [allKitchens, setAllKitchens] = useState<Kitchen[]>([]);
   const [reportTypes, setReportTypes] = useState<ReportOption[]>([
     {
       id: "breakfast",
       label: "Breakfast Report",
-      description: "Menu items and quantities for breakfast",
+      description: "Menu items and ingredients for breakfast",
       icon: Users,
       checked: true,
     },
     {
       id: "lunch",
-      label: "Lunch Report",
-      description: "Menu items and quantities for lunch",
+      label: "Lunch Report", 
+      description: "Menu items and ingredients for lunch",
       icon: Users,
       checked: true,
     },
     {
       id: "dinner",
       label: "Dinner Report",
-      description: "Menu items and quantities for dinner",
+      description: "Menu items and ingredients for dinner",
       icon: Users,
       checked: true,
     },
     {
-      id: "summary",
-      label: "Daily Summary",
-      description: "Complete daily statistics and overview",
-      icon: FileText,
+      id: "ingredients",
+      label: "Combined Ingredients Report",
+      description: "Aggregated ingredients across selected meal types and kitchens",
+      icon: ChefHat,
       checked: false,
     },
   ]);
@@ -79,11 +90,41 @@ export function ReportsGenerationDialog({
     { value: "csv", label: "CSV File", description: "Raw data for analysis" },
   ];
 
+  // Load kitchens when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadKitchens();
+    }
+  }, [open]);
+
+  const loadKitchens = async () => {
+    try {
+      const response = await fetch('/api/kitchens');
+      if (response.ok) {
+        const kitchens = await response.json();
+        setAllKitchens(kitchens);
+        // Select all kitchens by default
+        setSelectedKitchens(kitchens.map((k: Kitchen) => k.id));
+      }
+    } catch (error) {
+      console.error('Failed to load kitchens:', error);
+      toast.error('Failed to load kitchens');
+    }
+  };
+
   const handleReportTypeChange = (reportId: string, checked: boolean) => {
     setReportTypes((prev) =>
       prev.map((report) =>
         report.id === reportId ? { ...report, checked } : report
       )
+    );
+  };
+
+  const handleKitchenToggle = (kitchenId: string) => {
+    setSelectedKitchens(prev => 
+      prev.includes(kitchenId) 
+        ? prev.filter(id => id !== kitchenId)
+        : [...prev, kitchenId]
     );
   };
 
@@ -95,32 +136,106 @@ export function ReportsGenerationDialog({
       return;
     }
 
+    if (selectedKitchens.length === 0) {
+      toast.error("Please select at least one kitchen");
+      return;
+    }
+
     setIsGenerating(true);
     
     try {
       const dateStr = selectedDate.toISOString().split("T")[0];
+      const selectedMealTypes = selectedReports
+        .filter(r => ['breakfast', 'lunch', 'dinner'].includes(r.id))
+        .map(r => r.id);
       
-      // Generate reports for each selected type
-      for (const report of selectedReports) {
-        try {
-          const response = await fetch(
-            `/api/reports/generate?type=${report.id}&date=${dateStr}&format=${selectedFormat}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+      // Generate individual reports
+      const reports = [];
+      
+      if (generateBothVersions || !combineMealTypes || !combineKitchens) {
+        // Generate individual reports for each combination
+        for (const report of selectedReports) {
+          if (report.id === 'ingredients') continue; // Handle separately
+          
+          if (!combineKitchens) {
+            // Generate separate reports for each kitchen
+            for (const kitchenId of selectedKitchens) {
+              reports.push({
+                type: report.id,
+                kitchenIds: [kitchenId],
+                filename: `${report.id}-${allKitchens.find(k => k.id === kitchenId)?.name}-${dateStr}`
+              });
             }
-          );
+          } else {
+            // Generate combined kitchen report
+            reports.push({
+              type: report.id,
+              kitchenIds: selectedKitchens,
+              filename: `${report.id}-combined-${dateStr}`
+            });
+          }
+        }
+      }
+      
+      // Generate combined meal type reports if enabled
+      if (combineMealTypes && selectedMealTypes.length > 1) {
+        if (!combineKitchens) {
+          // Generate combined meal type reports for each kitchen
+          for (const kitchenId of selectedKitchens) {
+            reports.push({
+              type: 'combined-meals',
+              kitchenIds: [kitchenId],
+              mealTypes: selectedMealTypes,
+              filename: `combined-meals-${allKitchens.find(k => k.id === kitchenId)?.name}-${dateStr}`
+            });
+          }
+        } else {
+          // Generate fully combined report
+          reports.push({
+            type: 'combined-meals',
+            kitchenIds: selectedKitchens,
+            mealTypes: selectedMealTypes,
+            filename: `combined-meals-all-kitchens-${dateStr}`
+          });
+        }
+      }
+      
+      // Generate ingredients report if selected
+      if (selectedReports.some(r => r.id === 'ingredients')) {
+        reports.push({
+          type: 'ingredients',
+          kitchenIds: selectedKitchens,
+          mealTypes: selectedMealTypes,
+          filename: `ingredients-combined-${dateStr}`
+        });
+      }
+      
+      // Generate all reports
+      for (const reportConfig of reports) {
+        try {
+          const params = new URLSearchParams({
+            type: reportConfig.type,
+            date: dateStr,
+            format: selectedFormat,
+            kitchenIds: reportConfig.kitchenIds.join(','),
+            ...(reportConfig.mealTypes && { mealTypes: reportConfig.mealTypes.join(',') }),
+            combineMealTypes: combineMealTypes.toString(),
+            combineKitchens: combineKitchens.toString(),
+          });
+          
+          const response = await fetch(`/api/reports/generate?${params}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
           
           if (!response.ok) {
-            // Try to get error details from response
-            let errorMessage = `Failed to generate ${report.label}`;
+            let errorMessage = `Failed to generate ${reportConfig.filename}`;
             try {
               const errorData = await response.json();
               errorMessage = errorData.details || errorData.error || errorMessage;
             } catch {
-              // If response is not JSON, use status text
               errorMessage = `${errorMessage}: ${response.status} ${response.statusText}`;
             }
             throw new Error(errorMessage);
@@ -128,31 +243,30 @@ export function ReportsGenerationDialog({
           
           const blob = await response.blob();
           
-          // Check if the blob is actually a PDF/Excel/CSV and not an error page
           if (blob.size === 0) {
-            throw new Error(`Empty file received for ${report.label}`);
+            throw new Error(`Empty file received for ${reportConfig.filename}`);
           }
           
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `${report.id}-report-${dateStr}.${selectedFormat}`;
+          a.download = `${reportConfig.filename}.${selectedFormat}`;
           document.body.appendChild(a);
           a.click();
           a.remove();
           window.URL.revokeObjectURL(url);
           
-          // Add a small delay between downloads to prevent browser blocking
-          if (selectedReports.length > 1) {
+          // Add a small delay between downloads
+          if (reports.length > 1) {
             await new Promise(resolve => setTimeout(resolve, 500));
           }
         } catch (reportError: any) {
-          console.error(`Error generating ${report.label}:`, reportError);
-          throw new Error(`${report.label}: ${reportError.message}`);
+          console.error(`Error generating ${reportConfig.filename}:`, reportError);
+          throw new Error(`${reportConfig.filename}: ${reportError.message}`);
         }
       }
       
-      toast.success(`${selectedReports.length} report(s) generated successfully!`);
+      toast.success(`${reports.length} report(s) generated successfully!`);
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error.message || "Failed to generate reports");
@@ -168,10 +282,13 @@ export function ReportsGenerationDialog({
   };
 
   const selectedCount = reportTypes.filter((report) => report.checked).length;
+  const selectedMealTypes = reportTypes
+    .filter(r => ['breakfast', 'lunch', 'dinner'].includes(r.id) && r.checked)
+    .length;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto border-[#dbdade]">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto border-[#dbdade]">
         <DialogHeader className="pb-4 border-b border-[#dbdade]">
           <DialogTitle className="text-xl font-semibold text-[#4b465c] flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-lg flex items-center justify-center">
@@ -180,7 +297,7 @@ export function ReportsGenerationDialog({
             Generate Reports
           </DialogTitle>
           <p className="text-sm text-[#4b465c]/70 mt-2">
-            Create and download detailed reports for your kitchen operations
+            Create and download detailed reports with ingredient combinations for your kitchen operations
           </p>
         </DialogHeader>
         
@@ -198,6 +315,33 @@ export function ReportsGenerationDialog({
                 className="w-full"
               />
             </div>
+          </div>
+
+          {/* Kitchen Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium text-[#4b465c] flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#674af5]" />
+              Select Kitchens
+            </Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4 bg-[#f8f7fa] border border-[#dbdade] rounded-lg">
+              {allKitchens.map((kitchen) => (
+                <div key={kitchen.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={kitchen.id}
+                    checked={selectedKitchens.includes(kitchen.id)}
+                    onCheckedChange={() => handleKitchenToggle(kitchen.id)}
+                  />
+                  <Label htmlFor={kitchen.id} className="text-sm cursor-pointer">
+                    {kitchen.name}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            {selectedKitchens.length > 0 && (
+              <Badge className="bg-[#674af5] text-white">
+                {selectedKitchens.length} kitchen(s) selected
+              </Badge>
+            )}
           </div>
 
           {/* Report Types Selection */}
@@ -253,6 +397,66 @@ export function ReportsGenerationDialog({
             </div>
           </div>
 
+          {/* Combination Options */}
+          <div className="space-y-4 p-4 bg-[#f8f7fa] border border-[#dbdade] rounded-lg">
+            <Label className="text-base font-medium text-[#4b465c] flex items-center gap-2">
+              <Combine className="w-4 h-4 text-[#674af5]" />
+              Combination Options
+            </Label>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="combine-meals" className="text-sm font-medium">
+                    Combine Meal Types
+                  </Label>
+                  <p className="text-xs text-[#4b465c]/70">
+                    Aggregate ingredients from selected meal types (breakfast, lunch, dinner)
+                  </p>
+                </div>
+                <Switch
+                  id="combine-meals"
+                  checked={combineMealTypes}
+                  onCheckedChange={setCombineMealTypes}
+                  disabled={selectedMealTypes < 2}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="combine-kitchens" className="text-sm font-medium">
+                    Combine Kitchens
+                  </Label>
+                  <p className="text-xs text-[#4b465c]/70">
+                    Aggregate ingredients from all selected kitchens
+                  </p>
+                </div>
+                <Switch
+                  id="combine-kitchens"
+                  checked={combineKitchens}
+                  onCheckedChange={setCombineKitchens}
+                  disabled={selectedKitchens.length < 2}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="both-versions" className="text-sm font-medium">
+                    Generate Both Versions
+                  </Label>
+                  <p className="text-xs text-[#4b465c]/70">
+                    Create both combined and separate reports
+                  </p>
+                </div>
+                <Switch
+                  id="both-versions"
+                  checked={generateBothVersions}
+                  onCheckedChange={setGenerateBothVersions}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Format Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium text-[#4b465c]">
@@ -278,7 +482,7 @@ export function ReportsGenerationDialog({
           </div>
 
           {/* Preview Info */}
-          {selectedCount > 0 && (
+          {selectedCount > 0 && selectedKitchens.length > 0 && (
             <div className="bg-[#674af5]/5 border border-[#674af5]/20 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-[#674af5]" />
@@ -287,7 +491,13 @@ export function ReportsGenerationDialog({
               <div className="text-sm text-[#4b465c]/70 space-y-1">
                 <p>Date: {selectedDate.toLocaleDateString()}</p>
                 <p>Format: {formatOptions.find(f => f.value === selectedFormat)?.label}</p>
+                <p>Kitchens: {selectedKitchens.length} selected</p>
                 <p>Reports: {reportTypes.filter(r => r.checked).map(r => r.label).join(", ")}</p>
+                {(combineMealTypes || combineKitchens) && (
+                  <p className="text-[#674af5] font-medium">
+                    Combination mode: {combineMealTypes ? "Meals" : ""} {combineMealTypes && combineKitchens ? "+" : ""} {combineKitchens ? "Kitchens" : ""}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -304,7 +514,7 @@ export function ReportsGenerationDialog({
           </Button>
           <Button
             onClick={handleGenerateReport}
-            disabled={isGenerating || selectedCount === 0}
+            disabled={isGenerating || selectedCount === 0 || selectedKitchens.length === 0}
             className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg"
           >
             {isGenerating ? (

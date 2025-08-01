@@ -5,12 +5,17 @@ import {
   createMenuReportWorkbook,
 } from "@/lib/reports/menu-export";
 import { createMenuReportPDFWithJsPDF } from "@/lib/reports/jspdf-export";
+import { 
+  combineIngredients, 
+  generateIngredientSummary, 
+  formatCombinedIngredientsForExport 
+} from "@/lib/utils/ingredient-combiner";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-// POST /api/reports/generate?type=TYPE&date=YYYY-MM-DD&format=xlsx|csv|pdf
+// POST /api/reports/generate?type=TYPE&date=YYYY-MM-DD&format=xlsx|csv|pdf&kitchenIds=ID1,ID2&mealTypes=breakfast,lunch&combineMealTypes=true&combineKitchens=true
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -19,11 +24,28 @@ export async function POST(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") || "breakfast";
-  const date =
-    searchParams.get("date") || new Date().toISOString().split("T")[0];
+  const date = searchParams.get("date") || new Date().toISOString().split("T")[0];
   const format = searchParams.get("format") || "pdf";
+  const kitchenIdsParam = searchParams.get("kitchenIds");
+  const mealTypesParam = searchParams.get("mealTypes");
+  const combineMealTypes = searchParams.get("combineMealTypes") === "true";
+  const combineKitchens = searchParams.get("combineKitchens") === "true";
 
-  // Get kitchen data and menu data based on date and type
+  // Parse kitchen IDs and meal types
+  const kitchenIds = kitchenIdsParam ? kitchenIdsParam.split(',') : [];
+  const selectedMealTypes = mealTypesParam ? mealTypesParam.split(',') : [];
+
+  console.log("Generate report params:", {
+    type,
+    date,
+    format,
+    kitchenIds,
+    selectedMealTypes,
+    combineMealTypes,
+    combineKitchens
+  });
+
+  // Get kitchen data and menu data based on date, type, and filters
   let data;
   try {
     const targetDate = new Date(date);
@@ -32,31 +54,120 @@ export async function POST(req: NextRequest) {
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    if (type === "summary") {
-      // For summary report, get all data for the day
-      const menus = await prisma.menu.findMany({
-        where: {
-          date: {
-            gte: startOfDay,
-            lte: endOfDay,
+    // Build where conditions
+    const whereConditions: any = {
+      date: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+    };
+
+    // Add kitchen filter if specified
+    if (kitchenIds.length > 0) {
+      whereConditions.kitchenId = { in: kitchenIds };
+    }
+
+    // Add meal type filter based on report type and selected meal types
+    if (type === "ingredients" || type === "combined-meals") {
+      // For ingredients and combined meals, use selectedMealTypes
+      if (selectedMealTypes.length > 0) {
+        whereConditions.mealType = { in: selectedMealTypes.map(mt => mt.toUpperCase()) };
+      }
+    } else if (type !== "summary") {
+      // For specific meal type reports
+      whereConditions.mealType = type.toUpperCase();
+    }
+
+    // Fetch menus with ingredients
+    const menus = await prisma.menu.findMany({
+      where: whereConditions,
+      include: {
+        kitchen: {
+          select: {
+            id: true,
+            name: true,
           },
         },
-        include: {
-          kitchen: {
-            select: {
-              name: true,
-            },
-          },
-          recipe: {
-            select: {
-              name: true,
-              description: true,
+        recipe: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            ingredients: {
+              select: {
+                id: true,
+                name: true,
+                quantity: true,
+                unit: true,
+                costPerUnit: true,
+              },
             },
           },
         },
-        orderBy: { createdAt: "asc" },
+        ingredients: {
+          select: {
+            id: true,
+            name: true,
+            quantity: true,
+            unit: true,
+            costPerUnit: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    console.log(`Found ${menus.length} menus for the query`);
+
+    if (type === "ingredients") {
+      // Generate combined ingredients report
+      const combinedIngredients = combineIngredients(menus as any, {
+        combineMealTypes,
+        combineKitchens,
+        selectedMealTypes,
+        selectedKitchens: kitchenIds,
       });
 
+      const summary = generateIngredientSummary(combinedIngredients, {
+        combineMealTypes,
+        combineKitchens,
+      });
+
+      data = {
+        type: "ingredients",
+        date: targetDate,
+        combinedIngredients,
+        summary,
+        menus: menus, // Keep original menus for context
+        kitchenIds,
+        selectedMealTypes,
+        combineMealTypes,
+        combineKitchens,
+      };
+    } else if (type === "combined-meals") {
+      // Generate combined meal types report
+      const combinedIngredients = combineIngredients(menus as any, {
+        combineMealTypes: true, // Always combine meals for this report type
+        combineKitchens,
+        selectedMealTypes,
+        selectedKitchens: kitchenIds,
+      });
+
+      data = {
+        type: "combined-meals",
+        date: targetDate,
+        totalQuantity: menus.reduce((sum, menu) => sum + (menu.servings || 0), 0),
+        totalMeals: menus.length,
+        breakfastCount: menus.filter(m => m.mealType === "BREAKFAST").length,
+        lunchCount: menus.filter(m => m.mealType === "LUNCH").length,
+        dinnerCount: menus.filter(m => m.mealType === "DINNER").length,
+        menus: menus,
+        combinedIngredients,
+        selectedMealTypes,
+        combineKitchens,
+      };
+    } else if (type === "summary") {
+      // For summary report, get all data for the day
       data = {
         type: "summary",
         date: targetDate,
@@ -69,30 +180,6 @@ export async function POST(req: NextRequest) {
     } else {
       // For specific meal type reports
       const mealType = type.toUpperCase();
-      const menus = await prisma.menu.findMany({
-        where: {
-          date: {
-            gte: startOfDay,
-            lte: endOfDay,
-          },
-          mealType: mealType as any,
-        },
-        include: {
-          kitchen: {
-            select: {
-              name: true,
-            },
-          },
-          recipe: {
-            select: {
-              name: true,
-              description: true,
-            },
-          },
-        },
-        orderBy: { createdAt: "asc" },
-      });
-
       data = {
         type: mealType,
         date: targetDate,
@@ -117,6 +204,7 @@ export async function POST(req: NextRequest) {
     console.log(`Data structure:`, { 
       type: data.type, 
       menusCount: data.menus?.length || 0,
+      combinedIngredientsCount: data.combinedIngredients?.length || 0,
       sampleMenu: data.menus?.[0] ? {
         kitchen: data.menus[0].kitchen?.name,
         recipe: data.menus[0].recipe?.name,
