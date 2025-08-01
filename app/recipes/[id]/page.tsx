@@ -24,7 +24,7 @@ export default function RecipeDetailPage() {
 
       try {
         setLoading(true);
-        const response = await fetch(`/api/recipes?id=${recipeId}`);
+        const response = await fetch(`/api/recipes/${recipeId}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch recipe');
@@ -41,16 +41,15 @@ export default function RecipeDetailPage() {
           servings: detailedRecipe.servings,
           category: detailedRecipe.category,
           subcategory: detailedRecipe.subcategory,
-          cost: detailedRecipe.cost,
-          ingredients: detailedRecipe.ingredients?.map((ri: any) => ({
-            id: ri.ingredient?.id || ri.id,
-            name: ri.ingredient?.name || ri.name,
-            quantity: ri.quantity,
-            unit: ri.ingredient?.unit || ri.unit,
-            costPerUnit: ri.ingredient?.costPerUnit || ri.costPerUnit,
+          ingredients: detailedRecipe.ingredients?.map((ingredient: any) => ({
+            id: ingredient.id,
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit,
           })) || [],
-          createdAt: detailedRecipe.createdAt,
-          updatedAt: detailedRecipe.updatedAt,
+          createdAt: detailedRecipe.createdAt ? new Date(detailedRecipe.createdAt) : undefined,
+          updatedAt: detailedRecipe.updatedAt ? new Date(detailedRecipe.updatedAt) : undefined,
         };
 
         setRecipe(recipeData);
