@@ -57,6 +57,17 @@ interface MenuReportData {
   }>;
 }
 
+// Helper function to safely get text with Unicode support
+function encodeTextForExport(text: string): string {
+  try {
+    // Ensure proper UTF-8 encoding for Excel/CSV
+    return decodeURIComponent(encodeURIComponent(text));
+  } catch (error) {
+    console.warn('Text encoding failed, using original text:', error);
+    return text;
+  }
+}
+
 export async function createMenuReportWorkbook(
   data: MenuReportData,
   type: string,
@@ -74,11 +85,11 @@ export async function createMenuReportWorkbook(
     reportTitle = `${type.charAt(0).toUpperCase() + type.slice(1)} Report`;
   }
   
-  const sheet = workbook.addWorksheet(reportTitle);
+  const sheet = workbook.addWorksheet(encodeTextForExport(reportTitle));
 
   // Add title and metadata
   sheet.mergeCells('A1:F1');
-  sheet.getCell('A1').value = reportTitle;
+  sheet.getCell('A1').value = encodeTextForExport(reportTitle);
   sheet.getCell('A1').font = { size: 16, bold: true };
   sheet.getCell('A1').alignment = { horizontal: 'center' };
 
@@ -92,35 +103,35 @@ export async function createMenuReportWorkbook(
   if (type === 'ingredients') {
     // Combined Ingredients Report
     if (data.summary) {
-      sheet.getCell(`A${currentRow}`).value = 'Ingredients Summary';
+      sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Ingredients Summary');
       sheet.getCell(`A${currentRow}`).font = { bold: true, size: 14 };
       currentRow += 2;
 
-      sheet.getCell(`A${currentRow}`).value = 'Total Ingredients:';
+      sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Total Ingredients:');
       sheet.getCell(`B${currentRow}`).value = data.summary.totalIngredients;
       currentRow++;
 
-      sheet.getCell(`A${currentRow}`).value = 'Unique Ingredients:';
+      sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Unique Ingredients:');
       sheet.getCell(`B${currentRow}`).value = data.summary.uniqueIngredients;
       currentRow++;
 
-      sheet.getCell(`A${currentRow}`).value = 'Total Cost:';
+      sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Total Cost:');
       sheet.getCell(`B${currentRow}`).value = `$${data.summary.totalCost.toFixed(2)}`;
       currentRow++;
 
       if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
-        sheet.getCell(`A${currentRow}`).value = 'Meal Types:';
-        sheet.getCell(`B${currentRow}`).value = data.selectedMealTypes.join(', ');
+        sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Meal Types:');
+        sheet.getCell(`B${currentRow}`).value = encodeTextForExport(data.selectedMealTypes.join(', '));
         currentRow++;
       }
 
       if (data.summary.mealTypesCombined) {
-        sheet.getCell(`A${currentRow}`).value = 'Meal Types Combined: Yes';
+        sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Meal Types Combined: Yes');
         currentRow++;
       }
 
       if (data.summary.kitchensCombined) {
-        sheet.getCell(`A${currentRow}`).value = 'Kitchens Combined: Yes';
+        sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Kitchens Combined: Yes');
         currentRow++;
       }
 
@@ -128,7 +139,14 @@ export async function createMenuReportWorkbook(
     }
 
     // Combined Ingredients Table
-    sheet.addRow(['Ingredient', 'Total Quantity', 'Unit', 'Total Cost', 'Source Count', 'Source Details']);
+    sheet.addRow([
+      encodeTextForExport('Ingredient'), 
+      encodeTextForExport('Total Quantity'), 
+      encodeTextForExport('Unit'), 
+      encodeTextForExport('Total Cost'), 
+      encodeTextForExport('Source Count'), 
+      encodeTextForExport('Source Details')
+    ]);
     const headerRow = sheet.lastRow;
     if (headerRow) {
       headerRow.font = { bold: true };
@@ -142,51 +160,51 @@ export async function createMenuReportWorkbook(
     if (data.combinedIngredients && data.combinedIngredients.length > 0) {
       data.combinedIngredients.forEach((ingredient) => {
         const sourceDetails = ingredient.sources
-          .map(s => `${s.kitchen} - ${s.mealType} - ${s.recipe} (${s.quantity} for ${s.servings} servings)`)
+          .map(s => encodeTextForExport(`${s.kitchen} - ${s.mealType} - ${s.recipe} (${s.quantity} for ${s.servings} servings)`))
           .join('; ');
 
         sheet.addRow([
-          ingredient.name,
+          encodeTextForExport(ingredient.name),
           Math.round(ingredient.totalQuantity * 100) / 100,
-          ingredient.unit,
+          encodeTextForExport(ingredient.unit),
           `$${Math.round(ingredient.totalCost * 100) / 100}`,
           ingredient.sources.length,
           sourceDetails
         ]);
       });
     } else {
-      sheet.addRow(['No ingredients found for the selected criteria', '', '', '', '', '']);
+      sheet.addRow([encodeTextForExport('No ingredients found for the selected criteria'), '', '', '', '', '']);
     }
 
   } else if (type === 'combined-meals') {
     // Combined Meal Types Report
-    sheet.getCell(`A${currentRow}`).value = 'Combined Meals Summary';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Combined Meals Summary');
     sheet.getCell(`A${currentRow}`).font = { bold: true, size: 14 };
     currentRow += 2;
 
-    sheet.getCell(`A${currentRow}`).value = 'Total Meals:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Total Meals:');
     sheet.getCell(`B${currentRow}`).value = data.totalMeals || 0;
     currentRow++;
 
-    sheet.getCell(`A${currentRow}`).value = 'Total Servings:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Total Servings:');
     sheet.getCell(`B${currentRow}`).value = data.totalQuantity || 0;
     currentRow++;
 
-    sheet.getCell(`A${currentRow}`).value = 'Breakfast Count:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Breakfast Count:');
     sheet.getCell(`B${currentRow}`).value = data.breakfastCount || 0;
     currentRow++;
 
-    sheet.getCell(`A${currentRow}`).value = 'Lunch Count:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Lunch Count:');
     sheet.getCell(`B${currentRow}`).value = data.lunchCount || 0;
     currentRow++;
 
-    sheet.getCell(`A${currentRow}`).value = 'Dinner Count:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Dinner Count:');
     sheet.getCell(`B${currentRow}`).value = data.dinnerCount || 0;
     currentRow++;
 
     if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
-      sheet.getCell(`A${currentRow}`).value = 'Selected Meal Types:';
-      sheet.getCell(`B${currentRow}`).value = data.selectedMealTypes.join(', ');
+      sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Selected Meal Types:');
+      sheet.getCell(`B${currentRow}`).value = encodeTextForExport(data.selectedMealTypes.join(', '));
       currentRow++;
     }
 
@@ -194,11 +212,17 @@ export async function createMenuReportWorkbook(
 
     // Combined Ingredients Section
     if (data.combinedIngredients && data.combinedIngredients.length > 0) {
-      sheet.getCell(`A${currentRow}`).value = 'Combined Ingredients';
+      sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Combined Ingredients');
       sheet.getCell(`A${currentRow}`).font = { bold: true, size: 14 };
       currentRow += 2;
 
-      sheet.addRow(['Ingredient', 'Total Quantity', 'Unit', 'Total Cost', 'Sources']);
+      sheet.addRow([
+        encodeTextForExport('Ingredient'), 
+        encodeTextForExport('Total Quantity'), 
+        encodeTextForExport('Unit'), 
+        encodeTextForExport('Total Cost'), 
+        encodeTextForExport('Sources')
+      ]);
       const ingredientsHeaderRow = sheet.lastRow;
       if (ingredientsHeaderRow) {
         ingredientsHeaderRow.font = { bold: true };
@@ -211,9 +235,9 @@ export async function createMenuReportWorkbook(
 
       data.combinedIngredients.forEach((ingredient) => {
         sheet.addRow([
-          ingredient.name,
+          encodeTextForExport(ingredient.name),
           Math.round(ingredient.totalQuantity * 100) / 100,
-          ingredient.unit,
+          encodeTextForExport(ingredient.unit),
           `$${Math.round(ingredient.totalCost * 100) / 100}`,
           ingredient.sources.length
         ]);
@@ -224,11 +248,18 @@ export async function createMenuReportWorkbook(
 
     // Detailed Menus Table
     if (data.menus && data.menus.length > 0) {
-      sheet.getCell(`A${currentRow}`).value = 'Detailed Menu Items';
+      sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Detailed Menu Items');
       sheet.getCell(`A${currentRow}`).font = { bold: true, size: 14 };
       currentRow += 2;
 
-      sheet.addRow(['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']);
+      sheet.addRow([
+        encodeTextForExport('Kitchen'), 
+        encodeTextForExport('Recipe'), 
+        encodeTextForExport('Meal Type'), 
+        encodeTextForExport('Servings'), 
+        encodeTextForExport('Status'), 
+        encodeTextForExport('Notes')
+      ]);
       const menusHeaderRow = sheet.lastRow;
       if (menusHeaderRow) {
         menusHeaderRow.font = { bold: true };
@@ -241,40 +272,47 @@ export async function createMenuReportWorkbook(
 
       data.menus.forEach((menu) => {
         sheet.addRow([
-          menu.kitchen?.name || 'N/A',
-          menu.recipe?.name || 'N/A',
-          menu.mealType || 'N/A',
+          encodeTextForExport(menu.kitchen?.name || 'N/A'),
+          encodeTextForExport(menu.recipe?.name || 'N/A'),
+          encodeTextForExport(menu.mealType || 'N/A'),
           menu.servings || 0,
-          menu.status || 'N/A',
-          menu.notes || '',
+          encodeTextForExport(menu.status || 'N/A'),
+          encodeTextForExport(menu.notes || ''),
         ]);
       });
     }
 
   } else if (type === 'summary') {
     // Summary report layout
-    sheet.getCell(`A${currentRow}`).value = 'Daily Summary';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Daily Summary');
     sheet.getCell(`A${currentRow}`).font = { bold: true, size: 14 };
     currentRow += 2;
 
-    sheet.getCell(`A${currentRow}`).value = 'Total Meals:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Total Meals:');
     sheet.getCell(`B${currentRow}`).value = data.totalMeals || 0;
     currentRow++;
 
-    sheet.getCell(`A${currentRow}`).value = 'Breakfast Count:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Breakfast Count:');
     sheet.getCell(`B${currentRow}`).value = data.breakfastCount || 0;
     currentRow++;
 
-    sheet.getCell(`A${currentRow}`).value = 'Lunch Count:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Lunch Count:');
     sheet.getCell(`B${currentRow}`).value = data.lunchCount || 0;
     currentRow++;
 
-    sheet.getCell(`A${currentRow}`).value = 'Dinner Count:';
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport('Dinner Count:');
     sheet.getCell(`B${currentRow}`).value = data.dinnerCount || 0;
     currentRow += 2;
 
     // Detailed breakdown
-    sheet.addRow(['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']);
+    sheet.addRow([
+      encodeTextForExport('Kitchen'), 
+      encodeTextForExport('Recipe'), 
+      encodeTextForExport('Meal Type'), 
+      encodeTextForExport('Servings'), 
+      encodeTextForExport('Status'), 
+      encodeTextForExport('Notes')
+    ]);
     const headerRow = sheet.lastRow;
     if (headerRow) {
       headerRow.font = { bold: true };
@@ -288,26 +326,33 @@ export async function createMenuReportWorkbook(
     if (data.menus && data.menus.length > 0) {
       data.menus.forEach((menu) => {
         sheet.addRow([
-          menu.kitchen?.name || 'N/A',
-          menu.recipe?.name || 'N/A',
-          menu.mealType || 'N/A',
+          encodeTextForExport(menu.kitchen?.name || 'N/A'),
+          encodeTextForExport(menu.recipe?.name || 'N/A'),
+          encodeTextForExport(menu.mealType || 'N/A'),
           menu.servings || 0,
-          menu.status || 'N/A',
-          menu.notes || '',
+          encodeTextForExport(menu.status || 'N/A'),
+          encodeTextForExport(menu.notes || ''),
         ]);
       });
     } else {
-      sheet.addRow(['No data available for this date', '', '', '', '', '']);
+      sheet.addRow([encodeTextForExport('No data available for this date'), '', '', '', '', '']);
     }
 
   } else {
     // Meal-specific report
-    sheet.getCell(`A${currentRow}`).value = `Total Servings: ${data.totalQuantity || 0}`;
+    sheet.getCell(`A${currentRow}`).value = encodeTextForExport(`Total Servings: ${data.totalQuantity || 0}`);
     sheet.getCell(`A${currentRow}`).font = { bold: true };
     currentRow += 2;
 
     // Header row for meal details
-    sheet.addRow(['Kitchen', 'Recipe', 'Servings', 'Ghan Factor', 'Status', 'Ingredients']);
+    sheet.addRow([
+      encodeTextForExport('Kitchen'), 
+      encodeTextForExport('Recipe'), 
+      encodeTextForExport('Servings'), 
+      encodeTextForExport('Ghan Factor'), 
+      encodeTextForExport('Status'), 
+      encodeTextForExport('Ingredients')
+    ]);
     const headerRow = sheet.lastRow;
     if (headerRow) {
       headerRow.font = { bold: true };
@@ -321,20 +366,20 @@ export async function createMenuReportWorkbook(
     if (data.menus && data.menus.length > 0) {
       data.menus.forEach((menu) => {
         const ingredients = menu.recipe?.ingredients
-          ?.map(ing => `${ing.ingredient.name} (${ing.quantity} ${ing.ingredient.unit})`)
+          ?.map(ing => encodeTextForExport(`${ing.ingredient?.name || 'N/A'} (${ing.quantity} ${ing.ingredient?.unit || ''})`))
           .join(', ') || 'N/A';
         
         sheet.addRow([
-          menu.kitchen?.name || 'N/A',
-          menu.recipe?.name || 'N/A',
+          encodeTextForExport(menu.kitchen?.name || 'N/A'),
+          encodeTextForExport(menu.recipe?.name || 'N/A'),
           menu.servings || 0,
           menu.ghanFactor || 1.0,
-          menu.status || 'N/A',
+          encodeTextForExport(menu.status || 'N/A'),
           ingredients,
         ]);
       });
     } else {
-      sheet.addRow(['No data available for this date', '', '', '', '', '']);
+      sheet.addRow([encodeTextForExport('No data available for this date'), '', '', '', '', '']);
     }
   }
 
@@ -378,70 +423,77 @@ export async function createMenuReportCSV(
   
   if (type === 'ingredients') {
     rows = [
-      [reportTitle],
+      [encodeTextForExport(reportTitle)],
       [`Date: ${new Date(date).toLocaleDateString()}`],
       [],
     ];
 
     if (data.summary) {
       rows.push(
-        ['Ingredients Summary'],
-        ['Total Ingredients', data.summary.totalIngredients.toString()],
-        ['Unique Ingredients', data.summary.uniqueIngredients.toString()],
-        ['Total Cost', `$${data.summary.totalCost.toFixed(2)}`],
+        [encodeTextForExport('Ingredients Summary')],
+        [encodeTextForExport('Total Ingredients'), data.summary.totalIngredients.toString()],
+        [encodeTextForExport('Unique Ingredients'), data.summary.uniqueIngredients.toString()],
+        [encodeTextForExport('Total Cost'), `$${data.summary.totalCost.toFixed(2)}`],
       );
 
       if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
-        rows.push(['Meal Types', data.selectedMealTypes.join(', ')]);
+        rows.push([encodeTextForExport('Meal Types'), encodeTextForExport(data.selectedMealTypes.join(', '))]);
       }
 
       if (data.summary.mealTypesCombined) {
-        rows.push(['Meal Types Combined', 'Yes']);
+        rows.push([encodeTextForExport('Meal Types Combined'), encodeTextForExport('Yes')]);
       }
 
       if (data.summary.kitchensCombined) {
-        rows.push(['Kitchens Combined', 'Yes']);
+        rows.push([encodeTextForExport('Kitchens Combined'), encodeTextForExport('Yes')]);
       }
 
       rows.push([]);
     }
 
-    rows.push(['Ingredient', 'Total Quantity', 'Unit', 'Total Cost', 'Source Count', 'Source Details']);
+    rows.push([
+      encodeTextForExport('Ingredient'), 
+      encodeTextForExport('Total Quantity'), 
+      encodeTextForExport('Unit'), 
+      encodeTextForExport('Total Cost'), 
+      encodeTextForExport('Source Count'), 
+      encodeTextForExport('Source Details')
+    ]);
     
     if (data.combinedIngredients && data.combinedIngredients.length > 0) {
       rows.push(...data.combinedIngredients.map((ingredient) => {
         const sourceDetails = ingredient.sources
-          .map(s => `${s.kitchen} - ${s.mealType} - ${s.recipe} (${s.quantity} for ${s.servings} servings)`)
+          .map(s => encodeTextForExport(`${s.kitchen} - ${s.mealType} - ${s.recipe} (${s.quantity} for ${s.servings} servings)`))
           .join('; ');
 
         return [
-          ingredient.name,
+          encodeTextForExport(ingredient.name),
           (Math.round(ingredient.totalQuantity * 100) / 100).toString(),
-          ingredient.unit,
+          encodeTextForExport(ingredient.unit),
           `$${(Math.round(ingredient.totalCost * 100) / 100)}`,
           ingredient.sources.length.toString(),
           sourceDetails
         ];
       }));
     } else {
-      rows.push(['No ingredients found for the selected criteria', '', '', '', '', '']);
+      rows.push([encodeTextForExport('No ingredients found for the selected criteria'), '', '', '', '', '']);
     }
 
   } else if (type === 'combined-meals') {
     rows = [
-      [reportTitle],
+      [encodeTextForExport(reportTitle)],
       [`Date: ${new Date(date).toLocaleDateString()}`],
       [],
-      ['Combined Meals Summary'],
-      ['Total Meals', (data.totalMeals || 0).toString()],
-      ['Total Servings', (data.totalQuantity || 0).toString()],
-      ['Breakfast Count', (data.breakfastCount || 0).toString()],
-      ['Lunch Count', (data.lunchCount || 0).toString()],
-      ['Dinner Count', (data.dinnerCount || 0).toString()],
+      [encodeTextForExport('Combined Meals Summary')],
+      [encodeTextForExport('Total Meals'), (data.totalMeals || 0).toString()],
+      [encodeTextForExport('Total Servings'), (data.totalQuantity || 0).toString()],
+      [encodeTextForExport('Breakfast Count'), (data.breakfastCount || 0).toString()],
+      [encodeTextForExport('Lunch Count'), (data.lunchCount || 0).toString()],
+      [encodeTextForExport('Dinner Count'), (data.dinnerCount || 0).toString()],
     ];
 
     if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
-      rows.push(['Selected Meal Types', data.selectedMealTypes.join(', ')]);
+      rows.push([encodeTextForExport('Selected Meal Types'), encodeTextForExport(data.selectedMealTypes.join(', '))]);
     }
 
     rows.push([]);
@@ -449,12 +501,18 @@ export async function createMenuReportCSV(
     // Combined Ingredients Section
     if (data.combinedIngredients && data.combinedIngredients.length > 0) {
       rows.push(
-        ['Combined Ingredients'],
-        ['Ingredient', 'Total Quantity', 'Unit', 'Total Cost', 'Sources'],
+        [encodeTextForExport('Combined Ingredients')],
+        [
+          encodeTextForExport('Ingredient'), 
+          encodeTextForExport('Total Quantity'), 
+          encodeTextForExport('Unit'), 
+          encodeTextForExport('Total Cost'), 
+          encodeTextForExport('Sources')
+        ],
         ...data.combinedIngredients.map((ingredient) => [
-          ingredient.name,
+          encodeTextForExport(ingredient.name),
           (Math.round(ingredient.totalQuantity * 100) / 100).toString(),
-          ingredient.unit,
+          encodeTextForExport(ingredient.unit),
           `$${(Math.round(ingredient.totalCost * 100) / 100)}`,
           ingredient.sources.length.toString()
         ]),
@@ -463,62 +521,108 @@ export async function createMenuReportCSV(
     }
 
     // Detailed Menus
-    rows.push(
-      ['Detailed Menu Items'],
-      ['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes'],
-      ...data.menus.map((menu) => [
-        menu.kitchen.name,
-        menu.recipe.name,
-        menu.mealType,
-        menu.servings.toString(),
-        menu.status,
-        menu.notes || '',
-      ])
-    );
+    if (data.menus && data.menus.length > 0) {
+      rows.push(
+        [encodeTextForExport('Detailed Menu Items')],
+        [
+          encodeTextForExport('Kitchen'), 
+          encodeTextForExport('Recipe'), 
+          encodeTextForExport('Meal Type'), 
+          encodeTextForExport('Servings'), 
+          encodeTextForExport('Status'), 
+          encodeTextForExport('Notes')
+        ],
+        ...data.menus.map((menu) => [
+          encodeTextForExport(menu.kitchen?.name || 'N/A'),
+          encodeTextForExport(menu.recipe?.name || 'N/A'),
+          encodeTextForExport(menu.mealType || 'N/A'),
+          (menu.servings || 0).toString(),
+          encodeTextForExport(menu.status || 'N/A'),
+          encodeTextForExport(menu.notes || ''),
+        ])
+      );
+    } else {
+      rows.push(
+        [encodeTextForExport('Detailed Menu Items')],
+        [
+          encodeTextForExport('Kitchen'), 
+          encodeTextForExport('Recipe'), 
+          encodeTextForExport('Meal Type'), 
+          encodeTextForExport('Servings'), 
+          encodeTextForExport('Status'), 
+          encodeTextForExport('Notes')
+        ],
+        [encodeTextForExport('No data available'), '', '', '', '', '']
+      );
+    }
 
   } else if (type === 'summary') {
     rows = [
-      [reportTitle],
+      [encodeTextForExport(reportTitle)],
       [`Date: ${new Date(date).toLocaleDateString()}`],
       [],
-      ['Summary'],
-      ['Total Meals', (data.totalMeals || 0).toString()],
-      ['Breakfast Count', (data.breakfastCount || 0).toString()],
-      ['Lunch Count', (data.lunchCount || 0).toString()],
-      ['Dinner Count', (data.dinnerCount || 0).toString()],
+      [encodeTextForExport('Summary')],
+      [encodeTextForExport('Total Meals'), (data.totalMeals || 0).toString()],
+      [encodeTextForExport('Breakfast Count'), (data.breakfastCount || 0).toString()],
+      [encodeTextForExport('Lunch Count'), (data.lunchCount || 0).toString()],
+      [encodeTextForExport('Dinner Count'), (data.dinnerCount || 0).toString()],
       [],
-      ['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes'],
-      ...data.menus.map((menu) => [
-        menu.kitchen.name,
-        menu.recipe.name,
-        menu.mealType,
-        menu.servings.toString(),
-        menu.status,
-        menu.notes || '',
-      ]),
+      [
+        encodeTextForExport('Kitchen'), 
+        encodeTextForExport('Recipe'), 
+        encodeTextForExport('Meal Type'), 
+        encodeTextForExport('Servings'), 
+        encodeTextForExport('Status'), 
+        encodeTextForExport('Notes')
+      ],
     ];
+
+    if (data.menus && data.menus.length > 0) {
+      rows.push(...data.menus.map((menu) => [
+        encodeTextForExport(menu.kitchen?.name || 'N/A'),
+        encodeTextForExport(menu.recipe?.name || 'N/A'),
+        encodeTextForExport(menu.mealType || 'N/A'),
+        (menu.servings || 0).toString(),
+        encodeTextForExport(menu.status || 'N/A'),
+        encodeTextForExport(menu.notes || ''),
+      ]));
+    } else {
+      rows.push([encodeTextForExport('No data available for this date'), '', '', '', '', '']);
+    }
   } else {
     rows = [
-      [reportTitle],
+      [encodeTextForExport(reportTitle)],
       [`Date: ${new Date(date).toLocaleDateString()}`],
-      [`Total Servings: ${data.totalQuantity || 0}`],
+      [encodeTextForExport(`Total Servings: ${data.totalQuantity || 0}`)],
       [],
-      ['Kitchen', 'Recipe', 'Servings', 'Ghan Factor', 'Status', 'Ingredients'],
-      ...data.menus.map((menu) => {
-        const ingredients = menu.recipe.ingredients
-          ?.map(ing => `${ing.ingredient.name} (${ing.quantity} ${ing.ingredient.unit})`)
+      [
+        encodeTextForExport('Kitchen'), 
+        encodeTextForExport('Recipe'), 
+        encodeTextForExport('Servings'), 
+        encodeTextForExport('Ghan Factor'), 
+        encodeTextForExport('Status'), 
+        encodeTextForExport('Ingredients')
+      ],
+    ];
+
+    if (data.menus && data.menus.length > 0) {
+      rows.push(...data.menus.map((menu) => {
+        const ingredients = menu.recipe?.ingredients
+          ?.map(ing => encodeTextForExport(`${ing.ingredient?.name || 'N/A'} (${ing.quantity} ${ing.ingredient?.unit || ''})`))
           .join('; ') || 'N/A';
         
         return [
-          menu.kitchen.name,
-          menu.recipe.name,
-          menu.servings.toString(),
-          menu.ghanFactor.toString(),
-          menu.status,
+          encodeTextForExport(menu.kitchen?.name || 'N/A'),
+          encodeTextForExport(menu.recipe?.name || 'N/A'),
+          (menu.servings || 0).toString(),
+          (menu.ghanFactor || 1.0).toString(),
+          encodeTextForExport(menu.status || 'N/A'),
           ingredients,
         ];
-      }),
-    ];
+      }));
+    } else {
+      rows.push([encodeTextForExport('No data available for this date'), '', '', '', '', '']);
+    }
   }
 
   const csv = await writeToString(rows, {
