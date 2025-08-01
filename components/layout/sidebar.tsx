@@ -6,6 +6,8 @@ import { Home, ChefHat, Utensils, ChevronDown, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation-dialog";
+import { useState } from "react";
 
 interface SidebarProps {
   activeItem?: string;
@@ -15,6 +17,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [reportsDialogOpen, setReportsDialogOpen] = useState(false);
 
   const menuItems = [
     {
@@ -33,14 +36,6 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
       href: "/recipes",
       isActive: pathname === "/recipes",
       description: "Recipe management",
-    },
-    {
-      id: "reports",
-      label: "Reports",
-      icon: Utensils,
-      href: "/reports",
-      isActive: pathname === "/reports",
-      description: "Analytics & reports",
     },
   ];
 
@@ -134,6 +129,25 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
                 </div>
               </Link>
             ))}
+            
+            {/* Reports Button */}
+            <div
+              className="group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 text-[#4b465c] hover:bg-[#f8f7fa] hover:text-[#674af5]"
+              onClick={() => setReportsDialogOpen(true)}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors bg-[#f8f7fa] text-[#4b465c] group-hover:bg-[#674af5]/10 group-hover:text-[#674af5]">
+                  <Utensils className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-medium">Reports</span>
+                  <p className="text-xs text-[#4b465c]/60 mt-0.5">
+                    Generate & download
+                  </p>
+                </div>
+              </div>
+              <ChevronDown className="w-4 h-4 transition-transform text-[#4b465c]/40" />
+            </div>
           </nav>
 
           {/* Footer */}
@@ -154,6 +168,12 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
           </div>
         </div>
       </aside>
+      
+      {/* Reports Generation Dialog */}
+      <ReportsGenerationDialog
+        open={reportsDialogOpen}
+        onOpenChange={setReportsDialogOpen}
+      />
     </>
   );
 }
