@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DateSelector } from "@/components/ui/date-selector";
-import { Download, FileText, Calendar, Users, ChefHat, Combine } from "lucide-react";
+import { Download, FileText, Calendar, Users, ChefHat, Combine, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -51,6 +51,7 @@ export function ReportsGenerationDialog({
   const [combineMealTypes, setCombineMealTypes] = useState(false);
   const [combineKitchens, setCombineKitchens] = useState(false);
   const [generateBothVersions, setGenerateBothVersions] = useState(false);
+  const [attachRecipePrints, setAttachRecipePrints] = useState(false);
   const [selectedKitchens, setSelectedKitchens] = useState<string[]>([]);
   const [allKitchens, setAllKitchens] = useState<Kitchen[]>([]);
   const [reportTypes, setReportTypes] = useState<ReportOption[]>([
@@ -221,6 +222,7 @@ export function ReportsGenerationDialog({
             ...(reportConfig.mealTypes && { mealTypes: reportConfig.mealTypes.join(',') }),
             combineMealTypes: combineMealTypes.toString(),
             combineKitchens: combineKitchens.toString(),
+            attachRecipePrints: attachRecipePrints.toString(),
           });
           
           const response = await fetch(`/api/reports/generate?${params}`, {
@@ -454,6 +456,22 @@ export function ReportsGenerationDialog({
                   onCheckedChange={setGenerateBothVersions}
                 />
               </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="attach-recipes" className="text-sm font-medium">
+                    Attach Recipe Prints
+                  </Label>
+                  <p className="text-xs text-[#4b465c]/70">
+                    Include detailed recipe pages for all used recipes (unique recipes only)
+                  </p>
+                </div>
+                <Switch
+                  id="attach-recipes"
+                  checked={attachRecipePrints}
+                  onCheckedChange={setAttachRecipePrints}
+                />
+              </div>
             </div>
           </div>
 
@@ -496,6 +514,12 @@ export function ReportsGenerationDialog({
                 {(combineMealTypes || combineKitchens) && (
                   <p className="text-[#674af5] font-medium">
                     Combination mode: {combineMealTypes ? "Meals" : ""} {combineMealTypes && combineKitchens ? "+" : ""} {combineKitchens ? "Kitchens" : ""}
+                  </p>
+                )}
+                {attachRecipePrints && (
+                  <p className="text-[#674af5] font-medium flex items-center gap-1">
+                    <BookOpen className="w-3 h-3" />
+                    Recipe prints will be attached
                   </p>
                 )}
               </div>
