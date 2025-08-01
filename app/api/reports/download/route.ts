@@ -8,7 +8,7 @@ import {
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // GET /api/reports/download?type=TYPE&date=YYYY-MM-DD&format=xlsx|csv|pdf
 export async function GET(req: NextRequest) {
@@ -33,11 +33,11 @@ export async function GET(req: NextRequest) {
     endOfDay.setHours(23, 59, 59, 999);
 
     data = await prisma.report.findMany({
-      where: { 
+      where: {
         date: {
           gte: startOfDay,
           lte: endOfDay,
-        }
+        },
       },
       include: {
         kitchen: {

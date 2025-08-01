@@ -45,29 +45,28 @@ export function MenuGrid({
       const transformedData: Record<string, MenuItem[]> = {
         breakfast: (dailyMenus.BREAKFAST || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || 'Unknown Recipe',
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+          name: menu.recipe?.name || "Unknown Recipe",
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
         })),
         lunch: (dailyMenus.LUNCH || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || 'Unknown Recipe',
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+          name: menu.recipe?.name || "Unknown Recipe",
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
         })),
         dinner: (dailyMenus.DINNER || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || 'Unknown Recipe',
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+          name: menu.recipe?.name || "Unknown Recipe",
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
         })),
         snack: (dailyMenus.SNACK || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || 'Unknown Recipe',
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ''}`,
+          name: menu.recipe?.name || "Unknown Recipe",
+          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
         })),
       };
       setMenuData(transformedData);
     }
   }, [dailyMenus]);
-
 
   const handleEditItem = useCallback(
     async (mealType: string, updatedItem: InputMenuItem) => {
@@ -82,7 +81,7 @@ export function MenuGrid({
           setMenuData((prev: Record<string, MenuItem[]>) => ({
             ...prev,
             [mealType]: prev[mealType].map((item) =>
-              item.id === updatedItem.id ? itemWithWeight : item
+              item.id === updatedItem.id ? itemWithWeight : item,
             ),
           }));
           toast.success("Menu updated!");
@@ -93,7 +92,7 @@ export function MenuGrid({
         toast.error("Failed to update menu.");
       }
     },
-    []
+    [],
   );
 
   const handleDeleteItem = useCallback(
@@ -116,7 +115,7 @@ export function MenuGrid({
         }
       }
     },
-    []
+    [],
   );
 
   const handleAddMenuItem = useCallback(
@@ -130,7 +129,7 @@ export function MenuGrid({
         };
       });
     },
-    []
+    [],
   );
 
   const handleAddRecipe = useCallback(
@@ -144,9 +143,8 @@ export function MenuGrid({
         };
       });
     },
-    []
+    [],
   );
-
 
   return (
     <div className="space-y-6">
@@ -157,7 +155,9 @@ export function MenuGrid({
           onAdd={() => onAddMeal(MealType.BREAKFAST)}
           onEdit={(item) => {
             // Find the actual meal data from dailyMenus
-            const meal = dailyMenus.BREAKFAST?.find((m: any) => m.id === item.id);
+            const meal = dailyMenus.BREAKFAST?.find(
+              (m: any) => m.id === item.id,
+            );
             if (meal) {
               onEditMeal(MealType.BREAKFAST, meal);
             }

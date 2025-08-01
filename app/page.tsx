@@ -31,7 +31,9 @@ export default function MenuPage() {
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportDialog, setReportDialog] = useState(false);
-  const [selectedMealType, setSelectedMealType] = useState<MealType>(MealType.BREAKFAST);
+  const [selectedMealType, setSelectedMealType] = useState<MealType>(
+    MealType.BREAKFAST,
+  );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -43,32 +45,41 @@ export default function MenuPage() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // Get kitchens first
       const kitchensData = await getKitchens();
       setKitchens(kitchensData);
-      
+
       // Get current kitchen ID
-      const currentKitchenId = kitchensData[activeTab]?.id || session?.user?.kitchenId;
-      
+      const currentKitchenId =
+        kitchensData[activeTab]?.id || session?.user?.kitchenId;
+
       if (!currentKitchenId) {
-        setMenuStats({ total: { planned: 0 }, byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 } });
+        setMenuStats({
+          total: { planned: 0 },
+          byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 },
+        });
         setDailyMenus({});
         return;
       }
 
-      console.log(`Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split('T')[0]}, activeTab: ${activeTab}`);
+      console.log(
+        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`,
+      );
 
       // Fetch menus and stats
       const [statsData, menusResponse] = await Promise.all([
         getMenuStats(selectedDate, currentKitchenId),
         fetchMenus({
           kitchenId: currentKitchenId,
-          date: selectedDate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+          date: selectedDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
         }),
       ]);
 
-      console.log(`Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`, menusResponse);
+      console.log(
+        `Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`,
+        menusResponse,
+      );
 
       // Transform menus data to match the expected format
       const groupedMenus = {

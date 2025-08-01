@@ -3,12 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
     console.log("Fetching all recipes...");
-    
+
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     console.error("Get recipes API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -398,17 +398,17 @@ async function main() {
   // Fetch recipes with their ingredients
   const recipes = await prisma.recipe.findMany({
     include: {
-      ingredients: true
-    }
+      ingredients: true,
+    },
   });
 
   // Function to create menu ingredients from recipe ingredients
   function createMenuIngredients(recipe, servings) {
-    return recipe.ingredients.map(ingredient => ({
+    return recipe.ingredients.map((ingredient) => ({
       name: ingredient.name,
       quantity: (ingredient.quantity * servings) / recipe.servings,
       unit: ingredient.unit,
-      costPerUnit: ingredient.costPerUnit || 0
+      costPerUnit: ingredient.costPerUnit || 0,
     }));
   }
 
@@ -428,8 +428,8 @@ async function main() {
         ghanFactor: 1.2,
         status: "PLANNED",
         ingredients: {
-          create: createMenuIngredients(recipes[2], 50)
-        }
+          create: createMenuIngredients(recipes[2], 50),
+        },
       },
     }),
     prisma.menu.create({
@@ -443,11 +443,11 @@ async function main() {
         ghanFactor: 1.0,
         status: "PLANNED",
         ingredients: {
-          create: createMenuIngredients(recipes[0], 100)
-        }
+          create: createMenuIngredients(recipes[0], 100),
+        },
       },
     }),
-    
+
     // Premvati Kitchen - Today
     prisma.menu.create({
       data: {
@@ -460,8 +460,8 @@ async function main() {
         ghanFactor: 1.1,
         status: "PLANNED",
         ingredients: {
-          create: createMenuIngredients(recipes[1], 80)
-        }
+          create: createMenuIngredients(recipes[1], 80),
+        },
       },
     }),
     prisma.menu.create({
@@ -475,8 +475,8 @@ async function main() {
         ghanFactor: 0.9,
         status: "PLANNED",
         ingredients: {
-          create: createMenuIngredients(recipes[4], 120)
-        }
+          create: createMenuIngredients(recipes[4], 120),
+        },
       },
     }),
 
@@ -493,8 +493,8 @@ async function main() {
         status: "COMPLETED",
         actualCount: 58,
         ingredients: {
-          create: createMenuIngredients(recipes[3], 60)
-        }
+          create: createMenuIngredients(recipes[3], 60),
+        },
       },
     }),
 
@@ -510,8 +510,8 @@ async function main() {
         ghanFactor: 1.0,
         status: "PLANNED",
         ingredients: {
-          create: createMenuIngredients(recipes[2], 60)
-        }
+          create: createMenuIngredients(recipes[2], 60),
+        },
       },
     }),
     prisma.menu.create({
@@ -525,8 +525,8 @@ async function main() {
         ghanFactor: 1.1,
         status: "PLANNED",
         ingredients: {
-          create: createMenuIngredients(recipes[4], 90)
-        }
+          create: createMenuIngredients(recipes[4], 90),
+        },
       },
     }),
   ]);
@@ -555,7 +555,7 @@ async function main() {
         notes: "Normal operations at Thakorji kitchen",
       },
     }),
-    
+
     // Premvati Kitchen Reports
     prisma.report.create({
       data: {
@@ -567,7 +567,7 @@ async function main() {
         notes: "Steady operations at Premvati kitchen",
       },
     }),
-    
+
     // Aarsh Kitchen Reports
     prisma.report.create({
       data: {
@@ -579,7 +579,7 @@ async function main() {
         notes: "Smooth operations at Aarsh kitchen",
       },
     }),
-    
+
     // Mandir Kitchen Reports
     prisma.report.create({
       data: {
