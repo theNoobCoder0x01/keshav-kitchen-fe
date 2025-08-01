@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
           },
           recipe: {
             select: {
-              title: true,
+              name: true,
               description: true,
             },
           },
@@ -102,7 +102,13 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("Failed to fetch menu data:", err);
-    return new NextResponse("Failed to fetch menu data", { status: 500 });
+    return new NextResponse(JSON.stringify({ 
+      error: "Failed to fetch menu data", 
+      details: err instanceof Error ? err.message : "Unknown error" 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   let buffer, contentType, fileExt;

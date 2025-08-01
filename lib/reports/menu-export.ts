@@ -21,7 +21,7 @@ interface MenuReportData {
       name: string;
     };
     recipe: {
-      title: string;
+      name: string;
       description?: string;
       ingredients?: Array<{
         ingredient: {
@@ -110,31 +110,40 @@ export async function createMenuReportWorkbook(
   }
 
   // Data rows
-  data.menus.forEach((menu) => {
+  if (data.menus && data.menus.length > 0) {
+    data.menus.forEach((menu) => {
+      if (type === 'summary') {
+        sheet.addRow([
+          menu.kitchen?.name || 'N/A',
+          menu.recipe?.name || 'N/A',
+          menu.mealType || 'N/A',
+          menu.servings || 0,
+          menu.status || 'N/A',
+          menu.notes || '',
+        ]);
+      } else {
+        const ingredients = menu.recipe?.ingredients
+          ?.map(ing => `${ing.ingredient.name} (${ing.quantity} ${ing.ingredient.unit})`)
+          .join(', ') || 'N/A';
+        
+        sheet.addRow([
+          menu.kitchen?.name || 'N/A',
+          menu.recipe?.name || 'N/A',
+          menu.servings || 0,
+          menu.ghanFactor || 1.0,
+          menu.status || 'N/A',
+          ingredients,
+        ]);
+      }
+    });
+  } else {
+    // Add a row indicating no data
     if (type === 'summary') {
-      sheet.addRow([
-        menu.kitchen.name,
-        menu.recipe.title,
-        menu.mealType,
-        menu.servings,
-        menu.status,
-        menu.notes || '',
-      ]);
+      sheet.addRow(['No data available for this date', '', '', '', '', '']);
     } else {
-      const ingredients = menu.recipe.ingredients
-        ?.map(ing => `${ing.ingredient.name} (${ing.quantity} ${ing.ingredient.unit})`)
-        .join(', ') || 'N/A';
-      
-      sheet.addRow([
-        menu.kitchen.name,
-        menu.recipe.title,
-        menu.servings,
-        menu.ghanFactor,
-        menu.status,
-        ingredients,
-      ]);
+      sheet.addRow(['No data available for this date', '', '', '', '', '']);
     }
-  });
+  }
 
   // Auto-fit columns
   sheet.columns.forEach((column, index) => {
@@ -178,7 +187,7 @@ export async function createMenuReportCSV(
       ['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes'],
       ...data.menus.map((menu) => [
         menu.kitchen.name,
-        menu.recipe.title,
+        menu.recipe.name,
         menu.mealType,
         menu.servings.toString(),
         menu.status,
@@ -199,7 +208,7 @@ export async function createMenuReportCSV(
         
         return [
           menu.kitchen.name,
-          menu.recipe.title,
+          menu.recipe.name,
           menu.servings.toString(),
           menu.ghanFactor.toString(),
           menu.status,
@@ -256,7 +265,7 @@ export async function createMenuReportPDF(
     const colWidths = [100, 150, 80, 70, 80];
     drawTable(doc, headers, colWidths, data.menus.map(menu => [
       menu.kitchen.name,
-      menu.recipe.title,
+      menu.recipe.name,
       menu.mealType,
       menu.servings.toString(),
       menu.status,
@@ -270,7 +279,7 @@ export async function createMenuReportPDF(
     const colWidths = [120, 200, 80, 80];
     drawTable(doc, headers, colWidths, data.menus.map(menu => [
       menu.kitchen.name,
-      menu.recipe.title,
+      menu.recipe.name,
       menu.servings.toString(),
       menu.status,
     ]));
