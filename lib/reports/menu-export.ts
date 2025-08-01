@@ -1,4 +1,5 @@
 import ExcelJS from "exceljs";
+import PDFDocument from "pdfkit";
 
 interface MenuReportData {
   type: string;
@@ -232,75 +233,158 @@ export async function createMenuReportPDF(
   type: string,
   date: string,
 ): Promise<Buffer> {
-  const PDFDocument = (await import("pdfkit")).default;
+  console.log("Starting PDF generation for type:", type, "date:", date);
+  console.log("Data received:", { menusCount: data.menus?.length || 0 });
+  
   const doc = new PDFDocument({ margin: 40 });
   const buffers: Buffer[] = [];
-  doc.on("data", buffers.push.bind(buffers));
-  doc.on("end", () => {});
+  
+  doc.on("data", (chunk) => {
+    buffers.push(chunk);
+  });
+  
+  doc.on("error", (error) => {
+    console.error("PDF generation error:", error);
+  });
+  
+  console.log("PDF document created, generating content...");
 
-  // Header
-  doc
-    .fontSize(18)
-    .text(`${type.charAt(0).toUpperCase() + type.slice(1)} Report`, {
-      align: "center",
-      underline: true,
-    });
-  doc.moveDown(0.5);
-  doc.fontSize(12).text(`Date: ${new Date(date).toLocaleDateString()}`, { align: "center" });
-  doc.moveDown(1);
+  try {
+    // Header
+    console.log("Adding PDF header...");
+    doc
+      .fontSize(18)
+      .text(`${type.charAt(0).toUpperCase() + type.slice(1)} Report`, {
+        align: "center",
+        underline: true,
+      });
+    doc.moveDown(0.5);
+    doc.fontSize(12).text(`Date: ${new Date(date).toLocaleDateString()}`, { align: "center" });
+    doc.moveDown(1);
+    console.log("PDF header added successfully");
+  } catch (headerError) {
+    console.error("Error adding PDF header:", headerError);
+    throw headerError;
+  }
 
   if (type === 'summary') {
-    // Summary statistics
-    doc.fontSize(14).text('Daily Summary', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(12);
-    doc.text(`Total Meals: ${data.totalMeals || 0}`);
-    doc.text(`Breakfast Count: ${data.breakfastCount || 0}`);
-    doc.text(`Lunch Count: ${data.lunchCount || 0}`);
-    doc.text(`Dinner Count: ${data.dinnerCount || 0}`);
-    doc.moveDown(1);
+    try {
+      // Summary statistics
+      console.log("Adding summary statistics...");
+      doc.fontSize(14).text('Daily Summary', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12);
+      doc.text(`Total Meals: ${data.totalMeals || 0}`);
+      doc.text(`Breakfast Count: ${data.breakfastCount || 0}`);
+      doc.text(`Lunch Count: ${data.lunchCount || 0}`);
+      doc.text(`Dinner Count: ${data.dinnerCount || 0}`);
+      doc.moveDown(1);
+      console.log("Summary statistics added successfully");
+    } catch (summaryError) {
+      console.error("Error adding summary statistics:", summaryError);
+      doc.text("Error generating summary statistics", 50, doc.y);
+    }
 
     // Table for detailed breakdown
     const headers = ['Kitchen', 'Recipe', 'Type', 'Servings', 'Status'];
     const colWidths = [100, 150, 80, 70, 80];
-    drawTable(doc, headers, colWidths, data.menus.map(menu => [
-      menu.kitchen.name,
-      menu.recipe.name,
-      menu.mealType,
-      menu.servings.toString(),
-      menu.status,
-    ]));
+    const tableData = data.menus && data.menus.length > 0 
+      ? data.menus.map(menu => [
+          menu.kitchen?.name || 'N/A',
+          menu.recipe?.name || 'N/A',
+          menu.mealType || 'N/A',
+          (menu.servings || 0).toString(),
+          menu.status || 'N/A',
+        ])
+      : [['No data available for this date', '', '', '', '']];
+    
+    try {
+      console.log("Drawing summary table with", tableData.length, "rows");
+      drawTable(doc, headers, colWidths, tableData);
+      console.log("Summary table drawn successfully");
+    } catch (tableError) {
+      console.error("Error drawing summary table:", tableError);
+      doc.text("Error generating table data", 50, doc.y);
+    }
   } else {
-    // Meal-specific report
-    doc.fontSize(12).text(`Total Servings: ${data.totalQuantity || 0}`, { align: 'left' });
-    doc.moveDown(1);
+    try {
+      // Meal-specific report
+      console.log("Adding meal-specific content...");
+      doc.fontSize(12).text(`Total Servings: ${data.totalQuantity || 0}`, { align: 'left' });
+      doc.moveDown(1);
+      console.log("Meal-specific content added successfully");
+    } catch (mealError) {
+      console.error("Error adding meal-specific content:", mealError);
+      doc.text("Error generating meal-specific content", 50, doc.y);
+    }
 
     const headers = ['Kitchen', 'Recipe', 'Servings', 'Status'];
     const colWidths = [120, 200, 80, 80];
-    drawTable(doc, headers, colWidths, data.menus.map(menu => [
-      menu.kitchen.name,
-      menu.recipe.name,
-      menu.servings.toString(),
-      menu.status,
-    ]));
+    const tableData = data.menus && data.menus.length > 0 
+      ? data.menus.map(menu => [
+          menu.kitchen?.name || 'N/A',
+          menu.recipe?.name || 'N/A',
+          (menu.servings || 0).toString(),
+          menu.status || 'N/A',
+        ])
+      : [['No data available for this date', '', '', '']];
+    
+    try {
+      console.log("Drawing meal table with", tableData.length, "rows");
+      drawTable(doc, headers, colWidths, tableData);
+      console.log("Meal table drawn successfully");
+    } catch (tableError) {
+      console.error("Error drawing meal table:", tableError);
+      doc.text("Error generating table data", 50, doc.y);
+    }
   }
 
   // Footer with page number
-  const range = doc.bufferedPageRange();
-  for (let i = 0; i < range.count; i++) {
-    doc.switchToPage(i);
-    doc
-      .fontSize(10)
-      .fillColor("#888")
-      .text(`Page ${i + 1} of ${range.count}`, 0, doc.page.height - 40, {
-        align: "center",
-      });
+  try {
+    console.log("Adding page numbers...");
+    const range = doc.bufferedPageRange();
+    console.log("Page range:", range);
+    for (let i = 0; i < range.count; i++) {
+      doc.switchToPage(i);
+      doc
+        .fontSize(10)
+        .fillColor("#888")
+        .text(`Page ${i + 1} of ${range.count}`, 0, doc.page.height - 40, {
+          align: "center",
+        });
+    }
+    console.log("Page numbers added successfully");
+  } catch (footerError) {
+    console.error("Error adding page numbers:", footerError);
+    // Continue without page numbers
   }
 
+  console.log("Finalizing PDF document...");
   doc.end();
-  return await new Promise<Buffer>((resolve) => {
-    const all = Buffer.concat(buffers);
-    resolve(all);
+  
+  return new Promise<Buffer>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('PDF generation timeout after 30 seconds'));
+    }, 30000);
+
+    doc.on('end', () => {
+      try {
+        clearTimeout(timeout);
+        const all = Buffer.concat(buffers);
+        console.log("PDF generation completed successfully, buffer size:", all.length);
+        resolve(all);
+      } catch (error) {
+        clearTimeout(timeout);
+        console.error("Error concatenating PDF buffers:", error);
+        reject(error);
+      }
+    });
+    
+    doc.on('error', (error) => {
+      clearTimeout(timeout);
+      console.error("PDF document error:", error);
+      reject(error);
+    });
   });
 }
 
@@ -313,7 +397,7 @@ function drawTable(doc: any, headers: string[], colWidths: number[], rows: strin
   doc.rect(startX, y, colWidths.reduce((a, b) => a + b, 0), rowHeight)
      .fillAndStroke("#f5f5f5", "#cccccc");
   
-  doc.fillColor("#333").fontSize(11).font("Helvetica-Bold");
+  doc.fillColor("#333").fontSize(11);
   let x = startX;
   headers.forEach((header, i) => {
     doc.text(header, x + 5, y + 7, { width: colWidths[i] - 10 });
@@ -321,7 +405,7 @@ function drawTable(doc: any, headers: string[], colWidths: number[], rows: strin
   });
   
   y += rowHeight;
-  doc.font("Helvetica").fillColor("#000");
+  doc.fillColor("#000");
 
   // Draw data rows
   rows.forEach((row, idx) => {
