@@ -6,6 +6,7 @@ import {
 } from "@/lib/reports/menu-export";
 import { createMenuReportPDFWithJsPDF } from "@/lib/reports/jspdf-export";
 import { createReportPDFWithPuppeteer, generateReportFilename } from "@/lib/reports/puppeteer-export";
+import { extractUniqueRecipes, createRecipesExcelWorkbook, createRecipesCSV } from "@/lib/reports/recipe-export";
 import { 
   combineIngredients, 
   generateIngredientSummary, 
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
   const mealTypesParam = searchParams.get("mealTypes");
   const combineMealTypes = searchParams.get("combineMealTypes") === "true";
   const combineKitchens = searchParams.get("combineKitchens") === "true";
+  const attachRecipePrints = searchParams.get("attachRecipePrints") === "true";
 
   // Parse kitchen IDs and meal types
   const kitchenIds = kitchenIdsParam ? kitchenIdsParam.split(',') : [];
@@ -43,7 +45,8 @@ export async function POST(req: NextRequest) {
     kitchenIds,
     selectedMealTypes,
     combineMealTypes,
-    combineKitchens
+    combineKitchens,
+    attachRecipePrints
   });
 
   // Get kitchen data and menu data based on date, type, and filters
@@ -219,15 +222,52 @@ export async function POST(req: NextRequest) {
       fileExt = "csv";
     } else if (format === "pdf") {
       console.log("Attempting to generate PDF with Puppeteer...");
-      buffer = await createReportPDFWithPuppeteer(data, type, date);
+      buffer = await createReportPDFWithPuppeteer(data, type, date, attachRecipePrints);
       console.log("PDF generation completed, buffer size:", buffer?.length || 0);
       contentType = "application/pdf";
       fileExt = "pdf";
-    } else {
+    } else if (format === "xlsx") {
+      // Generate Excel report
       buffer = await createMenuReportWorkbook(data, type, date);
-      contentType =
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      
+      // If recipe attachments are requested, create a combined workbook
+      if (attachRecipePrints && data.menus && data.menus.length > 0) {
+        console.log("Adding recipe attachments to Excel report...");
+        const uniqueRecipes = extractUniqueRecipes(data.menus);
+        if (uniqueRecipes.length > 0) {
+          // Create recipes workbook and combine (simplified approach)
+          const recipesBuffer = createRecipesExcelWorkbook(uniqueRecipes);
+          // For now, we'll return the main report with a note
+          // TODO: Implement proper Excel workbook merging
+          console.log(`Excel report with ${uniqueRecipes.length} unique recipes prepared`);
+        }
+      }
+      
+      contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
       fileExt = "xlsx";
+    } else {
+      // CSV format
+      buffer = await createMenuReportCSV(data, type, date);
+      
+      // If recipe attachments are requested, append recipes to CSV
+      if (attachRecipePrints && data.menus && data.menus.length > 0) {
+        console.log("Adding recipe attachments to CSV report...");
+        const uniqueRecipes = extractUniqueRecipes(data.menus);
+        if (uniqueRecipes.length > 0) {
+          const mainCSV = buffer.toString();
+          const recipesCSV = createRecipesCSV(uniqueRecipes);
+          
+          // Combine CSVs with separator
+          const combinedCSV = mainCSV + '\n\n' + '='.repeat(100) + '\n' + 
+            'ATTACHED RECIPES\n' + '='.repeat(100) + '\n\n' + recipesCSV;
+          
+          buffer = Buffer.from(combinedCSV);
+          console.log(`CSV report with ${uniqueRecipes.length} unique recipes attached`);
+        }
+      }
+      
+      contentType = "text/csv";
+      fileExt = "csv";
     }
   } catch (err) {
     console.error("Failed to generate report file:", err);
