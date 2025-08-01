@@ -9,6 +9,29 @@ interface MenuReportData {
   breakfastCount?: number;
   lunchCount?: number;
   dinnerCount?: number;
+  combinedIngredients?: Array<{
+    name: string;
+    totalQuantity: number;
+    unit: string;
+    totalCost: number;
+    sources: Array<{
+      kitchen: string;
+      mealType: string;
+      recipe: string;
+      quantity: number;
+      servings: number;
+    }>;
+  }>;
+  summary?: {
+    totalIngredients: number;
+    totalCost: number;
+    uniqueIngredients: number;
+    mealTypesCombined: boolean;
+    kitchensCombined: boolean;
+  };
+  selectedMealTypes?: string[];
+  combineKitchens?: boolean;
+  combineMealTypes?: boolean;
   menus: Array<{
     id: string;
     date: Date;
@@ -60,7 +83,16 @@ export function createMenuReportPDFWithJsPDF(
   // Add title
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  const title = `${type.charAt(0).toUpperCase() + type.slice(1)} Report`;
+  let title: string;
+  
+  if (type === 'ingredients') {
+    title = 'Combined Ingredients Report';
+  } else if (type === 'combined-meals') {
+    title = 'Combined Meal Types Report';
+  } else {
+    title = `${type.charAt(0).toUpperCase() + type.slice(1)} Report`;
+  }
+  
   const titleWidth = doc.getTextWidth(title);
   const pageWidth = doc.internal.pageSize.getWidth();
   doc.text(title, (pageWidth - titleWidth) / 2, 20);
@@ -75,7 +107,183 @@ export function createMenuReportPDFWithJsPDF(
 
   let yPosition = 45;
 
-  if (type === 'summary') {
+  // Handle different report types
+  if (type === 'ingredients') {
+    // Combined Ingredients Report
+    if (data.summary) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Ingredients Summary', 20, yPosition);
+      yPosition += 10;
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Total Ingredients: ${data.summary.totalIngredients}`, 20, yPosition);
+      yPosition += 6;
+      doc.text(`Unique Ingredients: ${data.summary.uniqueIngredients}`, 20, yPosition);
+      yPosition += 6;
+      doc.text(`Total Cost: $${data.summary.totalCost.toFixed(2)}`, 20, yPosition);
+      yPosition += 6;
+      
+      if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
+        doc.text(`Meal Types: ${data.selectedMealTypes.join(', ')}`, 20, yPosition);
+        yPosition += 6;
+      }
+      
+      if (data.summary.mealTypesCombined) {
+        doc.text('✓ Meal types combined', 20, yPosition);
+        yPosition += 6;
+      }
+      
+      if (data.summary.kitchensCombined) {
+        doc.text('✓ Kitchens combined', 20, yPosition);
+        yPosition += 6;
+      }
+      
+      yPosition += 10;
+    }
+
+    // Combined Ingredients Table
+    if (data.combinedIngredients && data.combinedIngredients.length > 0) {
+      const tableData = data.combinedIngredients.map(ingredient => [
+        ingredient.name,
+        ingredient.totalQuantity.toFixed(2),
+        ingredient.unit,
+        `$${ingredient.totalCost.toFixed(2)}`,
+        ingredient.sources.length.toString(),
+        ingredient.sources.map(s => `${s.kitchen} - ${s.mealType}`).join(', ')
+      ]);
+
+      autoTable(doc, {
+        head: [['Ingredient', 'Total Qty', 'Unit', 'Cost', 'Sources', 'Details']],
+        body: tableData,
+        startY: yPosition,
+        styles: {
+          fontSize: 8,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [103, 74, 245],
+          textColor: 255,
+          fontSize: 9,
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 249, 250]
+        },
+        margin: { left: 20, right: 20 },
+        columnStyles: {
+          5: { cellWidth: 'wrap' } // Make details column wrap
+        }
+      });
+    } else {
+      doc.text('No ingredients found for the selected criteria', 20, yPosition);
+    }
+
+  } else if (type === 'combined-meals') {
+    // Combined Meal Types Report
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Combined Meals Summary', 20, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total Meals: ${data.totalMeals || 0}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Total Servings: ${data.totalQuantity || 0}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Breakfast Count: ${data.breakfastCount || 0}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Lunch Count: ${data.lunchCount || 0}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Dinner Count: ${data.dinnerCount || 0}`, 20, yPosition);
+    yPosition += 6;
+    
+    if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
+      doc.text(`Selected Meal Types: ${data.selectedMealTypes.join(', ')}`, 20, yPosition);
+      yPosition += 6;
+    }
+    
+    yPosition += 10;
+
+    // Combined Ingredients Section
+    if (data.combinedIngredients && data.combinedIngredients.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Combined Ingredients', 20, yPosition);
+      yPosition += 10;
+
+      const ingredientsTableData = data.combinedIngredients.map(ingredient => [
+        ingredient.name,
+        ingredient.totalQuantity.toFixed(2),
+        ingredient.unit,
+        `$${ingredient.totalCost.toFixed(2)}`,
+        ingredient.sources.length.toString()
+      ]);
+
+      autoTable(doc, {
+        head: [['Ingredient', 'Total Quantity', 'Unit', 'Total Cost', 'Sources']],
+        body: ingredientsTableData,
+        startY: yPosition,
+        styles: {
+          fontSize: 9,
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [103, 74, 245],
+          textColor: 255,
+          fontSize: 10,
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 249, 250]
+        },
+        margin: { left: 20, right: 20 }
+      });
+      
+      // Get current Y position after table
+      yPosition = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Detailed Menus Table
+    if (data.menus && data.menus.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Detailed Menu Items', 20, yPosition);
+      yPosition += 10;
+
+      const tableData = data.menus.map(menu => [
+        menu.kitchen?.name || 'N/A',
+        menu.recipe?.name || 'N/A',
+        menu.mealType || 'N/A',
+        (menu.servings || 0).toString(),
+        menu.status || 'N/A',
+        menu.notes || ''
+      ]);
+
+      autoTable(doc, {
+        head: [['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']],
+        body: tableData,
+        startY: yPosition,
+        styles: {
+          fontSize: 8,
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [103, 74, 245],
+          textColor: 255,
+          fontSize: 9,
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 249, 250]
+        },
+        margin: { left: 20, right: 20 }
+      });
+    }
+
+  } else if (type === 'summary') {
     // Summary section
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
@@ -105,7 +313,6 @@ export function createMenuReportPDFWithJsPDF(
         ])
       : [['No data available for this date', '', '', '', '', '']];
 
-    // Use the imported autoTable function
     autoTable(doc, {
       head: [['Kitchen', 'Recipe', 'Meal Type', 'Servings', 'Status', 'Notes']],
       body: tableData,
@@ -144,7 +351,6 @@ export function createMenuReportPDFWithJsPDF(
         ])
       : [['No data available for this date', '', '', '', '']];
 
-    // Use the imported autoTable function
     autoTable(doc, {
       head: [['Kitchen', 'Recipe', 'Servings', 'Ghan Factor', 'Status']],
       body: tableData,
