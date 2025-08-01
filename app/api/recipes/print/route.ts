@@ -5,14 +5,12 @@ import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
 
 const prisma = new PrismaClient();
 
-// HTML template for the recipe PDF
+// Simplified HTML template for PDF generation that avoids complex CSS
 function generateRecipeHTML(recipe: any) {
   const totalCost = recipe.ingredients.reduce(
     (sum: number, ingredient: any) => sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
     0
   );
-
-  const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
 
   return `
     <!DOCTYPE html>
@@ -22,8 +20,8 @@ function generateRecipeHTML(recipe: any) {
         <title>Recipe: ${encodeTextForPDF(recipe.name)}</title>
         <style>
           body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
             color: #333;
             max-width: 800px;
             margin: 0 auto;
@@ -33,226 +31,152 @@ function generateRecipeHTML(recipe: any) {
           
           .header {
             text-align: center;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 1.5rem;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 20px;
           }
           
           .recipe-title {
-            font-size: 2.5rem;
+            font-size: 28px;
             font-weight: bold;
-            color: #111827;
-            margin-bottom: 1rem;
+            color: #000;
+            margin-bottom: 15px;
+            margin-top: 0;
           }
           
           .recipe-description {
-            font-size: 1.125rem;
-            color: #4b5563;
-            margin-bottom: 1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+            font-style: italic;
           }
           
-          .badges {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+          .recipe-meta {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
           }
           
-          .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            background-color: #f3f4f6;
-            color: #374151;
+          .stats-section {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
           }
           
-          .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-            padding: 1.5rem;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
+          .stats-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            margin-top: 0;
           }
           
-          .stat-item {
+          .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          
+          .stats-table td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
             text-align: center;
-            padding: 1rem;
           }
           
-          .stat-icon {
-            width: 3rem;
-            height: 3rem;
+          .stats-table td:first-child {
+            font-weight: bold;
+            background-color: #f0f0f0;
+          }
+          
+          .section {
+            margin: 30px 0;
+            border: 1px solid #ddd;
+            padding: 20px;
+          }
+          
+          .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            margin-top: 0;
+            color: #000;
+          }
+          
+          .ingredients-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+          }
+          
+          .ingredients-table th {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-weight: bold;
+            text-align: left;
+          }
+          
+          .ingredients-table td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+          }
+          
+          .ingredients-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+          }
+          
+          .total-cost-row {
+            border-top: 2px solid #333;
+            font-weight: bold;
+            background-color: #f0f0f0;
+          }
+          
+          .instructions-list {
+            counter-reset: step-counter;
+            padding-left: 0;
+            list-style: none;
+          }
+          
+          .instruction-item {
+            counter-increment: step-counter;
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 40px;
+          }
+          
+          .instruction-item::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #333;
+            color: white;
+            width: 25px;
+            height: 25px;
             border-radius: 50%;
-            margin: 0 auto 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: white;
-          }
-          
-          .stat-icon.servings { background-color: #3b82f6; }
-          .stat-icon.time { background-color: #10b981; }
-          .stat-icon.cost-per-serving { background-color: #8b5cf6; }
-          .stat-icon.total-cost { background-color: #f59e0b; }
-          
-          .stat-label {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-          }
-          
-          .stat-value {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #111827;
-          }
-          
-          .section {
-            margin: 2rem 0;
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            background: white;
-          }
-          
-          .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #111827;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-          }
-          
-          .ingredients-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-          }
-          
-          .ingredient-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-          }
-          
-          .ingredient-name {
-            font-weight: 500;
-            color: #111827;
-            flex: 1;
-          }
-          
-          .ingredient-quantity {
-            font-weight: 600;
-            color: #111827;
-            text-align: right;
-          }
-          
-          .ingredient-cost {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
-          }
-          
-          .total-cost {
-            border-top: 2px solid #e5e7eb;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.125rem;
-            font-weight: 600;
-          }
-          
-          .total-cost-value {
-            color: #059669;
-          }
-          
-          .instructions-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-          }
-          
-          .instruction-item {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-          }
-          
-          .instruction-number {
-            flex-shrink: 0;
-            width: 2rem;
-            height: 2rem;
-            background-color: #2563eb;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.875rem;
-            font-weight: 600;
-          }
-          
-          .instruction-text {
-            color: #374151;
-            padding-top: 0.125rem;
-            flex: 1;
-          }
-          
-          .timing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-          }
-          
-          .timing-item {
-            padding: 1rem;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-          }
-          
-          .timing-label {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-          }
-          
-          .timing-value {
-            font-size: 1.125rem;
-            font-weight: 500;
-            color: #111827;
+            font-size: 12px;
           }
           
           .footer {
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e5e7eb;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
             text-align: center;
-            font-size: 0.875rem;
-            color: #6b7280;
+            font-size: 12px;
+            color: #777;
           }
           
           @media print {
-            body { margin: 0; padding: 1rem; }
+            body { 
+              margin: 0; 
+              padding: 15px; 
+            }
+            .section {
+              break-inside: avoid;
+            }
           }
         </style>
       </head>
@@ -261,104 +185,74 @@ function generateRecipeHTML(recipe: any) {
         <div class="header">
           <h1 class="recipe-title">${encodeTextForPDF(recipe.name)}</h1>
           ${recipe.description ? `<p class="recipe-description">${encodeTextForPDF(recipe.description)}</p>` : ''}
-          <div class="badges">
-            <span class="badge">📂 ${encodeTextForPDF(recipe.category)}</span>
-            ${recipe.subcategory ? `<span class="badge">🏷️ ${encodeTextForPDF(recipe.subcategory)}</span>` : ''}
+          <div class="recipe-meta">
+            <strong>Category:</strong> ${encodeTextForPDF(recipe.category)}
+            ${recipe.subcategory ? ` | <strong>Subcategory:</strong> ${encodeTextForPDF(recipe.subcategory)}` : ''}
           </div>
         </div>
 
         <!-- Stats -->
-        <div class="stats-grid">
-          ${recipe.servings ? `
-            <div class="stat-item">
-              <div class="stat-icon servings">👥</div>
-              <div class="stat-label">Servings</div>
-              <div class="stat-value">${recipe.servings}</div>
-            </div>
-          ` : ''}
-          
-          ${totalTime > 0 ? `
-            <div class="stat-item">
-              <div class="stat-icon time">⏰</div>
-              <div class="stat-label">Total Time</div>
-              <div class="stat-value">${totalTime} min</div>
-            </div>
-          ` : ''}
-          
-          <div class="stat-item">
-            <div class="stat-icon cost-per-serving">💰</div>
-            <div class="stat-label">Cost per Serving</div>
-            <div class="stat-value">$${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}</div>
-          </div>
-          
-          <div class="stat-item">
-            <div class="stat-icon total-cost">🏷️</div>
-            <div class="stat-label">Total Cost</div>
-            <div class="stat-value">$${totalCost.toFixed(2)}</div>
-          </div>
+        <div class="stats-section">
+          <h2 class="stats-title">Recipe Information</h2>
+          <table class="stats-table">
+            ${recipe.servings ? `
+              <tr>
+                <td>Servings</td>
+                <td>${recipe.servings}</td>
+              </tr>
+            ` : ''}
+            <tr>
+              <td>Cost per Serving</td>
+              <td>$${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Total Cost</td>
+              <td>$${totalCost.toFixed(2)}</td>
+            </tr>
+          </table>
         </div>
-
-        <!-- Timing Breakdown -->
-        ${(recipe.prepTime || recipe.cookTime) ? `
-          <div class="section">
-            <h2 class="section-title">⏰ Timing</h2>
-            <div class="timing-grid">
-              ${recipe.prepTime ? `
-                <div class="timing-item">
-                  <div class="timing-label">Prep Time</div>
-                  <div class="timing-value">${recipe.prepTime} minutes</div>
-                </div>
-              ` : ''}
-              ${recipe.cookTime ? `
-                <div class="timing-item">
-                  <div class="timing-label">Cook Time</div>
-                  <div class="timing-value">${recipe.cookTime} minutes</div>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-        ` : ''}
 
         <!-- Ingredients -->
         <div class="section">
-          <h2 class="section-title">🥘 Ingredients</h2>
-          <ul class="ingredients-list">
-            ${recipe.ingredients.map((ingredient: any) => `
-              <li class="ingredient-item">
-                <div class="ingredient-name">${encodeTextForPDF(ingredient.name)}</div>
-                <div>
-                  <div class="ingredient-quantity">${ingredient.quantity} ${encodeTextForPDF(ingredient.unit)}</div>
-                  ${ingredient.costPerUnit ? `
-                    <div class="ingredient-cost">
-                      $${ingredient.costPerUnit.toFixed(2)} per ${encodeTextForPDF(ingredient.unit)}
-                      ${ingredient.quantity > 1 ? ` ($${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)} total)` : ''}
-                    </div>
-                  ` : ''}
-                </div>
-              </li>
-            `).join('')}
-          </ul>
-          <div class="total-cost">
-            <span>Total Ingredients Cost:</span>
-            <span class="total-cost-value">$${totalCost.toFixed(2)}</span>
-          </div>
+          <h2 class="section-title">Ingredients</h2>
+          <table class="ingredients-table">
+            <thead>
+              <tr>
+                <th>Ingredient</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Cost per Unit</th>
+                <th>Total Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recipe.ingredients.map((ingredient: any) => `
+                <tr>
+                  <td>${encodeTextForPDF(ingredient.name)}</td>
+                  <td>${ingredient.quantity}</td>
+                  <td>${encodeTextForPDF(ingredient.unit)}</td>
+                  <td>${ingredient.costPerUnit ? `$${ingredient.costPerUnit.toFixed(2)}` : 'N/A'}</td>
+                  <td>${ingredient.costPerUnit ? `$${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}` : 'N/A'}</td>
+                </tr>
+              `).join('')}
+              <tr class="total-cost-row">
+                <td colspan="4"><strong>Total Ingredients Cost</strong></td>
+                <td><strong>$${totalCost.toFixed(2)}</strong></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Instructions -->
         ${recipe.instructions ? `
           <div class="section">
-            <h2 class="section-title">📝 Instructions</h2>
+            <h2 class="section-title">Instructions</h2>
             <ol class="instructions-list">
               ${recipe.instructions.split('\n')
-                .map((instruction: string, index: number) => {
+                .map((instruction: string) => {
                   const trimmed = instruction.trim();
                   if (!trimmed) return '';
-                  return `
-                    <li class="instruction-item">
-                      <div class="instruction-number">${index + 1}</div>
-                      <div class="instruction-text">${encodeTextForPDF(trimmed)}</div>
-                    </li>
-                  `;
+                  return `<li class="instruction-item">${encodeTextForPDF(trimmed)}</li>`;
                 })
                 .filter((item: string) => item)
                 .join('')}
@@ -368,8 +262,9 @@ function generateRecipeHTML(recipe: any) {
 
         <!-- Footer -->
         <div class="footer">
-          <p>Recipe printed from Keshav Kitchen Management System</p>
-          <p>Generated on ${new Date().toLocaleDateString()}</p>
+          <p><strong>Keshav Kitchen Management System</strong></p>
+          <p>Recipe printed on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+          ${recipe.user?.name ? `<p>Created by: ${encodeTextForPDF(recipe.user.name)}</p>` : ''}
         </div>
       </body>
     </html>
@@ -387,13 +282,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch recipe from database
+    // Fetch recipe from database using the same structure as our main API
     const recipe = await prisma.recipe.findUnique({
       where: { id: recipeId },
       include: {
         ingredients: {
-          include: {
-            ingredient: true,
+          select: {
+            id: true,
+            name: true,
+            quantity: true,
+            unit: true,
+            costPerUnit: true,
+          },
+          orderBy: {
+            name: "asc",
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            email: true,
           },
         },
       },
@@ -406,17 +314,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Transform the data to match our interface
-    const recipeData = {
-      ...recipe,
-      ingredients: recipe.ingredients.map((ri) => ({
-        id: ri.ingredient.id,
-        name: ri.ingredient.name,
-        quantity: ri.quantity,
-        unit: ri.ingredient.unit,
-        costPerUnit: ri.ingredient.costPerUnit,
-      })),
-    };
+    // Recipe data is already in the correct format
+    const recipeData = recipe;
 
     // Generate HTML
     const html = generateRecipeHTML(recipeData);
