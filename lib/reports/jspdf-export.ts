@@ -160,7 +160,7 @@ export function createMenuReportPDFWithJsPDF(
       yPosition += 6;
       addUnicodeText(doc, `Unique Ingredients: ${data.summary.uniqueIngredients}`, 20, yPosition);
       yPosition += 6;
-      addUnicodeText(doc, `Total Cost: $${data.summary.totalCost.toFixed(2)}`, 20, yPosition);
+      addUnicodeText(doc, `Total Cost: ₹${data.summary.totalCost.toFixed(2)}`, 20, yPosition);
       yPosition += 6;
       
       if (data.selectedMealTypes && data.selectedMealTypes.length > 0) {
@@ -187,7 +187,7 @@ export function createMenuReportPDFWithJsPDF(
         ingredient.name,
         ingredient.totalQuantity.toFixed(2),
         ingredient.unit,
-        `$${ingredient.totalCost.toFixed(2)}`,
+        `₹${ingredient.totalCost.toFixed(2)}`,
         ingredient.sources.length.toString(),
         ingredient.sources.map(s => `${s.kitchen} - ${s.mealType}`).join(', ')
       ]);
@@ -261,7 +261,7 @@ export function createMenuReportPDFWithJsPDF(
         ingredient.name,
         ingredient.totalQuantity.toFixed(2),
         ingredient.unit,
-        `$${ingredient.totalCost.toFixed(2)}`,
+        `₹${ingredient.totalCost.toFixed(2)}`,
         ingredient.sources.length.toString()
       ]);
 

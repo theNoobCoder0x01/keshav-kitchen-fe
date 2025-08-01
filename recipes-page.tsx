@@ -166,7 +166,7 @@ export default function RecipesPage() {
                       <DollarSign className="w-5 h-5 text-[#28c76f]" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-[#4b465c]">$9745</p>
+                      <p className="text-2xl font-bold text-[#4b465c]">₹9745</p>
                       <p className="text-sm text-[#4b465c]/70">Revenue</p>
                     </div>
                   </div>
