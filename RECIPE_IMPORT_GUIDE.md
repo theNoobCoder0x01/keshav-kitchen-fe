@@ -24,13 +24,13 @@ Your Excel file must have the following columns in the exact order:
 
 | Column | Required | Description | Example |
 |--------|----------|-------------|---------|
-| Recipe Name | ✅ | Name of the recipe | "Butter Chicken" |
+| Recipe Name | ✅ | Name of the recipe | "Butter Potato" |
 | Category | ✅ | Recipe category | "Main Course" |
 | Subcategory | ✅ | Recipe subcategory | "Indian" |
 | Description (optional) | ❌ | Recipe description | "Creamy and flavorful curry" |
-| Instructions (optional) | ❌ | Cooking instructions | "1. Marinate chicken...\n2. Cook..." |
+| Instructions (optional) | ❌ | Cooking instructions | "1. Marinate potato...\n2. Cook..." |
 | Servings (optional) | ❌ | Number of servings | 4 |
-| Ingredients (comma-separated) | ✅ | Ingredient names | "Chicken,Tomato,Onion" |
+| Ingredients (comma-separated) | ✅ | Ingredient names | "Potato,Tomato,Peas" |
 | Quantities (comma-separated) | ✅ | Ingredient quantities | "500,200,100" |
 | Units (comma-separated) | ✅ | Ingredient units | "grams,grams,grams" |
 | Cost Per Unit (comma-separated, optional) | ❌ | Cost per unit | "2.5,0.5,0.3" |
@@ -54,7 +54,7 @@ Your Excel file must have the following columns in the exact order:
 #### Ingredient Format
 - Ingredients, quantities, and units must be comma-separated
 - The number of items in each list must match
-- Example: `"Chicken,Tomato,Onion"` with `"500,200,100"` and `"grams,grams,grams"`
+- Example: `"Potato,Tomato,Peas"` with `"500,200,100"` and `"grams,grams,grams"`
 
 ### 5. Upload and Import
 
@@ -70,8 +70,8 @@ Here's an example of how your Excel file should look:
 
 ```
 Recipe Name,Category,Subcategory,Description,Instructions,Servings,Ingredients,Quantities,Units,Cost Per Unit
-Butter Chicken,Main Course,Indian,Creamy curry,1. Marinate chicken\n2. Cook gravy,4,Chicken,Tomato,Onion,500,200,100,grams,grams,grams,2.5,0.5,0.3
-Chocolate Cake,Dessert,Baked,Rich cake,1. Mix ingredients\n2. Bake,8,Flour,Sugar,Eggs,200,150,3,grams,grams,pieces,0.8,1.2,0.3
+Butter Potato,Main Course,Indian,Creamy curry,1. Marinate potato\n2. Cook gravy,4,Potato,Tomato,Peas,500,200,100,grams,grams,grams,2.5,0.5,0.3
+Chocolate Cake,Dessert,Baked,Rich cake,1. Mix ingredients\n2. Bake,8,Flour,Sugar,Paneer,200,150,3,grams,grams,pieces,0.8,1.2,0.3
 ```
 
 ## Error Handling
