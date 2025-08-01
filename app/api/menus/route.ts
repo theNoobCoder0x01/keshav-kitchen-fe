@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // GET all menus or by id (via ?id=)
 export async function GET(request: Request) {
@@ -12,11 +12,11 @@ export async function GET(request: Request) {
     const id = searchParams.get("id");
     const kitchenId = searchParams.get("kitchenId");
     const date = searchParams.get("date");
-    
+
     if (id) {
       const menu = await prisma.menu.findUnique({
         where: { id },
-        include: { 
+        include: {
           recipe: {
             select: {
               id: true,
@@ -39,13 +39,13 @@ export async function GET(request: Request) {
               id: true,
               name: true,
             },
-          }, 
+          },
           user: {
             select: {
               id: true,
               name: true,
             },
-          } 
+          },
         },
       });
       if (!menu)
@@ -55,18 +55,18 @@ export async function GET(request: Request) {
 
     // Build where clause for filtering
     const where: any = {};
-    
+
     if (kitchenId) {
       where.kitchenId = kitchenId;
     }
-    
+
     if (date) {
       const targetDate = new Date(date);
       const startOfDay = new Date(targetDate);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(targetDate);
       endOfDay.setHours(23, 59, 59, 999);
-      
+
       where.date = {
         gte: startOfDay,
         lte: endOfDay,
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
 
     const menus = await prisma.menu.findMany({
       where,
-      include: { 
+      include: {
         recipe: {
           select: {
             id: true,
@@ -98,13 +98,13 @@ export async function GET(request: Request) {
             id: true,
             name: true,
           },
-        }, 
+        },
         user: {
           select: {
             id: true,
             name: true,
           },
-        } 
+        },
       },
       orderBy: [{ mealType: "asc" }, { createdAt: "asc" }],
     });
@@ -122,7 +122,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     console.log("Creating new menu...");
-    
+
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -130,12 +130,15 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    
+
     // Validate required fields
     if (!data.recipeId || !data.mealType || !data.kitchenId || !data.userId) {
       return NextResponse.json(
-        { error: "Missing required fields: recipeId, mealType, kitchenId, userId" },
-        { status: 400 }
+        {
+          error:
+            "Missing required fields: recipeId, mealType, kitchenId, userId",
+        },
+        { status: 400 },
       );
     }
 
@@ -147,16 +150,17 @@ export async function POST(request: Request) {
     // Extract ingredients from data
     const { ingredients, ...menuData } = data;
 
-    const menu = await prisma.menu.create({ 
+    const menu = await prisma.menu.create({
       data: {
         ...menuData,
         ingredients: {
-          create: ingredients?.map((ingredient: any) => ({
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            costPerUnit: ingredient.costPerUnit,
-          })) || [],
+          create:
+            ingredients?.map((ingredient: any) => ({
+              name: ingredient.name,
+              quantity: ingredient.quantity,
+              unit: ingredient.unit,
+              costPerUnit: ingredient.costPerUnit,
+            })) || [],
         },
       },
       include: {
@@ -191,7 +195,7 @@ export async function POST(request: Request) {
         },
       },
     });
-    
+
     console.log(`Menu created successfully: ${menu.id}`);
     return NextResponse.json(menu, { status: 201 });
   } catch (error) {
@@ -210,25 +214,27 @@ export async function PUT(request: Request) {
     const id = searchParams.get("id");
     if (!id)
       return NextResponse.json({ error: "Menu id required." }, { status: 400 });
-    
+
     const data = await request.json();
-    
+
     // Extract ingredients from data
     const { ingredients, ...menuData } = data;
 
-    const menu = await prisma.menu.update({ 
+    const menu = await prisma.menu.update({
       where: { id },
       data: {
         ...menuData,
-        ingredients: ingredients ? {
-          deleteMany: {}, // Delete existing ingredients
-          create: ingredients.map((ingredient: any) => ({
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            costPerUnit: ingredient.costPerUnit,
-          })),
-        } : undefined,
+        ingredients: ingredients
+          ? {
+              deleteMany: {}, // Delete existing ingredients
+              create: ingredients.map((ingredient: any) => ({
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                unit: ingredient.unit,
+                costPerUnit: ingredient.costPerUnit,
+              })),
+            }
+          : undefined,
       },
       include: {
         recipe: {
@@ -262,7 +268,7 @@ export async function PUT(request: Request) {
         },
       },
     });
-    
+
     return NextResponse.json(menu);
   } catch (error) {
     console.error("Update menu API error:", error);
