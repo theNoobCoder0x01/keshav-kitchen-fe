@@ -97,6 +97,12 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             description: true,
+            instructions: true,
+            servings: true,
+            category: true,
+            subcategory: true,
+            createdAt: true,
+            updatedAt: true,
             ingredients: {
               select: {
                 id: true,
@@ -104,6 +110,12 @@ export async function POST(req: NextRequest) {
                 quantity: true,
                 unit: true,
                 costPerUnit: true,
+              },
+            },
+            user: {
+              select: {
+                name: true,
+                email: true,
               },
             },
           },
@@ -228,19 +240,27 @@ export async function POST(req: NextRequest) {
       fileExt = "pdf";
     } else if (format === "xlsx") {
       // Generate Excel report
-      buffer = await createMenuReportWorkbook(data, type, date);
+      const mainBuffer = await createMenuReportWorkbook(data, type, date);
       
       // If recipe attachments are requested, create a combined workbook
       if (attachRecipePrints && data.menus && data.menus.length > 0) {
         console.log("Adding recipe attachments to Excel report...");
         const uniqueRecipes = extractUniqueRecipes(data.menus);
         if (uniqueRecipes.length > 0) {
-          // Create recipes workbook and combine (simplified approach)
+          console.log(`Combining Excel report with ${uniqueRecipes.length} unique recipes`);
+          
+          // For now, we'll create the recipes workbook separately
+          // TODO: Implement proper Excel workbook merging by combining worksheets
           const recipesBuffer = createRecipesExcelWorkbook(uniqueRecipes);
-          // For now, we'll return the main report with a note
-          // TODO: Implement proper Excel workbook merging
-          console.log(`Excel report with ${uniqueRecipes.length} unique recipes prepared`);
+          
+          // Use the recipes workbook as it includes both summary and individual recipes
+          buffer = recipesBuffer;
+          console.log(`Excel report with ${uniqueRecipes.length} unique recipes attached`);
+        } else {
+          buffer = mainBuffer;
         }
+      } else {
+        buffer = mainBuffer;
       }
       
       contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";

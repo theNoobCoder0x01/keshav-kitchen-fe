@@ -271,7 +271,7 @@ export function generateIngredientsReportHTML(data: ReportData): string {
               </div>
               <div class="pdf-stats-row">
                 <div class="pdf-stats-cell">Total Cost</div>
-                <div class="pdf-stats-cell font-bold text-success">$${data.summary.totalCost.toFixed(2)}</div>
+                <div class="pdf-stats-cell font-bold text-success">₹${data.summary.totalCost.toFixed(2)}</div>
                 <div class="pdf-stats-cell">Total Menus</div>
                 <div class="pdf-stats-cell">${data.menus.length}</div>
               </div>
@@ -300,7 +300,7 @@ export function generateIngredientsReportHTML(data: ReportData): string {
                     <td class="font-bold">${encodeTextForPDF(ingredient.name)}</td>
                     <td class="text-right">${ingredient.totalQuantity.toFixed(2)}</td>
                     <td>${encodeTextForPDF(ingredient.unit)}</td>
-                    <td class="text-right">$${ingredient.totalCost.toFixed(2)}</td>
+                    <td class="text-right">₹${ingredient.totalCost.toFixed(2)}</td>
                     <td class="text-center">${ingredient.sources.length}</td>
                     <td style="font-size: 11px;">
                       ${ingredient.sources.map(source => 
@@ -311,7 +311,7 @@ export function generateIngredientsReportHTML(data: ReportData): string {
                 `).join('')}
                 <tr class="pdf-total-row">
                   <td colspan="3"><strong>Total Cost</strong></td>
-                  <td class="text-right"><strong>$${data.summary?.totalCost.toFixed(2) || '0.00'}</strong></td>
+                  <td class="text-right"><strong>₹${data.summary?.totalCost.toFixed(2) || '0.00'}</strong></td>
                   <td colspan="2"></td>
                 </tr>
               </tbody>
@@ -431,12 +431,12 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
                     <td>${encodeTextForPDF(ingredient.name)}</td>
                     <td class="text-right">${ingredient.totalQuantity.toFixed(2)}</td>
                     <td>${encodeTextForPDF(ingredient.unit)}</td>
-                    <td class="text-right">$${ingredient.totalCost.toFixed(2)}</td>
+                    <td class="text-right">₹${ingredient.totalCost.toFixed(2)}</td>
                   </tr>
                 `).join('')}
                 <tr class="pdf-total-row">
                   <td colspan="3"><strong>Total Cost</strong></td>
-                  <td class="text-right"><strong>$${data.combinedIngredients.reduce((sum, ing) => sum + ing.totalCost, 0).toFixed(2)}</strong></td>
+                  <td class="text-right"><strong>₹${data.combinedIngredients.reduce((sum, ing) => sum + ing.totalCost, 0).toFixed(2)}</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -697,13 +697,13 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
                       <td>${encodeTextForPDF(ingredient.name)}</td>
                       <td class="text-right">${ingredient.totalQuantity.toFixed(2)}</td>
                       <td>${encodeTextForPDF(ingredient.unit)}</td>
-                      <td class="text-right">$${ingredient.costPerUnit.toFixed(2)}</td>
-                      <td class="text-right">$${ingredient.totalCost.toFixed(2)}</td>
+                      <td class="text-right">₹${ingredient.costPerUnit.toFixed(2)}</td>
+                      <td class="text-right">₹${ingredient.totalCost.toFixed(2)}</td>
                     </tr>
                   `).join('')}
                   <tr class="pdf-total-row">
                     <td colspan="4"><strong>Total Cost</strong></td>
-                    <td class="text-right"><strong>$${allIngredients.reduce((sum, ing) => sum + ing.totalCost, 0).toFixed(2)}</strong></td>
+                    <td class="text-right"><strong>₹${allIngredients.reduce((sum, ing) => sum + ing.totalCost, 0).toFixed(2)}</strong></td>
                   </tr>
                 </tbody>
               </table>

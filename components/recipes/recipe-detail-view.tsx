@@ -107,7 +107,7 @@ export const RecipeDetailView = forwardRef<HTMLDivElement, RecipeDetailViewProps
                 </div>
                 <p className="text-sm text-gray-500">Cost per Serving</p>
                 <p className="text-xl font-semibold">
-                  ${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}
+                  ₹${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}
                 </p>
               </div>
 
@@ -116,7 +116,7 @@ export const RecipeDetailView = forwardRef<HTMLDivElement, RecipeDetailViewProps
                   <ChefHat className="w-6 h-6 text-orange-600" />
                 </div>
                 <p className="text-sm text-gray-500">Total Cost</p>
-                <p className="text-xl font-semibold">${totalCost.toFixed(2)}</p>
+                <p className="text-xl font-semibold">₹${totalCost.toFixed(2)}</p>
               </div>
             </div>
           </CardContent>
@@ -171,10 +171,10 @@ export const RecipeDetailView = forwardRef<HTMLDivElement, RecipeDetailViewProps
                     </div>
                     {ingredient.costPerUnit && (
                       <div className="text-sm text-gray-500">
-                        ${ingredient.costPerUnit.toFixed(2)} per {ingredient.unit}
+                        ₹${ingredient.costPerUnit.toFixed(2)} per {ingredient.unit}
                         {ingredient.quantity > 1 && (
                           <span className="ml-1">
-                            (${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)} total)
+                                                          (₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)} total)
                           </span>
                         )}
                       </div>
@@ -188,7 +188,7 @@ export const RecipeDetailView = forwardRef<HTMLDivElement, RecipeDetailViewProps
             <Separator className="my-4" />
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Total Ingredients Cost:</span>
-              <span className="text-green-600">${totalCost.toFixed(2)}</span>
+              <span className="text-green-600">₹${totalCost.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
