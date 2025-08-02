@@ -238,8 +238,8 @@ interface ReportData {
 // Ingredients Report Template
 export function generateIngredientsReportHTML(data: ReportData): string {
   const dateStr = new Date(data.date).toLocaleDateString();
-  const mealTypesText = data.selectedMealTypes?.join(', ') || 'All Meal Types';
-  
+  const mealTypesText = data.selectedMealTypes?.join(", ") || "All Meal Types";
+
   return `
     <!DOCTYPE html>
     <html>
@@ -254,12 +254,14 @@ export function generateIngredientsReportHTML(data: ReportData): string {
           <h1 class="pdf-title">Combined Ingredients Report</h1>
           <p class="pdf-subtitle">Date: ${dateStr}</p>
           <p class="pdf-meta">Meal Types: ${mealTypesText}</p>
-          ${data.combineMealTypes ? '<p class="pdf-meta">✓ Meal types combined</p>' : ''}
-          ${data.combineKitchens ? '<p class="pdf-meta">✓ Kitchens combined</p>' : ''}
+          ${data.combineMealTypes ? '<p class="pdf-meta">✓ Meal types combined</p>' : ""}
+          ${data.combineKitchens ? '<p class="pdf-meta">✓ Kitchens combined</p>' : ""}
         </div>
 
         <!-- Summary -->
-        ${data.summary ? `
+        ${
+          data.summary
+            ? `
           <div class="pdf-summary-section">
             <h2 class="pdf-summary-title">Summary</h2>
             <div class="pdf-stats-grid">
@@ -277,10 +279,14 @@ export function generateIngredientsReportHTML(data: ReportData): string {
               </div>
             </div>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <!-- Ingredients Table -->
-        ${data.combinedIngredients && data.combinedIngredients.length > 0 ? `
+        ${
+          data.combinedIngredients && data.combinedIngredients.length > 0
+            ? `
           <div class="pdf-section">
             <h2 class="pdf-section-title">Combined Ingredients</h2>
             <table class="pdf-table">
@@ -295,7 +301,9 @@ export function generateIngredientsReportHTML(data: ReportData): string {
                 </tr>
               </thead>
               <tbody>
-                ${data.combinedIngredients.map(ingredient => `
+                ${data.combinedIngredients
+                  .map(
+                    (ingredient) => `
                   <tr>
                     <td class="font-bold">${encodeTextForPDF(ingredient.name)}</td>
                     <td class="text-right">${ingredient.totalQuantity.toFixed(2)}</td>
@@ -303,21 +311,28 @@ export function generateIngredientsReportHTML(data: ReportData): string {
                     <td class="text-right">₹${ingredient.totalCost.toFixed(2)}</td>
                     <td class="text-center">${ingredient.sources.length}</td>
                     <td style="font-size: 11px;">
-                      ${ingredient.sources.map(source => 
-                        `${encodeTextForPDF(source.kitchen)} - ${source.mealType} (${source.quantity})`
-                      ).join('<br>')}
+                      ${ingredient.sources
+                        .map(
+                          (source) =>
+                            `${encodeTextForPDF(source.kitchen)} - ${source.mealType} (${source.quantity})`,
+                        )
+                        .join("<br>")}
                     </td>
                   </tr>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
                 <tr class="pdf-total-row">
                   <td colspan="3"><strong>Total Cost</strong></td>
-                  <td class="text-right"><strong>₹${data.summary?.totalCost.toFixed(2) || '0.00'}</strong></td>
+                  <td class="text-right"><strong>₹${data.summary?.totalCost.toFixed(2) || "0.00"}</strong></td>
                   <td colspan="2"></td>
                 </tr>
               </tbody>
             </table>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <!-- Footer -->
         <div class="pdf-footer">
@@ -332,7 +347,7 @@ export function generateIngredientsReportHTML(data: ReportData): string {
 // Combined Meals Report Template
 export function generateCombinedMealsReportHTML(data: ReportData): string {
   const dateStr = new Date(data.date).toLocaleDateString();
-  
+
   return `
     <!DOCTYPE html>
     <html>
@@ -346,7 +361,7 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
         <div class="pdf-header">
           <h1 class="pdf-title">Combined Meal Types Report</h1>
           <p class="pdf-subtitle">Date: ${dateStr}</p>
-          ${data.combineKitchens ? '<p class="pdf-meta">✓ Kitchens combined</p>' : ''}
+          ${data.combineKitchens ? '<p class="pdf-meta">✓ Kitchens combined</p>' : ""}
         </div>
 
         <!-- Summary -->
@@ -389,20 +404,24 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
               </tr>
             </thead>
             <tbody>
-              ${data.menus.map(menu => `
+              ${data.menus
+                .map(
+                  (menu) => `
                 <tr>
                   <td>${encodeTextForPDF(menu.kitchen.name)}</td>
                   <td>${encodeTextForPDF(menu.recipe.name)}</td>
                   <td class="text-center">
-                    <span class="${menu.mealType === 'BREAKFAST' ? 'text-warning' : menu.mealType === 'LUNCH' ? 'text-success' : 'text-error'}">
+                    <span class="${menu.mealType === "BREAKFAST" ? "text-warning" : menu.mealType === "LUNCH" ? "text-success" : "text-error"}">
                       ${menu.mealType}
                     </span>
                   </td>
                   <td class="text-center">${menu.servings}</td>
                   <td class="text-center">${menu.status}</td>
-                  <td style="font-size: 11px;">${menu.notes ? encodeTextForPDF(menu.notes) : '-'}</td>
+                  <td style="font-size: 11px;">${menu.notes ? encodeTextForPDF(menu.notes) : "-"}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join("")}
               <tr class="pdf-total-row">
                 <td colspan="3"><strong>Total</strong></td>
                 <td class="text-center"><strong>${data.menus.reduce((sum, menu) => sum + menu.servings, 0)}</strong></td>
@@ -413,7 +432,9 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
         </div>
 
         <!-- Combined Ingredients -->
-        ${data.combinedIngredients && data.combinedIngredients.length > 0 ? `
+        ${
+          data.combinedIngredients && data.combinedIngredients.length > 0
+            ? `
           <div class="pdf-section">
             <h2 class="pdf-section-title">Combined Ingredients</h2>
             <table class="pdf-table">
@@ -426,14 +447,18 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
                 </tr>
               </thead>
               <tbody>
-                ${data.combinedIngredients.map(ingredient => `
+                ${data.combinedIngredients
+                  .map(
+                    (ingredient) => `
                   <tr>
                     <td>${encodeTextForPDF(ingredient.name)}</td>
                     <td class="text-right">${ingredient.totalQuantity.toFixed(2)}</td>
                     <td>${encodeTextForPDF(ingredient.unit)}</td>
                     <td class="text-right">₹${ingredient.totalCost.toFixed(2)}</td>
                   </tr>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
                 <tr class="pdf-total-row">
                   <td colspan="3"><strong>Total Cost</strong></td>
                   <td class="text-right"><strong>₹${data.combinedIngredients.reduce((sum, ing) => sum + ing.totalCost, 0).toFixed(2)}</strong></td>
@@ -441,7 +466,9 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
               </tbody>
             </table>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <!-- Footer -->
         <div class="pdf-footer">
@@ -456,7 +483,7 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
 // Summary Report Template
 export function generateSummaryReportHTML(data: ReportData): string {
   const dateStr = new Date(data.date).toLocaleDateString();
-  
+
   return `
     <!DOCTYPE html>
     <html>
@@ -492,7 +519,7 @@ export function generateSummaryReportHTML(data: ReportData): string {
               <div class="pdf-stats-cell">Dinner Meals</div>
               <div class="pdf-stats-cell text-error">${data.dinnerCount || 0}</div>
               <div class="pdf-stats-cell">Unique Kitchens</div>
-              <div class="pdf-stats-cell">${new Set(data.menus.map(m => m.kitchen.name)).size}</div>
+              <div class="pdf-stats-cell">${new Set(data.menus.map((m) => m.kitchen.name)).size}</div>
             </div>
           </div>
         </div>
@@ -512,24 +539,28 @@ export function generateSummaryReportHTML(data: ReportData): string {
               </tr>
             </thead>
             <tbody>
-              ${data.menus.map(menu => `
+              ${data.menus
+                .map(
+                  (menu) => `
                 <tr>
                   <td>${encodeTextForPDF(menu.kitchen.name)}</td>
                   <td>${encodeTextForPDF(menu.recipe.name)}</td>
                   <td class="text-center">
-                    <span class="${menu.mealType === 'BREAKFAST' ? 'text-warning' : menu.mealType === 'LUNCH' ? 'text-success' : 'text-error'}">
+                    <span class="${menu.mealType === "BREAKFAST" ? "text-warning" : menu.mealType === "LUNCH" ? "text-success" : "text-error"}">
                       ${menu.mealType}
                     </span>
                   </td>
                   <td class="text-center">${menu.servings}</td>
                   <td class="text-center">
-                    <span class="${menu.status === 'COMPLETED' ? 'text-success' : menu.status === 'IN_PROGRESS' ? 'text-warning' : ''}">
+                    <span class="${menu.status === "COMPLETED" ? "text-success" : menu.status === "IN_PROGRESS" ? "text-warning" : ""}">
                       ${menu.status}
                     </span>
                   </td>
-                  <td class="text-center">${menu.actualCount || '-'}</td>
+                  <td class="text-center">${menu.actualCount || "-"}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join("")}
             </tbody>
           </table>
         </div>
@@ -547,18 +578,25 @@ export function generateSummaryReportHTML(data: ReportData): string {
             </thead>
             <tbody>
               ${(() => {
-                const statusCounts = data.menus.reduce((acc, menu) => {
-                  acc[menu.status] = (acc[menu.status] || 0) + 1;
-                  return acc;
-                }, {} as Record<string, number>);
-                
-                return Object.entries(statusCounts).map(([status, count]) => `
+                const statusCounts = data.menus.reduce(
+                  (acc, menu) => {
+                    acc[menu.status] = (acc[menu.status] || 0) + 1;
+                    return acc;
+                  },
+                  {} as Record<string, number>,
+                );
+
+                return Object.entries(statusCounts)
+                  .map(
+                    ([status, count]) => `
                   <tr>
-                    <td class="${status === 'COMPLETED' ? 'text-success' : status === 'IN_PROGRESS' ? 'text-warning' : ''}">${status}</td>
+                    <td class="${status === "COMPLETED" ? "text-success" : status === "IN_PROGRESS" ? "text-warning" : ""}">${status}</td>
                     <td class="text-center">${count}</td>
                     <td class="text-center">${((count / data.menus.length) * 100).toFixed(1)}%</td>
                   </tr>
-                `).join('');
+                `,
+                  )
+                  .join("");
               })()}
             </tbody>
           </table>
@@ -575,10 +613,15 @@ export function generateSummaryReportHTML(data: ReportData): string {
 }
 
 // Meal Type Report Template (for breakfast, lunch, dinner, etc.)
-export function generateMealTypeReportHTML(data: ReportData, mealType: string): string {
+export function generateMealTypeReportHTML(
+  data: ReportData,
+  mealType: string,
+): string {
   const dateStr = new Date(data.date).toLocaleDateString();
-  const filteredMenus = data.menus.filter(menu => menu.mealType.toLowerCase() === mealType.toLowerCase());
-  
+  const filteredMenus = data.menus.filter(
+    (menu) => menu.mealType.toLowerCase() === mealType.toLowerCase(),
+  );
+
   return `
     <!DOCTYPE html>
     <html>
@@ -606,9 +649,9 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
             </div>
             <div class="pdf-stats-row">
               <div class="pdf-stats-cell">Unique Kitchens</div>
-              <div class="pdf-stats-cell">${new Set(filteredMenus.map(m => m.kitchen.name)).size}</div>
+              <div class="pdf-stats-cell">${new Set(filteredMenus.map((m) => m.kitchen.name)).size}</div>
               <div class="pdf-stats-cell">Unique Recipes</div>
-              <div class="pdf-stats-cell">${new Set(filteredMenus.map(m => m.recipe.name)).size}</div>
+              <div class="pdf-stats-cell">${new Set(filteredMenus.map((m) => m.recipe.name)).size}</div>
             </div>
           </div>
         </div>
@@ -629,21 +672,25 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
               </tr>
             </thead>
             <tbody>
-              ${filteredMenus.map(menu => `
+              ${filteredMenus
+                .map(
+                  (menu) => `
                 <tr>
                   <td>${encodeTextForPDF(menu.kitchen.name)}</td>
                   <td>${encodeTextForPDF(menu.recipe.name)}</td>
                   <td class="text-center">${menu.servings}</td>
                   <td class="text-center">${menu.ghanFactor}</td>
                   <td class="text-center">
-                    <span class="${menu.status === 'COMPLETED' ? 'text-success' : menu.status === 'IN_PROGRESS' ? 'text-warning' : ''}">
+                    <span class="${menu.status === "COMPLETED" ? "text-success" : menu.status === "IN_PROGRESS" ? "text-warning" : ""}">
                       ${menu.status}
                     </span>
                   </td>
-                  <td class="text-center">${menu.actualCount || '-'}</td>
-                  <td style="font-size: 11px;">${menu.notes ? encodeTextForPDF(menu.notes) : '-'}</td>
+                  <td class="text-center">${menu.actualCount || "-"}</td>
+                  <td style="font-size: 11px;">${menu.notes ? encodeTextForPDF(menu.notes) : "-"}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join("")}
               <tr class="pdf-total-row">
                 <td colspan="2"><strong>Total</strong></td>
                 <td class="text-center"><strong>${filteredMenus.reduce((sum, menu) => sum + menu.servings, 0)}</strong></td>
@@ -656,10 +703,12 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
         <!-- Ingredients for this meal type -->
         ${(() => {
           const allIngredients: any[] = [];
-          filteredMenus.forEach(menu => {
+          filteredMenus.forEach((menu) => {
             if (menu.ingredients) {
-              menu.ingredients.forEach(ing => {
-                const existing = allIngredients.find(ai => ai.name === ing.name && ai.unit === ing.unit);
+              menu.ingredients.forEach((ing) => {
+                const existing = allIngredients.find(
+                  (ai) => ai.name === ing.name && ai.unit === ing.unit,
+                );
                 if (existing) {
                   existing.totalQuantity += ing.quantity;
                   existing.totalCost += (ing.costPerUnit || 0) * ing.quantity;
@@ -669,15 +718,15 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
                     totalQuantity: ing.quantity,
                     unit: ing.unit,
                     costPerUnit: ing.costPerUnit || 0,
-                    totalCost: (ing.costPerUnit || 0) * ing.quantity
+                    totalCost: (ing.costPerUnit || 0) * ing.quantity,
                   });
                 }
               });
             }
           });
-          
-          if (allIngredients.length === 0) return '';
-          
+
+          if (allIngredients.length === 0) return "";
+
           return `
             <div class="pdf-section">
               <h2 class="pdf-section-title">Ingredients Summary</h2>
@@ -692,7 +741,9 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
                   </tr>
                 </thead>
                 <tbody>
-                  ${allIngredients.map(ingredient => `
+                  ${allIngredients
+                    .map(
+                      (ingredient) => `
                     <tr>
                       <td>${encodeTextForPDF(ingredient.name)}</td>
                       <td class="text-right">${ingredient.totalQuantity.toFixed(2)}</td>
@@ -700,7 +751,9 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
                       <td class="text-right">₹${ingredient.costPerUnit.toFixed(2)}</td>
                       <td class="text-right">₹${ingredient.totalCost.toFixed(2)}</td>
                     </tr>
-                  `).join('')}
+                  `,
+                    )
+                    .join("")}
                   <tr class="pdf-total-row">
                     <td colspan="4"><strong>Total Cost</strong></td>
                     <td class="text-right"><strong>₹${allIngredients.reduce((sum, ing) => sum + ing.totalCost, 0).toFixed(2)}</strong></td>
@@ -724,16 +777,16 @@ export function generateMealTypeReportHTML(data: ReportData, mealType: string): 
 // Main function to generate HTML based on report type
 export function generateReportHTML(data: ReportData, type: string): string {
   switch (type.toLowerCase()) {
-    case 'ingredients':
+    case "ingredients":
       return generateIngredientsReportHTML(data);
-    case 'combined-meals':
+    case "combined-meals":
       return generateCombinedMealsReportHTML(data);
-    case 'summary':
+    case "summary":
       return generateSummaryReportHTML(data);
-    case 'breakfast':
-    case 'lunch':
-    case 'dinner':
-    case 'snack':
+    case "breakfast":
+    case "lunch":
+    case "dinner":
+    case "snack":
       return generateMealTypeReportHTML(data, type);
     default:
       return generateSummaryReportHTML(data);

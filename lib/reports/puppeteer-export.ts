@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
+import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
+import { PDFDocument } from "pdf-lib";
 import puppeteer from "puppeteer";
-import { PDFDocument } from 'pdf-lib';
 import { generateReportHTML } from "./pdf-templates";
 import { extractUniqueRecipes } from "./recipe-export";
-import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
 
 // Interface matching the report data structure
 interface ReportData {
@@ -71,8 +70,9 @@ interface ReportData {
 // Function to generate recipe HTML using the simplified template
 function generateRecipeHTML(recipe: any): string {
   const totalCost = recipe.ingredients.reduce(
-    (sum: number, ingredient: any) => sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0
+    (sum: number, ingredient: any) =>
+      sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
+    0,
   );
 
   return `
@@ -248,10 +248,10 @@ function generateRecipeHTML(recipe: any): string {
         <!-- Header -->
         <div class="pdf-header">
           <h1 class="pdf-title">${encodeTextForPDF(recipe.name)}</h1>
-          ${recipe.description ? `<p class="pdf-description">${encodeTextForPDF(recipe.description)}</p>` : ''}
+          ${recipe.description ? `<p class="pdf-description">${encodeTextForPDF(recipe.description)}</p>` : ""}
           <div class="pdf-meta">
             <strong>Category:</strong> ${encodeTextForPDF(recipe.category)}
-            ${recipe.subcategory ? ` | <strong>Subcategory:</strong> ${encodeTextForPDF(recipe.subcategory)}` : ''}
+            ${recipe.subcategory ? ` | <strong>Subcategory:</strong> ${encodeTextForPDF(recipe.subcategory)}` : ""}
           </div>
         </div>
 
@@ -260,12 +260,16 @@ function generateRecipeHTML(recipe: any): string {
           <h2 class="pdf-stats-title">Recipe Information</h2>
           <table class="pdf-stats-table">
             <tbody>
-              ${recipe.servings ? `
+              ${
+                recipe.servings
+                  ? `
                 <tr>
                   <td>Servings</td>
                   <td>${recipe.servings}</td>
                 </tr>
-              ` : ''}
+              `
+                  : ""
+              }
               <tr>
                 <td>Cost per Serving</td>
                 <td>
@@ -294,7 +298,9 @@ function generateRecipeHTML(recipe: any): string {
               </tr>
             </thead>
             <tbody>
-              ${recipe.ingredients.map((ingredient: any, index: number) => `
+              ${recipe.ingredients
+                .map(
+                  (ingredient: any, index: number) => `
                 <tr>
                   <td>${encodeTextForPDF(ingredient.name)}</td>
                   <td>${ingredient.quantity}</td>
@@ -303,12 +309,16 @@ function generateRecipeHTML(recipe: any): string {
                     ${ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : "N/A"}
                   </td>
                   <td>
-                    ${ingredient.costPerUnit
-                      ? `₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}`
-                      : "N/A"}
+                    ${
+                      ingredient.costPerUnit
+                        ? `₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}`
+                        : "N/A"
+                    }
                   </td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join("")}
               <tr class="pdf-total-cost-row">
                 <td colspan="4">
                   <strong>Total Ingredients Cost</strong>
@@ -322,22 +332,26 @@ function generateRecipeHTML(recipe: any): string {
         </div>
 
         <!-- Instructions -->
-        ${recipe.instructions ? `
+        ${
+          recipe.instructions
+            ? `
           <div class="pdf-section">
             <h2 class="pdf-section-title">Instructions</h2>
             <ol class="pdf-instructions-list">
               ${recipe.instructions
-                .split('\n')
+                .split("\n")
                 .map((instruction: string) => {
                   const trimmed = instruction.trim();
-                  if (!trimmed) return '';
+                  if (!trimmed) return "";
                   return `<li class="pdf-instruction-item">${encodeTextForPDF(trimmed)}</li>`;
                 })
                 .filter((item: string) => item)
-                .join('')}
+                .join("")}
             </ol>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <!-- Footer -->
         <div class="pdf-footer">
@@ -345,7 +359,7 @@ function generateRecipeHTML(recipe: any): string {
           <p>
             Recipe printed on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
           </p>
-          ${recipe.createdAt ? `<p>Created: ${new Date(recipe.createdAt).toLocaleDateString()}</p>` : ''}
+          ${recipe.createdAt ? `<p>Created: ${new Date(recipe.createdAt).toLocaleDateString()}</p>` : ""}
         </div>
       </body>
     </html>
@@ -356,7 +370,7 @@ export async function createReportPDFWithPuppeteer(
   data: ReportData,
   type: string,
   date: string,
-  attachRecipePrints: boolean = false
+  attachRecipePrints: boolean = false,
 ): Promise<Buffer> {
   console.log("Creating PDF with Puppeteer for type:", type, "date:", date);
 
@@ -364,19 +378,31 @@ export async function createReportPDFWithPuppeteer(
   try {
     // Generate the main report HTML
     const reportHTML = generateReportHTML(data, type);
-    
+
     // Extract unique recipes if attachments are requested
     let recipeHTMLPages: string[] = [];
     if (attachRecipePrints && data.menus && data.menus.length > 0) {
-      console.log(`Recipe attachment requested. Processing ${data.menus.length} menus...`);
-      console.log('Sample menu structure:', JSON.stringify(data.menus[0], null, 2));
-      
+      console.log(
+        `Recipe attachment requested. Processing ${data.menus.length} menus...`,
+      );
+      console.log(
+        "Sample menu structure:",
+        JSON.stringify(data.menus[0], null, 2),
+      );
+
       const uniqueRecipes = extractUniqueRecipes(data.menus);
-      console.log(`Extracted ${uniqueRecipes.length} unique recipes for attachment`);
-      
+      console.log(
+        `Extracted ${uniqueRecipes.length} unique recipes for attachment`,
+      );
+
       if (uniqueRecipes.length > 0) {
-        console.log('Sample recipe:', JSON.stringify(uniqueRecipes[0], null, 2));
-        recipeHTMLPages = uniqueRecipes.map(recipe => generateRecipeHTML(recipe));
+        console.log(
+          "Sample recipe:",
+          JSON.stringify(uniqueRecipes[0], null, 2),
+        );
+        recipeHTMLPages = uniqueRecipes.map((recipe) =>
+          generateRecipeHTML(recipe),
+        );
         console.log(`Generated ${recipeHTMLPages.length} recipe HTML pages`);
       }
     }
@@ -385,28 +411,28 @@ export async function createReportPDFWithPuppeteer(
     browser = await puppeteer.launch({
       headless: true,
       args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu'
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--disable-gpu",
       ],
     });
 
     const page = await browser.newPage();
-    
+
     // Generate main report PDF
-    await page.setContent(reportHTML, { waitUntil: 'networkidle0' });
+    await page.setContent(reportHTML, { waitUntil: "networkidle0" });
     let mainPDF = await page.pdf({
-      format: 'A4',
+      format: "A4",
       printBackground: true,
       margin: {
-        top: '20px',
-        right: '20px',
-        bottom: '20px',
-        left: '20px',
+        top: "20px",
+        right: "20px",
+        bottom: "20px",
+        left: "20px",
       },
       preferCSSPageSize: true,
     });
@@ -419,49 +445,59 @@ export async function createReportPDFWithPuppeteer(
 
     // Generate recipe PDFs and combine them
     const recipePDFs: Buffer[] = [];
-    
+
     for (let i = 0; i < recipeHTMLPages.length; i++) {
       console.log(`Generating recipe PDF ${i + 1}/${recipeHTMLPages.length}`);
-      await page.setContent(recipeHTMLPages[i], { waitUntil: 'networkidle0' });
-      
+      await page.setContent(recipeHTMLPages[i], { waitUntil: "networkidle0" });
+
       const recipePDF = await page.pdf({
-        format: 'A4',
+        format: "A4",
         printBackground: true,
         margin: {
-          top: '20px',
-          right: '20px',
-          bottom: '20px',
-          left: '20px',
+          top: "20px",
+          right: "20px",
+          bottom: "20px",
+          left: "20px",
         },
         preferCSSPageSize: true,
       });
-      
+
       recipePDFs.push(recipePDF);
     }
 
     // Combine all PDFs using pdf-lib
     console.log(`Combining main PDF with ${recipePDFs.length} recipe PDFs...`);
-    
+
     const mergedPdf = await PDFDocument.create();
-    
+
     // Add main report pages
     const mainPdfDoc = await PDFDocument.load(mainPDF);
-    const mainPages = await mergedPdf.copyPages(mainPdfDoc, mainPdfDoc.getPageIndices());
+    const mainPages = await mergedPdf.copyPages(
+      mainPdfDoc,
+      mainPdfDoc.getPageIndices(),
+    );
     mainPages.forEach((page) => mergedPdf.addPage(page));
-    
+
     // Add recipe pages
     for (let i = 0; i < recipePDFs.length; i++) {
-      console.log(`Adding recipe PDF ${i + 1}/${recipePDFs.length} to merged document`);
+      console.log(
+        `Adding recipe PDF ${i + 1}/${recipePDFs.length} to merged document`,
+      );
       const recipePdfDoc = await PDFDocument.load(recipePDFs[i]);
-      const recipePages = await mergedPdf.copyPages(recipePdfDoc, recipePdfDoc.getPageIndices());
+      const recipePages = await mergedPdf.copyPages(
+        recipePdfDoc,
+        recipePdfDoc.getPageIndices(),
+      );
       recipePages.forEach((page) => mergedPdf.addPage(page));
     }
-    
-    const mergedPdfBytes = await mergedPdf.save();
-    console.log(`PDF generated successfully with ${recipePDFs.length} recipe attachments, total size:`, mergedPdfBytes.length);
-    
-    return Buffer.from(mergedPdfBytes);
 
+    const mergedPdfBytes = await mergedPdf.save();
+    console.log(
+      `PDF generated successfully with ${recipePDFs.length} recipe attachments, total size:`,
+      mergedPdfBytes.length,
+    );
+
+    return Buffer.from(mergedPdfBytes);
   } catch (error) {
     console.error("Error generating PDF with Puppeteer:", error);
     throw error;
@@ -474,7 +510,7 @@ export async function createReportPDFWithPuppeteer(
 
 // Helper function to create a filename based on report type and date
 export function generateReportFilename(type: string, date: string): string {
-  const cleanType = type.toLowerCase().replace(/[^a-z0-9]/g, '-');
-  const cleanDate = date.replace(/[^0-9-]/g, '');
+  const cleanType = type.toLowerCase().replace(/[^a-z0-9]/g, "-");
+  const cleanDate = date.replace(/[^0-9-]/g, "");
   return `${cleanType}-report-${cleanDate}.pdf`;
 }

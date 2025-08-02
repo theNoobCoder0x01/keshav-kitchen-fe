@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import * as console from "node:console";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import * as console from "node:console";
 
 export const dynamic = "force-dynamic";
 

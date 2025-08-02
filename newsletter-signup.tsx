@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Github, Twitter, Shield } from "lucide-react";
+import { Github, Mail, Shield, Twitter } from "lucide-react";
 
 export default function Component() {
   return (

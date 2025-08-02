@@ -2,11 +2,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Home, ChefHat, Utensils, ChevronDown, X, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ChefHat, ChevronDown, Home, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-
 
 interface SidebarProps {
   activeItem?: string;
@@ -15,7 +14,12 @@ interface SidebarProps {
   onSettingsClick?: () => void;
 }
 
-export function Sidebar({ activeItem, isOpen = true, onClose, onSettingsClick }: SidebarProps) {
+export function Sidebar({
+  activeItem,
+  isOpen = true,
+  onClose,
+  onSettingsClick,
+}: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = [

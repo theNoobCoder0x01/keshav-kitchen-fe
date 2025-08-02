@@ -1,17 +1,17 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useState, useEffect } from "react";
-import { format, addDays, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { addDays, format, subDays } from "date-fns";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface DateSelectorProps {
   date?: Date;
@@ -51,10 +51,10 @@ export function DateSelector({
   useEffect(() => {
     const fetchCalendarEvents = async () => {
       try {
-        const dateStr = selectedDate.toISOString().split('T')[0];
+        const dateStr = selectedDate.toISOString().split("T")[0];
         const params = new URLSearchParams({
           date: dateStr,
-          ...(kitchenId && { kitchenId })
+          ...(kitchenId && { kitchenId }),
         });
 
         const response = await fetch(`/api/calendar/events?${params}`);
@@ -64,7 +64,7 @@ export function DateSelector({
             // Extract tithi from event summaries
             const tithi = extractTithi(data.events);
             const eventSummary = getEventSummary(data.events);
-            
+
             setCurrentEventInfo({
               tithi,
               eventSummary,
@@ -76,7 +76,7 @@ export function DateSelector({
           setCurrentEventInfo({});
         }
       } catch (error) {
-        console.error('Error fetching calendar events:', error);
+        console.error("Error fetching calendar events:", error);
         setCurrentEventInfo({});
       }
     };
@@ -113,8 +113,8 @@ export function DateSelector({
   // Extract tithi information from calendar events
   const extractTithi = (events: CalendarEvent[]): string | undefined => {
     for (const event of events) {
-      const text = `${event.summary} ${event.description || ''}`.toLowerCase();
-      
+      const text = `${event.summary} ${event.description || ""}`.toLowerCase();
+
       // Common Gujarati tithi patterns
       const tithiPatterns = [
         /(sud|shukla|waxing)\s+(panam|paksha|fortnight)/i,
@@ -151,15 +151,15 @@ export function DateSelector({
 
   // Get a formatted summary of events
   const getEventSummary = (events: CalendarEvent[]): string => {
-    if (events.length === 0) return '';
-    
+    if (events.length === 0) return "";
+
     if (events.length === 1) {
       return events[0].summary;
     }
-    
+
     // For multiple events, create a summary
-    const summaries = events.map(event => event.summary);
-    return summaries.join(', ');
+    const summaries = events.map((event) => event.summary);
+    return summaries.join(", ");
   };
 
   // Determine what to show as subtitle
