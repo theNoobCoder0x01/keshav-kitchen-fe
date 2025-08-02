@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 // GET all ingredients or by id (via ?id=)
 export async function GET(request: Request) {

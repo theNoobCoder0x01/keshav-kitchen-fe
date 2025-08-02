@@ -1,10 +1,10 @@
 "use client";
 
+import { SettingsDialog } from "@/components/dialogs/settings-dialog";
 import type React from "react";
+import { useState } from "react";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
-import { SettingsDialog } from "@/components/dialogs/settings-dialog";
-import { useState } from "react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

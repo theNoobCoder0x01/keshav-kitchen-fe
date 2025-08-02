@@ -1,15 +1,15 @@
 "use client";
 
 import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
-import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
+import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { RecipesTable } from "@/components/recipes/recipes-table";
 import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
+import { RecipesTable } from "@/components/recipes/recipes-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { Plus, FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -46,7 +46,8 @@ export default function RecipesPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [selectedRecipeForPrint, setSelectedRecipeForPrint] = useState<RecipeDetailData | null>(null);
+  const [selectedRecipeForPrint, setSelectedRecipeForPrint] =
+    useState<RecipeDetailData | null>(null);
   const [editRecipe, setEditRecipe] = useState<{
     recipeName: string;
     category: string;
@@ -89,11 +90,11 @@ export default function RecipesPage() {
       // Fetch detailed recipe data from API
       const response = await fetch(`/api/recipes/${recipe.id}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch recipe details');
+        throw new Error("Failed to fetch recipe details");
       }
-      
+
       const detailedRecipe = await response.json();
-      
+
       // Transform the data to match RecipeDetailData interface
       const recipeData: RecipeDetailData = {
         id: detailedRecipe.id,
@@ -103,22 +104,27 @@ export default function RecipesPage() {
         servings: detailedRecipe.servings,
         category: detailedRecipe.category,
         subcategory: detailedRecipe.subcategory,
-        ingredients: detailedRecipe.ingredients?.map((ingredient: any) => ({
-          id: ingredient.id,
-          name: ingredient.name,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          costPerUnit: ingredient.costPerUnit,
-        })) || [],
-        createdAt: detailedRecipe.createdAt ? new Date(detailedRecipe.createdAt) : undefined,
-        updatedAt: detailedRecipe.updatedAt ? new Date(detailedRecipe.updatedAt) : undefined,
+        ingredients:
+          detailedRecipe.ingredients?.map((ingredient: any) => ({
+            id: ingredient.id,
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit,
+          })) || [],
+        createdAt: detailedRecipe.createdAt
+          ? new Date(detailedRecipe.createdAt)
+          : undefined,
+        updatedAt: detailedRecipe.updatedAt
+          ? new Date(detailedRecipe.updatedAt)
+          : undefined,
       };
 
       setSelectedRecipeForPrint(recipeData);
       setIsPrintDialogOpen(true);
     } catch (error) {
-      console.error('Error fetching recipe details:', error);
-      toast.error('Failed to load recipe details for printing');
+      console.error("Error fetching recipe details:", error);
+      toast.error("Failed to load recipe details for printing");
     }
   };
 
