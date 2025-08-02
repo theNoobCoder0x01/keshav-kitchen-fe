@@ -186,7 +186,7 @@ function isEventOnDate(event: CalendarEvent, targetDate: Date): boolean {
 /**
  * Extract tithi information from event summary or description
  */
-function extractTithi(
+export function extractTithi(
   summary: string,
   description?: string,
 ): string | undefined {
