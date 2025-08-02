@@ -12,34 +12,35 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String          @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String          @unique
   emailVerified DateTime?
   password      String?
   image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          Role            @default(USER)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   kitchenId     String?
-  kitchen       Kitchen?  @relation(fields: [kitchenId], references: [id])
+  kitchen       Kitchen?        @relation(fields: [kitchenId], references: [id])
   reports       Report[]
   menus         Menu[]
   recipes       Recipe[]
+  CalendarEvent CalendarEvent[]
 
   @@index([kitchenId])
 }
 
 model Kitchen {
-  id          String   @id @default(cuid())
-  name        String
-  location    String?
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  users       User[]
-  menus       Menu[]
-  reports     Report[]
+  id             String          @id @default(cuid())
+  name           String
+  location       String?
+  description    String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  users          User[]
+  menus          Menu[]
+  reports        Report[]
   calendarEvents CalendarEvent[]
 }
 
@@ -114,25 +115,25 @@ model MenuIngredient {
 }
 
 model Report {
-  id          String   @id @default(cuid())
-  date        DateTime
-  kitchenId   String
-  kitchen     Kitchen  @relation(fields: [kitchenId], references: [id])
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  id           String   @id @default(cuid())
+  date         DateTime
+  kitchenId    String
+  kitchen      Kitchen  @relation(fields: [kitchenId], references: [id])
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
   visitorCount Int
   mealsCounted Int
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([kitchenId])
   @@index([userId])
 }
 
 model CalendarEvent {
-  id          String   @id @default(cuid())
-  uid         String   @unique // ICS UID field
+  id          String    @id @default(cuid())
+  uid         String    @unique // ICS UID field
   summary     String
   description String?
   startDate   DateTime
@@ -140,9 +141,11 @@ model CalendarEvent {
   location    String?
   url         String?
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Kitchen     Kitchen?  @relation(fields: [kitchenId], references: [id])
+  kitchenId   String?
 
   @@index([userId])
   @@index([startDate])

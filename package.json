@@ -13,6 +13,7 @@
     "db:seed": "npx dotenv -e .env.local -- node prisma/seed.js",
     "db:studio": "npx dotenv -e .env.local -- npx prisma studio",
     "deploy:setup": "npm install --production && npm run setup",
+    "prisma:format": "npx dotenv -e .env.local -- npx prisma format",
     "dev": "next dev",
     "lint": "next lint",
     "setup": "npm install && npm run db:generate && npm run db:push && npm run db:seed",
