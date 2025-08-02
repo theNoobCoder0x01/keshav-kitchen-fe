@@ -1,6 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { parseICSFile } from "@/lib/utils/ics-parser";
+import { parseICSFileForImport } from "@/lib/utils/ics-parser";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -67,9 +67,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse ICS file
-    const today = new Date();
-    const parsedData = parseICSFile(content, today);
+    // Parse ICS file - get ALL events
+    const parsedData = parseICSFileForImport(content);
 
     if (parsedData.events.length === 0) {
       return NextResponse.json(
@@ -83,30 +82,32 @@ export async function POST(request: NextRequest) {
       where: { kitchenId },
     });
 
-    // Insert new calendar events
-    const calendarEvents = await Promise.all(
-      parsedData.events.map(async (event) => {
-        return prisma.calendarEvent.create({
-          data: {
-            uid:
-              event.summary.replace(/\s+/g, "-").toLowerCase() +
-              "-" +
-              event.startDate.getTime(),
-            summary: event.summary,
-            description: event.description,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
-            userId: user.id,
-          },
-        });
-      }),
-    );
+    // Prepare data for bulk insert
+    const calendarEventData = parsedData.events.map((event) => ({
+      uid:
+        event.uid ||
+        (event.summary.replace(/\s+/g, "-").toLowerCase() +
+          "-" +
+          event.startDate.getTime()),
+      summary: event.summary,
+      description: event.description,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      location: event.location,
+      userId: user.id,
+      kitchenId: kitchenId,
+    }));
+
+    // Bulk insert all calendar events
+    const result = await prisma.calendarEvent.createMany({
+      data: calendarEventData,
+      skipDuplicates: true, // Skip any events with duplicate UIDs
+    });
 
     return NextResponse.json({
       success: true,
-      message: `Successfully uploaded ${calendarEvents.length} calendar events`,
-      eventsCount: calendarEvents.length,
+      message: `Successfully uploaded ${result.count} calendar events`,
+      eventsCount: result.count,
     });
   } catch (error) {
     console.error("Error uploading calendar file:", error);
