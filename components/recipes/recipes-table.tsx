@@ -1,5 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -15,16 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronUp, Edit, Printer, Trash2, MoreVertical, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ChevronDown, ChevronUp, Edit, ExternalLink, MoreVertical, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 export interface Recipe {
   id: string;
@@ -253,7 +253,7 @@ export function RecipesTable({
               <TableCell colSpan={4} className="h-32 text-center">
                 <div className="flex flex-col items-center justify-center space-y-3">
                   <div className="w-16 h-16 bg-muted/50 rounded-xl flex items-center justify-center">
-                    <ChefHat className="w-8 h-8 text-muted-foreground" />
+                    <ChevronUp className="w-8 h-8 text-muted-foreground" />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">No recipes found</p>
