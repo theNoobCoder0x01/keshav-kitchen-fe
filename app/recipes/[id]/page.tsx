@@ -4,7 +4,9 @@ import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { RecipeDetailView, type RecipeDetailData } from "@/components/recipes/recipe-detail-view";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Printer } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Edit, Printer, Share2, BookOpen } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -32,7 +34,6 @@ export default function RecipeDetailPage() {
 
         const detailedRecipe = await response.json();
         
-        // Transform the data to match RecipeDetailData interface
         const recipeData: RecipeDetailData = {
           id: detailedRecipe.id,
           name: detailedRecipe.name,
@@ -77,13 +78,26 @@ export default function RecipeDetailPage() {
     router.push('/recipes');
   };
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: recipe?.name,
+        text: recipe?.description || `Check out this recipe: ${recipe?.name}`,
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard");
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#674af5] mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading recipe...</p>
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading recipe...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -94,13 +108,19 @@ export default function RecipeDetailPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">Recipe not found</p>
-            <Button onClick={handleBack} variant="outline">
+          <Card className="glass border-0 shadow-modern p-8 text-center">
+            <div className="w-16 h-16 bg-muted/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="heading-3 mb-2">Recipe not found</h3>
+            <p className="text-muted-foreground mb-6">
+              The recipe you're looking for doesn't exist or has been removed.
+            </p>
+            <Button onClick={handleBack} variant="outline" className="btn-hover">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Recipes
             </Button>
-          </div>
+          </Card>
         </div>
       </DashboardLayout>
     );
@@ -108,41 +128,59 @@ export default function RecipeDetailPage() {
 
   return (
     <DashboardLayout>
-      {/* Header with actions */}
-      <div className="mb-6 flex items-center justify-between">
-        <Button
-          variant="outline"
-          onClick={handleBack}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Recipes
-        </Button>
+      {/* Header with Breadcrumb */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            className="glass border-0 btn-hover"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Recipes
+          </Button>
+          <div className="flex items-center space-x-2 text-muted-foreground body-small">
+            <span>Recipes</span>
+            <span>/</span>
+            <Badge variant="secondary">{recipe.category}</Badge>
+            <span>/</span>
+            <span className="text-foreground font-medium">{recipe.name}</span>
+          </div>
+        </div>
 
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
-            onClick={handleEdit}
-            className="flex items-center gap-2"
+            onClick={handleShare}
+            className="glass border-0 btn-hover"
           >
-            <Edit className="w-4 h-4" />
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={handleEdit}
+            className="glass border-0 btn-hover"
+          >
+            <Edit className="w-4 h-4 mr-2" />
             Edit Recipe
           </Button>
           
           <Button
             onClick={handlePrint}
-            className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white flex items-center gap-2"
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg btn-hover"
           >
-            <Printer className="w-4 h-4" />
+            <Printer className="w-4 h-4 mr-2" />
             Print Recipe
           </Button>
         </div>
       </div>
 
       {/* Recipe Detail View */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <Card className="glass border-0 shadow-modern">
         <RecipeDetailView recipe={recipe} />
-      </div>
+      </Card>
 
       {/* Print Dialog */}
       <RecipePrintDialog

@@ -9,37 +9,14 @@ import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { Plus, FileSpreadsheet } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Plus, FileSpreadsheet, Search, Filter, ChefHat, Users, DollarSign } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-
 import { toast } from "sonner";
 
 export default function RecipesPage() {
-  // Define interfaces for type safety
-  interface Recipe {
-    id: string;
-    name: string;
-    category: string;
-    subcategory: string;
-    cost: number;
-    ingredients?: Array<{
-      name: string;
-      quantity: number | string;
-      unit: string;
-      costPerUnit?: number | string;
-    }>;
-    createdAt: Date;
-    updatedAt: Date;
-  }
-
-  interface Stat {
-    label: string;
-    value: string;
-    icon: any; // Temporary workaround for LucideIcon compatibility
-    iconColor: string;
-  }
-
   const { data: session } = useSession();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -47,20 +24,9 @@ export default function RecipesPage() {
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [selectedRecipeForPrint, setSelectedRecipeForPrint] = useState<RecipeDetailData | null>(null);
-  const [editRecipe, setEditRecipe] = useState<{
-    recipeName: string;
-    category: string;
-    subcategory: string;
-    selectedRecipe: string;
-    ingredients: Array<{
-      name: string;
-      quantity: string;
-      unit: string;
-      costPerUnit: string;
-    }>;
-  } | null>(null);
+  const [editRecipe, setEditRecipe] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -83,10 +49,18 @@ export default function RecipesPage() {
     ...new Set(recipes.map((recipe) => recipe.category)),
   ];
 
+  // Recipe stats
+  const recipeStats = {
+    total: recipes.length,
+    categories: new Set(recipes.map(r => r.category)).size,
+    avgCost: recipes.length > 0 
+      ? recipes.reduce((sum, r) => sum + (r.cost || 0), 0) / recipes.length 
+      : 0,
+  };
+
   // Print handler
-  const handlePrintRecipe = async (recipe: Recipe) => {
+  const handlePrintRecipe = async (recipe: any) => {
     try {
-      // Fetch detailed recipe data from API
       const response = await fetch(`/api/recipes/${recipe.id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch recipe details');
@@ -94,7 +68,6 @@ export default function RecipesPage() {
       
       const detailedRecipe = await response.json();
       
-      // Transform the data to match RecipeDetailData interface
       const recipeData: RecipeDetailData = {
         id: detailedRecipe.id,
         name: detailedRecipe.name,
@@ -123,14 +96,14 @@ export default function RecipesPage() {
   };
 
   // Edit handler
-  const handleEditRecipe = (recipe: Recipe) => {
+  const handleEditRecipe = (recipe: any) => {
     setEditRecipe({
       recipeName: recipe.name,
       category: recipe.category,
       subcategory: recipe.subcategory,
       selectedRecipe: recipe.name,
       ingredients: recipe.ingredients
-        ? recipe.ingredients.map((ing) => ({
+        ? recipe.ingredients.map((ing: any) => ({
             name: ing.name,
             quantity: String(ing.quantity),
             unit: ing.unit,
@@ -154,58 +127,37 @@ export default function RecipesPage() {
       }
 
       setRecipes((prevRecipes) => prevRecipes.filter((r) => r.id !== id));
-      toast.success("Recipe deleted", {
-        description: `${recipes.find((r) => r.id === id)?.name} has been deleted successfully.`,
-      });
+      toast.success("Recipe deleted successfully");
     } catch (error) {
-      toast.error("Error", {
-        description: "Failed to delete recipe. Please try again.",
-      });
+      toast.error("Failed to delete recipe. Please try again.");
       console.error("Failed to delete recipe:", error);
     } finally {
       setDeletingId(null);
     }
   };
 
-  // Save handler (for both add and edit)
+  // Save handler
   const handleSaveRecipe = async (data: any) => {
-    // Validate required fields
     if (!data.name || data.name.trim() === "") {
-      toast.error("Error", {
-        description: "Recipe name is required.",
-      });
+      toast.error("Recipe name is required");
       return;
     }
 
     if (!data.category || data.category.trim() === "") {
-      toast.error("Error", {
-        description: "Recipe category is required.",
-      });
+      toast.error("Recipe category is required");
       return;
     }
 
     if (!data.subcategory || data.subcategory.trim() === "") {
-      toast.error("Error", {
-        description: "Recipe subcategory is required.",
-      });
-      return;
-    }
-
-    if (!data.subcategory || data.subcategory.trim() === "") {
-      toast.error("Error", {
-        description: "Subcategory is required for a recipe.",
-      });
+      toast.error("Recipe subcategory is required");
       return;
     }
 
     if (!data.ingredients || data.ingredients.length === 0) {
-      toast.error("Error", {
-        description: "At least one ingredient is required.",
-      });
+      toast.error("At least one ingredient is required");
       return;
     }
 
-    // Parse ingredients to ensure numeric values for quantity and costPerUnit
     const parsedIngredients = data.ingredients.map((ingredient: any) => ({
       name: ingredient.name,
       quantity: parseFloat(ingredient.quantity) || 0,
@@ -218,11 +170,10 @@ export default function RecipesPage() {
     try {
       const userId = session?.user?.id;
       if (!userId) {
-        toast.error("Error", {
-          description: "User not authenticated.",
-        });
+        toast.error("User not authenticated");
         return;
       }
+      
       const payload = {
         name: data.name,
         category: data.category,
@@ -230,6 +181,7 @@ export default function RecipesPage() {
         ingredients: parsedIngredients,
         user: { connect: { id: userId } },
       };
+      
       let result;
       if (editRecipe) {
         const { updateRecipe } = await import("@/lib/api/recipes");
@@ -238,22 +190,23 @@ export default function RecipesPage() {
         const { createRecipe } = await import("@/lib/api/recipes");
         result = await createRecipe(payload);
       }
+      
       if (!result.error) {
         if (editRecipe) {
           getRecipes();
-          toast.success("Recipe updated!");
+          toast.success("Recipe updated successfully!");
         } else {
-          setRecipes((prev: Recipe[]) => [result, ...prev]);
-          toast.success("Recipe added!");
+          setRecipes((prev: any[]) => [result, ...prev]);
+          toast.success("Recipe added successfully!");
         }
         setIsAddDialogOpen(false);
         setIsEditDialogOpen(false);
         setEditRecipe(null);
       } else {
-        toast.error(result.error || "Failed to save recipe.");
+        toast.error(result.error || "Failed to save recipe");
       }
     } catch (err) {
-      toast.error("Failed to save recipe.");
+      toast.error("Failed to save recipe");
     }
   };
 
@@ -267,11 +220,12 @@ export default function RecipesPage() {
       setRecipes(recipesRes);
     } catch (err: any) {
       console.error("Error fetching data:", err);
-      toast.error("Failed to load recipes.");
+      toast.error("Failed to load recipes");
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     getRecipes();
   }, []);
@@ -279,83 +233,144 @@ export default function RecipesPage() {
   return (
     <DashboardLayout>
       {/* Header Section */}
-      <div className="mb-6 sm:mb-8">
-        <PageHeader
-          title="Recipe Management"
-          subtitle="Create and manage your kitchen recipes"
-          actions={
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsImportDialogOpen(true)}
-                className="flex items-center gap-2"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                Import from Excel
-              </Button>
-              <Button
-                className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                onClick={() => setIsAddDialogOpen(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add New Recipe
-              </Button>
+      <PageHeader
+        title="Recipe Management"
+        subtitle="Create, organize, and manage your kitchen recipes with ease"
+        actions={
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsImportDialogOpen(true)}
+              className="border-primary/20 text-primary hover:bg-primary/10 glass btn-hover"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Import Excel
+            </Button>
+            <Button
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg btn-hover"
+              onClick={() => setIsAddDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Recipe
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="glass border-0 shadow-modern card-hover">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="body-small text-muted-foreground font-medium mb-2">
+                  Total Recipes
+                </p>
+                <p className="text-3xl font-bold">{recipeStats.total}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10">
+                <ChefHat className="w-6 h-6 text-primary" />
+              </div>
             </div>
-          }
-        />
+          </CardContent>
+        </Card>
+
+        <Card className="glass border-0 shadow-modern card-hover">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="body-small text-muted-foreground font-medium mb-2">
+                  Categories
+                </p>
+                <p className="text-3xl font-bold">{recipeStats.categories}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-xl flex items-center justify-center border border-green-500/10">
+                <Users className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass border-0 shadow-modern card-hover">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="body-small text-muted-foreground font-medium mb-2">
+                  Avg Cost
+                </p>
+                <p className="text-3xl font-bold">₹{recipeStats.avgCost.toFixed(0)}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-xl flex items-center justify-center border border-orange-500/10">
+                <DollarSign className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search and Filter Section */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <Input
-          placeholder="Search recipes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-md"
-        />
-        <div className="relative w-[180px]">
-          <Input
-            placeholder="Filter by category"
-            value={filterCategory === "all" ? "" : filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value || "all")}
-            list="filter-categories"
-            className="w-full"
-          />
-          <datalist id="filter-categories">
-            {categories
-              .filter((cat) => cat && cat !== "all" && cat.trim() !== "")
-              .map((category) => (
-                <option key={category} value={category} />
-              ))}
-          </datalist>
-        </div>
-      </div>
+      <Card className="glass border-0 shadow-modern mb-8">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search recipes by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 focus-ring"
+              />
+            </div>
+            <div className="relative w-full sm:w-[200px]">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Filter by category"
+                value={filterCategory === "all" ? "" : filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value || "all")}
+                list="filter-categories"
+                className="pl-10 focus-ring"
+              />
+              <datalist id="filter-categories">
+                {categories
+                  .filter((cat) => cat && cat !== "all" && cat.trim() !== "")
+                  .map((category) => (
+                    <option key={category} value={category} />
+                  ))}
+              </datalist>
+            </div>
+            {(searchTerm || filterCategory !== "all") && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="animate-fade-in">
+                  {filteredRecipes.length} results
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilterCategory("all");
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Recipes Section */}
-      <div className="space-y-6">
+      {/* Recipes Table */}
+      <Card className="glass border-0 shadow-modern">
         <RecipesTable
           recipes={filteredRecipes}
-          onEdit={(recipe) => {
-            setEditRecipe({
-              recipeName: recipe.name,
-              category: recipe.category,
-              subcategory: recipe.subcategory,
-              selectedRecipe: recipe.id,
-              ingredients: (recipe.ingredients || []).map((ingredient) => ({
-                name: ingredient.name,
-                quantity: ingredient.quantity.toString(),
-                unit: ingredient.unit,
-                costPerUnit: (ingredient.costPerUnit || "").toString(),
-              })),
-            });
-            setIsEditDialogOpen(true);
-          }}
+          onEdit={handleEditRecipe}
           onDelete={handleDeleteRecipe}
           onPrint={handlePrintRecipe}
           deletingId={deletingId}
-          itemsPerPageOptions={[5, 10, 20]}
+          itemsPerPageOptions={[10, 25, 50]}
         />
-      </div>
+      </Card>
 
       {/* Dialogs */}
       <AddRecipeDialog

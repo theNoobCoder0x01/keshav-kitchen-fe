@@ -2,7 +2,13 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -56,118 +62,136 @@ export function MenuCard({
   return (
     <Card
       className={cn(
-        "bg-white/80 backdrop-blur-sm border-[#dbdade]/50 hover:shadow-lg transition-all duration-300",
+        "glass border-0 shadow-modern card-hover",
         className,
       )}
     >
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[#4b465c] mb-1">
-              {title}
-            </h3>
-            <p className="text-sm text-[#4b465c]/60">{items?.length} items</p>
+            <h3 className="heading-3 mb-1">{title}</h3>
+            <p className="body-small text-muted-foreground">
+              {items?.length || 0} items planned
+            </p>
           </div>
           <Button
             size="sm"
-            className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-md hover:shadow-lg transition-all duration-200"
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg btn-hover"
             onClick={onAdd}
           >
-            <Plus className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">Add</span>
+            <Plus className="w-4 h-4 mr-2" />
+            Add
           </Button>
         </div>
 
-        <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
-          {items?.map((item) => (
-            <div
-              key={item.id}
-              className={cn(
-                "group flex items-center p-3 hover:bg-[#f8f7fa] rounded-xl transition-all duration-200",
-                showActions ? "justify-between" : "space-x-3",
-              )}
-            >
-              {item.isAddItem ? (
-                <>
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#674af5]/10 to-[#856ef7]/5 rounded-xl flex items-center justify-center border border-[#674af5]/10">
-                    <Plus className="w-5 h-5 text-[#674af5]" />
-                  </div>
-                  <span className="text-[#4b465c] flex-1 font-medium">
-                    {item.name}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <div className="flex-1 min-w-0">
-                    {editingItem === item.id ? (
-                      <div className="space-y-3">
-                        <input
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-[#674af5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#674af5]/20 bg-white"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleEditSave(item);
-                            if (e.key === "Escape") handleEditCancel();
-                          }}
-                          autoFocus
-                        />
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleEditSave(item)}
-                            className="h-7 px-3 text-xs bg-[#674af5] hover:bg-[#674af5]/90"
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleEditCancel}
-                            className="h-7 px-3 text-xs bg-transparent"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="text-[#4b465c] font-medium truncate">
-                          {item.name}
-                        </p>
-                        {item.weight && (
-                          <p className="text-sm text-[#4b465c]/60 mt-1">
-                            {item.weight}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  {showActions && editingItem !== item.id && (
-                    <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="w-8 h-8 p-0 text-[#674af5] hover:bg-[#674af5]/10"
-                        onClick={() => onEdit?.(item)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="w-8 h-8 p-0 text-[#ea5455] hover:bg-[#ea5455]/10"
-                        onClick={() => onDelete?.(item.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+        <div className="space-y-3 max-h-80 overflow-y-auto">
+          {items?.length > 0 ? (
+            items.map((item) => (
+              <div
+                key={item.id}
+                className="group flex items-center justify-between p-4 hover:bg-muted/50 rounded-xl transition-all duration-200"
+              >
+                {item.isAddItem ? (
+                  <>
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10">
+                      <Plus className="w-5 h-5 text-primary" />
                     </div>
-                  )}
-                </>
-              )}
+                    <span className="text-foreground flex-1 font-medium ml-3">
+                      {item.name}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      {editingItem === item.id ? (
+                        <div className="space-y-3">
+                          <input
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-primary rounded-lg focus-ring bg-background"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleEditSave(item);
+                              if (e.key === "Escape") handleEditCancel();
+                            }}
+                            autoFocus
+                          />
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleEditSave(item)}
+                              className="h-8 px-3 text-xs bg-primary hover:bg-primary/90"
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleEditCancel}
+                              className="h-8 px-3 text-xs"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="font-medium text-foreground truncate">
+                            {item.name}
+                          </p>
+                          {item.weight && (
+                            <p className="body-small text-muted-foreground mt-1">
+                              {item.weight}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {showActions && editingItem !== item.id && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="animate-scale-in">
+                          <DropdownMenuItem
+                            onClick={() => onEdit?.(item)}
+                            className="cursor-pointer"
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => onDelete?.(item.id)}
+                            className="cursor-pointer text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-muted/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Plus className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <p className="body-medium text-muted-foreground mb-2">No items planned</p>
+              <p className="body-small text-muted-foreground">
+                Click "Add" to plan your first meal
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </CardContent>
     </Card>

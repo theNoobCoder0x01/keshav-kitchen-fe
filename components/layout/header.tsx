@@ -1,10 +1,19 @@
 "use client";
 
-import { Bell, Menu, Search } from "lucide-react";
+import { Bell, Search, Settings, User, LogOut, Menu } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 
 interface HeaderProps {
@@ -12,94 +21,137 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuToggle }: HeaderProps) {
+  const { data: session } = useSession();
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/auth/signin" });
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#dbdade] px-4 sm:px-6 py-3 sm:py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden p-2 hover:bg-[#f8f7fa]"
-            onClick={onMenuToggle}
-          >
-            <Menu className="w-5 h-5 text-[#4b465c]" />
-          </Button>
-
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-sm sm:text-base">
-                K
-              </span>
-            </div>
-            <div className="hidden sm:flex items-center space-x-1">
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#e26b2b] to-[#ff8c42] bg-clip-text text-transparent">
-                KESHAV
-              </h1>
-              <span className="text-base sm:text-lg font-medium text-[#e26b2b] italic">
-                Kitchen
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side Actions */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Mobile Search Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="md:hidden p-2 hover:bg-[#f8f7fa]"
-            onClick={() => setSearchOpen(!searchOpen)}
-          >
-            <Search className="w-5 h-5 text-[#4b465c]" />
-          </Button>
-
-          {/* Notifications */}
-          <div className="relative">
+    <header className="sticky top-0 z-50 glass border-b bg-white/80 backdrop-blur-xl">
+      <div className="container-modern">
+        <div className="flex items-center justify-between h-16">
+          {/* Left Section */}
+          <div className="flex items-center space-x-4">
+            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 hover:bg-[#f8f7fa] transition-colors"
+              className="lg:hidden hover:bg-primary/10"
+              onClick={onMenuToggle}
             >
-              <Bell className="w-5 h-5 text-[#4b465c] hover:text-[#674af5] transition-colors" />
+              <Menu className="w-5 h-5" />
             </Button>
-            <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-gradient-to-r from-[#ea5455] to-[#ff6b6b] text-white text-xs flex items-center justify-center animate-pulse">
-              3
-            </Badge>
-          </div>
 
-          {/* User Profile */}
-          <div className="flex items-center space-x-3">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-[#4b465c]">John Doe</p>
-              <p className="text-xs text-[#4b465c]/60">Kitchen Manager</p>
+            {/* Logo */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">K</span>
+              </div>
+              <div className="hidden sm:flex items-center space-x-1">
+                <h1 className="text-2xl font-bold text-gradient">KESHAV</h1>
+                <span className="text-lg font-medium text-primary/80 italic">Kitchen</span>
+              </div>
             </div>
-            <Avatar className="w-8 h-8 sm:w-10 sm:h-10 cursor-pointer hover:ring-2 hover:ring-[#674af5]/20 transition-all border-2 border-white shadow-md">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" />
-              <AvatarFallback className="bg-gradient-to-br from-[#674af5] to-[#856ef7] text-white text-sm font-semibold">
-                JD
-              </AvatarFallback>
-            </Avatar>
           </div>
-        </div>
-      </div>
 
-      {/* Mobile Search Bar */}
-      {searchOpen && (
-        <div className="md:hidden mt-3 pt-3 border-t border-[#dbdade]">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#4b465c]/50" />
-            <Input
-              placeholder="Search recipes, ingredients..."
-              className="pl-10 border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20 bg-[#f8f7fa]/50"
-            />
+          {/* Center Section - Search */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search recipes, ingredients..."
+                className="pl-10 bg-muted/50 border-0 focus:bg-background focus-ring"
+              />
+            </div>
+          </div>
+
+          {/* Right Section */}
+          <div className="flex items-center space-x-3">
+            {/* Mobile Search Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden hover:bg-primary/10"
+              onClick={() => setSearchOpen(!searchOpen)}
+            >
+              <Search className="w-5 h-5" />
+            </Button>
+
+            {/* Notifications */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative hover:bg-primary/10"
+            >
+              <Bell className="w-5 h-5" />
+              <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-destructive text-destructive-foreground text-xs flex items-center justify-center animate-pulse">
+                3
+              </Badge>
+            </Button>
+
+            {/* User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar className="h-10 w-10 border-2 border-primary/20">
+                    <AvatarImage src="/placeholder.svg?height=40&width=40" />
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
+                      {session?.user?.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 animate-scale-in" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {session?.user?.name || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {session?.user?.email}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {session?.user?.role} • {session?.user?.kitchenName}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      )}
+
+        {/* Mobile Search Bar */}
+        {searchOpen && (
+          <div className="md:hidden pb-4 animate-fade-in">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search recipes, ingredients..."
+                className="pl-10 bg-muted/50 border-0 focus:bg-background focus-ring"
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

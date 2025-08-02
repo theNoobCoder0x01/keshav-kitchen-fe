@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -14,9 +15,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, ChevronUp, Edit, Printer, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, ChevronUp, Edit, Printer, Trash2, MoreVertical, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export interface Recipe {
   id: string;
@@ -49,10 +57,10 @@ export function RecipesTable({
   onDelete,
   onPrint,
   deletingId,
-  itemsPerPageOptions = [5, 10, 20],
+  itemsPerPageOptions = [10, 25, 50],
 }: RecipesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 5);
+  const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 10);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Recipe;
     direction: "ascending" | "descending" | null;
@@ -76,9 +84,9 @@ export function RecipesTable({
       return <ChevronDown className="w-4 h-4 opacity-50" />;
     }
     return sortConfig.direction === "ascending" ? (
-      <ChevronUp className="w-4 h-4" />
+      <ChevronUp className="w-4 h-4 text-primary" />
     ) : (
-      <ChevronDown className="w-4 h-4" />
+      <ChevronDown className="w-4 h-4 text-primary" />
     );
   };
 
@@ -88,178 +96,251 @@ export function RecipesTable({
     return a[sortConfig.key] > b[sortConfig.key] ? multiplier : -multiplier;
   });
 
+  const totalPages = Math.ceil(sortedRecipes.length / itemsPerPage);
   const paginatedRecipes = sortedRecipes.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
+
   return (
-    <div className="rounded-lg border shadow-sm">
+    <div className="space-y-4">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="border-border/50 hover:bg-transparent">
             <TableHead
-              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              className="text-foreground font-semibold py-4 px-6 cursor-pointer hover:text-primary transition-colors"
               onClick={() => handleSort("name")}
             >
               <div className="flex items-center space-x-2">
-                <span>NAME</span>
+                <span>Recipe Name</span>
                 {getSortIcon("name")}
               </div>
             </TableHead>
             <TableHead
-              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              className="text-foreground font-semibold py-4 px-6 cursor-pointer hover:text-primary transition-colors"
               onClick={() => handleSort("category")}
             >
               <div className="flex items-center space-x-2">
-                <span>CATEGORY</span>
+                <span>Category</span>
                 {getSortIcon("category")}
               </div>
             </TableHead>
             <TableHead
-              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              className="text-foreground font-semibold py-4 px-6 cursor-pointer hover:text-primary transition-colors"
               onClick={() => handleSort("subcategory")}
             >
               <div className="flex items-center space-x-2">
-                <span>SUBCATEGORY</span>
+                <span>Subcategory</span>
                 {getSortIcon("subcategory")}
               </div>
             </TableHead>
-            <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
-              ACTIONS
+            <TableHead className="text-foreground font-semibold py-4 px-6">
+              Actions
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {paginatedRecipes.length > 0 ? (
             paginatedRecipes.map((recipe: Recipe) => (
-              <TableRow key={recipe.id}>
-                <TableCell className="py-4 px-6 font-medium text-[#4b465c]">
-                  <Link 
-                    href={`/recipes/${recipe.id}`}
-                    className="hover:text-[#674af5] hover:underline cursor-pointer transition-colors"
-                  >
-                    {recipe.name}
-                  </Link>
-                </TableCell>
-                <TableCell className="py-4 px-6 text-[#4b465c]">
-                  {recipe.category}
-                </TableCell>
-                <TableCell className="py-4 px-6 text-[#4b465c]">
-                  {recipe.subcategory}
+              <TableRow 
+                key={recipe.id} 
+                className="border-border/50 hover:bg-muted/30 transition-colors group"
+              >
+                <TableCell className="py-4 px-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-1">
+                      <Link 
+                        href={`/recipes/${recipe.id}`}
+                        className="font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2 group/link"
+                      >
+                        {recipe.name}
+                        <ExternalLink className="w-3 h-3 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                      </Link>
+                      {recipe.ingredients && (
+                        <p className="body-small text-muted-foreground mt-1">
+                          {recipe.ingredients.length} ingredients
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell className="py-4 px-6">
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
-                      onClick={() => onEdit(recipe)}
-                      aria-label="Edit recipe"
-                      title="Edit recipe"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="w-8 h-8 p-0 text-blue-600 hover:bg-blue-50"
-                      onClick={() => onPrint(recipe)}
-                      aria-label="Print recipe"
-                      title="Print recipe"
-                    >
-                      <Printer className="w-4 h-4" />
-                    </Button>
-                    
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="w-8 h-8 p-0 text-red-500 hover:bg-red-50"
-                      onClick={() => onDelete(recipe.id)}
-                      disabled={deletingId === recipe.id}
-                      aria-label="Delete recipe"
-                      title="Delete recipe"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <Badge variant="secondary" className="font-medium">
+                    {recipe.category}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-4 px-6">
+                  <Badge variant="outline" className="font-medium">
+                    {recipe.subcategory}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-4 px-6">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="animate-scale-in">
+                      <DropdownMenuItem
+                        onClick={() => onEdit(recipe)}
+                        className="cursor-pointer"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Recipe
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onPrint(recipe)}
+                        className="cursor-pointer"
+                      >
+                        <Printer className="w-4 h-4 mr-2" />
+                        Print Recipe
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onDelete(recipe.id)}
+                        disabled={deletingId === recipe.id}
+                        className="cursor-pointer text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Recipe
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="h-24 text-center">
-                No results.
+              <TableCell colSpan={4} className="h-32 text-center">
+                <div className="flex flex-col items-center justify-center space-y-3">
+                  <div className="w-16 h-16 bg-muted/50 rounded-xl flex items-center justify-center">
+                    <ChefHat className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">No recipes found</p>
+                    <p className="body-small text-muted-foreground">
+                      Try adjusting your search or add a new recipe
+                    </p>
+                  </div>
+                </div>
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t">
-        <div className="text-sm text-muted-foreground">
+
+      {/* Pagination */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-6 border-t border-border/50">
+        <div className="body-small text-muted-foreground">
           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
           {Math.min(currentPage * itemsPerPage, sortedRecipes.length)} of{" "}
           {sortedRecipes.length} recipes
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          {Array.from(
-            { length: Math.ceil(sortedRecipes.length / itemsPerPage) },
-            (_, i) => i + 1,
-          ).map((page) => (
-            <Button
-              key={page}
-              variant={page === currentPage ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCurrentPage(page)}
-              className={page === currentPage ? "bg-[#674af5] text-white" : ""}
+        
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="body-small text-muted-foreground">Rows per page:</span>
+            <Select
+              value={itemsPerPage.toString()}
+              onValueChange={(value) => {
+                setItemsPerPage(Number(value));
+                setCurrentPage(1);
+              }}
             >
-              {page}
+              <SelectTrigger className="w-20 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {itemsPerPageOptions.map((option) => (
+                  <SelectItem key={option} value={option.toString()}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="btn-hover"
+            >
+              Previous
             </Button>
-          ))}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setCurrentPage((prev) =>
-                Math.min(
-                  Math.ceil(sortedRecipes.length / itemsPerPage),
-                  prev + 1,
-                ),
+            
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={index} className="px-2 text-muted-foreground">...</span>
+              ) : (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page as number)}
+                  className={cn(
+                    "w-8 h-8 p-0 btn-hover",
+                    page === currentPage && "bg-primary text-primary-foreground"
+                  )}
+                >
+                  {page}
+                </Button>
               )
-            }
-            disabled={
-              currentPage === Math.ceil(sortedRecipes.length / itemsPerPage)
-            }
-          >
-            Next
-          </Button>
-          <Select
-            value={itemsPerPage.toString()}
-            onValueChange={(value) => {
-              setItemsPerPage(Number(value));
-              setCurrentPage(1); // Reset to first page when changing items per page
-            }}
-          >
-            <SelectTrigger className="w-[100px] h-8">
-              <SelectValue placeholder="Items" />
-            </SelectTrigger>
-            <SelectContent>
-              {itemsPerPageOptions.map((option) => (
-                <SelectItem key={option} value={option.toString()}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            ))}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
+              disabled={currentPage === totalPages}
+              className="btn-hover"
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </div>

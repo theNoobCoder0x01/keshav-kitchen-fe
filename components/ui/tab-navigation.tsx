@@ -29,13 +29,13 @@ export function TabNavigation({
   };
 
   return (
-    <div className={cn("mb-6 sm:mb-8", className)}>
+    <div className={cn("mb-8", className)}>
       {/* Mobile Dropdown */}
       <div className="sm:hidden">
         <select
           value={activeTab}
           onChange={(e) => handleTabClick(Number(e.target.value))}
-          className="w-full p-3 border border-[#dbdade] rounded-xl bg-white text-[#4b465c] focus:border-[#674af5] focus:ring-[#674af5]/20"
+          className="w-full p-4 glass rounded-xl border-0 focus-ring text-foreground"
         >
           {tabs.map((tab, index) => (
             <option key={tab} value={index}>
@@ -46,16 +46,16 @@ export function TabNavigation({
       </div>
 
       {/* Desktop Tabs */}
-      <div className="hidden sm:flex space-x-1 bg-white/50 backdrop-blur-sm p-1 rounded-xl border border-[#dbdade]/50">
+      <div className="hidden sm:flex space-x-1 glass p-1 rounded-xl border-0 shadow-modern">
         {tabs.map((tab, index) => (
           <button
             key={tab}
             onClick={() => handleTabClick(index)}
             className={cn(
-              "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex-1 sm:flex-none",
+              "px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200 flex-1 sm:flex-none btn-hover",
               index === activeTab
-                ? "bg-white text-[#674af5] shadow-sm border border-[#674af5]/10"
-                : "text-[#4b465c]/70 hover:text-[#4b465c] hover:bg-white/50",
+                ? "bg-white text-primary shadow-modern border border-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/50",
             )}
           >
             {tab}

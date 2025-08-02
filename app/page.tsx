@@ -13,18 +13,11 @@ import { getKitchens } from "@/lib/actions/kitchens";
 import { fetchMenus } from "@/lib/api/menus";
 import { getMenuStats } from "@/lib/actions/menu";
 import { MealType } from "@prisma/client";
-import { Eye, FileText, Upload, Users } from "lucide-react";
+import { FileText, Upload, Users, Eye, TrendingUp, DollarSign } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-// Temporary interface for MenuGrid props to resolve lint errors
-interface MenuGridProps {
-  onAddMeal: (mealType: string) => void;
-  dailyMenus: any;
-  selectedDate: Date;
-}
 
 export default function MenuPage() {
   const { data: session, status } = useSession();
@@ -63,23 +56,14 @@ export default function MenuPage() {
         return;
       }
 
-      console.log(
-        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`,
-      );
-
       // Fetch menus and stats
       const [statsData, menusResponse] = await Promise.all([
         getMenuStats(selectedDate, currentKitchenId),
         fetchMenus({
           kitchenId: currentKitchenId,
-          date: selectedDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+          date: selectedDate.toISOString().split("T")[0],
         }),
       ]);
-
-      console.log(
-        `Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`,
-        menusResponse,
-      );
 
       // Transform menus data to match the expected format
       const groupedMenus = {
@@ -124,35 +108,28 @@ export default function MenuPage() {
         label: "Total Planned",
         value: menuStats.total.planned.toString(),
         icon: Users,
-        iconColor: "#00cfe8",
+        iconColor: "hsl(var(--primary))",
         trend: { value: 12, isPositive: true },
       },
       {
         label: "Breakfast",
         value: menuStats.byMealType.BREAKFAST.toString(),
-        icon: Users,
-        iconColor: "#28c76f",
+        icon: TrendingUp,
+        iconColor: "#f59e0b",
         trend: { value: 8, isPositive: true },
       },
       {
         label: "Lunch",
         value: menuStats.byMealType.LUNCH.toString(),
         icon: Eye,
-        iconColor: "#ff9f43",
+        iconColor: "#10b981",
         trend: { value: 5, isPositive: false },
       },
       {
         label: "Dinner",
         value: menuStats.byMealType.DINNER.toString(),
-        icon: Eye,
-        iconColor: "#ea5455",
-        trend: { value: 0, isPositive: true },
-      },
-      {
-        label: "Extra/Snack",
-        value: menuStats.byMealType.SNACK.toString(),
-        icon: Eye,
-        iconColor: "#7367f0",
+        icon: DollarSign,
+        iconColor: "#ef4444",
         trend: { value: 0, isPositive: true },
       },
     ];
@@ -160,7 +137,7 @@ export default function MenuPage() {
 
   const handleAddMeal = (mealType: MealType) => {
     setSelectedMealType(mealType);
-    setEditMeal(null); // Clear edit meal when adding new
+    setEditMeal(null);
     setAddMealDialog(true);
   };
 
@@ -176,7 +153,7 @@ export default function MenuPage() {
         const { deleteMenu } = await import("@/lib/api/menus");
         await deleteMenu(mealId);
         toast.success("Meal deleted successfully!");
-        loadData(); // Reload data after deletion
+        loadData();
       } catch (error) {
         console.error("Error deleting meal:", error);
         toast.error("Failed to delete meal");
@@ -195,7 +172,6 @@ export default function MenuPage() {
   const handleMealDialogClose = (open: boolean) => {
     setAddMealDialog(open);
     if (!open) {
-      // Reload data when dialog closes
       loadData();
     }
   };
@@ -203,10 +179,10 @@ export default function MenuPage() {
   // Show loading while checking authentication
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center">
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5] mx-auto mb-4"></div>
-          <p className="text-[#4b465c]/70">Loading...</p>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -222,8 +198,8 @@ export default function MenuPage() {
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5] mx-auto mb-4"></div>
-            <p className="text-[#4b465c]/70">Loading dashboard...</p>
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading dashboard...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -233,64 +209,61 @@ export default function MenuPage() {
   return (
     <DashboardLayout>
       {/* Header Section */}
-      <div className="mb-6 sm:mb-8">
-        <PageHeader
-          title="Kitchen Dashboard"
-          subtitle="Manage your daily menu and track kitchen operations"
-          actions={
-            <>
-              <Button
-                variant="outline"
-                className="border-[#674af5] text-[#674af5] hover:bg-[#674af5]/10 bg-white/80 backdrop-blur-sm"
-                onClick={() => setReportsDialog(true)}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Reports</span>
-              </Button>
-              <Button className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                <Upload className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Bulk Upload</span>
-              </Button>
-            </>
-          }
-        />
-      </div>
+      <PageHeader
+        title="Kitchen Dashboard"
+        subtitle="Manage your daily menu and track kitchen operations efficiently"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              className="border-primary/20 text-primary hover:bg-primary/10 glass btn-hover"
+              onClick={() => setReportsDialog(true)}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Generate Reports</span>
+            </Button>
+            <Button 
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg btn-hover"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Bulk Upload</span>
+            </Button>
+          </>
+        }
+      />
 
       {/* Date and Stats Section */}
-      <div className="mb-6 sm:mb-8">
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
-          {/* Date Selector */}
-          <div className="xl:col-span-2">
-            <DateSelector
-              date={selectedDate}
-              onDateChange={handleDateChange}
-              className="h-full min-h-[120px]"
-            />
-          </div>
-
-          {/* Stats Grid */}
-          <div className="xl:col-span-3">
-            <StatsGrid stats={getStatsForTab()} />
-          </div>
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
+        {/* Date Selector */}
+        <div className="xl:col-span-2">
+          <DateSelector
+            date={selectedDate}
+            onDateChange={handleDateChange}
+            className="h-full"
+          />
         </div>
 
-        <TabNavigation
-          tabs={kitchens.map((k) => k.name)}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
+        {/* Stats Grid */}
+        <div className="xl:col-span-3">
+          <StatsGrid stats={getStatsForTab()} />
+        </div>
       </div>
 
+      {/* Kitchen Tabs */}
+      <TabNavigation
+        tabs={kitchens.map((k) => k.name)}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
+
       {/* Menu Section */}
-      <div className="space-y-6">
-        <MenuGrid
-          onAddMeal={handleAddMeal}
-          onEditMeal={handleEditMeal}
-          onDeleteMeal={handleDeleteMeal}
-          dailyMenus={dailyMenus}
-          selectedDate={selectedDate}
-        />
-      </div>
+      <MenuGrid
+        onAddMeal={handleAddMeal}
+        onEditMeal={handleEditMeal}
+        onDeleteMeal={handleDeleteMeal}
+        dailyMenus={dailyMenus}
+        selectedDate={selectedDate}
+      />
 
       {/* Dialogs */}
       <AddMealDialog

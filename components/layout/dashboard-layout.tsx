@@ -17,7 +17,7 @@ export function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#fafbfc] to-[#f1f5f9]">
+    <div className="min-h-screen gradient-bg">
       <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex">
         <Sidebar
@@ -25,8 +25,12 @@ export function DashboardLayout({
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-        <main className="flex-1 lg:ml-0 p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4rem)]">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        <main className="flex-1 lg:ml-0">
+          <div className="container-modern section-modern">
+            <div className="animate-fade-in">
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </div>
