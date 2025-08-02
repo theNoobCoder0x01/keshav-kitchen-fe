@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Home, ChefHat, Utensils, ChevronDown, X } from "lucide-react";
+import { Home, ChefHat, Utensils, ChevronDown, X, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -12,9 +12,10 @@ interface SidebarProps {
   activeItem?: string;
   isOpen?: boolean;
   onClose?: () => void;
+  onSettingsClick?: () => void;
 }
 
-export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
+export function Sidebar({ activeItem, isOpen = true, onClose, onSettingsClick }: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = [
@@ -130,7 +131,27 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-[#dbdade]">
+          <div className="p-4 border-t border-[#dbdade] space-y-3">
+            {/* Settings Button */}
+            <Button
+              variant="ghost"
+              onClick={onSettingsClick}
+              className="w-full justify-start p-3 h-auto hover:bg-[#f8f7fa] text-[#4b465c] hover:text-[#674af5]"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-[#f8f7fa] rounded-lg flex items-center justify-center transition-colors group-hover:bg-[#674af5]/10">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <span className="font-medium">Settings</span>
+                  <p className="text-xs text-[#4b465c]/60 mt-0.5">
+                    Calendar & preferences
+                  </p>
+                </div>
+              </div>
+            </Button>
+
+            {/* Help Section */}
             <div className="bg-gradient-to-r from-[#674af5]/5 to-[#856ef7]/5 rounded-xl p-4 border border-[#674af5]/10">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-lg flex items-center justify-center">

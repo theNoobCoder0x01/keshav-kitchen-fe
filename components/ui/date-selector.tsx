@@ -9,9 +9,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { parseICSFile, getEventSummary } from "@/lib/utils/ics-parser";
 
 interface DateSelectorProps {
   date?: Date;
@@ -20,16 +21,60 @@ interface DateSelectorProps {
   className?: string;
 }
 
+interface ICSFileData {
+  name: string;
+  content: string;
+  events: any[];
+  lastUploaded: Date;
+}
+
 export function DateSelector({
   date: initialDate,
   onDateChange,
-  subtitle = "Pagan Sud Panam",
+  subtitle,
   className,
 }: DateSelectorProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(
     initialDate || new Date(),
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [icsFileData, setIcsFileData] = useState<ICSFileData | null>(null);
+  const [currentEventInfo, setCurrentEventInfo] = useState<{
+    tithi?: string;
+    eventSummary?: string;
+  }>({});
+
+  // Load ICS data from localStorage
+  useEffect(() => {
+    const savedData = localStorage.getItem('icsCalendarData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setIcsFileData(parsed);
+      } catch (error) {
+        console.error('Error loading saved ICS data:', error);
+        localStorage.removeItem('icsCalendarData');
+      }
+    }
+  }, []);
+
+  // Update event info when date or ICS data changes
+  useEffect(() => {
+    if (icsFileData && icsFileData.content) {
+      try {
+        const parsedData = parseICSFile(icsFileData.content, selectedDate);
+        setCurrentEventInfo({
+          tithi: parsedData.tithi,
+          eventSummary: getEventSummary(parsedData.events),
+        });
+      } catch (error) {
+        console.error('Error parsing ICS data for date:', error);
+        setCurrentEventInfo({});
+      }
+    } else {
+      setCurrentEventInfo({});
+    }
+  }, [selectedDate, icsFileData]);
 
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate);
@@ -57,6 +102,17 @@ export function DateSelector({
     return format(date, "EEEE, dd MMM yyyy");
   };
 
+  // Determine what to show as subtitle
+  const getSubtitle = () => {
+    if (currentEventInfo.tithi) {
+      return currentEventInfo.tithi;
+    }
+    if (currentEventInfo.eventSummary) {
+      return currentEventInfo.eventSummary;
+    }
+    return subtitle || "Pagan Sud Panam"; // Fallback to default or provided subtitle
+  };
+
   return (
     <Card
       className={cn(
@@ -82,7 +138,7 @@ export function DateSelector({
                         {formatDate(selectedDate)}
                       </h3>
                       <p className="text-sm text-[#4b465c]/70 font-medium">
-                        {subtitle}
+                        {getSubtitle()}
                       </p>
                     </div>
                   </Button>
