@@ -3,81 +3,81 @@
 @tailwind utilities;
 
 /* Import Inter font for better typography */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
 @layer base {
   :root {
-    /* Updated color system with new modern palette */
-    --background: 249 250 251; /* neutral-50 */
-    --foreground: 31 41 55; /* neutral-800 */
-    --card: 255 255 255;
-    --card-foreground: 31 41 55;
-    --popover: 255 255 255;
-    --popover-foreground: 31 41 55;
-    --primary: 37 99 235; /* #2563EB */
-    --primary-foreground: 255 255 255;
-    --secondary: 107 114 128; /* #6B7280 */
-    --secondary-foreground: 255 255 255;
-    --muted: 243 244 246; /* neutral-100 */
-    --muted-foreground: 107 114 128; /* neutral-500 */
-    --accent: 239 246 255; /* primary-50 */
-    --accent-foreground: 37 99 235; /* primary-600 */
-    --destructive: 239 68 68; /* #EF4444 */
-    --destructive-foreground: 255 255 255;
-    --border: 229 231 235; /* neutral-200 */
-    --input: 229 231 235; /* neutral-200 */
-    --ring: 37 99 235; /* primary-600 */
+    /* Refined color system with elegant palette and improved contrast */
+    --background: 245 245 247; /* Soft off-white for clean backdrop */
+    --foreground: 17 24 33; /* Deep charcoal for sharp text */
+    --card: 255 255 255; /* Pure white for crisp cards */
+    --card-foreground: 17 24 33; /* Consistent with foreground */
+    --popover: 255 255 255; /* White for popovers */
+    --popover-foreground: 17 24 33; /* Matches card-foreground */
+    --primary: 29 78 216; /* Rich blue for primary actions */
+    --primary-foreground: 255 255 255; /* White for contrast */
+    --secondary: 113 128 150; /* Muted slate for secondary elements */
+    --secondary-foreground: 255 255 255; /* White for readability */
+    --muted: 237 238 242; /* Light gray for subtle backgrounds */
+    --muted-foreground: 75 85 99; /* Mid-gray for muted text */
+    --accent: 230 237 255; /* Pale blue accent for highlights */
+    --accent-foreground: 29 78 216; /* Matches primary for consistency */
+    --destructive: 220 38 38; /* Vibrant red for warnings */
+    --destructive-foreground: 255 255 255; /* White for contrast */
+    --border: 209 213 219; /* Light gray for borders */
+    --input: 209 213 219; /* Matches border for inputs */
+    --ring: 29 78 216; /* Matches primary for focus rings */
     --radius: 0.75rem;
-    
-    /* Enhanced chart colors */
-    --chart-1: 37 99 235; /* primary */
-    --chart-2: 16 185 129; /* success */
-    --chart-3: 245 158 11; /* warning */
-    --chart-4: 239 68 68; /* error */
-    --chart-5: 139 92 246; /* purple */
-    
+
+    /* Refined chart colors with better distinction */
+    --chart-1: 29 78 216; /* Rich blue */
+    --chart-2: 21 128 61; /* Deep emerald green */
+    --chart-3: 202 138 4; /* Warm amber */
+    --chart-4: 220 38 38; /* Vibrant red */
+    --chart-5: 124 58 237; /* Elegant purple */
+
     /* Modern sidebar colors */
-    --sidebar-background: 255 255 255;
-    --sidebar-foreground: 75 85 99; /* neutral-600 */
-    --sidebar-primary: 37 99 235; /* primary */
-    --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 243 244 246; /* neutral-100 */
-    --sidebar-accent-foreground: 75 85 99; /* neutral-600 */
-    --sidebar-border: 229 231 235; /* neutral-200 */
-    --sidebar-ring: 37 99 235; /* primary */
+    --sidebar-background: 255 255 255; /* White for clean sidebar */
+    --sidebar-foreground: 55 65 81; /* Darker gray for text */
+    --sidebar-primary: 29 78 216; /* Matches primary */
+    --sidebar-primary-foreground: 255 255 255; /* White for contrast */
+    --sidebar-accent: 237 238 242; /* Matches muted */
+    --sidebar-accent-foreground: 55 65 81; /* Matches sidebar-foreground */
+    --sidebar-border: 209 213 219; /* Matches border */
+    --sidebar-ring: 29 78 216; /* Matches primary */
   }
 
   .dark {
-    /* Dark mode with enhanced contrast */
-    --background: 17 24 39; /* neutral-900 */
-    --foreground: 249 250 251; /* neutral-50 */
-    --card: 31 41 55; /* neutral-800 */
-    --card-foreground: 249 250 251;
-    --popover: 31 41 55;
-    --popover-foreground: 249 250 251;
-    --primary: 59 130 246; /* lighter primary for dark mode */
-    --primary-foreground: 17 24 39;
-    --secondary: 75 85 99; /* neutral-600 */
-    --secondary-foreground: 249 250 251;
-    --muted: 55 65 81; /* neutral-700 */
-    --muted-foreground: 156 163 175; /* neutral-400 */
-    --accent: 55 65 81; /* neutral-700 */
-    --accent-foreground: 249 250 251;
-    --destructive: 220 38 38; /* darker red for dark mode */
-    --destructive-foreground: 249 250 251;
-    --border: 75 85 99; /* neutral-600 */
-    --input: 75 85 99;
-    --ring: 59 130 246; /* lighter primary for dark mode */
-    
+    /* Dark mode with enhanced contrast and elegance */
+    --background: 15 23 42; /* Deep navy for rich dark mode */
+    --foreground: 241 245 249; /* Soft white for text */
+    --card: 30 41 59; /* Dark slate for cards */
+    --card-foreground: 241 245 249; /* Matches foreground */
+    --popover: 30 41 59; /* Matches card */
+    --popover-foreground: 241 245 249; /* Matches foreground */
+    --primary: 59 130 246; /* Lighter blue for dark mode */
+    --primary-foreground: 255 255 255; /* White for contrast */
+    --secondary: 71 85 105; /* Darker slate for secondary */
+    --secondary-foreground: 241 245 249; /* White for readability */
+    --muted: 51 65 85; /* Dark gray for muted backgrounds */
+    --muted-foreground: 148 163 184; /* Light gray for muted text */
+    --accent: 51 65 85; /* Matches muted for subtle accents */
+    --accent-foreground: 241 245 249; /* Matches foreground */
+    --destructive: 239 68 68; /* Slightly brighter red for visibility */
+    --destructive-foreground: 255 255 255; /* White for contrast */
+    --border: 71 85 105; /* Darker slate for borders */
+    --input: 71 85 105; /* Matches border */
+    --ring: 59 130 246; /* Matches primary */
+
     /* Dark mode sidebar */
-    --sidebar-background: 31 41 55; /* neutral-800 */
-    --sidebar-foreground: 209 213 219; /* neutral-300 */
-    --sidebar-primary: 59 130 246; /* lighter primary */
-    --sidebar-primary-foreground: 17 24 39;
-    --sidebar-accent: 55 65 81; /* neutral-700 */
-    --sidebar-accent-foreground: 209 213 219;
-    --sidebar-border: 75 85 99; /* neutral-600 */
-    --sidebar-ring: 59 130 246;
+    --sidebar-background: 30 41 59; /* Matches card */
+    --sidebar-foreground: 203 213 225; /* Light gray for text */
+    --sidebar-primary: 59 130 246; /* Matches primary */
+    --sidebar-primary-foreground: 255 255 255; /* White for contrast */
+    --sidebar-accent: 51 65 85; /* Matches muted */
+    --sidebar-accent-foreground: 203 213 225; /* Matches sidebar-foreground */
+    --sidebar-border: 71 85 105; /* Matches border */
+    --sidebar-ring: 59 130 246; /* Matches primary */
   }
 }
 
@@ -85,23 +85,34 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
     font-variation-settings: "wght" 400;
     line-height: 1.6;
     letter-spacing: -0.01em;
   }
-  
+
   /* Enhanced typography system */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.025em;
   }
-  
+
   /* Better focus styles for accessibility */
   *:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
@@ -217,24 +228,28 @@
 
 /* Enhanced gradient backgrounds */
 .gradient-bg {
-  background: linear-gradient(135deg, 
-    hsl(var(--primary) / 0.03) 0%, 
-    hsl(var(--secondary) / 0.03) 50%, 
-    hsl(var(--accent) / 0.03) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.03) 0%,
+    hsl(var(--secondary) / 0.03) 50%,
+    hsl(var(--accent) / 0.03) 100%
+  );
 }
 
 .gradient-primary {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 .gradient-success {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 .gradient-border {
-  background: linear-gradient(135deg, 
-    hsl(var(--primary)) 0%, 
-    hsl(var(--primary) / 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary) / 0.8) 100%
+  );
   padding: 1px;
   border-radius: var(--radius);
 }
@@ -259,13 +274,18 @@
 }
 
 .btn-modern::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -288,14 +308,14 @@
 
 /* Text gradients and modern typography */
 .text-gradient {
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-success {
-  background: linear-gradient(135deg, #10B981, #059669);
+  background: linear-gradient(135deg, #10b981, #059669);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -391,10 +411,12 @@
 
 /* Loading states with improved shimmer */
 .loading-shimmer {
-  background: linear-gradient(90deg, 
-    hsl(var(--muted)) 25%, 
-    hsl(var(--muted) / 0.5) 50%, 
-    hsl(var(--muted)) 75%);
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
   border-radius: 0.5rem;
@@ -440,7 +462,7 @@
   .container-modern {
     @apply px-4;
   }
-  
+
   .section-modern {
     @apply py-8;
   }
