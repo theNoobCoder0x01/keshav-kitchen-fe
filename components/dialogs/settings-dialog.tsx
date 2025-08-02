@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,27 +9,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { 
-  Settings, 
-  Upload, 
-  FileText, 
-  Calendar, 
-  Info, 
-  X, 
+import {
+  Calendar,
   CheckCircle,
-  AlertCircle,
+  FileText,
+  Info,
+  RefreshCw,
+  Settings,
   Trash2,
-  RefreshCw
+  Upload
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface SettingsDialogProps {
@@ -52,10 +49,7 @@ interface CalendarData {
   lastUploaded?: string;
 }
 
-export function SettingsDialog({
-  open,
-  onOpenChange,
-}: SettingsDialogProps) {
+export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -72,14 +66,16 @@ export function SettingsDialog({
   const loadCalendarData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/calendar/events?date=' + new Date().toISOString().split('T')[0]);
+      const response = await fetch(
+        "/api/calendar/events?date=" + new Date().toISOString().split("T")[0]
+      );
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.events.length > 0) {
           setCalendarData({
             events: data.events,
             totalCount: data.events.length,
-            lastUploaded: data.events[0]?.createdAt
+            lastUploaded: data.events[0]?.createdAt,
           });
         } else {
           setCalendarData(null);
@@ -88,26 +84,28 @@ export function SettingsDialog({
         setCalendarData(null);
       }
     } catch (error) {
-      console.error('Error loading calendar data:', error);
+      console.error("Error loading calendar data:", error);
       setCalendarData(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Validate file type
-    if (!file.name.toLowerCase().endsWith('.ics')) {
-      toast.error('Please select a valid ICS file (.ics extension)');
+    if (!file.name.toLowerCase().endsWith(".ics")) {
+      toast.error("Please select a valid ICS file (.ics extension)");
       return;
     }
 
     // Validate file size (max 1MB)
     if (file.size > 1024 * 1024) {
-      toast.error('File size must be less than 1MB');
+      toast.error("File size must be less than 1MB");
       return;
     }
 
@@ -115,32 +113,32 @@ export function SettingsDialog({
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
-      const response = await fetch('/api/calendar/upload', {
-        method: 'POST',
+      const response = await fetch("/api/calendar/upload", {
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload file');
+        throw new Error(errorData.error || "Failed to upload file");
       }
 
       const result = await response.json();
-      
+
       toast.success(result.message);
-      
+
       // Reload calendar data
       await loadCalendarData();
-      
+
       // Reset file input
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     } catch (error: any) {
-      console.error('Error uploading ICS file:', error);
-      toast.error(error.message || 'Failed to upload calendar file');
+      console.error("Error uploading ICS file:", error);
+      toast.error(error.message || "Failed to upload calendar file");
     } finally {
       setIsUploading(false);
     }
@@ -152,22 +150,22 @@ export function SettingsDialog({
     setIsClearing(true);
 
     try {
-      const response = await fetch('/api/calendar/clear', {
-        method: 'DELETE',
+      const response = await fetch("/api/calendar/clear", {
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to clear data');
+        throw new Error(errorData.error || "Failed to clear data");
       }
 
       const result = await response.json();
-      
+
       toast.success(result.message);
       setCalendarData(null);
     } catch (error: any) {
-      console.error('Error clearing calendar data:', error);
-      toast.error(error.message || 'Failed to clear calendar data');
+      console.error("Error clearing calendar data:", error);
+      toast.error(error.message || "Failed to clear calendar data");
     } finally {
       setIsClearing(false);
     }
@@ -193,7 +191,7 @@ export function SettingsDialog({
                 Configure application settings and upload calendar files
               </p>
             </DialogHeader>
-            
+
             <div className="space-y-6 py-4">
               {/* Calendar Settings */}
               <div className="space-y-4">
@@ -207,7 +205,12 @@ export function SettingsDialog({
                       <Info className="w-4 h-4 text-[#4b465c]/50 hover:text-[#674af5] cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="max-w-xs">Upload an ICS calendar file to display Gujarati tithi and event information in the date selector. This will show event summaries and tithi details for selected dates.</p>
+                      <p className="max-w-xs">
+                        Upload an ICS calendar file to display Gujarati tithi
+                        and event information in the date selector. This will
+                        show event summaries and tithi details for selected
+                        dates.
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -237,7 +240,8 @@ export function SettingsDialog({
                             Upload ICS Calendar File
                           </p>
                           <p className="text-xs text-[#4b465c]/70 mb-3">
-                            Upload a .ics file to display tithi and event information
+                            Upload a .ics file to display tithi and event
+                            information
                           </p>
                           <Button
                             onClick={handleFileSelect}
@@ -283,7 +287,9 @@ export function SettingsDialog({
                             disabled={isLoading}
                             className="text-[#674af5] hover:text-[#674af5]/80 hover:bg-[#674af5]/10"
                           >
-                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            <RefreshCw
+                              className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                            />
                           </Button>
                           <Button
                             variant="ghost"
@@ -300,18 +306,23 @@ export function SettingsDialog({
                           </Button>
                         </div>
                       </div>
-                      
+
                       {calendarData.events.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-[#dbdade]">
                           <p className="text-xs text-[#4b465c]/70 mb-2">
                             Sample events: {calendarData.events.length}
                           </p>
                           <div className="space-y-1">
-                            {calendarData.events.slice(0, 3).map((event, index) => (
-                              <div key={index} className="text-xs bg-white rounded px-2 py-1 border">
-                                {event.summary}
-                              </div>
-                            ))}
+                            {calendarData.events
+                              .slice(0, 3)
+                              .map((event, index) => (
+                                <div
+                                  key={index}
+                                  className="text-xs bg-white rounded px-2 py-1 border"
+                                >
+                                  {event.summary}
+                                </div>
+                              ))}
                             {calendarData.events.length > 3 && (
                               <p className="text-xs text-[#4b465c]/50">
                                 +{calendarData.events.length - 3} more events
@@ -345,7 +356,10 @@ export function SettingsDialog({
                         <li>• File must be in .ics format</li>
                         <li>• Maximum file size: 1MB</li>
                         <li>• Must contain valid calendar events</li>
-                        <li>• Events with Gujarati tithi information will be displayed</li>
+                        <li>
+                          • Events with Gujarati tithi information will be
+                          displayed
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -363,24 +377,25 @@ export function SettingsDialog({
 
                 <div className="bg-[#f8f7fa] border border-[#dbdade] rounded-lg p-4">
                   <p className="text-sm text-[#4b465c]/70">
-                    Additional settings will be available here in future updates.
+                    Additional settings will be available here in future
+                    updates.
                   </p>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-[#dbdade]">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
-            >
-              Close
-            </Button>
+            <div className="flex justify-end space-x-3 pt-4 border-t border-[#dbdade]">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
+              >
+                Close
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }
