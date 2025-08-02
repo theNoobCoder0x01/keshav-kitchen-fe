@@ -9,6 +9,7 @@ import { DateSelector } from "@/components/ui/date-selector";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatsGrid } from "@/components/ui/stats-grid";
 import { TabNavigation } from "@/components/ui/tab-navigation";
+import { TodayTithi } from "@/components/ui/tithi-display";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
@@ -236,7 +237,16 @@ export default function MenuPage() {
       <div className="mb-6 sm:mb-8">
         <PageHeader
           title="Kitchen Dashboard"
-          subtitle="Manage your daily menu and track kitchen operations"
+          subtitle={
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span>Manage your daily menu and track kitchen operations</span>
+              <TodayTithi 
+                kitchenId={kitchens[activeTab]?.id || session?.user?.kitchenId}
+                className="text-[#674af5] text-sm font-medium"
+                size="sm"
+              />
+            </div>
+          }
           actions={
             <>
               <Button

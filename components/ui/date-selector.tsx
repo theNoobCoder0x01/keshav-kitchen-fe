@@ -21,15 +21,7 @@ interface DateSelectorProps {
   kitchenId?: string;
 }
 
-interface CalendarEvent {
-  id: string;
-  summary: string;
-  description?: string;
-  startDate: string;
-  endDate?: string;
-  location?: string;
-  uid: string;
-}
+
 
 export function DateSelector({
   date: initialDate,
@@ -47,9 +39,9 @@ export function DateSelector({
     eventSummary?: string;
   }>({});
 
-  // Fetch calendar events for the selected date
+  // Fetch tithi information for the selected date
   useEffect(() => {
-    const fetchCalendarEvents = async () => {
+    const fetchTithiInfo = async () => {
       try {
         const dateStr = selectedDate.toISOString().split("T")[0];
         const params = new URLSearchParams({
@@ -57,17 +49,13 @@ export function DateSelector({
           ...(kitchenId && { kitchenId }),
         });
 
-        const response = await fetch(`/api/calendar/events?${params}`);
+        const response = await fetch(`/api/calendar/tithi?${params}`);
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.events.length > 0) {
-            // Extract tithi from event summaries
-            const tithi = extractTithi(data.events);
-            const eventSummary = getEventSummary(data.events);
-
+          if (data.success) {
             setCurrentEventInfo({
-              tithi,
-              eventSummary,
+              tithi: data.tithi,
+              eventSummary: data.eventSummary,
             });
           } else {
             setCurrentEventInfo({});
@@ -76,12 +64,12 @@ export function DateSelector({
           setCurrentEventInfo({});
         }
       } catch (error) {
-        console.error("Error fetching calendar events:", error);
+        console.error("Error fetching tithi information:", error);
         setCurrentEventInfo({});
       }
     };
 
-    fetchCalendarEvents();
+    fetchTithiInfo();
   }, [selectedDate, kitchenId]);
 
   const handleDateChange = (newDate: Date) => {
@@ -110,57 +98,7 @@ export function DateSelector({
     return format(date, "EEEE, dd MMM yyyy");
   };
 
-  // Extract tithi information from calendar events
-  const extractTithi = (events: CalendarEvent[]): string | undefined => {
-    for (const event of events) {
-      const text = `${event.summary} ${event.description || ""}`.toLowerCase();
 
-      // Common Gujarati tithi patterns
-      const tithiPatterns = [
-        /(sud|shukla|waxing)\s+(panam|paksha|fortnight)/i,
-        /(vad|krishna|waning)\s+(panam|paksha|fortnight)/i,
-        /(purnima|full moon)/i,
-        /(amavasya|new moon)/i,
-        /(ekadashi|ekadasi)/i,
-        /(chaturdashi|chaturdasi)/i,
-        /(ashtami|ashtmi)/i,
-        /(navami|navmi)/i,
-        /(dashami|dashmi)/i,
-        /(trayodashi|trayodasi)/i,
-        /(dwadashi|dwadasi)/i,
-        /(saptami|saptmi)/i,
-        /(shashthi|shashthi)/i,
-        /(panchami|panchmi)/i,
-        /(chaturthi|chaturthi)/i,
-        /(tritiya|tritya)/i,
-        /(dwitiya|dwitya)/i,
-        /(pratipada|pratipad)/i,
-        /(bij|trij|choth|panchmi|chhath|saptami|ashtami|navami|dashami|gyaras|baras|teras|chaudas|purnima)/i,
-      ];
-
-      for (const pattern of tithiPatterns) {
-        const match = text.match(pattern);
-        if (match) {
-          return match[0];
-        }
-      }
-    }
-
-    return undefined;
-  };
-
-  // Get a formatted summary of events
-  const getEventSummary = (events: CalendarEvent[]): string => {
-    if (events.length === 0) return "";
-
-    if (events.length === 1) {
-      return events[0].summary;
-    }
-
-    // For multiple events, create a summary
-    const summaries = events.map((event) => event.summary);
-    return summaries.join(", ");
-  };
 
   // Determine what to show as subtitle
   const getSubtitle = () => {
