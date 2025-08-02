@@ -1,10 +1,10 @@
 "use client";
 
-import { Bell, Menu, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
 
 interface HeaderProps {

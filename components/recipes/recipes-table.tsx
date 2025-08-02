@@ -135,7 +135,7 @@ export function RecipesTable({
             paginatedRecipes.map((recipe: Recipe) => (
               <TableRow key={recipe.id}>
                 <TableCell className="py-4 px-6 font-medium text-[#4b465c]">
-                  <Link 
+                  <Link
                     href={`/recipes/${recipe.id}`}
                     className="hover:text-[#674af5] hover:underline cursor-pointer transition-colors"
                   >
@@ -160,7 +160,7 @@ export function RecipesTable({
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="ghost"
@@ -171,7 +171,7 @@ export function RecipesTable({
                     >
                       <Printer className="w-4 h-4" />
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="ghost"

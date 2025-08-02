@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     console.log(`Fetching recipe with ID: ${params.id}`);
@@ -53,7 +53,9 @@ export async function GET(
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    console.log(`Found recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`);
+    console.log(
+      `Found recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`,
+    );
     return NextResponse.json(recipe);
   } catch (error) {
     console.error("Get recipe by ID API error:", error);
@@ -66,7 +68,7 @@ export async function GET(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     console.log(`Deleting recipe with ID: ${params.id}`);
@@ -80,7 +82,7 @@ export async function DELETE(
     // Check if recipe exists and user has permission to delete it
     const existingRecipe = await prisma.recipe.findUnique({
       where: { id: params.id },
-      select: { 
+      select: {
         userId: true,
         name: true,
       },

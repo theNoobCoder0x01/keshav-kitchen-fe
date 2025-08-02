@@ -1,23 +1,9 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Home,
-  ChefHat,
-  ChevronDown,
-  Calendar,
-  Users,
-  ShoppingCart,
-  DollarSign,
-  Plus,
-  Mail,
-  Eye,
-  MoreHorizontal,
-  Bell,
-} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -32,8 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -42,6 +28,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Bell,
+  Calendar,
+  ChefHat,
+  ChevronDown,
+  DollarSign,
+  Eye,
+  Home,
+  Mail,
+  MoreHorizontal,
+  Plus,
+  ShoppingCart,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 
 export default function RecipesPage() {

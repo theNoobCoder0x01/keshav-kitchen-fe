@@ -1,7 +1,7 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function getRecipes() {

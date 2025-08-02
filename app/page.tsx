@@ -10,8 +10,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatsGrid } from "@/components/ui/stats-grid";
 import { TabNavigation } from "@/components/ui/tab-navigation";
 import { getKitchens } from "@/lib/actions/kitchens";
-import { fetchMenus } from "@/lib/api/menus";
 import { getMenuStats } from "@/lib/actions/menu";
+import { fetchMenus } from "@/lib/api/menus";
 import { MealType } from "@prisma/client";
 import { Eye, FileText, Upload, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -265,6 +265,7 @@ export default function MenuPage() {
               date={selectedDate}
               onDateChange={handleDateChange}
               className="h-full min-h-[120px]"
+              kitchenId={kitchens[activeTab]?.id || session?.user?.kitchenId}
             />
           </div>
 

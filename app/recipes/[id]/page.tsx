@@ -2,10 +2,13 @@
 
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { RecipeDetailView, type RecipeDetailData } from "@/components/recipes/recipe-detail-view";
+import {
+  RecipeDetailView,
+  type RecipeDetailData,
+} from "@/components/recipes/recipe-detail-view";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit, Printer } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -25,13 +28,13 @@ export default function RecipeDetailPage() {
       try {
         setLoading(true);
         const response = await fetch(`/api/recipes/${recipeId}`);
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch recipe');
+          throw new Error("Failed to fetch recipe");
         }
 
         const detailedRecipe = await response.json();
-        
+
         // Transform the data to match RecipeDetailData interface
         const recipeData: RecipeDetailData = {
           id: detailedRecipe.id,
@@ -41,22 +44,27 @@ export default function RecipeDetailPage() {
           servings: detailedRecipe.servings,
           category: detailedRecipe.category,
           subcategory: detailedRecipe.subcategory,
-          ingredients: detailedRecipe.ingredients?.map((ingredient: any) => ({
-            id: ingredient.id,
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            costPerUnit: ingredient.costPerUnit,
-          })) || [],
-          createdAt: detailedRecipe.createdAt ? new Date(detailedRecipe.createdAt) : undefined,
-          updatedAt: detailedRecipe.updatedAt ? new Date(detailedRecipe.updatedAt) : undefined,
+          ingredients:
+            detailedRecipe.ingredients?.map((ingredient: any) => ({
+              id: ingredient.id,
+              name: ingredient.name,
+              quantity: ingredient.quantity,
+              unit: ingredient.unit,
+              costPerUnit: ingredient.costPerUnit,
+            })) || [],
+          createdAt: detailedRecipe.createdAt
+            ? new Date(detailedRecipe.createdAt)
+            : undefined,
+          updatedAt: detailedRecipe.updatedAt
+            ? new Date(detailedRecipe.updatedAt)
+            : undefined,
         };
 
         setRecipe(recipeData);
       } catch (error) {
-        console.error('Error fetching recipe:', error);
-        toast.error('Failed to load recipe details');
-        router.push('/recipes');
+        console.error("Error fetching recipe:", error);
+        toast.error("Failed to load recipe details");
+        router.push("/recipes");
       } finally {
         setLoading(false);
       }
@@ -74,7 +82,7 @@ export default function RecipeDetailPage() {
   };
 
   const handleBack = () => {
-    router.push('/recipes');
+    router.push("/recipes");
   };
 
   if (loading) {
@@ -128,7 +136,7 @@ export default function RecipeDetailPage() {
             <Edit className="w-4 h-4" />
             Edit Recipe
           </Button>
-          
+
           <Button
             onClick={handlePrint}
             className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white flex items-center gap-2"

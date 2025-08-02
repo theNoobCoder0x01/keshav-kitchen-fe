@@ -1,7 +1,7 @@
 "use client";
 
-import { StatsCard } from "./stats-card";
 import type { LucideIcon } from "lucide-react";
+import { StatsCard } from "./stats-card";
 
 interface StatData {
   label: string;
