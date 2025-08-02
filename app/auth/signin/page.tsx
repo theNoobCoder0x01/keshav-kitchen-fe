@@ -15,7 +15,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Eye, EyeOff, ChefHat, Lock, Mail } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Eye, EyeOff, ChefHat, Lock, Mail, Shield, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SignInPage() {
@@ -56,34 +57,56 @@ export default function SignInPage() {
     }
   };
 
+  const fillDemoCredentials = () => {
+    setEmail("admin@kitchen.com");
+    setPassword("admin123");
+  };
+
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md animate-fade-in">
-        <Card className="glass border-0 shadow-modern-xl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.03"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40" />
+      
+      <div className="w-full max-w-md animate-fade-in relative z-10">
+        <Card className="shadow-modern-xl border-0 bg-background/95 backdrop-blur-sm" variant="elevated">
           <CardHeader className="text-center space-y-6 pb-8">
-            {/* Brand Logo */}
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg">
-              <ChefHat className="w-10 h-10 text-primary-foreground" />
+            {/* Brand Logo with enhanced styling */}
+            <div className="relative mx-auto group">
+              <div className="w-20 h-20 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-modern-lg group-hover:shadow-modern-xl transition-all duration-300 group-hover:scale-105">
+                <ChefHat className="w-10 h-10 text-primary-foreground" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-primary rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-lg" />
             </div>
 
-            <div className="space-y-3">
-              <div>
+            <div className="space-y-4">
+              <div className="relative">
                 <h1 className="text-3xl font-bold text-gradient">KESHAV</h1>
-                <p className="text-lg font-medium text-primary/80 italic">Kitchen</p>
+                <p className="text-lg font-medium text-secondary italic">Kitchen</p>
+                <Badge 
+                  variant="secondary" 
+                  className="absolute -top-2 -right-8 text-xs px-2 py-1 animate-pulse"
+                >
+                  v2.0
+                </Badge>
               </div>
-              <CardTitle className="text-2xl font-bold text-foreground">
-                Welcome Back
-              </CardTitle>
-              <CardDescription className="body-large text-muted-foreground">
-                Sign in to your kitchen management account
-              </CardDescription>
+              <div className="space-y-2">
+                <CardTitle className="text-2xl font-bold text-foreground">
+                  Welcome Back
+                </CardTitle>
+                <CardDescription className="text-base text-muted-foreground">
+                  Sign in to your kitchen management account
+                </CardDescription>
+              </div>
             </div>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="form-group">
-                <Label htmlFor="email" className="form-label">Email Address</Label>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                  Email Address
+                </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -93,13 +116,16 @@ export default function SignInPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
                     required
-                    className="pl-10 form-input"
+                    className="pl-10 h-11 border-border/50 focus:border-primary transition-all duration-200"
+                    autoComplete="email"
                   />
                 </div>
               </div>
 
-              <div className="form-group">
-                <Label htmlFor="password" className="form-label">Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                  Password
+                </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -109,14 +135,16 @@ export default function SignInPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
-                    className="pl-10 pr-10 form-input"
+                    className="pl-10 pr-10 h-11 border-border/50 focus:border-primary transition-all duration-200"
+                    autoComplete="current-password"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 p-0 hover:bg-transparent"
+                    size="icon-sm"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 hover:bg-muted"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4 text-muted-foreground" />
@@ -129,66 +157,93 @@ export default function SignInPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg btn-hover"
+                variant="gradient"
+                size="lg"
+                className="w-full shadow-modern-lg hover:shadow-modern-xl transition-all duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
+                    <div className="w-4 h-4 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin mr-2" />
                     Signing in...
                   </>
                 ) : (
-                  "Sign In"
+                  <>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Sign In
+                  </>
                 )}
               </Button>
             </form>
 
-            <Separator className="my-6" />
-
-            {/* Demo Credentials */}
-            <div className="glass p-4 rounded-xl border border-primary/10">
-              <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-primary" />
-                Demo Credentials
-              </h4>
-              <div className="space-y-2 body-small text-muted-foreground">
-                <div className="flex justify-between">
-                  <span>Email:</span>
-                  <code className="text-foreground bg-muted px-2 py-1 rounded">
-                    admin@kitchen.com
-                  </code>
-                </div>
-                <div className="flex justify-between">
-                  <span>Password:</span>
-                  <code className="text-foreground bg-muted px-2 py-1 rounded">
-                    admin123
-                  </code>
-                </div>
+            <div className="relative">
+              <Separator className="my-6" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-background px-2 text-xs text-muted-foreground">
+                  OR
+                </span>
               </div>
             </div>
 
+            {/* Enhanced Demo Credentials */}
+            <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20" variant="outlined">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-foreground flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Demo Credentials
+                  </h4>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fillDemoCredentials}
+                    className="text-xs hover:bg-primary/10"
+                  >
+                    Auto-fill
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">Email:</span>
+                    <code className="text-sm text-foreground bg-background/60 px-2 py-1 rounded border">
+                      admin@kitchen.com
+                    </code>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">Password:</span>
+                    <code className="text-sm text-foreground bg-background/60 px-2 py-1 rounded border">
+                      admin123
+                    </code>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Footer Links */}
-            <div className="text-center space-y-4">
-              <div className="flex justify-center space-x-6 body-small">
+            <div className="text-center space-y-4 pt-4">
+              <div className="flex justify-center gap-6 text-xs">
                 <a
                   href="#"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors duration-200"
                 >
                   Terms of Service
                 </a>
                 <a
                   href="#"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors duration-200"
                 >
                   Privacy Policy
                 </a>
                 <a
                   href="#"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors duration-200"
                 >
                   Support
                 </a>
               </div>
+              <p className="text-xs text-muted-foreground">
+                © 2024 Keshav Kitchen. All rights reserved.
+              </p>
             </div>
           </CardContent>
         </Card>

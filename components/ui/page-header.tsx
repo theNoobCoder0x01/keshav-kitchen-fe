@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
-  title: string;
+  title: string | ReactNode;
   subtitle?: string;
   description?: string;
   actions?: ReactNode;
@@ -13,6 +13,7 @@ interface PageHeaderProps {
   size?: "sm" | "md" | "lg";
   gradient?: boolean;
   centered?: boolean;
+  children?: ReactNode;
 }
 
 export function PageHeader({
@@ -25,6 +26,7 @@ export function PageHeader({
   size = "md",
   gradient = false,
   centered = false,
+  children,
 }: PageHeaderProps) {
   return (
     <div
@@ -109,6 +111,9 @@ export function PageHeader({
           </div>
         )}
       </div>
+
+      {/* Children for additional content */}
+      {children}
     </div>
   );
 }
@@ -157,26 +162,28 @@ export function FeatureHeader({
   actions?: ReactNode;
   className?: string;
 }) {
+  const titleWithStatus = (
+    <div className="flex items-center gap-3">
+      {title}
+      {status && (
+        <span className={cn(
+          "px-2 py-1 rounded-full text-xs font-medium uppercase tracking-wider",
+          {
+            "bg-primary/10 text-primary": status === "new",
+            "bg-yellow-100 text-yellow-700": status === "beta",
+            "bg-success/10 text-success": status === "updated",
+          }
+        )}>
+          {status}
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <div className={cn("relative", className)}>
       <PageHeader
-        title={
-          <div className="flex items-center gap-3">
-            {title}
-            {status && (
-              <span className={cn(
-                "px-2 py-1 rounded-full text-xs font-medium uppercase tracking-wider",
-                {
-                  "bg-primary/10 text-primary": status === "new",
-                  "bg-yellow-100 text-yellow-700": status === "beta",
-                  "bg-success/10 text-success": status === "updated",
-                }
-              )}>
-                {status}
-              </span>
-            )}
-          </div>
-        }
+        title={titleWithStatus}
         description={description}
         actions={actions}
         size="md"
