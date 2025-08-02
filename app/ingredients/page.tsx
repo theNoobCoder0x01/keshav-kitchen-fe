@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  fetchIngredients,
-  createIngredient,
-  updateIngredient,
-  deleteIngredient,
-} from "@/lib/api/ingredients";
-import { Button } from "@/components/ui/button";
 import { AddEditIngredientDialog } from "@/components/dialogs/add-edit-ingredient-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  createIngredient,
+  deleteIngredient,
+  fetchIngredients,
+  updateIngredient,
+} from "@/lib/api/ingredients";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function IngredientsPage() {

@@ -2,9 +2,23 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, CheckCircle, Download, FileSpreadsheet, Upload, X } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  Download,
+  FileSpreadsheet,
+  Upload,
+  X,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,7 +28,11 @@ interface ImportRecipesDialogProps {
   onImportSuccess: () => void;
 }
 
-export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: ImportRecipesDialogProps) {
+export function ImportRecipesDialog({
+  isOpen,
+  onOpenChange,
+  onImportSuccess,
+}: ImportRecipesDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
@@ -125,7 +143,7 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
         "Ingredients (comma-separated)",
         "Quantities (comma-separated)",
         "Units (comma-separated)",
-        "Cost Per Unit (comma-separated, optional)"
+        "Cost Per Unit (comma-separated, optional)",
       ],
       [
         "Butter Potato",
@@ -137,7 +155,7 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
         "Potato,Tomato,Peas,Cheese,Ginger,Cream,Butter",
         "500,200,100,20,10,100,50",
         "grams,grams,grams,grams,grams,ml,grams",
-        "2.5,0.5,0.3,0.1,0.05,1.2,0.8"
+        "2.5,0.5,0.3,0.1,0.05,1.2,0.8",
       ],
       [
         "Chocolate Cake",
@@ -149,14 +167,14 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
         "Flour,Sugar,Cocoa,Paneer,Milk,Oil",
         "200,150,50,3,200,100",
         "grams,grams,grams,pieces,ml,ml",
-        "0.8,1.2,2.5,0.3,0.6,1.0"
-      ]
+        "0.8,1.2,2.5,0.3,0.6,1.0",
+      ],
     ];
 
     // Convert to CSV format
-    const csvContent = templateData.map(row => 
-      row.map(cell => `"${cell}"`).join(",")
-    ).join("\n");
+    const csvContent = templateData
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
 
     // Create and download file
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -187,143 +205,170 @@ export function ImportRecipesDialog({ isOpen, onOpenChange, onImportSuccess }: I
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5" />
-            Import Recipes from Excel
-          </DialogTitle>
-          <DialogDescription>
-            Upload an Excel or CSV file to import multiple recipes at once. 
-            Make sure your file follows the required format.
-          </DialogDescription>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5" />
+              Import Recipes from Excel
+            </DialogTitle>
+            <DialogDescription>
+              Upload an Excel or CSV file to import multiple recipes at once.
+              Make sure your file follows the required format.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-6">
-          {/* File Upload Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="file-upload">Select Excel/CSV File</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadTemplate}
-                className="flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Download Template
-              </Button>
-            </div>
+          <div className="space-y-6">
+            {/* File Upload Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="file-upload">Select Excel/CSV File</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadTemplate}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Template
+                </Button>
+              </div>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <input
-                ref={fileInputRef}
-                id="file-upload"
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              
-              {!file ? (
-                <div className="space-y-4">
-                  <Upload className="w-12 h-12 mx-auto text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">
-                      Click to select a file or drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Supports .xlsx, .xls, and .csv files
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Choose File
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <CheckCircle className="w-12 h-12 mx-auto text-green-500" />
-                  <div>
-                    <p className="font-medium text-green-700">{file.name}</p>
-                    <p className="text-sm text-gray-500">
-                      {(file.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setFile(null);
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = "";
-                      }
-                    }}
-                  >
-                    Change File
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <input
+                  ref={fileInputRef}
+                  id="file-upload"
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
 
-          {/* Upload Progress */}
-          {uploadProgress && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="space-y-2">
-                  <p>
-                    Import completed: {uploadProgress.imported} of {uploadProgress.total} recipes imported successfully.
-                  </p>
-                  {uploadProgress.errors.length > 0 && (
+                {!file ? (
+                  <div className="space-y-4">
+                    <Upload className="w-12 h-12 mx-auto text-gray-400" />
                     <div>
-                      <p className="font-medium text-red-600">Errors:</p>
-                      <ul className="text-sm text-red-600 space-y-1 max-h-32 overflow-y-auto">
-                        {uploadProgress.errors.map((error, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <X className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                            <span>{error}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <p className="text-sm text-gray-600">
+                        Click to select a file or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Supports .xlsx, .xls, and .csv files
+                      </p>
                     </div>
-                  )}
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
+                    <Button
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Choose File
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <CheckCircle className="w-12 h-12 mx-auto text-green-500" />
+                    <div>
+                      <p className="font-medium text-green-700">{file.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {(file.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setFile(null);
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = "";
+                        }
+                      }}
+                    >
+                      Change File
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          {/* Instructions */}
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Required Format:</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• <strong>Recipe Name:</strong> Name of the recipe (required)</li>
-              <li>• <strong>Category:</strong> Recipe category (required)</li>
-              <li>• <strong>Subcategory:</strong> Recipe subcategory (required)</li>
-              <li>• <strong>Description:</strong> Recipe description (optional)</li>
-              <li>• <strong>Instructions:</strong> Cooking instructions (optional)</li>
-              <li>• <strong>Servings:</strong> Number of servings (optional)</li>
-              <li>• <strong>Ingredients:</strong> Comma-separated ingredient names (required)</li>
-              <li>• <strong>Quantities:</strong> Comma-separated quantities (required)</li>
-              <li>• <strong>Units:</strong> Comma-separated units (required)</li>
-              <li>• <strong>Cost Per Unit:</strong> Comma-separated costs (optional)</li>
-            </ul>
+            {/* Upload Progress */}
+            {uploadProgress && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <p>
+                      Import completed: {uploadProgress.imported} of{" "}
+                      {uploadProgress.total} recipes imported successfully.
+                    </p>
+                    {uploadProgress.errors.length > 0 && (
+                      <div>
+                        <p className="font-medium text-red-600">Errors:</p>
+                        <ul className="text-sm text-red-600 space-y-1 max-h-32 overflow-y-auto">
+                          {uploadProgress.errors.map((error, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <X className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              <span>{error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Instructions */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">
+                Required Format:
+              </h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>
+                  • <strong>Recipe Name:</strong> Name of the recipe (required)
+                </li>
+                <li>
+                  • <strong>Category:</strong> Recipe category (required)
+                </li>
+                <li>
+                  • <strong>Subcategory:</strong> Recipe subcategory (required)
+                </li>
+                <li>
+                  • <strong>Description:</strong> Recipe description (optional)
+                </li>
+                <li>
+                  • <strong>Instructions:</strong> Cooking instructions
+                  (optional)
+                </li>
+                <li>
+                  • <strong>Servings:</strong> Number of servings (optional)
+                </li>
+                <li>
+                  • <strong>Ingredients:</strong> Comma-separated ingredient
+                  names (required)
+                </li>
+                <li>
+                  • <strong>Quantities:</strong> Comma-separated quantities
+                  (required)
+                </li>
+                <li>
+                  • <strong>Units:</strong> Comma-separated units (required)
+                </li>
+                <li>
+                  • <strong>Cost Per Unit:</strong> Comma-separated costs
+                  (optional)
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
 
-        <DialogFooter className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleUpload}
-            disabled={!file || isUploading}
-            className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white"
-          >
-            {isUploading ? "Importing..." : "Import Recipes"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpload}
+              disabled={!file || isUploading}
+              className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white"
+            >
+              {isUploading ? "Importing..." : "Import Recipes"}
+            </Button>
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

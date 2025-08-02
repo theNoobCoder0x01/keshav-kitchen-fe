@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 
 export const dynamic = "force-dynamic";
@@ -33,10 +33,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file type
@@ -48,8 +45,11 @@ export async function POST(request: NextRequest) {
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: "Invalid file type. Please upload an Excel file (.xlsx, .xls) or CSV file." },
-        { status: 400 }
+        {
+          error:
+            "Invalid file type. Please upload an Excel file (.xlsx, .xls) or CSV file.",
+        },
+        { status: 400 },
       );
     }
 
@@ -62,8 +62,10 @@ export async function POST(request: NextRequest) {
 
     if (data.length < 2) {
       return NextResponse.json(
-        { error: "Excel file must have at least a header row and one data row" },
-        { status: 400 }
+        {
+          error: "Excel file must have at least a header row and one data row",
+        },
+        { status: 400 },
       );
     }
 
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
     const headers = data[0] as string[];
     const requiredHeaders = ["Recipe Name", "Category", "Subcategory"];
     const missingHeaders = requiredHeaders.filter(
-      (header) => !headers.includes(header)
+      (header) => !headers.includes(header),
     );
 
     if (missingHeaders.length > 0) {
@@ -80,7 +82,7 @@ export async function POST(request: NextRequest) {
           error: `Missing required headers: ${missingHeaders.join(", ")}`,
           expectedHeaders: [
             "Recipe Name",
-            "Category", 
+            "Category",
             "Subcategory",
             "Description (optional)",
             "Instructions (optional)",
@@ -88,10 +90,10 @@ export async function POST(request: NextRequest) {
             "Ingredients (comma-separated)",
             "Quantities (comma-separated)",
             "Units (comma-separated)",
-            "Cost Per Unit (comma-separated, optional)"
-          ]
+            "Cost Per Unit (comma-separated, optional)",
+          ],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -104,30 +106,58 @@ export async function POST(request: NextRequest) {
       if (!row || row.length === 0) continue;
 
       try {
-        const recipeName = String(row[headers.indexOf("Recipe Name")] || "").trim();
+        const recipeName = String(
+          row[headers.indexOf("Recipe Name")] || "",
+        ).trim();
         const category = String(row[headers.indexOf("Category")] || "").trim();
-        const subcategory = String(row[headers.indexOf("Subcategory")] || "").trim();
-        const description = String(row[headers.indexOf("Description (optional)")] || "").trim();
-        const instructions = String(row[headers.indexOf("Instructions (optional)")] || "").trim();
-        const servings = row[headers.indexOf("Servings (optional)")] ? 
-          parseInt(String(row[headers.indexOf("Servings (optional)")])) : undefined;
+        const subcategory = String(
+          row[headers.indexOf("Subcategory")] || "",
+        ).trim();
+        const description = String(
+          row[headers.indexOf("Description (optional)")] || "",
+        ).trim();
+        const instructions = String(
+          row[headers.indexOf("Instructions (optional)")] || "",
+        ).trim();
+        const servings = row[headers.indexOf("Servings (optional)")]
+          ? parseInt(String(row[headers.indexOf("Servings (optional)")]))
+          : undefined;
 
         // Parse ingredients
-        const ingredientsStr = String(row[headers.indexOf("Ingredients (comma-separated)")] || "").trim();
-        const quantitiesStr = String(row[headers.indexOf("Quantities (comma-separated)")] || "").trim();
-        const unitsStr = String(row[headers.indexOf("Units (comma-separated)")] || "").trim();
-        const costPerUnitStr = String(row[headers.indexOf("Cost Per Unit (comma-separated, optional)")] || "").trim();
+        const ingredientsStr = String(
+          row[headers.indexOf("Ingredients (comma-separated)")] || "",
+        ).trim();
+        const quantitiesStr = String(
+          row[headers.indexOf("Quantities (comma-separated)")] || "",
+        ).trim();
+        const unitsStr = String(
+          row[headers.indexOf("Units (comma-separated)")] || "",
+        ).trim();
+        const costPerUnitStr = String(
+          row[headers.indexOf("Cost Per Unit (comma-separated, optional)")] ||
+            "",
+        ).trim();
 
         if (!recipeName || !category || !subcategory) {
-          errors.push(`Row ${i + 1}: Missing required fields (Recipe Name, Category, or Subcategory)`);
+          errors.push(
+            `Row ${i + 1}: Missing required fields (Recipe Name, Category, or Subcategory)`,
+          );
           continue;
         }
 
         // Parse ingredients
-        const ingredientNames = ingredientsStr.split(",").map(s => s.trim()).filter(s => s);
-        const quantities = quantitiesStr.split(",").map(s => parseFloat(s.trim()) || 0);
-        const units = unitsStr.split(",").map(s => s.trim()).filter(s => s);
-        const costPerUnits = costPerUnitStr.split(",").map(s => {
+        const ingredientNames = ingredientsStr
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s);
+        const quantities = quantitiesStr
+          .split(",")
+          .map((s) => parseFloat(s.trim()) || 0);
+        const units = unitsStr
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s);
+        const costPerUnits = costPerUnitStr.split(",").map((s) => {
           const val = parseFloat(s.trim());
           return isNaN(val) ? undefined : val;
         });
@@ -137,8 +167,13 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        if (ingredientNames.length !== quantities.length || ingredientNames.length !== units.length) {
-          errors.push(`Row ${i + 1}: Mismatch in ingredients, quantities, and units count`);
+        if (
+          ingredientNames.length !== quantities.length ||
+          ingredientNames.length !== units.length
+        ) {
+          errors.push(
+            `Row ${i + 1}: Mismatch in ingredients, quantities, and units count`,
+          );
           continue;
         }
 
@@ -165,12 +200,12 @@ export async function POST(request: NextRequest) {
 
     if (errors.length > 0) {
       return NextResponse.json(
-        { 
-          error: "Validation errors found", 
+        {
+          error: "Validation errors found",
           errors,
-          validRecipes: recipes.length
+          validRecipes: recipes.length,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -190,17 +225,17 @@ export async function POST(request: NextRequest) {
             servings: recipe.servings,
             userId: session.user.id,
             ingredients: {
-              create: recipe.ingredients.map(ingredient => ({
+              create: recipe.ingredients.map((ingredient) => ({
                 name: ingredient.name,
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
                 costPerUnit: ingredient.costPerUnit,
-              }))
-            }
+              })),
+            },
           },
           include: {
-            ingredients: true
-          }
+            ingredients: true,
+          },
         });
         importedRecipes.push(createdRecipe);
       } catch (error) {
@@ -213,20 +248,19 @@ export async function POST(request: NextRequest) {
       importedCount: importedRecipes.length,
       totalRecipes: recipes.length,
       errors: importErrors,
-      importedRecipes: importedRecipes.map(recipe => ({
+      importedRecipes: importedRecipes.map((recipe) => ({
         id: recipe.id,
         name: recipe.name,
         category: recipe.category,
         subcategory: recipe.subcategory,
-        ingredientsCount: recipe.ingredients.length
-      }))
+        ingredientsCount: recipe.ingredients.length,
+      })),
     });
-
   } catch (error) {
     console.error("Import recipes API error:", error);
     return NextResponse.json(
       { error: "Failed to import recipes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

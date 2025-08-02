@@ -3,9 +3,8 @@
  * Example usage of the new Web Crypto password hashing
  */
 
-import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/crypto-utils";
-import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 // Validation schemas

@@ -63,5 +63,7 @@ export async function createReportPDF(
   date: string,
 ): Promise<Buffer> {
   // Return a simple error message as PDF is not supported in this API
-  throw new Error("PDF generation not supported for this report type. Please use Excel or CSV format.");
+  throw new Error(
+    "PDF generation not supported for this report type. Please use Excel or CSV format.",
+  );
 }

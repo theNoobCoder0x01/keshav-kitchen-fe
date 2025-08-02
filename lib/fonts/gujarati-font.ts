@@ -11,24 +11,24 @@ import jsPDF from "jspdf";
 export function addGujaratiFontSupport(doc: jsPDF) {
   // For immediate use, we'll configure jsPDF to handle Unicode better
   // and use web fonts that support Gujarati
-  
+
   // Note: For full Gujarati support, you need to:
   // 1. Get a TTF font that supports Gujarati script (like Noto Sans Gujarati, Lohit Gujarati, etc.)
   // 2. Convert it using jsPDF's font converter
   // 3. Add the generated font file to your project
-  
+
   // For now, we'll use the built-in font with Unicode support
   try {
     // Enable Unicode support for text rendering
-    doc.setFont('helvetica', 'normal');
-    
+    doc.setFont("helvetica", "normal");
+
     // You can replace this with actual Gujarati font once converted
     // Example: doc.addFont('path/to/gujarati-font.js', 'GujaratiFont', 'normal');
     // Then: doc.setFont('GujaratiFont', 'normal');
-    
+
     return true;
   } catch (error) {
-    console.warn('Failed to add Gujarati font support:', error);
+    console.warn("Failed to add Gujarati font support:", error);
     return false;
   }
 }
@@ -47,7 +47,7 @@ export function encodeTextForPDF(text: string): string {
     // Convert to UTF-8 if not already
     return decodeURIComponent(encodeURIComponent(text));
   } catch (error) {
-    console.warn('Text encoding failed, using original text:', error);
+    console.warn("Text encoding failed, using original text:", error);
     return text;
   }
 }

@@ -26,7 +26,6 @@ model User {
   reports       Report[]
   menus         Menu[]
   recipes       Recipe[]
-  calendarEvents CalendarEvent[]
 
   @@index([kitchenId])
 }
@@ -140,8 +139,6 @@ model CalendarEvent {
   endDate     DateTime?
   location    String?
   url         String?
-  kitchenId   String
-  kitchen     Kitchen  @relation(fields: [kitchenId], references: [id])
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())

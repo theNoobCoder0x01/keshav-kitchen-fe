@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import puppeteer from "puppeteer";
 import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
+import { PrismaClient } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import puppeteer from "puppeteer";
 
 const prisma = new PrismaClient();
 
 // Simplified HTML template for PDF generation that avoids complex CSS
 function generateRecipeHTML(recipe: any) {
   const totalCost = recipe.ingredients.reduce(
-    (sum: number, ingredient: any) => sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0
+    (sum: number, ingredient: any) =>
+      sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
+    0,
   );
 
   return `
@@ -184,10 +185,10 @@ function generateRecipeHTML(recipe: any) {
         <!-- Header -->
         <div class="header">
           <h1 class="recipe-title">${encodeTextForPDF(recipe.name)}</h1>
-          ${recipe.description ? `<p class="recipe-description">${encodeTextForPDF(recipe.description)}</p>` : ''}
+          ${recipe.description ? `<p class="recipe-description">${encodeTextForPDF(recipe.description)}</p>` : ""}
           <div class="recipe-meta">
             <strong>Category:</strong> ${encodeTextForPDF(recipe.category)}
-            ${recipe.subcategory ? ` | <strong>Subcategory:</strong> ${encodeTextForPDF(recipe.subcategory)}` : ''}
+            ${recipe.subcategory ? ` | <strong>Subcategory:</strong> ${encodeTextForPDF(recipe.subcategory)}` : ""}
           </div>
         </div>
 
@@ -195,12 +196,16 @@ function generateRecipeHTML(recipe: any) {
         <div class="stats-section">
           <h2 class="stats-title">Recipe Information</h2>
           <table class="stats-table">
-            ${recipe.servings ? `
+            ${
+              recipe.servings
+                ? `
               <tr>
                 <td>Servings</td>
                 <td>${recipe.servings}</td>
               </tr>
-            ` : ''}
+            `
+                : ""
+            }
             <tr>
               <td>Cost per Serving</td>
               <td>₹${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}</td>
@@ -226,15 +231,19 @@ function generateRecipeHTML(recipe: any) {
               </tr>
             </thead>
             <tbody>
-              ${recipe.ingredients.map((ingredient: any) => `
+              ${recipe.ingredients
+                .map(
+                  (ingredient: any) => `
                 <tr>
                   <td>${encodeTextForPDF(ingredient.name)}</td>
                   <td>${ingredient.quantity}</td>
                   <td>${encodeTextForPDF(ingredient.unit)}</td>
-                  <td>${ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : 'N/A'}</td>
-                  <td>${ingredient.costPerUnit ? `₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}` : 'N/A'}</td>
+                  <td>${ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : "N/A"}</td>
+                  <td>${ingredient.costPerUnit ? `₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}` : "N/A"}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join("")}
               <tr class="total-cost-row">
                 <td colspan="4"><strong>Total Ingredients Cost</strong></td>
                 <td><strong>₹${totalCost.toFixed(2)}</strong></td>
@@ -244,27 +253,32 @@ function generateRecipeHTML(recipe: any) {
         </div>
 
         <!-- Instructions -->
-        ${recipe.instructions ? `
+        ${
+          recipe.instructions
+            ? `
           <div class="section">
             <h2 class="section-title">Instructions</h2>
             <ol class="instructions-list">
-              ${recipe.instructions.split('\n')
+              ${recipe.instructions
+                .split("\n")
                 .map((instruction: string) => {
                   const trimmed = instruction.trim();
-                  if (!trimmed) return '';
+                  if (!trimmed) return "";
                   return `<li class="instruction-item">${encodeTextForPDF(trimmed)}</li>`;
                 })
                 .filter((item: string) => item)
-                .join('')}
+                .join("")}
             </ol>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <!-- Footer -->
         <div class="footer">
           <p><strong>Keshav Kitchen Management System</strong></p>
           <p>Recipe printed on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
-          ${recipe.user?.name ? `<p>Created by: ${encodeTextForPDF(recipe.user.name)}</p>` : ''}
+          ${recipe.user?.name ? `<p>Created by: ${encodeTextForPDF(recipe.user.name)}</p>` : ""}
         </div>
       </body>
     </html>
@@ -278,7 +292,7 @@ export async function POST(request: NextRequest) {
     if (!recipeId) {
       return NextResponse.json(
         { error: "Recipe ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -308,10 +322,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!recipe) {
-      return NextResponse.json(
-        { error: "Recipe not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
     // Recipe data is already in the correct format
@@ -323,23 +334,23 @@ export async function POST(request: NextRequest) {
     // Launch puppeteer
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
     const page = await browser.newPage();
-    
+
     // Set content and wait for it to load
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
     // Generate PDF
     const pdf = await page.pdf({
-      format: 'A4',
+      format: "A4",
       printBackground: true,
       margin: {
-        top: '20px',
-        right: '20px',
-        bottom: '20px',
-        left: '20px',
+        top: "20px",
+        right: "20px",
+        bottom: "20px",
+        left: "20px",
       },
     });
 
@@ -348,16 +359,15 @@ export async function POST(request: NextRequest) {
     // Return PDF as response
     return new NextResponse(pdf, {
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="recipe-${recipe.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf"`,
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="recipe-${recipe.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf"`,
       },
     });
-
   } catch (error) {
     console.error("Error generating recipe PDF:", error);
     return NextResponse.json(
       { error: "Failed to generate PDF" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
