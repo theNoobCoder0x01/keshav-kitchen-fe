@@ -43,6 +43,33 @@ export function parseICSFile(
 }
 
 /**
+ * Parse ICS file content and extract ALL events (for import purposes)
+ */
+export function parseICSFileForImport(icsContent: string): ParsedICSData {
+  const events: CalendarEvent[] = [];
+  let tithi: string | undefined;
+
+  // Split the ICS content into individual events
+  const eventBlocks = icsContent.split("BEGIN:VEVENT");
+
+  for (const block of eventBlocks) {
+    if (!block.trim()) continue;
+
+    const event = parseEventBlock(block);
+    if (event) {
+      events.push(event);
+
+      // Look for tithi information in the event summary or description
+      if (!tithi) {
+        tithi = extractTithi(event.summary, event.description);
+      }
+    }
+  }
+
+  return { events, tithi };
+}
+
+/**
  * Parse a single VEVENT block from ICS content
  */
 function parseEventBlock(block: string): CalendarEvent | null {
