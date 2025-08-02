@@ -265,6 +265,7 @@ export default function MenuPage() {
               date={selectedDate}
               onDateChange={handleDateChange}
               className="h-full min-h-[120px]"
+              kitchenId={kitchens[activeTab]?.id || session?.user?.kitchenId}
             />
           </div>
 

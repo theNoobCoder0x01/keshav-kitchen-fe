@@ -4,6 +4,7 @@ export interface CalendarEvent {
   startDate: Date;
   endDate?: Date;
   location?: string;
+  uid?: string;
 }
 
 export interface ParsedICSData {
@@ -48,6 +49,7 @@ function parseEventBlock(block: string): CalendarEvent | null {
   let startDate: Date | null = null;
   let endDate: Date | null = null;
   let location = '';
+  let uid = '';
 
   for (const line of lines) {
     const trimmedLine = line.trim();
@@ -56,11 +58,13 @@ function parseEventBlock(block: string): CalendarEvent | null {
       summary = trimmedLine.substring(8);
     } else if (trimmedLine.startsWith('DESCRIPTION:')) {
       description = trimmedLine.substring(12);
-    } else if (trimmedLine.startsWith('DTSTART:')) {
-      const dateStr = trimmedLine.substring(8);
+    } else if (trimmedLine.startsWith('UID:')) {
+      uid = trimmedLine.substring(4);
+    } else if (trimmedLine.startsWith('DTSTART')) {
+      const dateStr = extractDateFromLine(trimmedLine);
       startDate = parseICSDate(dateStr);
-    } else if (trimmedLine.startsWith('DTEND:')) {
-      const dateStr = trimmedLine.substring(6);
+    } else if (trimmedLine.startsWith('DTEND')) {
+      const dateStr = extractDateFromLine(trimmedLine);
       endDate = parseICSDate(dateStr);
     } else if (trimmedLine.startsWith('LOCATION:')) {
       location = trimmedLine.substring(9);
@@ -75,7 +79,21 @@ function parseEventBlock(block: string): CalendarEvent | null {
     startDate,
     endDate: endDate || undefined,
     location,
+    uid,
   };
+}
+
+/**
+ * Extract date string from DTSTART or DTEND line
+ */
+function extractDateFromLine(line: string): string {
+  // Handle formats like:
+  // DTSTART;VALUE=DATE:20250101
+  // DTSTART:20250101T000000Z
+  const colonIndex = line.indexOf(':');
+  if (colonIndex === -1) return '';
+  
+  return line.substring(colonIndex + 1);
 }
 
 /**
@@ -149,6 +167,7 @@ function extractTithi(summary: string, description?: string): string | undefined
     /(tritiya|tritya)/i,
     /(dwitiya|dwitya)/i,
     /(pratipada|pratipad)/i,
+    /(bij|trij|choth|panchmi|chhath|saptami|ashtami|navami|dashami|gyaras|baras|teras|chaudas|purnima)/i,
   ];
 
   for (const pattern of tithiPatterns) {
