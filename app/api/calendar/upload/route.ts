@@ -1,6 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { parseICSFile } from "@/lib/utils/ics-parser";
+import { parseAllICSEvents } from "@/lib/utils/ics-parser";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -67,9 +67,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse ICS file
-    const today = new Date();
-    const parsedData = parseICSFile(content, today);
+    // Parse ALL events from ICS file (not filtered by date)
+    const parsedData = parseAllICSEvents(content);
 
     if (parsedData.events.length === 0) {
       return NextResponse.json(
@@ -83,30 +82,30 @@ export async function POST(request: NextRequest) {
       where: { kitchenId },
     });
 
-    // Insert new calendar events
-    const calendarEvents = await Promise.all(
-      parsedData.events.map(async (event) => {
-        return prisma.calendarEvent.create({
-          data: {
-            uid:
-              event.summary.replace(/\s+/g, "-").toLowerCase() +
-              "-" +
-              event.startDate.getTime(),
-            summary: event.summary,
-            description: event.description,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
-            userId: user.id,
-          },
-        });
-      }),
-    );
+    // Prepare all events for bulk insertion
+    const eventsToCreate = parsedData.events.map((event) => ({
+      uid:
+        event.summary.replace(/\s+/g, "-").toLowerCase() +
+        "-" +
+        event.startDate.getTime(),
+      summary: event.summary,
+      description: event.description,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      location: event.location,
+      userId: user.id,
+      kitchenId: kitchenId,
+    }));
+
+    // Bulk insert all events at once
+    const calendarEvents = await prisma.calendarEvent.createMany({
+      data: eventsToCreate,
+    });
 
     return NextResponse.json({
       success: true,
-      message: `Successfully uploaded ${calendarEvents.length} calendar events`,
-      eventsCount: calendarEvents.length,
+      message: `Successfully uploaded ${calendarEvents.count} calendar events`,
+      eventsCount: calendarEvents.count,
     });
   } catch (error) {
     console.error("Error uploading calendar file:", error);
