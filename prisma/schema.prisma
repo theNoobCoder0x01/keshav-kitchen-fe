@@ -26,6 +26,7 @@ model User {
   reports       Report[]
   menus         Menu[]
   recipes       Recipe[]
+  calendarEvents CalendarEvent[]
 
   @@index([kitchenId])
 }
@@ -40,6 +41,7 @@ model Kitchen {
   users       User[]
   menus       Menu[]
   reports     Report[]
+  calendarEvents CalendarEvent[]
 }
 
 model Recipe {
@@ -127,6 +129,28 @@ model Report {
 
   @@index([kitchenId])
   @@index([userId])
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  uid         String   @unique // ICS UID field
+  summary     String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  url         String?
+  kitchenId   String
+  kitchen     Kitchen  @relation(fields: [kitchenId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([kitchenId])
+  @@index([userId])
+  @@index([startDate])
+  @@index([uid])
 }
 
 enum Role {

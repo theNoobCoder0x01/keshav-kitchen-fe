@@ -12,20 +12,23 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
-import { parseICSFile, getEventSummary } from "@/lib/utils/ics-parser";
 
 interface DateSelectorProps {
   date?: Date;
   onDateChange?: (date: Date) => void;
   subtitle?: string;
   className?: string;
+  kitchenId?: string;
 }
 
-interface ICSFileData {
-  name: string;
-  content: string;
-  events: any[];
-  lastUploaded: Date;
+interface CalendarEvent {
+  id: string;
+  summary: string;
+  description?: string;
+  startDate: string;
+  endDate?: string;
+  location?: string;
+  uid: string;
 }
 
 export function DateSelector({
@@ -33,48 +36,53 @@ export function DateSelector({
   onDateChange,
   subtitle,
   className,
+  kitchenId,
 }: DateSelectorProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(
     initialDate || new Date(),
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [icsFileData, setIcsFileData] = useState<ICSFileData | null>(null);
   const [currentEventInfo, setCurrentEventInfo] = useState<{
     tithi?: string;
     eventSummary?: string;
   }>({});
 
-  // Load ICS data from localStorage
+  // Fetch calendar events for the selected date
   useEffect(() => {
-    const savedData = localStorage.getItem('icsCalendarData');
-    if (savedData) {
+    const fetchCalendarEvents = async () => {
       try {
-        const parsed = JSON.parse(savedData);
-        setIcsFileData(parsed);
-      } catch (error) {
-        console.error('Error loading saved ICS data:', error);
-        localStorage.removeItem('icsCalendarData');
-      }
-    }
-  }, []);
-
-  // Update event info when date or ICS data changes
-  useEffect(() => {
-    if (icsFileData && icsFileData.content) {
-      try {
-        const parsedData = parseICSFile(icsFileData.content, selectedDate);
-        setCurrentEventInfo({
-          tithi: parsedData.tithi,
-          eventSummary: getEventSummary(parsedData.events),
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const params = new URLSearchParams({
+          date: dateStr,
+          ...(kitchenId && { kitchenId })
         });
+
+        const response = await fetch(`/api/calendar/events?${params}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.events.length > 0) {
+            // Extract tithi from event summaries
+            const tithi = extractTithi(data.events);
+            const eventSummary = getEventSummary(data.events);
+            
+            setCurrentEventInfo({
+              tithi,
+              eventSummary,
+            });
+          } else {
+            setCurrentEventInfo({});
+          }
+        } else {
+          setCurrentEventInfo({});
+        }
       } catch (error) {
-        console.error('Error parsing ICS data for date:', error);
+        console.error('Error fetching calendar events:', error);
         setCurrentEventInfo({});
       }
-    } else {
-      setCurrentEventInfo({});
-    }
-  }, [selectedDate, icsFileData]);
+    };
+
+    fetchCalendarEvents();
+  }, [selectedDate, kitchenId]);
 
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate);
@@ -100,6 +108,58 @@ export function DateSelector({
 
   const formatDate = (date: Date) => {
     return format(date, "EEEE, dd MMM yyyy");
+  };
+
+  // Extract tithi information from calendar events
+  const extractTithi = (events: CalendarEvent[]): string | undefined => {
+    for (const event of events) {
+      const text = `${event.summary} ${event.description || ''}`.toLowerCase();
+      
+      // Common Gujarati tithi patterns
+      const tithiPatterns = [
+        /(sud|shukla|waxing)\s+(panam|paksha|fortnight)/i,
+        /(vad|krishna|waning)\s+(panam|paksha|fortnight)/i,
+        /(purnima|full moon)/i,
+        /(amavasya|new moon)/i,
+        /(ekadashi|ekadasi)/i,
+        /(chaturdashi|chaturdasi)/i,
+        /(ashtami|ashtmi)/i,
+        /(navami|navmi)/i,
+        /(dashami|dashmi)/i,
+        /(trayodashi|trayodasi)/i,
+        /(dwadashi|dwadasi)/i,
+        /(saptami|saptmi)/i,
+        /(shashthi|shashthi)/i,
+        /(panchami|panchmi)/i,
+        /(chaturthi|chaturthi)/i,
+        /(tritiya|tritya)/i,
+        /(dwitiya|dwitya)/i,
+        /(pratipada|pratipad)/i,
+        /(bij|trij|choth|panchmi|chhath|saptami|ashtami|navami|dashami|gyaras|baras|teras|chaudas|purnima)/i,
+      ];
+
+      for (const pattern of tithiPatterns) {
+        const match = text.match(pattern);
+        if (match) {
+          return match[0];
+        }
+      }
+    }
+
+    return undefined;
+  };
+
+  // Get a formatted summary of events
+  const getEventSummary = (events: CalendarEvent[]): string => {
+    if (events.length === 0) return '';
+    
+    if (events.length === 1) {
+      return events[0].summary;
+    }
+    
+    // For multiple events, create a summary
+    const summaries = events.map(event => event.summary);
+    return summaries.join(', ');
   };
 
   // Determine what to show as subtitle

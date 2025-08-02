@@ -25,31 +25,75 @@ import {
   X, 
   CheckCircle,
   AlertCircle,
-  Trash2
+  Trash2,
+  RefreshCw
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { parseICSFile, getEventSummary } from "@/lib/utils/ics-parser";
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface ICSFileData {
-  name: string;
-  content: string;
-  events: any[];
-  lastUploaded: Date;
+interface CalendarEvent {
+  id: string;
+  summary: string;
+  description?: string;
+  startDate: string;
+  endDate?: string;
+  location?: string;
+  uid: string;
+}
+
+interface CalendarData {
+  events: CalendarEvent[];
+  totalCount: number;
+  lastUploaded?: string;
 }
 
 export function SettingsDialog({
   open,
   onOpenChange,
 }: SettingsDialogProps) {
-  const [icsFileData, setIcsFileData] = useState<ICSFileData | null>(null);
+  const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load calendar data on component mount
+  useEffect(() => {
+    if (open) {
+      loadCalendarData();
+    }
+  }, [open]);
+
+  const loadCalendarData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/calendar/events?date=' + new Date().toISOString().split('T')[0]);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.events.length > 0) {
+          setCalendarData({
+            events: data.events,
+            totalCount: data.events.length,
+            lastUploaded: data.events[0]?.createdAt
+          });
+        } else {
+          setCalendarData(null);
+        }
+      } else {
+        setCalendarData(null);
+      }
+    } catch (error) {
+      console.error('Error loading calendar data:', error);
+      setCalendarData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -70,71 +114,68 @@ export function SettingsDialog({
     setIsUploading(true);
 
     try {
-      const content = await file.text();
-      
-      // Validate ICS format
-      if (!content.includes('BEGIN:VCALENDAR') || !content.includes('END:VCALENDAR')) {
-        toast.error('Invalid ICS file format. Please select a valid calendar file.');
-        return;
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/calendar/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload file');
       }
 
-      // Parse the ICS file to validate it contains events
-      const today = new Date();
-      const parsedData = parseICSFile(content, today);
+      const result = await response.json();
       
-      if (parsedData.events.length === 0) {
-        toast.warning('No events found in the ICS file for today. The file may be valid but contains no events for the current date.');
-      }
-
-      const newIcsFileData: ICSFileData = {
-        name: file.name,
-        content,
-        events: parsedData.events,
-        lastUploaded: new Date(),
-      };
-
-      setIcsFileData(newIcsFileData);
+      toast.success(result.message);
       
-      // Save to localStorage
-      localStorage.setItem('icsCalendarData', JSON.stringify(newIcsFileData));
-      
-      toast.success(`Calendar file "${file.name}" uploaded successfully!`);
+      // Reload calendar data
+      await loadCalendarData();
       
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    } catch (error) {
-      console.error('Error processing ICS file:', error);
-      toast.error('Failed to process the ICS file. Please check the file format and try again.');
+    } catch (error: any) {
+      console.error('Error uploading ICS file:', error);
+      toast.error(error.message || 'Failed to upload calendar file');
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleRemoveFile = () => {
-    setIcsFileData(null);
-    localStorage.removeItem('icsCalendarData');
-    toast.success('Calendar file removed successfully');
+  const handleClearData = async () => {
+    if (!calendarData) return;
+
+    setIsClearing(true);
+
+    try {
+      const response = await fetch('/api/calendar/clear', {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to clear data');
+      }
+
+      const result = await response.json();
+      
+      toast.success(result.message);
+      setCalendarData(null);
+    } catch (error: any) {
+      console.error('Error clearing calendar data:', error);
+      toast.error(error.message || 'Failed to clear calendar data');
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
   };
-
-  // Load saved ICS data on component mount
-  useEffect(() => {
-    const savedData = localStorage.getItem('icsCalendarData');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setIcsFileData(parsed);
-      } catch (error) {
-        console.error('Error loading saved ICS data:', error);
-        localStorage.removeItem('icsCalendarData');
-      }
-    }
-  }, []);
 
   return (
     <TooltipProvider>
@@ -177,7 +218,7 @@ export function SettingsDialog({
                     <Label className="text-sm font-medium text-[#4b465c]">
                       Calendar File (ICS)
                     </Label>
-                    {icsFileData && (
+                    {calendarData && (
                       <Badge className="bg-green-100 text-green-800 border-green-200">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         Active
@@ -185,7 +226,7 @@ export function SettingsDialog({
                     )}
                   </div>
 
-                  {!icsFileData ? (
+                  {!calendarData ? (
                     <div className="border-2 border-dashed border-[#dbdade] rounded-lg p-6 text-center hover:border-[#674af5]/50 transition-colors">
                       <div className="space-y-3">
                         <div className="w-12 h-12 bg-[#674af5]/10 rounded-full flex items-center justify-center mx-auto">
@@ -200,7 +241,7 @@ export function SettingsDialog({
                           </p>
                           <Button
                             onClick={handleFileSelect}
-                            disabled={isUploading}
+                            disabled={isUploading || isLoading}
                             className="bg-[#674af5] hover:bg-[#674af5]/90 text-white"
                           >
                             {isUploading ? (
@@ -227,37 +268,53 @@ export function SettingsDialog({
                           </div>
                           <div>
                             <p className="text-sm font-medium text-[#4b465c]">
-                              {icsFileData.name}
+                              Calendar Events Loaded
                             </p>
                             <p className="text-xs text-[#4b465c]/70">
-                              Uploaded {icsFileData.lastUploaded.toLocaleDateString()}
+                              {calendarData.totalCount} events available
                             </p>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleRemoveFile}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={loadCalendarData}
+                            disabled={isLoading}
+                            className="text-[#674af5] hover:text-[#674af5]/80 hover:bg-[#674af5]/10"
+                          >
+                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleClearData}
+                            disabled={isClearing}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            {isClearing ? (
+                              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                       
-                      {icsFileData.events.length > 0 && (
+                      {calendarData.events.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-[#dbdade]">
                           <p className="text-xs text-[#4b465c]/70 mb-2">
-                            Sample events found: {icsFileData.events.length}
+                            Sample events: {calendarData.events.length}
                           </p>
                           <div className="space-y-1">
-                            {icsFileData.events.slice(0, 3).map((event, index) => (
+                            {calendarData.events.slice(0, 3).map((event, index) => (
                               <div key={index} className="text-xs bg-white rounded px-2 py-1 border">
                                 {event.summary}
                               </div>
                             ))}
-                            {icsFileData.events.length > 3 && (
+                            {calendarData.events.length > 3 && (
                               <p className="text-xs text-[#4b465c]/50">
-                                +{icsFileData.events.length - 3} more events
+                                +{calendarData.events.length - 3} more events
                               </p>
                             )}
                           </div>
