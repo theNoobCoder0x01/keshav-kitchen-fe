@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChefHat, ChevronDown, Home, Settings, X } from "lucide-react";
+import { ChefHat, ChevronDown, Home, Settings, X, Calendar, Users, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -24,12 +24,20 @@ export function Sidebar({
 
   const menuItems = [
     {
-      id: "menu",
-      label: "Menu",
+      id: "home",
+      label: "Dashboard",
       icon: Home,
-      badge: "3",
       href: "/",
       isActive: pathname === "/",
+      description: "Overview & quick actions",
+    },
+    {
+      id: "menus",
+      label: "Menus",
+      icon: Calendar,
+      badge: "3",
+      href: "/menus",
+      isActive: pathname === "/menus",
       description: "Manage daily menus",
     },
     {
@@ -39,6 +47,22 @@ export function Sidebar({
       href: "/recipes",
       isActive: pathname === "/recipes",
       description: "Recipe management",
+    },
+    {
+      id: "kitchens",
+      label: "Kitchens",
+      icon: Users,
+      href: "/kitchens",
+      isActive: pathname === "/kitchens",
+      description: "Manage kitchen locations",
+    },
+    {
+      id: "ingredients",
+      label: "Ingredients",
+      icon: BarChart3,
+      href: "/ingredients",
+      isActive: pathname === "/ingredients",
+      description: "Track inventory & costs",
     },
   ];
 
