@@ -56,21 +56,21 @@ export function MenuCard({
   return (
     <Card
       className={cn(
-        "bg-white/80 backdrop-blur-sm border-[#dbdade]/50 hover:shadow-lg transition-all duration-300",
+        "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300",
         className,
       )}
     >
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[#4b465c] mb-1">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">
               {title}
             </h3>
-            <p className="text-sm text-[#4b465c]/60">{items?.length} items</p>
+            <p className="text-sm text-muted-foreground">{items?.length} items</p>
           </div>
           <Button
             size="sm"
-            className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-md hover:shadow-lg transition-all duration-200"
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
             onClick={onAdd}
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -83,16 +83,16 @@ export function MenuCard({
             <div
               key={item.id}
               className={cn(
-                "group flex items-center p-3 hover:bg-[#f8f7fa] rounded-xl transition-all duration-200",
+                "group flex items-center p-3 hover:bg-muted rounded-xl transition-all duration-200",
                 showActions ? "justify-between" : "space-x-3",
               )}
             >
               {item.isAddItem ? (
                 <>
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#674af5]/10 to-[#856ef7]/5 rounded-xl flex items-center justify-center border border-[#674af5]/10">
-                    <Plus className="w-5 h-5 text-[#674af5]" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10">
+                    <Plus className="w-5 h-5 text-primary" />
                   </div>
-                  <span className="text-[#4b465c] flex-1 font-medium">
+                  <span className="text-foreground flex-1 font-medium">
                     {item.name}
                   </span>
                 </>
@@ -105,7 +105,7 @@ export function MenuCard({
                           type="text"
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-[#674af5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#674af5]/20 bg-white"
+                          className="w-full px-3 py-2 text-sm border border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
                           onKeyDown={(e) => {
                             if (e.key === "Enter") handleEditSave(item);
                             if (e.key === "Escape") handleEditCancel();
@@ -116,7 +116,7 @@ export function MenuCard({
                           <Button
                             size="sm"
                             onClick={() => handleEditSave(item)}
-                            className="h-7 px-3 text-xs bg-[#674af5] hover:bg-[#674af5]/90"
+                            className="h-7 px-3 text-xs bg-primary hover:bg-primary/90"
                           >
                             Save
                           </Button>
@@ -132,11 +132,11 @@ export function MenuCard({
                       </div>
                     ) : (
                       <>
-                        <p className="text-[#4b465c] font-medium truncate">
+                        <p className="text-foreground font-medium truncate">
                           {item.name}
                         </p>
                         {item.weight && (
-                          <p className="text-sm text-[#4b465c]/60 mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             {item.weight}
                           </p>
                         )}
@@ -149,7 +149,7 @@ export function MenuCard({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="w-8 h-8 p-0 text-[#674af5] hover:bg-[#674af5]/10"
+                        className="w-8 h-8 p-0 text-primary hover:bg-primary/10"
                         onClick={() => onEdit?.(item)}
                       >
                         <Edit className="w-4 h-4" />
@@ -157,7 +157,7 @@ export function MenuCard({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="w-8 h-8 p-0 text-[#ea5455] hover:bg-[#ea5455]/10"
+                        className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
                         onClick={() => onDelete?.(item.id)}
                       >
                         <Trash2 className="w-4 h-4" />

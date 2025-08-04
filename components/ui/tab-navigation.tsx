@@ -35,7 +35,7 @@ export function TabNavigation({
         <select
           value={activeTab}
           onChange={(e) => handleTabClick(Number(e.target.value))}
-          className="w-full p-3 border border-[#dbdade] rounded-xl bg-white text-[#4b465c] focus:border-[#674af5] focus:ring-[#674af5]/20"
+          className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:border-primary focus:ring-primary/20"
         >
           {tabs.map((tab, index) => (
             <option key={tab} value={index}>
@@ -46,7 +46,7 @@ export function TabNavigation({
       </div>
 
       {/* Desktop Tabs */}
-      <div className="hidden sm:flex space-x-1 bg-white/50 backdrop-blur-sm p-1 rounded-xl border border-[#dbdade]/50">
+      <div className="hidden sm:flex space-x-1 bg-background/50 backdrop-blur-sm p-1 rounded-xl border border-border/50">
         {tabs.map((tab, index) => (
           <button
             key={tab}
@@ -54,8 +54,8 @@ export function TabNavigation({
             className={cn(
               "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex-1 sm:flex-none",
               index === activeTab
-                ? "bg-white text-[#674af5] shadow-sm border border-[#674af5]/10"
-                : "text-[#4b465c]/70 hover:text-[#4b465c] hover:bg-white/50",
+                ? "bg-background text-primary shadow-sm border border-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50",
             )}
           >
             {tab}
