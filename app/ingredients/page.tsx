@@ -1,7 +1,9 @@
 "use client";
 
 import { AddEditIngredientDialog } from "@/components/dialogs/add-edit-ingredient-dialog";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   createIngredient,
   deleteIngredient,
@@ -62,17 +64,26 @@ export default function IngredientsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Ingredients Management</h1>
-      <Button
-        className="mb-4"
-        onClick={() => {
-          setEditingIngredient(null);
-          setDialogOpen(true);
-        }}
-      >
-        Add Ingredient
-      </Button>
+    <DashboardLayout activeMenuItem="ingredients">
+      {/* Header Section */}
+      <div className="mb-6 sm:mb-8">
+        <PageHeader
+          title="Ingredients Management"
+          subtitle="Track inventory and manage ingredient costs"
+          actions={
+            <Button
+              onClick={() => {
+                setEditingIngredient(null);
+                setDialogOpen(true);
+              }}
+            >
+              Add Ingredient
+            </Button>
+          }
+        />
+      </div>
+
+      <div className="max-w-3xl mx-auto">
       <AddEditIngredientDialog
         open={dialogOpen}
         onOpenChange={(open) => {
@@ -163,6 +174,7 @@ export default function IngredientsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

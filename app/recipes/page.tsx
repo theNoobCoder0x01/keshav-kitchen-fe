@@ -283,7 +283,7 @@ export default function RecipesPage() {
   }, []);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout activeMenuItem="recipe">
       {/* Header Section */}
       <div className="mb-6 sm:mb-8">
         <PageHeader
