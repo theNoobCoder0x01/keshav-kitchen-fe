@@ -1,4 +1,5 @@
 import { SessionProviderWrapper } from "@/components/providers/session-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import type React from "react";
 import { Toaster } from "sonner";
@@ -12,21 +13,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <SessionProviderWrapper>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: "white",
-                border: "1px solid #dbdade",
-                color: "#4b465c",
-              },
-            }}
-          />
-        </SessionProviderWrapper>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SessionProviderWrapper>
+            {children}
+            <Toaster position="top-right" />
+          </SessionProviderWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -55,18 +55,18 @@ export function Sidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-[#dbdade] transform transition-transform duration-300 ease-in-out lg:transform-none",
+          "fixed lg:static inset-y-0 left-0 z-50 w-72 bg-background border-r border-border transform transition-transform duration-300 ease-in-out lg:transform-none",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div className="flex flex-col h-full">
           {/* Mobile Close Button */}
-          <div className="lg:hidden flex items-center justify-between p-4 border-b border-[#dbdade]">
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">K</span>
               </div>
-              <span className="font-semibold text-[#4b465c]">Menu</span>
+              <span className="font-semibold text-foreground">Menu</span>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose} className="p-2">
               <X className="w-5 h-5" />
@@ -76,7 +76,7 @@ export function Sidebar({
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
             <div className="mb-6">
-              <h2 className="text-xs font-semibold text-[#4b465c]/60 uppercase tracking-wider mb-3 px-3">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
                 Kitchen Management
               </h2>
             </div>
@@ -87,8 +87,8 @@ export function Sidebar({
                   className={cn(
                     "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200",
                     item.isActive
-                      ? "bg-gradient-to-r from-[#674af5]/10 to-[#856ef7]/5 text-[#674af5] shadow-sm border border-[#674af5]/10"
-                      : "text-[#4b465c] hover:bg-[#f8f7fa] hover:text-[#674af5]",
+                      ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary shadow-sm border border-primary/10"
+                      : "text-foreground hover:bg-muted hover:text-primary",
                   )}
                 >
                   <div className="flex items-center space-x-3">
@@ -96,15 +96,15 @@ export function Sidebar({
                       className={cn(
                         "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
                         item.isActive
-                          ? "bg-gradient-to-br from-[#674af5] to-[#856ef7] text-white shadow-md"
-                          : "bg-[#f8f7fa] text-[#4b465c] group-hover:bg-[#674af5]/10 group-hover:text-[#674af5]",
+                          ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md"
+                          : "bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary",
                       )}
                     >
                       <item.icon className="w-5 h-5" />
                     </div>
                     <div>
                       <span className="font-medium">{item.label}</span>
-                      <p className="text-xs text-[#4b465c]/60 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {item.description}
                       </p>
                     </div>
@@ -115,8 +115,8 @@ export function Sidebar({
                         className={cn(
                           "text-xs px-2 py-1 transition-colors",
                           item.isActive
-                            ? "bg-[#674af5] text-white"
-                            : "bg-[#e0e7ff] text-[#674af5] group-hover:bg-[#674af5] group-hover:text-white",
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
                         )}
                       >
                         {item.badge}
@@ -125,7 +125,7 @@ export function Sidebar({
                     <ChevronDown
                       className={cn(
                         "w-4 h-4 transition-transform",
-                        item.isActive ? "text-[#674af5]" : "text-[#4b465c]/40",
+                        item.isActive ? "text-primary" : "text-muted-foreground",
                       )}
                     />
                   </div>
@@ -135,20 +135,20 @@ export function Sidebar({
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-[#dbdade] space-y-3">
+          <div className="p-4 border-t border-border space-y-3">
             {/* Settings Button */}
             <Button
               variant="ghost"
               onClick={onSettingsClick}
-              className="w-full justify-start p-3 h-auto hover:bg-[#f8f7fa] text-[#4b465c] hover:text-[#674af5]"
+              className="w-full justify-start p-3 h-auto hover:bg-muted text-foreground hover:text-primary"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-[#f8f7fa] rounded-lg flex items-center justify-center transition-colors group-hover:bg-[#674af5]/10">
+                <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center transition-colors group-hover:bg-primary/10">
                   <Settings className="w-5 h-5" />
                 </div>
                 <div className="text-left">
                   <span className="font-medium">Settings</span>
-                  <p className="text-xs text-[#4b465c]/60 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     Calendar & preferences
                   </p>
                 </div>
@@ -156,16 +156,16 @@ export function Sidebar({
             </Button>
 
             {/* Help Section */}
-            <div className="bg-gradient-to-r from-[#674af5]/5 to-[#856ef7]/5 rounded-xl p-4 border border-[#674af5]/10">
+            <div className="bg-gradient-to-r from-primary/5 to-primary/5 rounded-xl p-4 border border-primary/10">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-lg flex items-center justify-center">
-                  <ChefHat className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                  <ChefHat className="w-4 h-4 text-primary-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#4b465c]">
+                  <p className="text-sm font-medium text-foreground">
                     Need Help?
                   </p>
-                  <p className="text-xs text-[#4b465c]/60">Contact support</p>
+                  <p className="text-xs text-muted-foreground">Contact support</p>
                 </div>
               </div>
             </div>
