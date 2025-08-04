@@ -24,7 +24,7 @@ export function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#fafbfc] to-[#f1f5f9]">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex">
         <Sidebar
