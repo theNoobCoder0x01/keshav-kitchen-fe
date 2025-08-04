@@ -9,12 +9,11 @@ import { DateSelector } from "@/components/ui/date-selector";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatsGrid } from "@/components/ui/stats-grid";
 import { TabNavigation } from "@/components/ui/tab-navigation";
-import { TodayTithi } from "@/components/ui/tithi-display";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
 import { MealType } from "@prisma/client";
-import { Eye, FileText, Upload, Users } from "lucide-react";
+import { Eye, FileText, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -240,11 +239,6 @@ export default function MenuPage() {
           subtitle={
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <span>Manage your daily menu and track kitchen operations</span>
-              <TodayTithi 
-                kitchenId={kitchens[activeTab]?.id || session?.user?.kitchenId}
-                className="text-[#674af5] text-sm font-medium"
-                size="sm"
-              />
             </div>
           }
           actions={
@@ -256,10 +250,6 @@ export default function MenuPage() {
               >
                 <FileText className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Reports</span>
-              </Button>
-              <Button className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                <Upload className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Bulk Upload</span>
               </Button>
             </>
           }
@@ -275,7 +265,7 @@ export default function MenuPage() {
               date={selectedDate}
               onDateChange={handleDateChange}
               className="h-full min-h-[120px]"
-              kitchenId={kitchens[activeTab]?.id || session?.user?.kitchenId}
+              kitchenId={session?.user?.kitchenId ?? undefined}
             />
           </div>
 

@@ -108,7 +108,7 @@ export function DateSelector({
     if (currentEventInfo.eventSummary) {
       return currentEventInfo.eventSummary;
     }
-    return subtitle || "Pagan Sud Panam"; // Fallback to default or provided subtitle
+    return subtitle || "-"; // Fallback to default or provided subtitle
   };
 
   return (
