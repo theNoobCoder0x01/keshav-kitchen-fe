@@ -24,11 +24,11 @@ export function PageHeader({
       )}
     >
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#674af5] to-[#856ef7] bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-[#4b465c]/70 mt-1 text-sm sm:text-base">
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             {subtitle}
           </p>
         )}

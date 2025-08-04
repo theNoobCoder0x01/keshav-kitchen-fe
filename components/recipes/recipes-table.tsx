@@ -99,7 +99,7 @@ export function RecipesTable({
         <TableHeader>
           <TableRow>
             <TableHead
-              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              className="text-foreground font-semibold py-4 px-6 cursor-pointer"
               onClick={() => handleSort("name")}
             >
               <div className="flex items-center space-x-2">
@@ -108,7 +108,7 @@ export function RecipesTable({
               </div>
             </TableHead>
             <TableHead
-              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              className="text-foreground font-semibold py-4 px-6 cursor-pointer"
               onClick={() => handleSort("category")}
             >
               <div className="flex items-center space-x-2">
@@ -117,7 +117,7 @@ export function RecipesTable({
               </div>
             </TableHead>
             <TableHead
-              className="text-[#4b465c] font-semibold py-4 px-6 cursor-pointer"
+              className="text-foreground font-semibold py-4 px-6 cursor-pointer"
               onClick={() => handleSort("subcategory")}
             >
               <div className="flex items-center space-x-2">
@@ -125,7 +125,7 @@ export function RecipesTable({
                 {getSortIcon("subcategory")}
               </div>
             </TableHead>
-            <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
+            <TableHead className="text-foreground font-semibold py-4 px-6">
               ACTIONS
             </TableHead>
           </TableRow>
@@ -134,18 +134,18 @@ export function RecipesTable({
           {paginatedRecipes.length > 0 ? (
             paginatedRecipes.map((recipe: Recipe) => (
               <TableRow key={recipe.id}>
-                <TableCell className="py-4 px-6 font-medium text-[#4b465c]">
+                <TableCell className="py-4 px-6 font-medium text-foreground">
                   <Link
                     href={`/recipes/${recipe.id}`}
-                    className="hover:text-[#674af5] hover:underline cursor-pointer transition-colors"
+                    className="hover:text-primary hover:underline cursor-pointer transition-colors"
                   >
                     {recipe.name}
                   </Link>
                 </TableCell>
-                <TableCell className="py-4 px-6 text-[#4b465c]">
+                <TableCell className="py-4 px-6 text-foreground">
                   {recipe.category}
                 </TableCell>
-                <TableCell className="py-4 px-6 text-[#4b465c]">
+                <TableCell className="py-4 px-6 text-foreground">
                   {recipe.subcategory}
                 </TableCell>
                 <TableCell className="py-4 px-6">
@@ -153,7 +153,7 @@ export function RecipesTable({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="w-8 h-8 p-0 text-[#4b465c] hover:bg-[#f8f7fa]"
+                      className="w-8 h-8 p-0 text-foreground hover:bg-muted"
                       onClick={() => onEdit(recipe)}
                       aria-label="Edit recipe"
                       title="Edit recipe"
@@ -164,7 +164,7 @@ export function RecipesTable({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="w-8 h-8 p-0 text-blue-600 hover:bg-blue-50"
+                      className="w-8 h-8 p-0 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
                       onClick={() => onPrint(recipe)}
                       aria-label="Print recipe"
                       title="Print recipe"
@@ -175,7 +175,7 @@ export function RecipesTable({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="w-8 h-8 p-0 text-red-500 hover:bg-red-50"
+                      className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
                       onClick={() => onDelete(recipe.id)}
                       disabled={deletingId === recipe.id}
                       aria-label="Delete recipe"
@@ -220,7 +220,7 @@ export function RecipesTable({
               variant={page === currentPage ? "default" : "outline"}
               size="sm"
               onClick={() => setCurrentPage(page)}
-              className={page === currentPage ? "bg-[#674af5] text-white" : ""}
+              className={page === currentPage ? "bg-primary text-primary-foreground" : ""}
             >
               {page}
             </Button>

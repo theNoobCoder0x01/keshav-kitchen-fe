@@ -20,14 +20,14 @@ export function StatsCard({
   label,
   value,
   icon: Icon,
-  iconColor = "#00cfe8",
+  iconColor = "hsl(var(--primary))",
   trend,
   className,
 }: StatsCardProps) {
   return (
     <Card
       className={cn(
-        "bg-white/80 backdrop-blur-sm border-[#dbdade]/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
+        "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
         className,
       )}
     >
@@ -48,7 +48,7 @@ export function StatsCard({
               />
             </div>
             <div className="text-right">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#4b465c] leading-none">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-none">
                 {value}
               </p>
             </div>
@@ -56,14 +56,14 @@ export function StatsCard({
 
           {/* Label and Trend */}
           <div className="flex items-center justify-between">
-            <p className="text-xs sm:text-sm text-[#4b465c]/70 font-medium leading-tight">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-tight">
               {label ?? "-"}
             </p>
             {trend && (
               <div
                 className={cn(
                   "flex items-center space-x-1 text-xs font-medium",
-                  trend.isPositive ? "text-green-600" : "text-red-500",
+                  trend.isPositive ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400",
                 )}
               >
                 <span className="text-sm">

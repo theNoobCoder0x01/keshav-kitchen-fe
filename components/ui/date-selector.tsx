@@ -114,15 +114,15 @@ export function DateSelector({
   return (
     <Card
       className={cn(
-        "bg-white/80 backdrop-blur-sm border-[#dbdade]/50 hover:shadow-lg transition-all duration-300",
+        "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300",
         className,
       )}
     >
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-xl flex items-center justify-center shadow-lg">
-              <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+              <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
             </div>
             <div>
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
@@ -132,10 +132,10 @@ export function DateSelector({
                     className="p-0 h-auto hover:bg-transparent text-left justify-start"
                   >
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-[#674af5] mb-1 hover:text-[#856ef7] transition-colors">
+                      <h3 className="text-base sm:text-lg font-bold text-primary mb-1 hover:text-primary/80 transition-colors">
                         {formatDate(selectedDate)}
                       </h3>
-                      <p className="text-sm text-[#4b465c]/70 font-medium">
+                      <p className="text-sm text-muted-foreground font-medium">
                         {getSubtitle()}
                       </p>
                     </div>
@@ -158,18 +158,18 @@ export function DateSelector({
             <Button
               variant="ghost"
               size="sm"
-              className="w-8 h-8 p-0 hover:bg-[#674af5]/10 rounded-lg transition-colors"
+              className="w-8 h-8 p-0 hover:bg-primary/10 rounded-lg transition-colors"
               onClick={goToPreviousDay}
             >
-              <ChevronLeft className="w-4 h-4 text-[#674af5]" />
+              <ChevronLeft className="w-4 h-4 text-primary" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="w-8 h-8 p-0 hover:bg-[#674af5]/10 rounded-lg transition-colors"
+              className="w-8 h-8 p-0 hover:bg-primary/10 rounded-lg transition-colors"
               onClick={goToNextDay}
             >
-              <ChevronRight className="w-4 h-4 text-[#674af5]" />
+              <ChevronRight className="w-4 h-4 text-primary" />
             </Button>
           </div>
         </div>
