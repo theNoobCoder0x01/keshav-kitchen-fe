@@ -1,10 +1,10 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
 
@@ -77,18 +77,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </div>
 
           {/* User Profile */}
-          <div className="flex items-center space-x-3">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-foreground">John Doe</p>
-              <p className="text-xs text-muted-foreground">Kitchen Manager</p>
-            </div>
-            <Avatar className="w-8 h-8 sm:w-10 sm:h-10 cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all border-2 border-background shadow-md">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" />
-              <AvatarFallback className="bg-gradient-to-br from-[#674af5] to-[#856ef7] text-white text-sm font-semibold">
-                JD
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <ProfileDropdown />
         </div>
       </div>
 

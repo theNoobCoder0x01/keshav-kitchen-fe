@@ -1,7 +1,9 @@
 "use client";
 
 import { AddEditKitchenDialog } from "@/components/dialogs/add-edit-kitchen-dialog";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   createKitchen,
   deleteKitchen,
@@ -61,17 +63,26 @@ export default function KitchensPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Kitchens Management</h1>
-      <Button
-        className="mb-4"
-        onClick={() => {
-          setEditingKitchen(null);
-          setDialogOpen(true);
-        }}
-      >
-        Add Kitchen
-      </Button>
+    <DashboardLayout activeMenuItem="kitchens">
+      {/* Header Section */}
+      <div className="mb-6 sm:mb-8">
+        <PageHeader
+          title="Kitchens Management"
+          subtitle="Manage your kitchen locations and settings"
+          actions={
+            <Button
+              onClick={() => {
+                setEditingKitchen(null);
+                setDialogOpen(true);
+              }}
+            >
+              Add Kitchen
+            </Button>
+          }
+        />
+      </div>
+
+      <div className="max-w-3xl mx-auto">
       <AddEditKitchenDialog
         open={dialogOpen}
         onOpenChange={(open) => {
@@ -158,6 +169,7 @@ export default function KitchensPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
