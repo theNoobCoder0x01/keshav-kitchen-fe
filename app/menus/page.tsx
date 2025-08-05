@@ -5,9 +5,9 @@ import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { MenuGrid } from "@/components/menu/menu-grid";
 import { Button } from "@/components/ui/button";
-import { DateSelector } from "@/components/ui/date-selector";
+import { CompactDateSelector } from "@/components/ui/compact-date-selector";
 import { PageHeader } from "@/components/ui/page-header";
-import { StatsGrid } from "@/components/ui/stats-grid";
+import { EnhancedStatsGrid, createMenuStats } from "@/components/ui/enhanced-stats-grid";
 import { TabNavigation } from "@/components/ui/tab-navigation";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
@@ -99,68 +99,22 @@ export default function MenuPage() {
     }
   }, [selectedDate, activeTab, session?.user?.kitchenId]);
 
-  // Redirect if not authenticated
   useEffect(() => {
-    if (status === "loading") return;
-    if (status === "unauthenticated") {
-      router.push("/auth/signin");
-      return;
-    }
-  }, [status, router]);
+    loadData();
+  }, [loadData]);
 
-  // Load data only when authenticated
-  useEffect(() => {
-    if (status === "authenticated") {
-      loadData();
-    }
-  }, [status, loadData]);
-
-  // Dynamic stats based on active tab and date
   const getStatsForTab = () => {
-    if (!menuStats) return [];
+    if (!menuStats) {
+      return createMenuStats({
+        byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 },
+      });
+    }
 
-    return [
-      {
-        label: "Total Planned",
-        value: menuStats.total.planned.toString(),
-        icon: Users,
-        iconColor: "#00cfe8",
-        trend: { value: 12, isPositive: true },
-      },
-      {
-        label: "Breakfast",
-        value: menuStats.byMealType.BREAKFAST.toString(),
-        icon: Users,
-        iconColor: "#28c76f",
-        trend: { value: 8, isPositive: true },
-      },
-      {
-        label: "Lunch",
-        value: menuStats.byMealType.LUNCH.toString(),
-        icon: Eye,
-        iconColor: "#ff9f43",
-        trend: { value: 5, isPositive: false },
-      },
-      {
-        label: "Dinner",
-        value: menuStats.byMealType.DINNER.toString(),
-        icon: Eye,
-        iconColor: "#ea5455",
-        trend: { value: 0, isPositive: true },
-      },
-      {
-        label: "Extra/Snack",
-        value: menuStats.byMealType.SNACK.toString(),
-        icon: Eye,
-        iconColor: "#7367f0",
-        trend: { value: 0, isPositive: true },
-      },
-    ];
+    return createMenuStats(menuStats);
   };
 
   const handleAddMeal = (mealType: MealType) => {
     setSelectedMealType(mealType);
-    setEditMeal(null); // Clear edit meal when adding new
     setAddMealDialog(true);
   };
 
@@ -173,10 +127,16 @@ export default function MenuPage() {
   const handleDeleteMeal = async (mealId: string) => {
     if (window.confirm("Are you sure you want to delete this meal?")) {
       try {
-        const { deleteMenu } = await import("@/lib/api/menus");
-        await deleteMenu(mealId);
-        toast.success("Meal deleted successfully!");
-        loadData(); // Reload data after deletion
+        const response = await fetch(`/api/menus/${mealId}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          toast.success("Meal deleted successfully");
+          loadData(); // Reload data
+        } else {
+          toast.error("Failed to delete meal");
+        }
       } catch (error) {
         console.error("Error deleting meal:", error);
         toast.error("Failed to delete meal");
@@ -195,8 +155,8 @@ export default function MenuPage() {
   const handleMealDialogClose = (open: boolean) => {
     setAddMealDialog(open);
     if (!open) {
-      // Reload data when dialog closes
-      loadData();
+      setEditMeal(null);
+      loadData(); // Reload data when dialog closes
     }
   };
 
@@ -259,19 +219,19 @@ export default function MenuPage() {
       {/* Date and Stats Section */}
       <div className="mb-6 sm:mb-8">
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
-          {/* Date Selector */}
-          <div className="xl:col-span-2">
-            <DateSelector
+          {/* Compact Date Selector */}
+          <div className="xl:col-span-1">
+            <CompactDateSelector
               date={selectedDate}
               onDateChange={handleDateChange}
-              className="h-full min-h-[120px]"
+              className="h-full"
               kitchenId={session?.user?.kitchenId ?? undefined}
             />
           </div>
 
-          {/* Stats Grid */}
-          <div className="xl:col-span-3">
-            <StatsGrid stats={getStatsForTab()} />
+          {/* Enhanced Stats Grid */}
+          <div className="xl:col-span-4">
+            <EnhancedStatsGrid stats={getStatsForTab()} />
           </div>
         </div>
 
