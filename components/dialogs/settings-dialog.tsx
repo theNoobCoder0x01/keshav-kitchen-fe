@@ -178,8 +178,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   return (
     <TooltipProvider>
       <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogContent className="max-w-2xl max-h-[90vh]">
-        <div className="overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <div className="overflow-y-auto">
             <DialogHeader className="pb-4 border-b border-border">
               <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
                 <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">

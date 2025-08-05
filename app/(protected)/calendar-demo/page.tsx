@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -20,7 +19,7 @@ export default function CalendarDemoPage() {
   );
 
   return (
-    <DashboardLayout activeMenuItem="menus">
+    <div className="w-full">
       <PageHeader
         title="Enhanced Calendar Components"
         subtitle="Showcase of all enhanced calendar features, variants, and sizes"
@@ -402,6 +401,6 @@ export default function CalendarDemoPage() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

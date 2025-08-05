@@ -2,7 +2,6 @@
 
 import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
 import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation-dialog";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { MenuGrid } from "@/components/menu/menu-grid";
 import { Button } from "@/components/ui/button";
 import { CompactDateSelector } from "@/components/ui/compact-date-selector";
@@ -182,19 +181,19 @@ export default function MenuPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <div className="w-full">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading dashboard...</p>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout activeMenuItem="menus">
+    <div className="w-full">
       {/* Header Section */}
       <div className="mb-6 sm:mb-8">
         <PageHeader
@@ -266,6 +265,6 @@ export default function MenuPage() {
         open={reportsDialog}
         onOpenChange={setReportsDialog}
       />
-    </DashboardLayout>
+    </div>
   );
 }
