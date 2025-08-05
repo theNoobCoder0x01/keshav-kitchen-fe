@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsDialog } from "@/components/dialogs/settings-dialog";
+
 import type React from "react";
 import { useState } from "react";
 import { Header } from "./header";
@@ -16,12 +16,6 @@ export function DashboardLayout({
   activeMenuItem,
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
-
-  const handleSettingsClick = () => {
-    setSettingsDialogOpen(true);
-    setSidebarOpen(false); // Close sidebar on mobile
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -31,18 +25,13 @@ export function DashboardLayout({
           activeItem={activeMenuItem}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
-          onSettingsClick={handleSettingsClick}
         />
         <main className="flex-1 lg:ml-0 p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4rem)]">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
 
-      {/* Settings Dialog */}
-      <SettingsDialog
-        open={settingsDialogOpen}
-        onOpenChange={setSettingsDialogOpen}
-      />
+
     </div>
   );
 }

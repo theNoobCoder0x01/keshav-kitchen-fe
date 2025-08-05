@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChefHat, ChevronDown, Home, Settings, X, Calendar, Users, BarChart3 } from "lucide-react";
+import { ChefHat, ChevronDown, Home, X, Calendar, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,14 +11,12 @@ interface SidebarProps {
   activeItem?: string;
   isOpen?: boolean;
   onClose?: () => void;
-  onSettingsClick?: () => void;
 }
 
 export function Sidebar({
   activeItem,
   isOpen = true,
   onClose,
-  onSettingsClick,
 }: SidebarProps) {
   const pathname = usePathname();
 
@@ -56,14 +54,7 @@ export function Sidebar({
       isActive: pathname === "/kitchens",
       description: "Manage kitchen locations",
     },
-    {
-      id: "ingredients",
-      label: "Ingredients",
-      icon: BarChart3,
-      href: "/ingredients",
-      isActive: pathname === "/ingredients",
-      description: "Track inventory & costs",
-    },
+
   ];
 
   return (
@@ -160,25 +151,6 @@ export function Sidebar({
 
           {/* Footer */}
           <div className="p-4 border-t border-border space-y-3">
-            {/* Settings Button */}
-            <Button
-              variant="ghost"
-              onClick={onSettingsClick}
-              className="w-full justify-start p-3 h-auto hover:bg-muted text-foreground hover:text-primary"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center transition-colors group-hover:bg-primary/10">
-                  <Settings className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <span className="font-medium">Settings</span>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Calendar & preferences
-                  </p>
-                </div>
-              </div>
-            </Button>
-
             {/* Help Section */}
             <div className="bg-gradient-to-r from-primary/5 to-primary/5 rounded-xl p-4 border border-primary/10">
               <div className="flex items-center space-x-3">
