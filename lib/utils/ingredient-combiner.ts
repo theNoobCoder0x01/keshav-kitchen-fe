@@ -53,11 +53,13 @@ interface IngredientCombineOptions {
   selectedKitchens?: string[];
 }
 
+import { normalizeUnit } from "@/lib/constants/units";
+
 /**
  * Convert units to a standard unit for combination
  * This is a simple conversion - you may want to expand this based on your needs
  */
-function normalizeUnit(unit: string): string {
+function normalizeUnitForCombination(unit: string): string {
   const unitMap: { [key: string]: string } = {
     // Weight conversions to grams
     kg: "g",
@@ -149,7 +151,7 @@ export function combineIngredients(
 
     for (const ingredient of ingredients) {
       const ingredientName = ingredient.name.toLowerCase().trim();
-      const standardUnit = normalizeUnit(ingredient.unit);
+      const standardUnit = normalizeUnitForCombination(ingredient.unit);
       const standardQuantity = convertToStandardUnit(
         ingredient.quantity,
         ingredient.unit,

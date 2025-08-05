@@ -1,4 +1,5 @@
 // Unit conversion utilities for meal calculations
+import { UNIT_OPTIONS, getUnitByValue, normalizeUnit } from "@/lib/constants/units";
 
 export interface UnitConversion {
   unit: string;
@@ -7,27 +8,22 @@ export interface UnitConversion {
 }
 
 // Unit conversion table - all conversions to grams as base unit
-export const UNIT_CONVERSIONS: Record<string, UnitConversion> = {
-  // Weight units
-  g: { unit: "g", toGrams: 1, category: "weight" },
-  kg: { unit: "kg", toGrams: 1000, category: "weight" },
-
-  // Volume units (approximate conversions for cooking)
-  ml: { unit: "ml", toGrams: 1, category: "volume" }, // Assuming water density
-  L: { unit: "L", toGrams: 1000, category: "volume" },
-  tsp: { unit: "tsp", toGrams: 5, category: "volume" }, // 1 tsp ≈ 5ml
-  tbsp: { unit: "tbsp", toGrams: 15, category: "volume" }, // 1 tbsp ≈ 15ml
-  cup: { unit: "cup", toGrams: 240, category: "volume" }, // 1 cup ≈ 240ml
-
-  // Count units (approximate weight for common ingredients)
-  pcs: { unit: "pcs", toGrams: 50, category: "count" }, // Average piece weight
-};
+// This is now derived from the centralized UNIT_OPTIONS
+export const UNIT_CONVERSIONS: Record<string, UnitConversion> = UNIT_OPTIONS.reduce((acc, unit) => {
+  acc[unit.value] = {
+    unit: unit.value,
+    toGrams: unit.conversionToGrams,
+    category: unit.category,
+  };
+  return acc;
+}, {} as Record<string, UnitConversion>);
 
 /**
  * Convert any unit to grams
  */
 export function convertToGrams(quantity: number, unit: string): number {
-  const conversion = UNIT_CONVERSIONS[unit];
+  const normalizedUnit = normalizeUnit(unit);
+  const conversion = UNIT_CONVERSIONS[normalizedUnit];
   if (!conversion) {
     console.warn(`Unknown unit: ${unit}, defaulting to 1:1 conversion`);
     return quantity;
@@ -39,7 +35,8 @@ export function convertToGrams(quantity: number, unit: string): number {
  * Convert grams to any unit
  */
 export function convertFromGrams(grams: number, targetUnit: string): number {
-  const conversion = UNIT_CONVERSIONS[targetUnit];
+  const normalizedUnit = normalizeUnit(targetUnit);
+  const conversion = UNIT_CONVERSIONS[normalizedUnit];
   if (!conversion) {
     console.warn(`Unknown unit: ${targetUnit}, defaulting to 1:1 conversion`);
     return grams;
@@ -67,7 +64,8 @@ export function convertUnits(
 export function getUnitCategory(
   unit: string,
 ): "weight" | "volume" | "count" | "unknown" {
-  const conversion = UNIT_CONVERSIONS[unit];
+  const normalizedUnit = normalizeUnit(unit);
+  const conversion = UNIT_CONVERSIONS[normalizedUnit];
   return conversion?.category || "unknown";
 }
 
