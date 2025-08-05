@@ -9,7 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEffect, useState } from "react";
+import { UNIT_OPTIONS, DEFAULT_UNIT } from "@/lib/constants/units";
 
 interface AddEditIngredientDialogProps {
   open: boolean;
@@ -43,7 +51,7 @@ export function AddEditIngredientDialog({
     if (open) {
       setName(initialIngredient?.name || "");
       setCostPerKg(initialIngredient?.costPerKg?.toString() || "");
-      setUnit(initialIngredient?.unit || "Kg");
+      setUnit(initialIngredient?.unit || DEFAULT_UNIT);
       setError(null);
     }
   }, [open, initialIngredient]);
@@ -99,11 +107,18 @@ export function AddEditIngredientDialog({
             </div>
             <div>
               <Label>Unit</Label>
-              <Input
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                placeholder="Kg"
-              />
+              <Select value={unit} onValueChange={setUnit}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {UNIT_OPTIONS.map((unitOption) => (
+                    <SelectItem key={unitOption.value} value={unitOption.value}>
+                      {unitOption.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {error && <div className="text-red-500 text-sm">{error}</div>}
           </div>

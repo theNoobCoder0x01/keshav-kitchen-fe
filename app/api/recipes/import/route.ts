@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
         const ingredients = ingredientNames.map((name, index) => ({
           name,
           quantity: quantities[index] || 0,
-          unit: units[index] || "piece",
+          unit: units[index] || "pcs",
           costPerUnit: costPerUnits[index],
         }));
 

@@ -127,7 +127,7 @@ const getInitialValues = (
                 id: undefined,
                 name: "",
                 quantity: 0,
-                unit: "Kg",
+                unit: DEFAULT_UNIT,
                 costPerUnit: 0,
               },
             ];
@@ -154,7 +154,7 @@ const getInitialValues = (
         id: undefined,
         name: "",
         quantity: 0,
-        unit: "Kg",
+        unit: DEFAULT_UNIT,
         costPerUnit: 0,
       },
     ],
@@ -195,17 +195,10 @@ interface IngredientOption {
   costPerUnit: number | null;
 }
 
-// Common units for ingredients
-const UNITS = [
-  { value: "g", label: "g" },
-  { value: "kg", label: "kg" },
-  { value: "ml", label: "ml" },
-  { value: "L", label: "L" },
-  { value: "tsp", label: "tsp" },
-  { value: "tbsp", label: "tbsp" },
-  { value: "cup", label: "cup" },
-  { value: "pcs", label: "pcs" },
-];
+import { UNIT_OPTIONS, DEFAULT_UNIT } from "@/lib/constants/units";
+
+// Use centralized unit options
+const UNITS = UNIT_OPTIONS;
 
 interface Recipe {
   id: string;
@@ -628,7 +621,7 @@ export function AddMealDialog({
                                   id: undefined,
                                   name: "",
                                   quantity: 0,
-                                  unit: "Kg",
+                                  unit: DEFAULT_UNIT,
                                   costPerUnit: 0,
                                 };
                                 push(newIngredient);
