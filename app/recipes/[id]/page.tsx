@@ -7,7 +7,7 @@ import {
   type RecipeDetailData,
 } from "@/components/recipes/recipe-detail-view";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Printer } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -73,10 +73,6 @@ export default function RecipeDetailPage() {
     fetchRecipe();
   }, [recipeId, router]);
 
-  const handleEdit = () => {
-    router.push(`/recipes?edit=${recipeId}`);
-  };
-
   const handlePrint = () => {
     setIsPrintDialogOpen(true);
   };
@@ -128,15 +124,6 @@ export default function RecipeDetailPage() {
         </Button>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handleEdit}
-            className="flex items-center gap-2"
-          >
-            <Edit className="w-4 h-4" />
-            Edit Recipe
-          </Button>
-
           <Button
             onClick={handlePrint}
             className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white flex items-center gap-2"
