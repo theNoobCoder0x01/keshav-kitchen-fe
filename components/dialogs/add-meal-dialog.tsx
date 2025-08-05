@@ -461,8 +461,8 @@ export function AddMealDialog({
             return touched[field as keyof typeof touched];
           };
           return (
-            <DialogContent className="w-[95vw] max-w-6xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
-              <div className="flex-1 overflow-y-auto">
+                  <DialogContent className="max-w-6xl max-h-[90vh]">
+        <div className="overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editMeal ? "Edit" : "Add"} {mealType.toLowerCase()} meal
