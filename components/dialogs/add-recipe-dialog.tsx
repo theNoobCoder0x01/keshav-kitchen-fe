@@ -88,9 +88,9 @@ const validationSchema = Yup.object({
         costPerUnit: Yup.string().test(
           "is-number-or-empty",
           "Must be a valid non-negative number.",
-          (value) => !value || (!isNaN(Number(value)) && Number(value) >= 0),
+          (value) => !value || (!isNaN(Number(value)) && Number(value) >= 0)
         ),
-      }),
+      })
     )
     .min(1, "At least one ingredient is required."),
 });
@@ -131,7 +131,7 @@ export function AddRecipeDialog({
 
   const handleSubmit = (
     values: typeof initialValues,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
     const mappedIngredients = values.ingredients.map((ingredient) => ({
       name: ingredient.name,
@@ -223,7 +223,7 @@ export function AddRecipeDialog({
                         as={Input}
                         id="recipeName"
                         name="recipeName"
-                        placeholder="Enter recipe name (e.g., Chicken Curry, Pasta Carbonara)"
+                        placeholder="Enter recipe name (e.g., Curry, Pasta Carbonara)"
                         className="border-border focus:border-primary focus:ring-primary/20"
                       />
                       <ErrorMessage
@@ -301,54 +301,60 @@ export function AddRecipeDialog({
                 </Card>
 
                 {/* Ingredients Section */}
-                <Card>
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Utensils className="w-5 h-5 text-primary" />
-                          Ingredients
-                        </CardTitle>
-                        <CardDescription>
-                          Add ingredients with quantities and costs
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {values.ingredients.length} ingredient
-                          {values.ingredients.length !== 1 ? "s" : ""}
-                        </Badge>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const newIngredient = {
-                              name: "",
-                              quantity: "",
-                              unit: "Kg",
-                              costPerUnit: "",
-                            };
-                            push(newIngredient);
-                          }}
-                          className="flex items-center gap-2"
-                        >
-                          <Plus className="w-3 h-3" />
-                          Add Ingredient
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <FieldArray name="ingredients">
-                      {({ remove, push }: { remove: (index: number) => void; push: (value: any) => void }) => (
+                <FieldArray name="ingredients">
+                  {({
+                    remove,
+                    push,
+                  }: {
+                    remove: (index: number) => void;
+                    push: (value: any) => void;
+                  }) => (
+                    <Card>
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                              <Utensils className="w-5 h-5 text-primary" />
+                              Ingredients
+                            </CardTitle>
+                            <CardDescription>
+                              Add ingredients with quantities and costs
+                            </CardDescription>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {values.ingredients.length} ingredient
+                              {values.ingredients.length !== 1 ? "s" : ""}
+                            </Badge>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newIngredient = {
+                                  name: "",
+                                  quantity: "",
+                                  unit: "Kg",
+                                  costPerUnit: "",
+                                };
+                                push(newIngredient);
+                              }}
+                              className="flex items-center gap-2"
+                            >
+                              <Plus className="w-3 h-3" />
+                              Add Ingredient
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
                         <div className="space-y-4">
                           {values.ingredients.map((ingredient, index) => (
                             <div
                               key={index}
                               className={cn(
                                 "p-4 border border-border rounded-lg bg-card/50",
-                                "hover:border-primary/30 transition-colors",
+                                "hover:border-primary/30 transition-colors"
                               )}
                             >
                               <div className="flex items-center justify-between mb-3">
@@ -375,7 +381,7 @@ export function AddRecipeDialog({
                                   <Field
                                     as={Input}
                                     name={`ingredients[${index}].name`}
-                                    placeholder="e.g., Chicken breast, Rice, Tomatoes"
+                                    placeholder="e.g., Rice, Tomatoes"
                                     className="border-border focus:border-primary focus:ring-primary/20"
                                   />
                                   <ErrorMessage
@@ -484,34 +490,37 @@ export function AddRecipeDialog({
                             </div>
                           ))}
                         </div>
-                      )}
-                    </FieldArray>
 
-                    {/* Cost Summary */}
-                    {values.ingredients.length > 0 && (
-                      <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-foreground">
-                            Estimated Total Cost:
-                          </span>
-                          <span className="text-lg font-bold text-primary">
-                            ${calculateTotalCost(values.ingredients).toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                        {/* Cost Summary */}
+                        {values.ingredients.length > 0 && (
+                          <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-foreground">
+                                Estimated Total Cost:
+                              </span>
+                              <span className="text-lg font-bold text-primary">
+                                $
+                                {calculateTotalCost(values.ingredients).toFixed(
+                                  2
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Validation Error for Ingredients Array */}
-                    {errors.ingredients && touched.ingredients && (
-                      <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                        <p className="text-destructive text-sm flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.ingredients as string}
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                        {/* Validation Error for Ingredients Array */}
+                        {errors.ingredients && touched.ingredients && (
+                          <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                            <p className="text-destructive text-sm flex items-center gap-2">
+                              <AlertCircle className="w-4 h-4" />
+                              {errors.ingredients as string}
+                            </p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+                </FieldArray>
 
                 {/* Form Actions */}
                 <div className="flex justify-end space-x-3 pt-4 border-t border-border">
