@@ -203,8 +203,8 @@ export function ImportRecipesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh]">
+        <div className="overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileSpreadsheet className="w-5 h-5" />

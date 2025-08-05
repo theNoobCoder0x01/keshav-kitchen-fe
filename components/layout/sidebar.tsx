@@ -6,15 +6,55 @@ import { cn } from "@/lib/utils";
 import { Calendar, ChefHat, ChevronDown, Home, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
-interface SidebarProps {
-  activeItem?: string;
-  isOpen?: boolean;
-  onClose?: () => void;
-}
-
-export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (window.innerWidth < 1024) {
+        setIsOpen(false);
+      }
+    };
+
+    // Listen for route changes
+    handleRouteChange();
+  }, [pathname]);
+
+  // Listen for clicks outside sidebar on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const sidebar = document.getElementById('sidebar');
+      const menuButton = document.querySelector('[data-menu-button]');
+      
+      if (window.innerWidth < 1024 && 
+          sidebar && 
+          !sidebar.contains(event.target as Node) &&
+          menuButton &&
+          !menuButton.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Listen for header menu button clicks
+  useEffect(() => {
+    const handleMenuToggle = () => {
+      setIsOpen(!isOpen);
+    };
+
+    const menuButton = document.querySelector('[data-menu-button]');
+    if (menuButton) {
+      menuButton.addEventListener('click', handleMenuToggle);
+      return () => menuButton.removeEventListener('click', handleMenuToggle);
+    }
+  }, [isOpen]);
 
   const menuItems = [
     {
@@ -58,12 +98,13 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-xs z-40"
-          onClick={onClose}
+          onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
+        id="sidebar"
         className={cn(
           "fixed lg:static inset-y-0 left-0 z-50 w-72 bg-background border-r border-border transform transition-transform duration-300 ease-in-out lg:transform-none",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
@@ -78,7 +119,7 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
               </div>
               <span className="font-semibold text-foreground">Menu</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="p-2">
+            <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="p-2">
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -92,7 +133,7 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
             </div>
 
             {menuItems.map((item) => (
-              <Link key={item.id} href={item.href} onClick={onClose}>
+              <Link key={item.id} href={item.href} onClick={() => setIsOpen(false)}>
                 <div
                   className={cn(
                     "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200",
