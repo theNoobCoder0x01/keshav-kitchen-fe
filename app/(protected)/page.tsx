@@ -97,7 +97,7 @@ export default function HomePage() {
     },
     {
       title: "New Recipe Added",
-      description: "Chicken Curry recipe was created",
+      description: "Curry recipe was created",
       time: "4 hours ago",
       icon: Plus,
     },
