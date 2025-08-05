@@ -460,7 +460,7 @@ export function ReportsGenerationDialog({
           <div className="flex-1 overflow-y-auto">
             <DialogHeader className="pb-4 border-b border-border">
               <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
                   <Download className="w-4 h-4 text-primary-foreground" />
                 </div>
                 Generate Reports
@@ -1082,7 +1082,7 @@ export function ReportsGenerationDialog({
                   selectedCount === 0 ||
                   selectedKitchens.length === 0
                 }
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+                className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
               >
                 {isGenerating ? (
                   <>

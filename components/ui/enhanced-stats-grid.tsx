@@ -81,7 +81,7 @@ export function EnhancedStatsGrid({
           <Card
             key={index}
             className={cn(
-              "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
+              "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
               colors.border,
             )}
           >

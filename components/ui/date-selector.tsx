@@ -110,14 +110,14 @@ export function DateSelector({
   return (
     <Card
       className={cn(
-        "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300",
+        "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
         className,
       )}
     >
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-linear-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
               <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
             </div>
             <div>

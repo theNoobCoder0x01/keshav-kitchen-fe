@@ -49,10 +49,10 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-2xl flex items-center justify-center mb-4">
+          <div className="mx-auto w-16 h-16 bg-linear-to-br from-[#674af5] to-[#856ef7] rounded-2xl flex items-center justify-center mb-4">
             <span className="text-2xl font-bold text-white">K</span>
           </div>
           <CardTitle className="text-2xl font-bold text-[#4b465c]">
@@ -90,7 +90,7 @@ export default function SignInPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90"
+              className="w-full bg-linear-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90"
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Sign In"}

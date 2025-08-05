@@ -16,7 +16,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border px-4 sm:px-6 py-3 sm:py-4">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xs border-b border-border px-4 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           {/* Mobile Menu Button */}
@@ -31,13 +31,13 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-linear-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-sm sm:text-base">
                 K
               </span>
             </div>
             <div className="hidden sm:flex items-center space-x-1">
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#e26b2b] to-[#ff8c42] bg-clip-text text-transparent">
+              <h1 className="text-xl sm:text-2xl font-bold bg-linear-to-r from-[#e26b2b] to-[#ff8c42] bg-clip-text text-transparent">
                 KESHAV
               </h1>
               <span className="text-base sm:text-lg font-medium text-[#e26b2b] italic">
@@ -71,7 +71,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
             >
               <Bell className="w-5 h-5 text-foreground hover:text-primary transition-colors" />
             </Button>
-            <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-gradient-to-r from-[#ea5455] to-[#ff6b6b] text-white text-xs flex items-center justify-center animate-pulse">
+            <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-linear-to-r from-[#ea5455] to-[#ff6b6b] text-white text-xs flex items-center justify-center animate-pulse">
               3
             </Badge>
           </div>

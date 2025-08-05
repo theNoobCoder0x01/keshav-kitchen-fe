@@ -78,10 +78,10 @@ function EnhancedCalendar({
     switch (variant) {
       case "compact":
         return {
-          container: "bg-background/50 backdrop-blur-sm",
+          container: "bg-background/50 backdrop-blur-xs",
           caption: "bg-muted/30 rounded-t-lg",
           day: "hover:bg-primary/5 hover:text-primary",
-          selected: "bg-primary/80 text-primary-foreground shadow-sm",
+          selected: "bg-primary/80 text-primary-foreground shadow-xs",
           today: "bg-accent/50 text-accent-foreground border border-primary/20",
         };
       case "minimal":
@@ -94,7 +94,7 @@ function EnhancedCalendar({
         };
       default:
         return {
-          container: "bg-card/80 backdrop-blur-sm border border-border/50",
+          container: "bg-card/80 backdrop-blur-xs border border-border/50",
           caption: "bg-muted/20 rounded-t-lg border-b border-border/50",
           day: "hover:bg-primary/10 hover:text-primary",
           selected:
@@ -135,7 +135,7 @@ function EnhancedCalendar({
         onChange={(e) => onChange?.(e.target.value)}
         className={cn(
           "bg-transparent border-none text-foreground font-semibold cursor-pointer",
-          "focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-1",
+          "focus:outline-hidden focus:ring-2 focus:ring-primary/20 rounded px-1",
           sizeClasses.captionLabel,
         )}
         {...props}
@@ -165,7 +165,7 @@ function EnhancedCalendar({
         onChange={(e) => onChange?.(e.target.value)}
         className={cn(
           "bg-transparent border-none text-foreground font-semibold cursor-pointer",
-          "focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-1",
+          "focus:outline-hidden focus:ring-2 focus:ring-primary/20 rounded px-1",
           sizeClasses.captionLabel,
         )}
         {...props}
@@ -201,7 +201,7 @@ function EnhancedCalendar({
   return (
     <div
       className={cn(
-        "rounded-lg shadow-sm",
+        "rounded-lg shadow-xs",
         variantClasses.container,
         sizeClasses.container,
         className,
@@ -223,7 +223,7 @@ function EnhancedCalendar({
           caption_label: cn("text-foreground", sizeClasses.captionLabel),
           nav: "space-x-1 flex items-center",
           nav_button: cn(
-            buttonVariants({ variant: "outline" }),
+            buttonVariants({ variant: "outline-solid" }),
             "bg-background/80 border-border/50 hover:bg-muted hover:border-primary/50",
             "p-0 opacity-70 hover:opacity-100 transition-all duration-200",
             "focus:ring-2 focus:ring-primary/20 focus:ring-offset-2",

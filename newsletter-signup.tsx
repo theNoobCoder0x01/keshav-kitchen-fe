@@ -13,11 +13,11 @@ import { Github, Mail, Shield, Twitter } from "lucide-react";
 
 export default function Component() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+    <div className="min-h-screen bg-linear-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-white/95 backdrop-blur-xs">
         <CardHeader className="text-center space-y-4 pb-6">
           {/* Brand Logo */}
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-2xl flex items-center justify-center">
+          <div className="mx-auto w-16 h-16 bg-linear-to-br from-[#674af5] to-[#856ef7] rounded-2xl flex items-center justify-center">
             <Mail className="w-8 h-8 text-white" />
           </div>
 
@@ -81,7 +81,7 @@ export default function Component() {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white font-medium"
+              className="w-full h-11 bg-linear-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white font-medium"
             >
               Subscribe Now
             </Button>

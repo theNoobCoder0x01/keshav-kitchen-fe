@@ -87,7 +87,7 @@ export function ModernDatePicker({
     return (
       <Card
         className={cn(
-          "bg-card/80 backdrop-blur-sm border-border/50",
+          "bg-card/80 backdrop-blur-xs border-border/50",
           className,
         )}
       >
@@ -96,7 +96,7 @@ export function ModernDatePicker({
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-md">
+                <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-md">
                   <Calendar className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
@@ -172,7 +172,7 @@ export function ModernDatePicker({
             className="p-0 h-auto hover:bg-transparent text-left justify-start"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-xs">
                 <Calendar className="w-4 h-4 text-primary-foreground" />
               </div>
               <div>

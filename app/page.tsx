@@ -40,7 +40,7 @@ export default function HomePage() {
   // Show loading while checking authentication
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/20 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-background via-background to-primary/20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
@@ -60,7 +60,7 @@ export default function HomePage() {
       description: "Plan and organize daily meals",
       icon: ChefHat,
       href: "/menus",
-      color: "bg-gradient-to-br from-orange-500 to-red-500",
+      color: "bg-linear-to-br from-orange-500 to-red-500",
       iconColor: "text-white",
     },
     {
@@ -68,7 +68,7 @@ export default function HomePage() {
       description: "Browse and manage recipes",
       icon: Calendar,
       href: "/recipes",
-      color: "bg-gradient-to-br from-blue-500 to-purple-500",
+      color: "bg-linear-to-br from-blue-500 to-purple-500",
       iconColor: "text-white",
     },
     {
@@ -76,7 +76,7 @@ export default function HomePage() {
       description: "Manage kitchen locations",
       icon: Users,
       href: "/kitchens",
-      color: "bg-gradient-to-br from-green-500 to-emerald-500",
+      color: "bg-linear-to-br from-green-500 to-emerald-500",
       iconColor: "text-white",
     },
     {
@@ -84,7 +84,7 @@ export default function HomePage() {
       description: "Track inventory and costs",
       icon: BarChart3,
       href: "/ingredients",
-      color: "bg-gradient-to-br from-purple-500 to-pink-500",
+      color: "bg-linear-to-br from-purple-500 to-pink-500",
       iconColor: "text-white",
     },
   ];

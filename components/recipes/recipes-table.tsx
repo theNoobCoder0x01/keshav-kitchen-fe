@@ -94,7 +94,7 @@ export function RecipesTable({
   );
 
   return (
-    <div className="rounded-lg border shadow-sm">
+    <div className="rounded-lg border shadow-xs">
       <Table>
         <TableHeader>
           <TableRow>
@@ -217,7 +217,7 @@ export function RecipesTable({
           ).map((page) => (
             <Button
               key={page}
-              variant={page === currentPage ? "default" : "outline"}
+              variant={page === currentPage ? "default" : "outline-solid"}
               size="sm"
               onClick={() => setCurrentPage(page)}
               className={

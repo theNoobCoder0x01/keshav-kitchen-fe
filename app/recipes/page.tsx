@@ -429,7 +429,7 @@ export default function RecipesPage() {
                 <span className="hidden sm:inline">Import</span>
               </Button>
               <Button
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => setIsAddDialogOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />

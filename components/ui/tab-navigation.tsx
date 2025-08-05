@@ -46,7 +46,7 @@ export function TabNavigation({
       </div>
 
       {/* Desktop Tabs */}
-      <div className="hidden sm:flex space-x-1 bg-background/50 backdrop-blur-sm p-1 rounded-xl border border-border/50">
+      <div className="hidden sm:flex space-x-1 bg-background/50 backdrop-blur-xs p-1 rounded-xl border border-border/50">
         {tabs.map((tab, index) => (
           <button
             key={tab}
@@ -54,7 +54,7 @@ export function TabNavigation({
             className={cn(
               "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex-1 sm:flex-none",
               index === activeTab
-                ? "bg-background text-primary shadow-sm border border-primary/10"
+                ? "bg-background text-primary shadow-xs border border-primary/10"
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50",
             )}
           >

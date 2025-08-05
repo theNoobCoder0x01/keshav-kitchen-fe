@@ -84,7 +84,7 @@ export function EnhancedDatePicker({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant={variant === "minimal" ? "ghost" : "outline"}
+          variant={variant === "minimal" ? "ghost" : "outline-solid"}
           className={cn(
             "w-full justify-start text-left font-normal",
             "border-border hover:border-primary/50 hover:bg-muted/50",

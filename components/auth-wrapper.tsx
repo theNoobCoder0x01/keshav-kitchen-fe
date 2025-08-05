@@ -21,7 +21,7 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#674af5] mx-auto mb-4"></div>
           <p className="text-[#4b465c]/70">Loading...</p>

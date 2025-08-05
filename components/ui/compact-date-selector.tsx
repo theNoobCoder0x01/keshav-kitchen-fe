@@ -116,14 +116,14 @@ export function CompactDateSelector({
   return (
     <Card
       className={cn(
-        "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300",
+        "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
         className,
       )}
     >
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-md">
               <Calendar className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>

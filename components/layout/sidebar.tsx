@@ -57,7 +57,7 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-xs z-40"
           onClick={onClose}
         />
       )}
@@ -73,7 +73,7 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
           {/* Mobile Close Button */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 bg-linear-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">K</span>
               </div>
               <span className="font-semibold text-foreground">Menu</span>
@@ -97,7 +97,7 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
                   className={cn(
                     "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200",
                     item.isActive
-                      ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary shadow-sm border border-primary/10"
+                      ? "bg-linear-to-r from-primary/10 to-primary/5 text-primary shadow-xs border border-primary/10"
                       : "text-foreground hover:bg-muted hover:text-primary",
                   )}
                 >
@@ -106,7 +106,7 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
                       className={cn(
                         "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
                         item.isActive
-                          ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md"
+                          ? "bg-linear-to-br from-primary to-primary/80 text-primary-foreground shadow-md"
                           : "bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary",
                       )}
                     >
@@ -149,9 +149,9 @@ export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
           {/* Footer */}
           <div className="p-4 border-t border-border space-y-3">
             {/* Help Section */}
-            <div className="bg-gradient-to-r from-primary/5 to-primary/5 rounded-xl p-4 border border-primary/10">
+            <div className="bg-linear-to-r from-primary/5 to-primary/5 rounded-xl p-4 border border-primary/10">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
                   <ChefHat className="w-4 h-4 text-primary-foreground" />
                 </div>
                 <div>

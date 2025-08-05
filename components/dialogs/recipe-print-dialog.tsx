@@ -120,7 +120,7 @@ export function RecipePrintDialog({
         <div className="flex-1 overflow-y-auto">
           <DialogHeader className="pb-4 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
                 <Printer className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
@@ -146,7 +146,7 @@ export function RecipePrintDialog({
                   {showPreview ? "Preview" : "Show Preview"}
                 </CardTitle>
                 <Button
-                  variant={showPreview ? "default" : "outline"}
+                  variant={showPreview ? "default" : "outline-solid"}
                   size="sm"
                   onClick={() => setShowPreview(!showPreview)}
                   className="flex items-center gap-2"
@@ -193,7 +193,7 @@ export function RecipePrintDialog({
             <Button
               onClick={handleDownloadPDF}
               disabled={isGenerating}
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+              className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

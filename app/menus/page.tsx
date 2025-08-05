@@ -166,7 +166,7 @@ export default function MenuPage() {
   // Show loading while checking authentication
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/20 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-background via-background to-primary/20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
@@ -217,7 +217,7 @@ export default function MenuPage() {
               {/* Reports Button */}
               <Button
                 variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-sm"
+                className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-xs"
                 onClick={() => setReportsDialog(true)}
               >
                 <FileText className="w-4 h-4 mr-2" />
