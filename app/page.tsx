@@ -2,22 +2,27 @@
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import {
+  ArrowRight,
+  BarChart3,
+  Calendar,
+  ChefHat,
+  Clock,
+  Plus,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { 
-  ChefHat, 
-  Calendar, 
-  Users, 
-  Settings, 
-  BarChart3, 
-  Plus,
-  ArrowRight,
-  Clock,
-  TrendingUp
-} from "lucide-react";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -35,7 +40,7 @@ export default function HomePage() {
   // Show loading while checking authentication
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/20 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-background via-background to-primary/20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
@@ -55,7 +60,7 @@ export default function HomePage() {
       description: "Plan and organize daily meals",
       icon: ChefHat,
       href: "/menus",
-      color: "bg-gradient-to-br from-orange-500 to-red-500",
+      color: "bg-linear-to-br from-orange-500 to-red-500",
       iconColor: "text-white",
     },
     {
@@ -63,7 +68,7 @@ export default function HomePage() {
       description: "Browse and manage recipes",
       icon: Calendar,
       href: "/recipes",
-      color: "bg-gradient-to-br from-blue-500 to-purple-500",
+      color: "bg-linear-to-br from-blue-500 to-purple-500",
       iconColor: "text-white",
     },
     {
@@ -71,7 +76,7 @@ export default function HomePage() {
       description: "Manage kitchen locations",
       icon: Users,
       href: "/kitchens",
-      color: "bg-gradient-to-br from-green-500 to-emerald-500",
+      color: "bg-linear-to-br from-green-500 to-emerald-500",
       iconColor: "text-white",
     },
     {
@@ -79,7 +84,7 @@ export default function HomePage() {
       description: "Track inventory and costs",
       icon: BarChart3,
       href: "/ingredients",
-      color: "bg-gradient-to-br from-purple-500 to-pink-500",
+      color: "bg-linear-to-br from-purple-500 to-pink-500",
       iconColor: "text-white",
     },
   ];
@@ -130,17 +135,21 @@ export default function HomePage() {
 
       {/* Quick Actions Grid */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Quick Actions
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
-            <Card 
-              key={index} 
+            <Card
+              key={index}
               className="group cursor-pointer hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
               onClick={() => router.push(action.href)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${action.color}`}>
+                  <div
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center ${action.color}`}
+                  >
                     <action.icon className={`w-6 h-6 ${action.iconColor}`} />
                   </div>
                   <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -159,7 +168,9 @@ export default function HomePage() {
 
       {/* Stats Overview */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Today's Overview</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Today's Overview
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
@@ -205,21 +216,32 @@ export default function HomePage() {
 
       {/* Recent Activity */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Recent Activity</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Recent Activity
+        </h2>
         <Card>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
               {recentActivity.map((activity, index) => (
-                <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
+                <div
+                  key={index}
+                  className="p-4 hover:bg-muted/50 transition-colors"
+                >
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                       <activity.icon className="w-4 h-4 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-foreground">{activity.title}</p>
-                      <p className="text-sm text-muted-foreground">{activity.description}</p>
+                      <p className="font-medium text-foreground">
+                        {activity.title}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {activity.description}
+                      </p>
                     </div>
-                    <span className="text-xs text-muted-foreground">{activity.time}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {activity.time}
+                    </span>
                   </div>
                 </div>
               ))}

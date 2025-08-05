@@ -1,9 +1,7 @@
 import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer from "puppeteer";
-
-const prisma = new PrismaClient();
 
 // Simplified HTML template for PDF generation that avoids complex CSS
 function generateRecipeHTML(recipe: any) {

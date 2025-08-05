@@ -1,6 +1,14 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -17,22 +25,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
-import { 
-  Plus, 
-  X, 
-  ChefHat, 
-  BookOpen, 
-  Utensils, 
-  DollarSign,
+import {
   AlertCircle,
-  CheckCircle2
+  BookOpen,
+  CheckCircle2,
+  ChefHat,
+  DollarSign,
+  Plus,
+  Utensils,
+  X,
 } from "lucide-react";
 import * as Yup from "yup";
-import { cn } from "@/lib/utils";
 
 interface Ingredient {
   name: string;
@@ -108,7 +113,7 @@ export function AddRecipeDialog({
   initialRecipe = null,
 }: AddRecipeDialogProps) {
   const isEditMode = !!initialRecipe;
-  
+
   const initialValues = {
     recipeName: initialRecipe?.recipeName || "",
     category: initialRecipe?.category || "",
@@ -157,7 +162,7 @@ export function AddRecipeDialog({
     return ingredients.reduce((total, ingredient) => {
       const quantity = parseFloat(ingredient.quantity) || 0;
       const costPerUnit = parseFloat(ingredient.costPerUnit || "0") || 0;
-      return total + (quantity * costPerUnit);
+      return total + quantity * costPerUnit;
     }, 0);
   };
 
@@ -167,7 +172,7 @@ export function AddRecipeDialog({
         <div className="flex-1 overflow-y-auto">
           <DialogHeader className="pb-4 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
                 {isEditMode ? (
                   <BookOpen className="w-5 h-5 text-primary-foreground" />
                 ) : (
@@ -179,10 +184,9 @@ export function AddRecipeDialog({
                   {isEditMode ? "Edit Recipe" : "Add New Recipe"}
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground">
-                  {isEditMode 
-                    ? "Update your recipe details and ingredients" 
-                    : "Create a new recipe with ingredients and details"
-                  }
+                  {isEditMode
+                    ? "Update your recipe details and ingredients"
+                    : "Create a new recipe with ingredients and details"}
                 </DialogDescription>
               </div>
             </div>
@@ -311,7 +315,8 @@ export function AddRecipeDialog({
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {values.ingredients.length} ingredient{values.ingredients.length !== 1 ? 's' : ''}
+                          {values.ingredients.length} ingredient
+                          {values.ingredients.length !== 1 ? "s" : ""}
                         </Badge>
                         <Button
                           type="button"
@@ -343,7 +348,7 @@ export function AddRecipeDialog({
                               key={index}
                               className={cn(
                                 "p-4 border border-border rounded-lg bg-card/50",
-                                "hover:border-primary/30 transition-colors"
+                                "hover:border-primary/30 transition-colors",
                               )}
                             >
                               <div className="flex items-center justify-between mb-3">
@@ -433,7 +438,10 @@ export function AddRecipeDialog({
                                         </SelectTrigger>
                                         <SelectContent>
                                           {unitOptions.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
+                                            <SelectItem
+                                              key={option.value}
+                                              value={option.value}
+                                            >
                                               {option.label}
                                             </SelectItem>
                                           ))}
@@ -518,7 +526,7 @@ export function AddRecipeDialog({
                   <Button
                     type="submit"
                     disabled={isSubmitting || !dirty}
-                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+                    className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
                   >
                     {isSubmitting ? (
                       <>

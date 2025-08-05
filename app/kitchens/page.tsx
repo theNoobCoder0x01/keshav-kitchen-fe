@@ -1,10 +1,10 @@
 "use client";
 
 import { AddEditKitchenDialog } from "@/components/dialogs/add-edit-kitchen-dialog";
+import { KitchensTable } from "@/components/kitchens/kitchens-table";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
-import { KitchensTable } from "@/components/kitchens/kitchens-table";
 import {
   createKitchen,
   deleteKitchen,
@@ -66,7 +66,11 @@ export default function KitchensPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this kitchen? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this kitchen? This action cannot be undone.",
+      )
+    ) {
       setDeletingId(id);
       try {
         await deleteKitchen(id);
@@ -107,7 +111,7 @@ export default function KitchensPage() {
           initialKitchen={editingKitchen}
           onSave={handleSave}
         />
-        
+
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-muted-foreground">Loading kitchens...</div>

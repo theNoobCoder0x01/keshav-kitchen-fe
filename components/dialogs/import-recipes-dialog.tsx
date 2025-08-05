@@ -301,7 +301,7 @@ export function ImportRecipesDialog({
                         <ul className="text-sm text-red-600 space-y-1 max-h-32 overflow-y-auto">
                           {uploadProgress.errors.map((error, index) => (
                             <li key={index} className="flex items-start gap-2">
-                              <X className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              <X className="w-3 h-3 mt-0.5 shrink-0" />
                               <span>{error}</span>
                             </li>
                           ))}
@@ -364,7 +364,7 @@ export function ImportRecipesDialog({
             <Button
               onClick={handleUpload}
               disabled={!file || isUploading}
-              className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white"
+              className="bg-linear-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white"
             >
               {isUploading ? "Importing..." : "Import Recipes"}
             </Button>

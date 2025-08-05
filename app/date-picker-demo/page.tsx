@@ -1,12 +1,18 @@
 "use client";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { PageHeader } from "@/components/ui/page-header";
-import { EnhancedDatePicker } from "@/components/ui/enhanced-date-picker";
-import { ModernDatePicker } from "@/components/ui/modern-date-picker";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { CompactDateSelector } from "@/components/ui/compact-date-selector";
 import { DateSelector } from "@/components/ui/date-selector";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EnhancedDatePicker } from "@/components/ui/enhanced-date-picker";
+import { ModernDatePicker } from "@/components/ui/modern-date-picker";
+import { PageHeader } from "@/components/ui/page-header";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 
@@ -43,7 +49,7 @@ export default function DatePickerDemoPage() {
                   placeholder="Pick a date"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Compact Variant</h4>
                 <EnhancedDatePicker
@@ -53,7 +59,7 @@ export default function DatePickerDemoPage() {
                   placeholder="Pick a date"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Minimal Variant</h4>
                 <EnhancedDatePicker
@@ -88,7 +94,7 @@ export default function DatePickerDemoPage() {
                   placeholder="Select date"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Compact Variant</h4>
                 <ModernDatePicker
@@ -131,7 +137,7 @@ export default function DatePickerDemoPage() {
                   onDateChange={setSelectedDate2}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Compact Date Selector</h4>
                 <CompactDateSelector
@@ -157,28 +163,46 @@ export default function DatePickerDemoPage() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 font-medium">Feature</th>
-                    <th className="text-left py-2 font-medium">Enhanced Date Picker</th>
-                    <th className="text-left py-2 font-medium">Modern Date Picker</th>
-                    <th className="text-left py-2 font-medium">Original Components</th>
+                    <th className="text-left py-2 font-medium">
+                      Enhanced Date Picker
+                    </th>
+                    <th className="text-left py-2 font-medium">
+                      Modern Date Picker
+                    </th>
+                    <th className="text-left py-2 font-medium">
+                      Original Components
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="space-y-2">
                   <tr className="border-b border-border/50">
                     <td className="py-2">Multiple Variants</td>
-                    <td className="py-2 text-green-600">✓ Default, Compact, Minimal</td>
-                    <td className="py-2 text-green-600">✓ Inline, Popover, Compact</td>
-                    <td className="py-2 text-muted-foreground">Single variant</td>
+                    <td className="py-2 text-green-600">
+                      ✓ Default, Compact, Minimal
+                    </td>
+                    <td className="py-2 text-green-600">
+                      ✓ Inline, Popover, Compact
+                    </td>
+                    <td className="py-2 text-muted-foreground">
+                      Single variant
+                    </td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2">Enhanced Calendar</td>
                     <td className="py-2 text-green-600">✓ Modern styling</td>
                     <td className="py-2 text-green-600">✓ Modern styling</td>
-                    <td className="py-2 text-muted-foreground">Basic styling</td>
+                    <td className="py-2 text-muted-foreground">
+                      Basic styling
+                    </td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2">Navigation Controls</td>
-                    <td className="py-2 text-muted-foreground">Calendar only</td>
-                    <td className="py-2 text-green-600">✓ Previous/Next + Today</td>
+                    <td className="py-2 text-muted-foreground">
+                      Calendar only
+                    </td>
+                    <td className="py-2 text-green-600">
+                      ✓ Previous/Next + Today
+                    </td>
                     <td className="py-2 text-green-600">✓ Previous/Next</td>
                   </tr>
                   <tr className="border-b border-border/50">
@@ -201,8 +225,12 @@ export default function DatePickerDemoPage() {
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2">Hover Effects</td>
-                    <td className="py-2 text-green-600">✓ Smooth transitions</td>
-                    <td className="py-2 text-green-600">✓ Smooth transitions</td>
+                    <td className="py-2 text-green-600">
+                      ✓ Smooth transitions
+                    </td>
+                    <td className="py-2 text-green-600">
+                      ✓ Smooth transitions
+                    </td>
                     <td className="py-2 text-muted-foreground">Basic</td>
                   </tr>
                   <tr>

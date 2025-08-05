@@ -23,7 +23,7 @@ import {
   RefreshCw,
   Settings,
   Trash2,
-  Upload
+  Upload,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -67,7 +67,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "/api/calendar/events?date=" + new Date().toISOString().split("T")[0]
+        "/api/calendar/events?date=" + new Date().toISOString().split("T")[0],
       );
       if (response.ok) {
         const data = await response.json();
@@ -92,7 +92,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -182,7 +182,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <div className="flex-1 overflow-y-auto">
             <DialogHeader className="pb-4 border-b border-border">
               <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
                   <Settings className="w-4 h-4 text-primary-foreground" />
                 </div>
                 Settings
@@ -347,7 +347,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 {/* File Requirements */}
                 <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                   <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                         File Requirements
