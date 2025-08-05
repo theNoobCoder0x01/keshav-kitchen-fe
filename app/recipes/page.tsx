@@ -83,7 +83,7 @@ export default function RecipesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterSubcategory, setFilterSubcategory] = useState("all");
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(true); // Filters open by default
 
   // Calculate recipe statistics
   const calculateRecipeStats = (): RecipeStats => {
@@ -428,11 +428,6 @@ export default function RecipesPage() {
             </div>
           }
         />
-      </div>
-
-      {/* Statistics Dashboard */}
-      <div className="mb-6 sm:mb-8">
-        <EnhancedStatsGrid stats={getRecipeStatsForDisplay()} />
       </div>
 
       {/* Search and Filter Section */}
