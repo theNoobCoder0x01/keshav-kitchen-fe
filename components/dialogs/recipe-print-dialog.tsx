@@ -11,9 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download, Eye, Loader2, Printer } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Download, Eye, Loader2, Printer, FileText } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface RecipePrintDialogProps {
   isOpen: boolean;
@@ -113,41 +117,57 @@ export function RecipePrintDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-7xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Printer className="w-5 h-5" />
-              Print Recipe: {recipe.name}
-            </DialogTitle>
-            <DialogDescription>
-              Preview and print your recipe, or download it as a PDF.
-            </DialogDescription>
+          <DialogHeader className="pb-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                <Printer className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                  Print Recipe
+                  <Badge variant="outline" className="ml-2 text-xs font-normal">
+                    {recipe.name}
+                  </Badge>
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Preview, print, or download your recipe as a PDF document.
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-6 py-4">
             {/* Preview Toggle */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant={showPreview ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowPreview(!showPreview)}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                {showPreview ? "Hide Preview" : "Show Preview"}
-              </Button>
-            </div>
-
-            {/* Preview Section */}
-            {showPreview && (
-              <div className="border rounded-lg p-4 bg-gray-50 max-h-[50vh] overflow-y-auto">
-                <RecipePdfTemplate
-                  recipe={recipe}
-                  isPrintMode={true}
-                  ref={printRef}
-                />
-              </div>
-            )}
+            <Card className="bg-muted/30 border border-border">
+              <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-primary" />
+                  {showPreview ? "Preview" : "Show Preview"}
+                </CardTitle>
+                <Button
+                  variant={showPreview ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="flex items-center gap-2"
+                >
+                  <Eye className="w-4 h-4 mr-1" />
+                  {showPreview ? "Hide Preview" : "Show Preview"}
+                </Button>
+              </CardHeader>
+              {showPreview && (
+                <CardContent className="pt-2">
+                  <div className="border rounded-lg p-4 bg-background max-h-[50vh] overflow-y-auto">
+                    <RecipePdfTemplate
+                      recipe={recipe}
+                      isPrintMode={true}
+                      ref={printRef}
+                    />
+                  </div>
+                </CardContent>
+              )}
+            </Card>
 
             {/* Hidden print content */}
             <div className="hidden">
@@ -159,7 +179,9 @@ export function RecipePrintDialog({
             </div>
           </div>
 
-          <DialogFooter className="flex items-center gap-2 flex-wrap">
+          <Separator className="my-2" />
+
+          <DialogFooter className="flex items-center gap-2 flex-wrap pt-4 border-t border-border">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
@@ -172,7 +194,7 @@ export function RecipePrintDialog({
             <Button
               onClick={handleDownloadPDF}
               disabled={isGenerating}
-              className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
