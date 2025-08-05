@@ -31,7 +31,7 @@ export function RecipePrintDialog({
   recipe,
 }: RecipePrintDialogProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(true); // Changed to true to keep preview open by default
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
