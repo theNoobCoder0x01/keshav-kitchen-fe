@@ -2,7 +2,6 @@
 
 import { AddEditKitchenDialog } from "@/components/dialogs/add-edit-kitchen-dialog";
 import { KitchensTable } from "@/components/kitchens/kitchens-table";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -85,7 +84,7 @@ export default function KitchensPage() {
   };
 
   return (
-    <DashboardLayout activeMenuItem="kitchens">
+    <div className="w-full">
       <PageHeader
         title="Kitchens Management"
         subtitle="Manage your kitchen locations and settings"
@@ -129,6 +128,6 @@ export default function KitchensPage() {
           />
         )}
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

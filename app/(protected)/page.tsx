@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -111,14 +110,16 @@ export default function HomePage() {
   ];
 
   return (
-    <DashboardLayout activeMenuItem="home">
+    <div className="w-full">
       {/* Header Section */}
       <div className="mb-6 sm:mb-8">
         <PageHeader
           title="Welcome back!"
           subtitle={
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <span>Here's what's happening in your kitchen today</span>
+              <span>
+                Here&apos;s what&apos;s happening in your kitchen today
+              </span>
             </div>
           }
           actions={
@@ -127,7 +128,7 @@ export default function HomePage() {
               className="bg-primary hover:bg-primary/90"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Plan Today's Menu
+              Plan Today&apos;s Menu
             </Button>
           }
         />
@@ -169,7 +170,7 @@ export default function HomePage() {
       {/* Stats Overview */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-foreground mb-4">
-          Today's Overview
+          Today&apos;s Overview
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
@@ -249,6 +250,6 @@ export default function HomePage() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

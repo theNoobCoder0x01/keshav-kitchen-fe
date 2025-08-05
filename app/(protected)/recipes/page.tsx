@@ -3,7 +3,6 @@
 import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
 import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
 import { RecipesTable } from "@/components/recipes/recipes-table";
 import { Badge } from "@/components/ui/badge";
@@ -345,26 +344,44 @@ export default function RecipesPage() {
         user: { connect: { id: userId } },
       };
       let result;
-      if (editRecipe) {
-        const { updateRecipe } = await import("@/lib/api/recipes");
-        result = await updateRecipe(editRecipe.selectedRecipe, payload);
-      } else {
-        const { createRecipe } = await import("@/lib/api/recipes");
-        result = await createRecipe(payload);
-      }
-      if (!result.error) {
+      try {
+        if (editRecipe) {
+          const { updateRecipe } = await import("@/lib/actions/recipes");
+          result = await updateRecipe(editRecipe.selectedRecipe, payload);
+        } else {
+          const { createRecipe } = await import("@/lib/actions/recipes");
+          result = await createRecipe(payload);
+        }
+
         if (editRecipe) {
           getRecipes();
           toast.success("Recipe updated!");
         } else {
-          setRecipes((prev: Recipe[]) => [result, ...prev]);
+          // Transform the result to match the local Recipe interface
+          const transformedRecipe: Recipe = {
+            id: result.id,
+            name: result.name,
+            category: result.category,
+            subcategory: result.subcategory || "",
+            cost: 0, // Calculate cost from ingredients if needed
+            ingredients:
+              result.ingredients?.map((ing: any) => ({
+                name: ing.name,
+                quantity: ing.quantity,
+                unit: ing.unit,
+                costPerUnit: ing.costPerUnit,
+              })) || [],
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt,
+          };
+          setRecipes((prev: Recipe[]) => [transformedRecipe, ...prev]);
           toast.success("Recipe added!");
         }
         setIsAddDialogOpen(false);
         setIsEditDialogOpen(false);
         setEditRecipe(null);
-      } else {
-        toast.error(result.error || "Failed to save recipe.");
+      } catch (err: any) {
+        toast.error(err.message || "Failed to save recipe.");
       }
     } catch (err) {
       toast.error("Failed to save recipe.");
@@ -378,7 +395,24 @@ export default function RecipesPage() {
       const [recipesRes] = await Promise.all([
         import("@/lib/api/recipes").then((m) => m.fetchRecipes()),
       ]);
-      setRecipes(recipesRes);
+      // Transform the API recipes to match local Recipe interface
+      const transformedRecipes: Recipe[] = recipesRes.map((recipe: any) => ({
+        id: recipe.id,
+        name: recipe.name,
+        category: recipe.category,
+        subcategory: recipe.subcategory || "",
+        cost: 0, // Calculate from ingredients if needed
+        ingredients:
+          recipe.ingredients?.map((ing: any) => ({
+            name: ing.name,
+            quantity: ing.quantity,
+            unit: ing.unit,
+            costPerUnit: ing.costPerUnit,
+          })) || [],
+        createdAt: new Date(recipe.createdAt || Date.now()),
+        updatedAt: new Date(recipe.updatedAt || Date.now()),
+      }));
+      setRecipes(transformedRecipes);
     } catch (err: any) {
       console.error("Error fetching data:", err);
       toast.error("Failed to load recipes.");
@@ -400,19 +434,19 @@ export default function RecipesPage() {
 
   if (loading) {
     return (
-      <DashboardLayout activeMenuItem="recipe">
+      <div className="w-full">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading recipes...</p>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout activeMenuItem="recipe">
+    <div className="w-full">
       {/* Header Section */}
       <div className="mb-6 sm:mb-8">
         <PageHeader
@@ -528,7 +562,7 @@ export default function RecipesPage() {
             <div className="flex flex-wrap gap-2 pt-2">
               {searchTerm && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  Search: "{searchTerm}"
+                  Search: &quot;{searchTerm}&quot;
                 </Badge>
               )}
               {filterCategory !== "all" && (
@@ -607,6 +641,6 @@ export default function RecipesPage() {
         onOpenChange={setIsImportDialogOpen}
         onImportSuccess={getRecipes}
       />
-    </DashboardLayout>
+    </div>
   );
 }
