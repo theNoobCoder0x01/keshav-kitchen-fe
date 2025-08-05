@@ -1,12 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SimpleFormDialog } from "@/components/ui/base-dialog";
+import { Package } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UNIT_OPTIONS, DEFAULT_UNIT } from "@/lib/constants/units";
 
@@ -77,65 +72,65 @@ export function AddEditIngredientDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+    <SimpleFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={initialIngredient ? "Edit Ingredient" : "Add Ingredient"}
+      description={initialIngredient ? "Update ingredient details" : "Create a new ingredient"}
+      icon={<Package className="w-5 h-5 text-primary-foreground" />}
+      size="md"
+      onSubmit={handleSubmit}
+      submitLabel={initialIngredient ? "Save Changes" : "Add Ingredient"}
+    >
+      <div className="space-y-4">
         <div>
-          <DialogHeader>
-            <DialogTitle>
-              {initialIngredient ? "Edit Ingredient" : "Add Ingredient"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <Label>Name</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ingredient name"
-              />
-            </div>
-            <div>
-              <Label>Cost per Kg (₹)</Label>
-              <Input
-                type="number"
-                value={costPerKg}
-                onChange={(e) => setCostPerKg(e.target.value)}
-                placeholder="30"
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <Label>Unit</Label>
-              <Select value={unit} onValueChange={setUnit}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  {UNIT_OPTIONS.map((unitOption) => (
-                    <SelectItem key={unitOption.value} value={unitOption.value}>
-                      {unitOption.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {error && <div className="text-red-500 text-sm">{error}</div>}
-          </div>
-          <div className="flex justify-end gap-2 pt-2 flex-wrap">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              type="button"
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit}>
-              {initialIngredient ? "Save Changes" : "Add Ingredient"}
-            </Button>
-          </div>
+          <Label className="text-sm font-medium text-foreground mb-2 block">
+            Ingredient Name *
+          </Label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter ingredient name"
+            className="border-border focus:border-primary focus:ring-primary/20"
+          />
         </div>
-      </DialogContent>
-    </Dialog>
+        <div>
+          <Label className="text-sm font-medium text-foreground mb-2 block">
+            Cost per Unit (₹) *
+          </Label>
+          <Input
+            type="number"
+            value={costPerKg}
+            onChange={(e) => setCostPerKg(e.target.value)}
+            placeholder="30"
+            min="0"
+            step="0.01"
+            className="border-border focus:border-primary focus:ring-primary/20"
+          />
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-foreground mb-2 block">
+            Unit *
+          </Label>
+          <Select value={unit} onValueChange={setUnit}>
+            <SelectTrigger className="border-border focus:border-primary focus:ring-primary/20">
+              <SelectValue placeholder="Select unit" />
+            </SelectTrigger>
+            <SelectContent>
+              {UNIT_OPTIONS.map((unitOption) => (
+                <SelectItem key={unitOption.value} value={unitOption.value}>
+                  {unitOption.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {error && (
+          <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md border border-destructive/20">
+            {error}
+          </div>
+        )}
+      </div>
+    </SimpleFormDialog>
   );
 }
