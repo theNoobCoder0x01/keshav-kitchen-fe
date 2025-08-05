@@ -95,16 +95,10 @@ const validationSchema = Yup.object({
     .min(1, "At least one ingredient is required."),
 });
 
-const unitOptions = [
-  { value: "Kg", label: "Kilograms (Kg)" },
-  { value: "g", label: "Grams (g)" },
-  { value: "L", label: "Liters (L)" },
-  { value: "ml", label: "Milliliters (ml)" },
-  { value: "pcs", label: "Pieces (pcs)" },
-  { value: "tbsp", label: "Tablespoons (tbsp)" },
-  { value: "tsp", label: "Teaspoons (tsp)" },
-  { value: "cup", label: "Cups (cup)" },
-];
+import { UNIT_OPTIONS, DEFAULT_UNIT } from "@/lib/constants/units";
+
+// Use centralized unit options
+const unitOptions = UNIT_OPTIONS;
 
 export function AddRecipeDialog({
   isOpen,
@@ -126,7 +120,7 @@ export function AddRecipeDialog({
           costPerUnit:
             ing.costPerUnit !== undefined ? String(ing.costPerUnit) : "",
         }))
-      : [{ name: "", quantity: "", unit: "Kg", costPerUnit: "" }],
+      : [{ name: "", quantity: "", unit: DEFAULT_UNIT, costPerUnit: "" }],
   };
 
   const handleSubmit = (
@@ -334,7 +328,7 @@ export function AddRecipeDialog({
                                 const newIngredient = {
                                   name: "",
                                   quantity: "",
-                                  unit: "Kg",
+                                  unit: DEFAULT_UNIT,
                                   costPerUnit: "",
                                 };
                                 push(newIngredient);
