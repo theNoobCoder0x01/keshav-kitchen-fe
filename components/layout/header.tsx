@@ -8,12 +8,9 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
 
-interface HeaderProps {
-  onMenuToggle?: () => void;
-}
-
-export function Header({ onMenuToggle }: HeaderProps) {
+export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xs border-b border-border px-4 sm:px-6 py-3 sm:py-4">
@@ -24,7 +21,8 @@ export function Header({ onMenuToggle }: HeaderProps) {
             variant="ghost"
             size="sm"
             className="lg:hidden p-2 hover:bg-muted"
-            onClick={onMenuToggle}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            data-menu-button
           >
             <Menu className="w-5 h-5 text-foreground" />
           </Button>

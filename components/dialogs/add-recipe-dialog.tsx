@@ -168,8 +168,8 @@ export function AddRecipeDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-5xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh]">
+        <div className="overflow-y-auto">
           <DialogHeader className="pb-4 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
