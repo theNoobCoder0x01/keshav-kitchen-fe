@@ -2,12 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Label } from "@/components/ui/label";
 import {
   Tooltip,
@@ -177,22 +172,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <TooltipProvider>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh]">
-          <div className="overflow-y-auto">
-            <DialogHeader className="pb-4 border-b border-border">
-              <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                  <Settings className="w-4 h-4 text-primary-foreground" />
-                </div>
-                Settings
-              </DialogTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Configure application settings and upload calendar files
-              </p>
-            </DialogHeader>
-
-            <div className="space-y-6 py-4">
+      <BaseDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Settings"
+        description="Configure application settings and upload calendar files"
+        icon={<Settings className="w-5 h-5 text-primary-foreground" />}
+        size="2xl"
+      >
+        <div className="space-y-6">
               {/* Calendar Settings */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -383,19 +371,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </div>
               </div>
             </div>
-
-            <div className="flex justify-end space-x-3 pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="border-border text-foreground hover:bg-muted bg-transparent"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </TooltipProvider>
-  );
+        </BaseDialog>
+      </TooltipProvider>
+    );
 }

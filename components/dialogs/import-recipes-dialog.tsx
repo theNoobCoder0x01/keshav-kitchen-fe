@@ -2,14 +2,7 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Label } from "@/components/ui/label";
 import {
   AlertCircle,
@@ -202,21 +195,44 @@ export function ImportRecipesDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <div className="overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5" />
-              Import Recipes from Excel
-            </DialogTitle>
-            <DialogDescription>
-              Upload an Excel or CSV file to import multiple recipes at once.
-              Make sure your file follows the required format.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={handleClose}
+      title="Import Recipes from Excel"
+      description="Upload an Excel or CSV file to import multiple recipes at once. Make sure your file follows the required format."
+      icon={<FileSpreadsheet className="w-5 h-5 text-primary-foreground" />}
+      size="4xl"
+      footer={
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={handleDownloadTemplate}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Download Template
+          </Button>
+          <Button
+            onClick={handleUpload}
+            disabled={!file || isUploading}
+            className="flex items-center gap-2"
+          >
+            {isUploading ? (
+              <>
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Importing...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                Import Recipes
+              </>
+            )}
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-6">
             {/* File Upload Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -356,21 +372,6 @@ export function ImportRecipesDialog({
               </ul>
             </div>
           </div>
-
-          <DialogFooter className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUpload}
-              disabled={!file || isUploading}
-              className="bg-linear-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white"
-            >
-              {isUploading ? "Importing..." : "Import Recipes"}
-            </Button>
-          </DialogFooter>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+        </BaseDialog>
+      );
 }

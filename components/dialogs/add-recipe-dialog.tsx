@@ -9,13 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -161,30 +155,20 @@ export function AddRecipeDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh]">
-        <div className="overflow-y-auto">
-          <DialogHeader className="pb-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                {isEditMode ? (
-                  <BookOpen className="w-5 h-5 text-primary-foreground" />
-                ) : (
-                  <ChefHat className="w-5 h-5 text-primary-foreground" />
-                )}
-              </div>
-              <div>
-                <DialogTitle className="text-xl font-semibold text-foreground">
-                  {isEditMode ? "Edit Recipe" : "Add New Recipe"}
-                </DialogTitle>
-                <DialogDescription className="text-muted-foreground">
-                  {isEditMode
-                    ? "Update your recipe details and ingredients"
-                    : "Create a new recipe with ingredients and details"}
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={handleClose}
+      title={isEditMode ? "Edit Recipe" : "Add New Recipe"}
+      description={isEditMode
+        ? "Update your recipe details and ingredients"
+        : "Create a new recipe with ingredients and details"}
+      icon={isEditMode ? (
+        <BookOpen className="w-5 h-5 text-primary-foreground" />
+      ) : (
+        <ChefHat className="w-5 h-5 text-primary-foreground" />
+      )}
+      size="5xl"
+    >
 
           <Formik
             initialValues={initialValues}
@@ -547,8 +531,6 @@ export function AddRecipeDialog({
               </Form>
             )}
           </Formik>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+        </BaseDialog>
+      );
 }

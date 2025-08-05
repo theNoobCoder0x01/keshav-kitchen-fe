@@ -7,13 +7,7 @@ import { toast } from "sonner";
 import * as Yup from "yup";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -30,7 +24,7 @@ import {
   validateMealInputs,
   type MealCalculationInput,
 } from "@/lib/utils/meal-calculations";
-import { Plus, X } from "lucide-react";
+import { Plus, Utensils, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
@@ -387,7 +381,25 @@ export function AddMealDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <BaseDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`${editMeal ? "Edit" : "Add"} ${mealType.toLowerCase()} meal`}
+      description={`Configure meal details for ${mealType.toLowerCase()}`}
+      icon={<Utensils className="w-5 h-5 text-primary-foreground" />}
+      size="6xl"
+      footer={
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            type="submit"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            disabled={isFormSubmitting}
+          >
+            {isFormSubmitting ? "Saving..." : "Save Meal"}
+          </Button>
+        </div>
+      }
+    >
       <Formik
         initialValues={getInitialValues(editMeal, recipes)}
         validationSchema={validationSchema}
@@ -454,15 +466,8 @@ export function AddMealDialog({
             return touched[field as keyof typeof touched];
           };
           return (
-            <DialogContent className="max-w-6xl max-h-[90vh]">
-              <div className="overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editMeal ? "Edit" : "Add"} {mealType.toLowerCase()} meal
-                  </DialogTitle>
-                </DialogHeader>
-
-                <form
+            <div className="overflow-y-auto">
+              <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     handleSubmit(values, { resetForm });
@@ -821,29 +826,11 @@ export function AddMealDialog({
                     </div>
                   </div>
 
-                  <DialogFooter className="mt-6 flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleClose}
-                      disabled={isFormSubmitting}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                      disabled={isFormSubmitting}
-                    >
-                      {isFormSubmitting ? "Saving..." : "Save Meal"}
-                    </Button>
-                  </DialogFooter>
                 </form>
               </div>
-            </DialogContent>
-          );
-        }}
-      </Formik>
-    </Dialog>
-  );
+            );
+          }}
+        </Formik>
+      </BaseDialog>
+    );
 }
