@@ -1,6 +1,5 @@
 "use client";
 
-
 import type React from "react";
 import { useState } from "react";
 import { Header } from "./header";
@@ -30,8 +29,6 @@ export function DashboardLayout({
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
-
-
     </div>
   );
 }

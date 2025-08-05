@@ -6,25 +6,27 @@ import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
 import { RecipesTable } from "@/components/recipes/recipes-table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { EnhancedStatsGrid, createMenuStats } from "@/components/ui/enhanced-stats-grid";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { 
-  FileSpreadsheet, 
-  Plus, 
-  Search, 
-  Filter, 
-  BookOpen, 
-  ChefHat, 
-  Clock, 
+import {
+  BookOpen,
+  ChefHat,
+  Clock,
+  Filter,
+  Plus,
+  RefreshCw,
+  Search,
   TrendingUp,
-  Download,
   Upload,
-  RefreshCw
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -99,16 +101,17 @@ export default function RecipesPage() {
     recipes.forEach((recipe) => {
       // Category stats
       byCategory[recipe.category] = (byCategory[recipe.category] || 0) + 1;
-      
+
       // Subcategory stats
-      bySubcategory[recipe.subcategory] = (bySubcategory[recipe.subcategory] || 0) + 1;
-      
+      bySubcategory[recipe.subcategory] =
+        (bySubcategory[recipe.subcategory] || 0) + 1;
+
       // Cost stats
       if (recipe.cost) {
         totalCost += recipe.cost;
         costCount++;
       }
-      
+
       // Recently added stats
       if (new Date(recipe.createdAt) > oneWeekAgo) {
         recentlyAdded++;
@@ -127,8 +130,14 @@ export default function RecipesPage() {
   const recipeStats = calculateRecipeStats();
 
   // Get unique categories and subcategories for filters
-  const categories = ["all", ...new Set(recipes.map((recipe) => recipe.category))];
-  const subcategories = ["all", ...new Set(recipes.map((recipe) => recipe.subcategory))];
+  const categories = [
+    "all",
+    ...new Set(recipes.map((recipe) => recipe.category)),
+  ];
+  const subcategories = [
+    "all",
+    ...new Set(recipes.map((recipe) => recipe.subcategory)),
+  ];
 
   // Filter recipes based on search and filters
   const filteredRecipes = recipes.filter((recipe) => {
@@ -141,43 +150,44 @@ export default function RecipesPage() {
     const matchesSubcategory =
       filterSubcategory === "all" ||
       recipe.subcategory.toLowerCase() === filterSubcategory.toLowerCase();
-    
+
     return matchesSearch && matchesCategory && matchesSubcategory;
   });
 
   // Create stats for the enhanced stats grid
   const getRecipeStatsForDisplay = () => {
-    const topCategory = Object.entries(recipeStats.byCategory)
-      .sort(([,a], [,b]) => b - a)[0];
-    
+    const topCategory = Object.entries(recipeStats.byCategory).sort(
+      ([, a], [, b]) => b - a,
+    )[0];
+
     return [
       {
         label: "Total Recipes",
         value: recipeStats.total,
         icon: BookOpen,
         subtitle: "All recipes in database",
-        color: 'primary' as const,
+        color: "primary" as const,
       },
       {
         label: "Top Category",
         value: topCategory ? topCategory[0] : "N/A",
         icon: ChefHat,
         subtitle: `${topCategory ? topCategory[1] : 0} recipes`,
-        color: 'success' as const,
+        color: "success" as const,
       },
       {
         label: "Avg Cost",
         value: `$${recipeStats.averageCost.toFixed(2)}`,
         icon: TrendingUp,
         subtitle: "Per recipe",
-        color: 'warning' as const,
+        color: "warning" as const,
       },
       {
         label: "Recently Added",
         value: recipeStats.recentlyAdded,
         icon: Clock,
         subtitle: "Last 7 days",
-        color: 'info' as const,
+        color: "info" as const,
       },
     ];
   };
@@ -461,7 +471,9 @@ export default function RecipesPage() {
               <Filter className="w-4 h-4" />
               Filters
             </Button>
-            {(searchTerm || filterCategory !== "all" || filterSubcategory !== "all") && (
+            {(searchTerm ||
+              filterCategory !== "all" ||
+              filterSubcategory !== "all") && (
               <Button
                 variant="ghost"
                 onClick={clearFilters}
@@ -499,7 +511,9 @@ export default function RecipesPage() {
                 >
                   {subcategories.map((subcategory) => (
                     <option key={subcategory} value={subcategory}>
-                      {subcategory === "all" ? "All Subcategories" : subcategory}
+                      {subcategory === "all"
+                        ? "All Subcategories"
+                        : subcategory}
                     </option>
                   ))}
                 </select>
@@ -508,7 +522,9 @@ export default function RecipesPage() {
           )}
 
           {/* Active Filters Display */}
-          {(searchTerm || filterCategory !== "all" || filterSubcategory !== "all") && (
+          {(searchTerm ||
+            filterCategory !== "all" ||
+            filterSubcategory !== "all") && (
             <div className="flex flex-wrap gap-2 pt-2">
               {searchTerm && (
                 <Badge variant="secondary" className="flex items-center gap-1">

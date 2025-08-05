@@ -86,9 +86,9 @@ export async function POST(request: NextRequest) {
     const calendarEventData = parsedData.events.map((event) => ({
       uid:
         event.uid ||
-        (event.summary.replace(/\s+/g, "-").toLowerCase() +
+        event.summary.replace(/\s+/g, "-").toLowerCase() +
           "-" +
-          event.startDate.getTime()),
+          event.startDate.getTime(),
       summary: event.summary,
       description: event.description,
       startDate: event.startDate,

@@ -3,8 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
 

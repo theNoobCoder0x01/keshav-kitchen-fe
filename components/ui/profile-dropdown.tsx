@@ -1,5 +1,6 @@
 "use client";
 
+import { SettingsDialog } from "@/components/dialogs/settings-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,17 +12,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SettingsDialog } from "@/components/dialogs/settings-dialog";
-import { useSession, signOut } from "next-auth/react";
-import { 
-  User, 
-  Settings, 
-  LogOut, 
-  Shield, 
-  HelpCircle, 
+import {
   Bell,
-  Palette
+  HelpCircle,
+  LogOut,
+  Palette,
+  Settings,
+  Shield,
+  User,
 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 
 export function ProfileDropdown() {
@@ -82,7 +82,10 @@ export function ProfileDropdown() {
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+          <Button
+            variant="ghost"
+            className="relative h-10 w-10 rounded-full p-0"
+          >
             <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all border-2 border-background shadow-md">
               <AvatarImage src="/placeholder.svg?height=40&width=40" />
               <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm font-semibold">
@@ -134,10 +137,7 @@ export function ProfileDropdown() {
       </DropdownMenu>
 
       {/* Settings Dialog */}
-      <SettingsDialog 
-        open={settingsOpen} 
-        onOpenChange={setSettingsOpen} 
-      />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
 }

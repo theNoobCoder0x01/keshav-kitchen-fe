@@ -66,7 +66,9 @@ export function MenuCard({
             <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">
               {title}
             </h3>
-            <p className="text-sm text-muted-foreground">{items?.length} items</p>
+            <p className="text-sm text-muted-foreground">
+              {items?.length} items
+            </p>
           </div>
           <Button
             size="sm"

@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarComponent } from "@/components/ui/enhanced-calendar";
 import { Card, CardContent } from "@/components/ui/card";
+import { Calendar as CalendarComponent } from "@/components/ui/enhanced-calendar";
 import {
   Popover,
   PopoverContent,
@@ -20,8 +20,6 @@ interface DateSelectorProps {
   className?: string;
   kitchenId?: string;
 }
-
-
 
 export function DateSelector({
   date: initialDate,
@@ -97,8 +95,6 @@ export function DateSelector({
   const formatDate = (date: Date) => {
     return format(date, "EEEE, dd MMM yyyy");
   };
-
-
 
   // Determine what to show as subtitle
   const getSubtitle = () => {

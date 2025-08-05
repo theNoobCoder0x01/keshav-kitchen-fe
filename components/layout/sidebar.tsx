@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChefHat, ChevronDown, Home, X, Calendar, Users } from "lucide-react";
+import { Calendar, ChefHat, ChevronDown, Home, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,11 +13,7 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export function Sidebar({
-  activeItem,
-  isOpen = true,
-  onClose,
-}: SidebarProps) {
+export function Sidebar({ activeItem, isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = [
@@ -54,7 +50,6 @@ export function Sidebar({
       isActive: pathname === "/kitchens",
       description: "Manage kitchen locations",
     },
-
   ];
 
   return (
@@ -140,7 +135,9 @@ export function Sidebar({
                     <ChevronDown
                       className={cn(
                         "w-4 h-4 transition-transform",
-                        item.isActive ? "text-primary" : "text-muted-foreground",
+                        item.isActive
+                          ? "text-primary"
+                          : "text-muted-foreground",
                       )}
                     />
                   </div>
@@ -161,7 +158,9 @@ export function Sidebar({
                   <p className="text-sm font-medium text-foreground">
                     Need Help?
                   </p>
-                  <p className="text-xs text-muted-foreground">Contact support</p>
+                  <p className="text-xs text-muted-foreground">
+                    Contact support
+                  </p>
                 </div>
               </div>
             </div>

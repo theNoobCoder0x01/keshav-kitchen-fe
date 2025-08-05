@@ -1,9 +1,9 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { eachDayOfInterval, endOfMonth, startOfMonth } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
 import { DayPicker, DropdownProps } from "react-day-picker";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameYear } from "date-fns";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -97,8 +97,10 @@ function EnhancedCalendar({
           container: "bg-card/80 backdrop-blur-sm border border-border/50",
           caption: "bg-muted/20 rounded-t-lg border-b border-border/50",
           day: "hover:bg-primary/10 hover:text-primary",
-          selected: "bg-primary text-primary-foreground shadow-lg shadow-primary/25",
-          today: "bg-accent text-accent-foreground font-semibold border-2 border-primary/30",
+          selected:
+            "bg-primary text-primary-foreground shadow-lg shadow-primary/25",
+          today:
+            "bg-accent text-accent-foreground font-semibold border-2 border-primary/30",
         };
     }
   };
@@ -106,10 +108,25 @@ function EnhancedCalendar({
   const variantClasses = getVariantClasses();
 
   // Custom month dropdown component
-  const MonthDropdown = ({ value, onChange, children, ...props }: DropdownProps) => {
+  const MonthDropdown = ({
+    value,
+    onChange,
+    children,
+    ...props
+  }: DropdownProps) => {
     const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
 
     return (
@@ -119,7 +136,7 @@ function EnhancedCalendar({
         className={cn(
           "bg-transparent border-none text-foreground font-semibold cursor-pointer",
           "focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-1",
-          sizeClasses.captionLabel
+          sizeClasses.captionLabel,
         )}
         {...props}
       >
@@ -133,7 +150,12 @@ function EnhancedCalendar({
   };
 
   // Custom year dropdown component
-  const YearDropdown = ({ value, onChange, children, ...props }: DropdownProps) => {
+  const YearDropdown = ({
+    value,
+    onChange,
+    children,
+    ...props
+  }: DropdownProps) => {
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 20 }, (_, i) => currentYear - 10 + i);
 
@@ -144,7 +166,7 @@ function EnhancedCalendar({
         className={cn(
           "bg-transparent border-none text-foreground font-semibold cursor-pointer",
           "focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-1",
-          sizeClasses.captionLabel
+          sizeClasses.captionLabel,
         )}
         {...props}
       >
@@ -162,50 +184,50 @@ function EnhancedCalendar({
     const start = startOfMonth(month);
     const end = endOfMonth(month);
     const days = eachDayOfInterval({ start, end });
-    
+
     const weeks: number[] = [];
     let currentWeek = 1;
-    
+
     days.forEach((day, index) => {
       if (index === 0 || day.getDay() === 0) {
         weeks.push(currentWeek);
         currentWeek++;
       }
     });
-    
+
     return weeks;
   };
 
   return (
-    <div className={cn(
-      "rounded-lg shadow-sm",
-      variantClasses.container,
-      sizeClasses.container,
-      className
-    )}>
+    <div
+      className={cn(
+        "rounded-lg shadow-sm",
+        variantClasses.container,
+        sizeClasses.container,
+        className,
+      )}
+    >
       <DayPicker
         showOutsideDays={showOutsideDays}
         showWeekNumber={showWeekNumbers}
         className="w-full"
         classNames={{
-          months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+          months:
+            "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
           month: "space-y-4",
           caption: cn(
             "flex justify-center pt-3 relative items-center",
             variantClasses.caption,
-            sizeClasses.caption
+            sizeClasses.caption,
           ),
-          caption_label: cn(
-            "text-foreground",
-            sizeClasses.captionLabel
-          ),
+          caption_label: cn("text-foreground", sizeClasses.captionLabel),
           nav: "space-x-1 flex items-center",
           nav_button: cn(
             buttonVariants({ variant: "outline" }),
             "bg-background/80 border-border/50 hover:bg-muted hover:border-primary/50",
             "p-0 opacity-70 hover:opacity-100 transition-all duration-200",
             "focus:ring-2 focus:ring-primary/20 focus:ring-offset-2",
-            sizeClasses.navButton
+            sizeClasses.navButton,
           ),
           nav_button_previous: "absolute left-2",
           nav_button_next: "absolute right-2",
@@ -214,12 +236,12 @@ function EnhancedCalendar({
           head_cell: cn(
             "text-muted-foreground font-medium flex items-center justify-center",
             "rounded-md transition-colors",
-            sizeClasses.headCell
+            sizeClasses.headCell,
           ),
           row: "flex w-full mt-1",
           cell: cn(
             "relative p-0 text-center focus-within:relative focus-within:z-20",
-            sizeClasses.cell
+            sizeClasses.cell,
           ),
           day: cn(
             buttonVariants({ variant: "ghost" }),
@@ -227,32 +249,33 @@ function EnhancedCalendar({
             "focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background",
             "hover:scale-105 active:scale-95",
             variantClasses.day,
-            sizeClasses.day
+            sizeClasses.day,
           ),
           day_range_end: "day-range-end",
           day_selected: cn(
             "hover:bg-primary/90 hover:text-primary-foreground",
             "focus:bg-primary/90 focus:text-primary-foreground",
             "scale-105 shadow-lg",
-            variantClasses.selected
+            variantClasses.selected,
           ),
           day_today: cn(
             "hover:bg-primary/10 hover:text-primary hover:border-primary/50",
-            variantClasses.today
+            variantClasses.today,
           ),
           day_outside: cn(
             "text-muted-foreground opacity-50",
-            "aria-selected:bg-accent/50 aria-selected:text-muted-foreground"
+            "aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
           ),
           day_disabled: cn(
             "text-muted-foreground opacity-30 cursor-not-allowed",
-            "hover:bg-transparent hover:scale-100"
+            "hover:bg-transparent hover:scale-100",
           ),
-          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+          day_range_middle:
+            "aria-selected:bg-accent aria-selected:text-accent-foreground",
           day_hidden: "invisible",
           weeknumber: cn(
             "text-muted-foreground font-medium text-center",
-            sizeClasses.weekNumber
+            sizeClasses.weekNumber,
           ),
           ...classNames,
         }}

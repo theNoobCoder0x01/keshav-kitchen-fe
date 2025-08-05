@@ -220,7 +220,9 @@ export function RecipesTable({
               variant={page === currentPage ? "default" : "outline"}
               size="sm"
               onClick={() => setCurrentPage(page)}
-              className={page === currentPage ? "bg-primary text-primary-foreground" : ""}
+              className={
+                page === currentPage ? "bg-primary text-primary-foreground" : ""
+              }
             >
               {page}
             </Button>

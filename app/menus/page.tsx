@@ -6,14 +6,17 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { MenuGrid } from "@/components/menu/menu-grid";
 import { Button } from "@/components/ui/button";
 import { CompactDateSelector } from "@/components/ui/compact-date-selector";
+import {
+  EnhancedStatsGrid,
+  createMenuStats,
+} from "@/components/ui/enhanced-stats-grid";
 import { PageHeader } from "@/components/ui/page-header";
-import { EnhancedStatsGrid, createMenuStats } from "@/components/ui/enhanced-stats-grid";
 import { TabNavigation } from "@/components/ui/tab-navigation";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
 import { MealType } from "@prisma/client";
-import { Eye, FileText, Users } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -210,7 +213,7 @@ export default function MenuPage() {
                 className="w-auto"
                 kitchenId={session?.user?.kitchenId ?? undefined}
               />
-              
+
               {/* Reports Button */}
               <Button
                 variant="outline"

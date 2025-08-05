@@ -5,12 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   Clock,
+  Minus,
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp,
   Users,
   Utensils,
-  ShoppingCart,
-  TrendingUp,
-  TrendingDown,
-  Minus,
 } from "lucide-react";
 
 interface EnhancedStatData {
@@ -22,7 +22,7 @@ interface EnhancedStatData {
     isPositive: boolean;
   };
   subtitle?: string;
-  color?: 'primary' | 'success' | 'warning' | 'info';
+  color?: "primary" | "success" | "warning" | "info";
 }
 
 interface EnhancedStatsGridProps {
@@ -30,32 +30,35 @@ interface EnhancedStatsGridProps {
   className?: string;
 }
 
-export function EnhancedStatsGrid({ stats, className }: EnhancedStatsGridProps) {
+export function EnhancedStatsGrid({
+  stats,
+  className,
+}: EnhancedStatsGridProps) {
   const getColorClasses = (color?: string) => {
     switch (color) {
-      case 'success':
+      case "success":
         return {
-          icon: 'text-green-600 dark:text-green-400',
-          bg: 'bg-green-50 dark:bg-green-950',
-          border: 'border-green-200 dark:border-green-800',
+          icon: "text-green-600 dark:text-green-400",
+          bg: "bg-green-50 dark:bg-green-950",
+          border: "border-green-200 dark:border-green-800",
         };
-      case 'warning':
+      case "warning":
         return {
-          icon: 'text-orange-600 dark:text-orange-400',
-          bg: 'bg-orange-50 dark:bg-orange-950',
-          border: 'border-orange-200 dark:border-orange-800',
+          icon: "text-orange-600 dark:text-orange-400",
+          bg: "bg-orange-50 dark:bg-orange-950",
+          border: "border-orange-200 dark:border-orange-800",
         };
-      case 'info':
+      case "info":
         return {
-          icon: 'text-blue-600 dark:text-blue-400',
-          bg: 'bg-blue-50 dark:bg-blue-950',
-          border: 'border-blue-200 dark:border-blue-800',
+          icon: "text-blue-600 dark:text-blue-400",
+          bg: "bg-blue-50 dark:bg-blue-950",
+          border: "border-blue-200 dark:border-blue-800",
         };
       default:
         return {
-          icon: 'text-primary',
-          bg: 'bg-primary/5',
-          border: 'border-primary/20',
+          icon: "text-primary",
+          bg: "bg-primary/5",
+          border: "border-primary/20",
         };
     }
   };
@@ -73,13 +76,13 @@ export function EnhancedStatsGrid({ stats, className }: EnhancedStatsGridProps) 
     <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-4", className)}>
       {stats.map((stat, index) => {
         const colors = getColorClasses(stat.color);
-        
+
         return (
           <Card
             key={index}
             className={cn(
               "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
-              colors.border
+              colors.border,
             )}
           >
             <CardContent className="p-4">
@@ -87,7 +90,7 @@ export function EnhancedStatsGrid({ stats, className }: EnhancedStatsGridProps) 
                 <div
                   className={cn(
                     "w-10 h-10 rounded-lg flex items-center justify-center",
-                    colors.bg
+                    colors.bg,
                   )}
                 >
                   <stat.icon className={cn("w-5 h-5", colors.icon)} />
@@ -99,7 +102,7 @@ export function EnhancedStatsGrid({ stats, className }: EnhancedStatsGridProps) 
                       "text-xs px-2 py-1",
                       stat.trend.isPositive
                         ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                        : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                        : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
                     )}
                   >
                     {getTrendIcon(stat.trend)}
@@ -107,7 +110,7 @@ export function EnhancedStatsGrid({ stats, className }: EnhancedStatsGridProps) 
                   </Badge>
                 )}
               </div>
-              
+
               <div className="space-y-1">
                 <p className="text-2xl font-bold text-foreground">
                   {stat.value}
@@ -131,10 +134,11 @@ export function EnhancedStatsGrid({ stats, className }: EnhancedStatsGridProps) 
 
 // Predefined stat configurations for common use cases
 export const createMenuStats = (data: any) => {
-  const totalMeals = data?.byMealType?.BREAKFAST + 
-                    data?.byMealType?.LUNCH + 
-                    data?.byMealType?.DINNER + 
-                    data?.byMealType?.SNACK || 0;
+  const totalMeals =
+    data?.byMealType?.BREAKFAST +
+      data?.byMealType?.LUNCH +
+      data?.byMealType?.DINNER +
+      data?.byMealType?.SNACK || 0;
 
   return [
     {
@@ -142,28 +146,28 @@ export const createMenuStats = (data: any) => {
       value: totalMeals,
       icon: Utensils,
       subtitle: "Planned for today",
-      color: 'primary' as const,
+      color: "primary" as const,
     },
     {
       label: "Breakfast",
       value: data?.byMealType?.BREAKFAST || 0,
       icon: Clock,
       subtitle: "Morning meals",
-      color: 'info' as const,
+      color: "info" as const,
     },
     {
       label: "Lunch",
       value: data?.byMealType?.LUNCH || 0,
       icon: Users,
       subtitle: "Midday meals",
-      color: 'success' as const,
+      color: "success" as const,
     },
     {
       label: "Dinner",
       value: data?.byMealType?.DINNER || 0,
       icon: ShoppingCart,
       subtitle: "Evening meals",
-      color: 'warning' as const,
+      color: "warning" as const,
     },
   ];
 };

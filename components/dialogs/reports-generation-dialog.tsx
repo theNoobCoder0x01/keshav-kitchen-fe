@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateSelector } from "@/components/ui/date-selector";
 import {
@@ -30,25 +30,23 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
-  AlertCircle,
   BarChart3,
   BookOpen,
   Calendar,
+  CheckCircle2,
   Clock,
   Combine,
   Download,
-  FileText,
-  FileX,
   FileSpreadsheet,
+  FileText,
   FileType,
   Info,
   Loader2,
   ShoppingCart,
   Users,
   Utensils,
-  Zap,
-  CheckCircle2,
   XCircle,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -65,7 +63,7 @@ interface ReportOption {
   detailedDescription: string;
   icon: React.ElementType;
   checked: boolean;
-  category: 'meal' | 'analysis' | 'summary';
+  category: "meal" | "analysis" | "summary";
 }
 
 interface Kitchen {
@@ -77,7 +75,7 @@ interface ReportProgress {
   current: number;
   total: number;
   currentReport: string;
-  status: 'idle' | 'generating' | 'success' | 'error';
+  status: "idle" | "generating" | "success" | "error";
 }
 
 export function ReportsGenerationDialog({
@@ -98,8 +96,8 @@ export function ReportsGenerationDialog({
   const [reportProgress, setReportProgress] = useState<ReportProgress>({
     current: 0,
     total: 0,
-    currentReport: '',
-    status: 'idle'
+    currentReport: "",
+    status: "idle",
   });
 
   const [reportTypes, setReportTypes] = useState<ReportOption[]>([
@@ -111,7 +109,7 @@ export function ReportsGenerationDialog({
         "Detailed breakdown of breakfast menu items, including individual recipes, ingredient quantities, nutritional information, and preparation instructions. Perfect for kitchen staff and nutrition planning.",
       icon: Clock,
       checked: true,
-      category: 'meal',
+      category: "meal",
     },
     {
       id: "lunch",
@@ -121,7 +119,7 @@ export function ReportsGenerationDialog({
         "Comprehensive lunch menu analysis with recipe details, ingredient lists, portion sizes, and dietary information. Ideal for meal planning and cost analysis.",
       icon: Utensils,
       checked: true,
-      category: 'meal',
+      category: "meal",
     },
     {
       id: "dinner",
@@ -131,17 +129,18 @@ export function ReportsGenerationDialog({
         "Complete dinner menu report featuring all recipes, ingredients, cooking methods, and serving sizes. Essential for inventory management and staff training.",
       icon: ShoppingCart,
       checked: true,
-      category: 'meal',
+      category: "meal",
     },
     {
       id: "ingredients",
       label: "Combined Ingredients Report",
-      description: "Aggregated ingredients across selected meal types and kitchens",
+      description:
+        "Aggregated ingredients across selected meal types and kitchens",
       detailedDescription:
         "Master ingredient list combining all selected meal types and kitchens. Shows total quantities needed, cost analysis, and shopping lists. Perfect for bulk purchasing and inventory planning.",
       icon: BarChart3,
       checked: false,
-      category: 'analysis',
+      category: "analysis",
     },
     {
       id: "summary",
@@ -151,7 +150,7 @@ export function ReportsGenerationDialog({
         "Executive-level report with key performance indicators, cost summaries, nutritional overviews, and operational insights. Perfect for management review and strategic planning.",
       icon: FileText,
       checked: false,
-      category: 'summary',
+      category: "summary",
     },
   ]);
 
@@ -221,7 +220,7 @@ export function ReportsGenerationDialog({
   };
 
   const handleSelectAllKitchens = () => {
-    setSelectedKitchens(allKitchens.map(k => k.id));
+    setSelectedKitchens(allKitchens.map((k) => k.id));
   };
 
   const handleDeselectAllKitchens = () => {
@@ -242,7 +241,12 @@ export function ReportsGenerationDialog({
     }
 
     setIsGenerating(true);
-    setReportProgress({ current: 0, total: 0, currentReport: '', status: 'generating' });
+    setReportProgress({
+      current: 0,
+      total: 0,
+      currentReport: "",
+      status: "generating",
+    });
 
     try {
       const dateStr = selectedDate.toISOString().split("T")[0];
@@ -321,15 +325,20 @@ export function ReportsGenerationDialog({
         });
       }
 
-      setReportProgress({ current: 0, total: reports.length, currentReport: '', status: 'generating' });
+      setReportProgress({
+        current: 0,
+        total: reports.length,
+        currentReport: "",
+        status: "generating",
+      });
 
       // Generate all reports
       for (let i = 0; i < reports.length; i++) {
         const reportConfig = reports[i];
-        setReportProgress(prev => ({ 
-          ...prev, 
-          current: i + 1, 
-          currentReport: reportConfig.filename 
+        setReportProgress((prev) => ({
+          ...prev,
+          current: i + 1,
+          currentReport: reportConfig.filename,
         }));
 
         try {
@@ -359,7 +368,8 @@ export function ReportsGenerationDialog({
             let errorMessage = `Failed to generate ${reportConfig.filename}`;
             try {
               const errorData = await response.json();
-              errorMessage = errorData.details || errorData.error || errorMessage;
+              errorMessage =
+                errorData.details || errorData.error || errorMessage;
             } catch {
               errorMessage = `${errorMessage}: ${response.status} ${response.statusText}`;
             }
@@ -386,17 +396,20 @@ export function ReportsGenerationDialog({
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
         } catch (reportError: any) {
-          console.error(`Error generating ${reportConfig.filename}:`, reportError);
-          setReportProgress(prev => ({ ...prev, status: 'error' }));
+          console.error(
+            `Error generating ${reportConfig.filename}:`,
+            reportError,
+          );
+          setReportProgress((prev) => ({ ...prev, status: "error" }));
           throw new Error(`${reportConfig.filename}: ${reportError.message}`);
         }
       }
 
-      setReportProgress(prev => ({ ...prev, status: 'success' }));
+      setReportProgress((prev) => ({ ...prev, status: "success" }));
       toast.success(`${reports.length} report(s) generated successfully!`);
       onOpenChange(false);
     } catch (error: any) {
-      setReportProgress(prev => ({ ...prev, status: 'error' }));
+      setReportProgress((prev) => ({ ...prev, status: "error" }));
       toast.error(error.message || "Failed to generate reports");
     } finally {
       setIsGenerating(false);
@@ -416,19 +429,27 @@ export function ReportsGenerationDialog({
 
   const getReportCategoryIcon = (category: string) => {
     switch (category) {
-      case 'meal': return <Utensils className="w-4 h-4" />;
-      case 'analysis': return <BarChart3 className="w-4 h-4" />;
-      case 'summary': return <FileText className="w-4 h-4" />;
-      default: return <FileText className="w-4 h-4" />;
+      case "meal":
+        return <Utensils className="w-4 h-4" />;
+      case "analysis":
+        return <BarChart3 className="w-4 h-4" />;
+      case "summary":
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
     }
   };
 
   const getProgressIcon = () => {
     switch (reportProgress.status) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'generating': return <Loader2 className="w-4 h-4 animate-spin" />;
-      default: return <FileText className="w-4 h-4" />;
+      case "success":
+        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+      case "error":
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      case "generating":
+        return <Loader2 className="w-4 h-4 animate-spin" />;
+      default:
+        return <FileText className="w-4 h-4" />;
     }
   };
 
@@ -445,7 +466,8 @@ export function ReportsGenerationDialog({
                 Generate Reports
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Create and download detailed reports with ingredient combinations for your kitchen operations
+                Create and download detailed reports with ingredient
+                combinations for your kitchen operations
               </p>
             </DialogHeader>
 
@@ -458,7 +480,8 @@ export function ReportsGenerationDialog({
                       {getProgressIcon()}
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground">
-                          Generating Reports ({reportProgress.current}/{reportProgress.total})
+                          Generating Reports ({reportProgress.current}/
+                          {reportProgress.total})
                         </p>
                         {reportProgress.currentReport && (
                           <p className="text-xs text-muted-foreground">
@@ -467,8 +490,10 @@ export function ReportsGenerationDialog({
                         )}
                       </div>
                     </div>
-                    <Progress 
-                      value={(reportProgress.current / reportProgress.total) * 100} 
+                    <Progress
+                      value={
+                        (reportProgress.current / reportProgress.total) * 100
+                      }
                       className="h-2"
                     />
                   </CardContent>
@@ -487,9 +512,9 @@ export function ReportsGenerationDialog({
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs">
-                          Select the date for which you want to generate reports.
-                          This will include all menu items and recipes scheduled
-                          for this specific date.
+                          Select the date for which you want to generate
+                          reports. This will include all menu items and recipes
+                          scheduled for this specific date.
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -517,9 +542,10 @@ export function ReportsGenerationDialog({
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="max-w-xs">
-                            Choose which kitchens to include in your reports. You
-                            can select multiple kitchens to generate combined
-                            reports or individual reports for each kitchen.
+                            Choose which kitchens to include in your reports.
+                            You can select multiple kitchens to generate
+                            combined reports or individual reports for each
+                            kitchen.
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -529,7 +555,9 @@ export function ReportsGenerationDialog({
                         variant="outline"
                         size="sm"
                         onClick={handleSelectAllKitchens}
-                        disabled={selectedKitchens.length === allKitchens.length}
+                        disabled={
+                          selectedKitchens.length === allKitchens.length
+                        }
                       >
                         Select All
                       </Button>
@@ -554,7 +582,9 @@ export function ReportsGenerationDialog({
                         <Checkbox
                           id={kitchen.id}
                           checked={selectedKitchens.includes(kitchen.id)}
-                          onCheckedChange={() => handleKitchenToggle(kitchen.id)}
+                          onCheckedChange={() =>
+                            handleKitchenToggle(kitchen.id)
+                          }
                         />
                         <Label
                           htmlFor={kitchen.id}
@@ -586,9 +616,9 @@ export function ReportsGenerationDialog({
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="max-w-xs">
-                            Select which types of reports to generate. Each report
-                            type provides different insights and data for your
-                            kitchen operations.
+                            Select which types of reports to generate. Each
+                            report type provides different insights and data for
+                            your kitchen operations.
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -602,15 +632,19 @@ export function ReportsGenerationDialog({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {['meal', 'analysis', 'summary'].map((category) => {
-                      const categoryReports = reportTypes.filter(r => r.category === category);
+                    {["meal", "analysis", "summary"].map((category) => {
+                      const categoryReports = reportTypes.filter(
+                        (r) => r.category === category,
+                      );
                       if (categoryReports.length === 0) return null;
-                      
+
                       return (
                         <div key={category} className="space-y-3">
                           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                             {getReportCategoryIcon(category)}
-                            {category.charAt(0).toUpperCase() + category.slice(1)} Reports
+                            {category.charAt(0).toUpperCase() +
+                              category.slice(1)}{" "}
+                            Reports
                           </div>
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                             {categoryReports.map((report) => (
@@ -620,10 +654,13 @@ export function ReportsGenerationDialog({
                                   "p-4 border-2 rounded-lg transition-all cursor-pointer",
                                   report.checked
                                     ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50 hover:bg-muted/50"
+                                    : "border-border hover:border-primary/50 hover:bg-muted/50",
                                 )}
                                 onClick={() =>
-                                  handleReportTypeChange(report.id, !report.checked)
+                                  handleReportTypeChange(
+                                    report.id,
+                                    !report.checked,
+                                  )
                                 }
                               >
                                 <div className="flex items-start space-x-3">
@@ -685,12 +722,12 @@ export function ReportsGenerationDialog({
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs">
-                          Configure advanced report options for enhanced functionality
-                          and detailed analysis.
+                          Configure advanced report options for enhanced
+                          functionality and detailed analysis.
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                </CardTitle>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Combination Options */}
@@ -699,12 +736,15 @@ export function ReportsGenerationDialog({
                       <Combine className="w-4 h-4" />
                       Combination Options
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Label htmlFor="combine-meals" className="text-sm font-medium">
+                            <Label
+                              htmlFor="combine-meals"
+                              className="text-sm font-medium"
+                            >
                               Combine Meal Types
                             </Label>
                             <Tooltip>
@@ -713,9 +753,10 @@ export function ReportsGenerationDialog({
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">
-                                  Aggregate ingredients from all selected meal types
-                                  (breakfast, lunch, dinner) into a single report.
-                                  This creates a comprehensive daily overview.
+                                  Aggregate ingredients from all selected meal
+                                  types (breakfast, lunch, dinner) into a single
+                                  report. This creates a comprehensive daily
+                                  overview.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -735,7 +776,10 @@ export function ReportsGenerationDialog({
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Label htmlFor="combine-kitchens" className="text-sm font-medium">
+                            <Label
+                              htmlFor="combine-kitchens"
+                              className="text-sm font-medium"
+                            >
                               Combine Kitchens
                             </Label>
                             <Tooltip>
@@ -744,9 +788,9 @@ export function ReportsGenerationDialog({
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">
-                                  Merge data from all selected kitchens into unified
-                                  reports. Useful for multi-kitchen operations and
-                                  centralized planning.
+                                  Merge data from all selected kitchens into
+                                  unified reports. Useful for multi-kitchen
+                                  operations and centralized planning.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -766,7 +810,10 @@ export function ReportsGenerationDialog({
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Label htmlFor="both-versions" className="text-sm font-medium">
+                            <Label
+                              htmlFor="both-versions"
+                              className="text-sm font-medium"
+                            >
                               Generate Both Versions
                             </Label>
                             <Tooltip>
@@ -775,8 +822,8 @@ export function ReportsGenerationDialog({
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">
-                                  Create both combined and individual reports. This
-                                  gives you both detailed breakdowns and
+                                  Create both combined and individual reports.
+                                  This gives you both detailed breakdowns and
                                   consolidated views for maximum flexibility.
                                 </p>
                               </TooltipContent>
@@ -803,12 +850,15 @@ export function ReportsGenerationDialog({
                       <FileText className="w-4 h-4" />
                       Content Options
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Label htmlFor="attach-recipes" className="text-sm font-medium">
+                            <Label
+                              htmlFor="attach-recipes"
+                              className="text-sm font-medium"
+                            >
                               Attach Recipe Prints
                             </Label>
                             <Tooltip>
@@ -817,10 +867,10 @@ export function ReportsGenerationDialog({
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">
-                                  Include detailed recipe pages with instructions,
-                                  ingredients, and cooking methods. Each unique
-                                  recipe appears only once, even if used multiple
-                                  times.
+                                  Include detailed recipe pages with
+                                  instructions, ingredients, and cooking
+                                  methods. Each unique recipe appears only once,
+                                  even if used multiple times.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -839,7 +889,10 @@ export function ReportsGenerationDialog({
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Label htmlFor="nutritional-info" className="text-sm font-medium">
+                            <Label
+                              htmlFor="nutritional-info"
+                              className="text-sm font-medium"
+                            >
                               Include Nutritional Info
                             </Label>
                             <Tooltip>
@@ -848,15 +901,17 @@ export function ReportsGenerationDialog({
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">
-                                  Add nutritional information including calories,
-                                  protein, carbohydrates, fats, and other dietary
-                                  details for each recipe and meal.
+                                  Add nutritional information including
+                                  calories, protein, carbohydrates, fats, and
+                                  other dietary details for each recipe and
+                                  meal.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            Include calories, protein, carbs, and other nutrients
+                            Include calories, protein, carbs, and other
+                            nutrients
                           </p>
                         </div>
                         <Switch
@@ -869,7 +924,10 @@ export function ReportsGenerationDialog({
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Label htmlFor="cost-analysis" className="text-sm font-medium">
+                            <Label
+                              htmlFor="cost-analysis"
+                              className="text-sm font-medium"
+                            >
                               Include Cost Analysis
                             </Label>
                             <Tooltip>
@@ -878,9 +936,10 @@ export function ReportsGenerationDialog({
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">
-                                  Add detailed cost breakdowns including ingredient
-                                  costs, total meal costs, cost per serving, and
-                                  budget analysis for financial planning.
+                                  Add detailed cost breakdowns including
+                                  ingredient costs, total meal costs, cost per
+                                  serving, and budget analysis for financial
+                                  planning.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -912,16 +971,19 @@ export function ReportsGenerationDialog({
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs">
-                          Choose the file format for your reports. Each format has
-                          different advantages for viewing, editing, and sharing
-                          your data.
+                          Choose the file format for your reports. Each format
+                          has different advantages for viewing, editing, and
+                          sharing your data.
                         </p>
                       </TooltipContent>
                     </Tooltip>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Select value={selectedFormat} onValueChange={setSelectedFormat}>
+                  <Select
+                    value={selectedFormat}
+                    onValueChange={setSelectedFormat}
+                  >
                     <SelectTrigger className="border-border">
                       <SelectValue />
                     </SelectTrigger>
@@ -931,7 +993,9 @@ export function ReportsGenerationDialog({
                           <div className="flex items-center gap-2">
                             <format.icon className="w-4 h-4" />
                             <div className="flex flex-col items-start">
-                              <span className="font-medium">{format.label}</span>
+                              <span className="font-medium">
+                                {format.label}
+                              </span>
                               <span className="text-xs text-muted-foreground">
                                 {format.description}
                               </span>
@@ -956,10 +1020,20 @@ export function ReportsGenerationDialog({
                   <CardContent>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>Date: {selectedDate.toLocaleDateString()}</p>
-                      <p>Format: {formatOptions.find((f) => f.value === selectedFormat)?.label}</p>
+                      <p>
+                        Format:{" "}
+                        {
+                          formatOptions.find((f) => f.value === selectedFormat)
+                            ?.label
+                        }
+                      </p>
                       <p>Kitchens: {selectedKitchens.length} selected</p>
                       <p>
-                        Reports: {reportTypes.filter((r) => r.checked).map((r) => r.label).join(", ")}
+                        Reports:{" "}
+                        {reportTypes
+                          .filter((r) => r.checked)
+                          .map((r) => r.label)
+                          .join(", ")}
                       </p>
                       {(combineMealTypes || combineKitchens) && (
                         <p className="text-primary font-medium">

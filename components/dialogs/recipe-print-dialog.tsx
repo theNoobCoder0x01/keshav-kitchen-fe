@@ -2,7 +2,9 @@
 
 import { type RecipeDetailData } from "@/components/recipes/recipe-detail-view";
 import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -11,13 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Download, Eye, Loader2, Printer, FileText } from "lucide-react";
+import { Download, Eye, Loader2, Printer } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface RecipePrintDialogProps {
   isOpen: boolean;

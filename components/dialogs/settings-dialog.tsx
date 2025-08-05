@@ -23,7 +23,7 @@ import {
   RefreshCw,
   Settings,
   Trash2,
-  Upload
+  Upload,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -67,7 +67,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "/api/calendar/events?date=" + new Date().toISOString().split("T")[0]
+        "/api/calendar/events?date=" + new Date().toISOString().split("T")[0],
       );
       if (response.ok) {
         const data = await response.json();
@@ -92,7 +92,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;

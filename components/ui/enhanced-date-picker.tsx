@@ -54,10 +54,12 @@ export function EnhancedDatePicker({
       return (
         <div className="flex items-center gap-2">
           {showIcon && <Calendar className="h-4 w-4 text-muted-foreground" />}
-          <span className={cn(
-            "text-sm",
-            date ? "text-foreground" : "text-muted-foreground"
-          )}>
+          <span
+            className={cn(
+              "text-sm",
+              date ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
             {date ? format(date, "PPP") : placeholder}
           </span>
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
@@ -68,9 +70,9 @@ export function EnhancedDatePicker({
     return (
       <div className="flex items-center gap-2">
         {showIcon && <Calendar className="h-4 w-4 text-muted-foreground" />}
-        <span className={cn(
-          date ? "text-foreground" : "text-muted-foreground"
-        )}>
+        <span
+          className={cn(date ? "text-foreground" : "text-muted-foreground")}
+        >
           {date ? format(date, "PPP") : placeholder}
         </span>
         <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -89,18 +91,14 @@ export function EnhancedDatePicker({
             "focus:ring-2 focus:ring-primary/20 focus:ring-offset-2",
             "transition-all duration-200",
             getVariantClasses(),
-            className
+            className,
           )}
           disabled={disabled}
         >
           {getTriggerContent()}
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-auto p-0" 
-        align="start"
-        sideOffset={4}
-      >
+      <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
         <div className="bg-background border border-border rounded-lg shadow-lg">
           <div className="p-3 border-b border-border bg-muted/30">
             <h3 className="text-sm font-semibold text-foreground">
