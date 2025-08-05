@@ -329,7 +329,7 @@ export function AddRecipeDialog({
                               unit: "Kg",
                               costPerUnit: "",
                             };
-                            values.ingredients.push(newIngredient);
+                            push(newIngredient);
                           }}
                           className="flex items-center gap-2"
                         >
@@ -341,7 +341,7 @@ export function AddRecipeDialog({
                   </CardHeader>
                   <CardContent>
                     <FieldArray name="ingredients">
-                      {({ remove }: { remove: (index: number) => void }) => (
+                      {({ remove, push }: { remove: (index: number) => void; push: (value: any) => void }) => (
                         <div className="space-y-4">
                           {values.ingredients.map((ingredient, index) => (
                             <div
