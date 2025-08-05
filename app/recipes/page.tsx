@@ -9,10 +9,25 @@ import { RecipesTable } from "@/components/recipes/recipes-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { FileSpreadsheet, Plus } from "lucide-react";
+import { EnhancedStatsGrid, createMenuStats } from "@/components/ui/enhanced-stats-grid";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { 
+  FileSpreadsheet, 
+  Plus, 
+  Search, 
+  Filter, 
+  BookOpen, 
+  ChefHat, 
+  Clock, 
+  TrendingUp,
+  Download,
+  Upload,
+  RefreshCw
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-
 import { toast } from "sonner";
 
 export default function RecipesPage() {
@@ -33,11 +48,12 @@ export default function RecipesPage() {
     updatedAt: Date;
   }
 
-  interface Stat {
-    label: string;
-    value: string;
-    icon: any; // Temporary workaround for LucideIcon compatibility
-    iconColor: string;
+  interface RecipeStats {
+    total: number;
+    byCategory: Record<string, number>;
+    bySubcategory: Record<string, number>;
+    averageCost: number;
+    recentlyAdded: number;
   }
 
   const { data: session } = useSession();
@@ -66,8 +82,55 @@ export default function RecipesPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [filterSubcategory, setFilterSubcategory] = useState("all");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Filter recipes based on search and category filter
+  // Calculate recipe statistics
+  const calculateRecipeStats = (): RecipeStats => {
+    const total = recipes.length;
+    const byCategory: Record<string, number> = {};
+    const bySubcategory: Record<string, number> = {};
+    let totalCost = 0;
+    let costCount = 0;
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    let recentlyAdded = 0;
+
+    recipes.forEach((recipe) => {
+      // Category stats
+      byCategory[recipe.category] = (byCategory[recipe.category] || 0) + 1;
+      
+      // Subcategory stats
+      bySubcategory[recipe.subcategory] = (bySubcategory[recipe.subcategory] || 0) + 1;
+      
+      // Cost stats
+      if (recipe.cost) {
+        totalCost += recipe.cost;
+        costCount++;
+      }
+      
+      // Recently added stats
+      if (new Date(recipe.createdAt) > oneWeekAgo) {
+        recentlyAdded++;
+      }
+    });
+
+    return {
+      total,
+      byCategory,
+      bySubcategory,
+      averageCost: costCount > 0 ? totalCost / costCount : 0,
+      recentlyAdded,
+    };
+  };
+
+  const recipeStats = calculateRecipeStats();
+
+  // Get unique categories and subcategories for filters
+  const categories = ["all", ...new Set(recipes.map((recipe) => recipe.category))];
+  const subcategories = ["all", ...new Set(recipes.map((recipe) => recipe.subcategory))];
+
+  // Filter recipes based on search and filters
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.name
       .toLowerCase()
@@ -75,14 +138,49 @@ export default function RecipesPage() {
     const matchesCategory =
       filterCategory === "all" ||
       recipe.category.toLowerCase() === filterCategory.toLowerCase();
-    return matchesSearch && matchesCategory;
+    const matchesSubcategory =
+      filterSubcategory === "all" ||
+      recipe.subcategory.toLowerCase() === filterSubcategory.toLowerCase();
+    
+    return matchesSearch && matchesCategory && matchesSubcategory;
   });
 
-  // Unique categories for filter dropdown
-  const categories = [
-    "all",
-    ...new Set(recipes.map((recipe) => recipe.category)),
-  ];
+  // Create stats for the enhanced stats grid
+  const getRecipeStatsForDisplay = () => {
+    const topCategory = Object.entries(recipeStats.byCategory)
+      .sort(([,a], [,b]) => b - a)[0];
+    
+    return [
+      {
+        label: "Total Recipes",
+        value: recipeStats.total,
+        icon: BookOpen,
+        subtitle: "All recipes in database",
+        color: 'primary' as const,
+      },
+      {
+        label: "Top Category",
+        value: topCategory ? topCategory[0] : "N/A",
+        icon: ChefHat,
+        subtitle: `${topCategory ? topCategory[1] : 0} recipes`,
+        color: 'success' as const,
+      },
+      {
+        label: "Avg Cost",
+        value: `$${recipeStats.averageCost.toFixed(2)}`,
+        icon: TrendingUp,
+        subtitle: "Per recipe",
+        color: 'warning' as const,
+      },
+      {
+        label: "Recently Added",
+        value: recipeStats.recentlyAdded,
+        icon: Clock,
+        subtitle: "Last 7 days",
+        color: 'info' as const,
+      },
+    ];
+  };
 
   // Print handler
   const handlePrintRecipe = async (recipe: Recipe) => {
@@ -278,9 +376,30 @@ export default function RecipesPage() {
       setLoading(false);
     }
   };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm("");
+    setFilterCategory("all");
+    setFilterSubcategory("all");
+  };
+
   useEffect(() => {
     getRecipes();
   }, []);
+
+  if (loading) {
+    return (
+      <DashboardLayout activeMenuItem="recipe">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading recipes...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout activeMenuItem="recipe">
@@ -288,56 +407,148 @@ export default function RecipesPage() {
       <div className="mb-6 sm:mb-8">
         <PageHeader
           title="Recipe Management"
-          subtitle="Create and manage your kitchen recipes"
+          subtitle="Create, manage, and organize your kitchen recipes"
           actions={
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 onClick={() => setIsImportDialogOpen(true)}
                 className="flex items-center gap-2"
               >
-                <FileSpreadsheet className="w-4 h-4" />
-                Import from Excel
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Import</span>
               </Button>
               <Button
-                className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => setIsAddDialogOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add New Recipe
+                Add Recipe
               </Button>
             </div>
           }
         />
       </div>
 
+      {/* Statistics Dashboard */}
+      <div className="mb-6 sm:mb-8">
+        <EnhancedStatsGrid stats={getRecipeStatsForDisplay()} />
+      </div>
+
       {/* Search and Filter Section */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <Input
-          placeholder="Search recipes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-md"
-        />
-        <div className="relative w-[180px]">
-          <Input
-            placeholder="Filter by category"
-            value={filterCategory === "all" ? "" : filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value || "all")}
-            list="filter-categories"
-            className="w-full"
-          />
-          <datalist id="filter-categories">
-            {categories
-              .filter((cat) => cat && cat !== "all" && cat.trim() !== "")
-              .map((category) => (
-                <option key={category} value={category} />
-              ))}
-          </datalist>
+      <Card className="mb-6">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Search className="w-5 h-5 text-primary" />
+            Search & Filter
+          </CardTitle>
+          <CardDescription>
+            Find and filter recipes by name, category, and subcategory
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Basic Search */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search recipes by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+            </Button>
+            {(searchTerm || filterCategory !== "all" || filterSubcategory !== "all") && (
+              <Button
+                variant="ghost"
+                onClick={clearFilters}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Clear
+              </Button>
+            )}
+          </div>
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Category</label>
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="w-full p-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category === "all" ? "All Categories" : category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Subcategory</label>
+                <select
+                  value={filterSubcategory}
+                  onChange={(e) => setFilterSubcategory(e.target.value)}
+                  className="w-full p-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  {subcategories.map((subcategory) => (
+                    <option key={subcategory} value={subcategory}>
+                      {subcategory === "all" ? "All Subcategories" : subcategory}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Active Filters Display */}
+          {(searchTerm || filterCategory !== "all" || filterSubcategory !== "all") && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {searchTerm && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Search: "{searchTerm}"
+                </Badge>
+              )}
+              {filterCategory !== "all" && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Category: {filterCategory}
+                </Badge>
+              )}
+              {filterSubcategory !== "all" && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Subcategory: {filterSubcategory}
+                </Badge>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Results Summary */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold">Recipes</h3>
+          <Badge variant="outline">
+            {filteredRecipes.length} of {recipes.length}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Showing filtered results</span>
         </div>
       </div>
 
-      {/* Recipes Section */}
+      {/* Recipes Table */}
       <div className="space-y-6">
         <RecipesTable
           recipes={filteredRecipes}
@@ -359,7 +570,7 @@ export default function RecipesPage() {
           onDelete={handleDeleteRecipe}
           onPrint={handlePrintRecipe}
           deletingId={deletingId}
-          itemsPerPageOptions={[5, 10, 20]}
+          itemsPerPageOptions={[5, 10, 20, 50]}
         />
       </div>
 
