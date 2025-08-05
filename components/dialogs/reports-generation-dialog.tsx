@@ -5,12 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateSelector } from "@/components/ui/date-selector";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -455,23 +450,40 @@ export function ReportsGenerationDialog({
 
   return (
     <TooltipProvider>
-      <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="max-w-6xl max-h-[90vh]">
-          <div className="overflow-y-auto">
-            <DialogHeader className="pb-4 border-b border-border">
-              <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                  <Download className="w-4 h-4 text-primary-foreground" />
-                </div>
-                Generate Reports
-              </DialogTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Create and download detailed reports with ingredient
-                combinations for your kitchen operations
-              </p>
-            </DialogHeader>
-
-            <div className="space-y-6 py-4">
+      <BaseDialog
+        open={open}
+        onOpenChange={handleClose}
+        title="Generate Reports"
+        description="Create and download detailed reports with ingredient combinations for your kitchen operations"
+        icon={<Download className="w-5 h-5 text-primary-foreground" />}
+        size="6xl"
+        footer={
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              onClick={handleGenerateReport}
+              disabled={
+                isGenerating ||
+                selectedCount === 0 ||
+                selectedKitchens.length === 0
+              }
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Generate & Download
+                </>
+              )}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-6">
               {/* Progress Bar */}
               {isGenerating && (
                 <Card className="border-primary/20 bg-primary/5">
@@ -1065,41 +1077,7 @@ export function ReportsGenerationDialog({
                 </Card>
               )}
             </div>
-
-            <div className="flex justify-end space-x-3 pt-4 border-t border-border flex-wrap gap-2">
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={isGenerating}
-                className="border-border text-foreground hover:bg-muted bg-transparent"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleGenerateReport}
-                disabled={
-                  isGenerating ||
-                  selectedCount === 0 ||
-                  selectedKitchens.length === 0
-                }
-                className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Generate & Download
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </TooltipProvider>
-  );
+        </BaseDialog>
+      </TooltipProvider>
+    );
 }

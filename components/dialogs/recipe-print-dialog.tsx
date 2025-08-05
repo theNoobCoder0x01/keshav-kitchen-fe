@@ -5,16 +5,9 @@ import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Separator } from "@/components/ui/separator";
-import { Download, Eye, Loader2, Printer } from "lucide-react";
+import { Download, Eye, Loader2, Printer, FileText } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -115,29 +108,43 @@ export function RecipePrintDialog({
   if (!recipe) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <div className="overflow-y-auto">
-          <DialogHeader className="pb-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                <Printer className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div>
-                <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                  Print Recipe
-                  <Badge variant="outline" className="ml-2 text-xs font-normal">
-                    {recipe.name}
-                  </Badge>
-                </DialogTitle>
-                <DialogDescription className="text-muted-foreground">
-                  Preview, print, or download your recipe as a PDF document.
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
+    <BaseDialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+      title={
+        <div className="flex items-center gap-2">
+          Print Recipe
+          <Badge variant="outline" className="ml-2 text-xs font-normal">
+            {recipe.name}
+          </Badge>
+        </div>
+      }
+      description="Preview, print, or download your recipe as a PDF document."
+      icon={<FileText className="w-5 h-5 text-primary-foreground" />}
+      size="4xl"
+      footer={
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" onClick={handlePrint}>
+            <Printer className="w-4 h-4 mr-2" />
+            Print
+          </Button>
 
-          <div className="space-y-6 py-4">
+          <Button
+            onClick={handleDownloadPDF}
+            disabled={isGenerating}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+          >
+            {isGenerating ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4 mr-2" />
+            )}
+            {isGenerating ? "Generating..." : "Download PDF"}
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-6">
             {/* Preview Toggle */}
             <Card className="bg-muted/30 border border-border">
               <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
@@ -177,34 +184,6 @@ export function RecipePrintDialog({
               />
             </div>
           </div>
-
-          <Separator className="my-2" />
-
-          <DialogFooter className="flex items-center gap-2 flex-wrap pt-4 border-t border-border">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-
-            <Button variant="outline" onClick={handlePrint}>
-              <Printer className="w-4 h-4 mr-2" />
-              Print
-            </Button>
-
-            <Button
-              onClick={handleDownloadPDF}
-              disabled={isGenerating}
-              className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
-            >
-              {isGenerating ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4 mr-2" />
-              )}
-              {isGenerating ? "Generating..." : "Download PDF"}
-            </Button>
-          </DialogFooter>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+        </BaseDialog>
+      );
 }

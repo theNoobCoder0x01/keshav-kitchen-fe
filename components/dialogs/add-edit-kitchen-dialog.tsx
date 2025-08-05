@@ -1,14 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SimpleFormDialog } from "@/components/ui/base-dialog";
+import { Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface AddEditKitchenDialogProps {
@@ -54,47 +49,45 @@ export function AddEditKitchenDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+    <SimpleFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={initialKitchen ? "Edit Kitchen" : "Add Kitchen"}
+      description={initialKitchen ? "Update kitchen details" : "Create a new kitchen"}
+      icon={<Building2 className="w-5 h-5 text-primary-foreground" />}
+      size="md"
+      onSubmit={handleSubmit}
+      submitLabel={initialKitchen ? "Save Changes" : "Add Kitchen"}
+    >
+      <div className="space-y-4">
         <div>
-          <DialogHeader>
-            <DialogTitle>
-              {initialKitchen ? "Edit Kitchen" : "Add Kitchen"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <Label>Name</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Kitchen name"
-              />
-            </div>
-            <div>
-              <Label>Location</Label>
-              <Input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Location"
-              />
-            </div>
-            {error && <div className="text-red-500 text-sm">{error}</div>}
-          </div>
-          <div className="flex justify-end gap-2 pt-2 flex-wrap">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              type="button"
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit}>
-              {initialKitchen ? "Save Changes" : "Add Kitchen"}
-            </Button>
-          </div>
+          <Label className="text-sm font-medium text-foreground mb-2 block">
+            Kitchen Name *
+          </Label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter kitchen name"
+            className="border-border focus:border-primary focus:ring-primary/20"
+          />
         </div>
-      </DialogContent>
-    </Dialog>
+        <div>
+          <Label className="text-sm font-medium text-foreground mb-2 block">
+            Location *
+          </Label>
+          <Input
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Enter location"
+            className="border-border focus:border-primary focus:ring-primary/20"
+          />
+        </div>
+        {error && (
+          <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md border border-destructive/20">
+            {error}
+          </div>
+        )}
+      </div>
+    </SimpleFormDialog>
   );
 }
