@@ -202,7 +202,16 @@ export default function MenuPage() {
             </div>
           }
           actions={
-            <>
+            <div className="flex items-center gap-3">
+              {/* Date Selector */}
+              <CompactDateSelector
+                date={selectedDate}
+                onDateChange={handleDateChange}
+                className="w-auto"
+                kitchenId={session?.user?.kitchenId ?? undefined}
+              />
+              
+              {/* Reports Button */}
               <Button
                 variant="outline"
                 className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-sm"
@@ -211,28 +220,16 @@ export default function MenuPage() {
                 <FileText className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Reports</span>
               </Button>
-            </>
+            </div>
           }
         />
       </div>
 
-      {/* Date and Stats Section */}
+      {/* Stats Section */}
       <div className="mb-6 sm:mb-8">
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6">
-          {/* Compact Date Selector */}
-          <div className="xl:col-span-1">
-            <CompactDateSelector
-              date={selectedDate}
-              onDateChange={handleDateChange}
-              className="h-full"
-              kitchenId={session?.user?.kitchenId ?? undefined}
-            />
-          </div>
-
+        <div className="mb-6">
           {/* Enhanced Stats Grid */}
-          <div className="xl:col-span-4">
-            <EnhancedStatsGrid stats={getStatsForTab()} />
-          </div>
+          <EnhancedStatsGrid stats={getStatsForTab()} />
         </div>
 
         <TabNavigation
