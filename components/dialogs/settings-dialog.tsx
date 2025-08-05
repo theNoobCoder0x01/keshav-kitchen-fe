@@ -180,14 +180,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[95vw] max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto">
-            <DialogHeader className="pb-4 border-b border-[#dbdade]">
-              <DialogTitle className="text-xl font-semibold text-[#4b465c] flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#674af5] to-[#856ef7] rounded-lg flex items-center justify-center">
-                  <Settings className="w-4 h-4 text-white" />
+            <DialogHeader className="pb-4 border-b border-border">
+              <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+                  <Settings className="w-4 h-4 text-primary-foreground" />
                 </div>
                 Settings
               </DialogTitle>
-              <p className="text-sm text-[#4b465c]/70 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Configure application settings and upload calendar files
               </p>
             </DialogHeader>
@@ -196,13 +196,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               {/* Calendar Settings */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Label className="text-base font-medium text-[#4b465c] flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-[#674af5]" />
+                  <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />
                     Calendar Settings
                   </Label>
                   <Tooltip>
                     <TooltipTrigger>
-                      <Info className="w-4 h-4 text-[#4b465c]/50 hover:text-[#674af5] cursor-help" />
+                      <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">
@@ -218,7 +218,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 {/* ICS File Upload */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-[#4b465c]">
+                    <Label className="text-sm font-medium text-foreground">
                       Calendar File (ICS)
                     </Label>
                     {calendarData && (
@@ -230,23 +230,23 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
 
                   {!calendarData ? (
-                    <div className="border-2 border-dashed border-[#dbdade] rounded-lg p-6 text-center hover:border-[#674af5]/50 transition-colors">
+                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
                       <div className="space-y-3">
-                        <div className="w-12 h-12 bg-[#674af5]/10 rounded-full flex items-center justify-center mx-auto">
-                          <Upload className="w-6 h-6 text-[#674af5]" />
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                          <Upload className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-[#4b465c] mb-1">
+                          <p className="text-sm font-medium text-foreground mb-1">
                             Upload ICS Calendar File
                           </p>
-                          <p className="text-xs text-[#4b465c]/70 mb-3">
+                          <p className="text-xs text-muted-foreground mb-3">
                             Upload a .ics file to display tithi and event
                             information
                           </p>
                           <Button
                             onClick={handleFileSelect}
                             disabled={isUploading || isLoading}
-                            className="bg-[#674af5] hover:bg-[#674af5]/90 text-white"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
                             {isUploading ? (
                               <>
@@ -264,17 +264,17 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-[#f8f7fa] border border-[#dbdade] rounded-lg p-4">
+                    <div className="bg-muted border border-border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#674af5]/10 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-[#674af5]" />
+                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-primary" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-[#4b465c]">
+                            <p className="text-sm font-medium text-foreground">
                               Calendar Events Loaded
                             </p>
-                            <p className="text-xs text-[#4b465c]/70">
+                            <p className="text-xs text-muted-foreground">
                               {calendarData.totalCount} events available
                             </p>
                           </div>
@@ -285,7 +285,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                             size="sm"
                             onClick={loadCalendarData}
                             disabled={isLoading}
-                            className="text-[#674af5] hover:text-[#674af5]/80 hover:bg-[#674af5]/10"
+                            className="text-primary hover:text-primary/80 hover:bg-primary/10"
                           >
                             <RefreshCw
                               className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
@@ -308,8 +308,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       </div>
 
                       {calendarData.events.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-[#dbdade]">
-                          <p className="text-xs text-[#4b465c]/70 mb-2">
+                        <div className="mt-3 pt-3 border-t border-border">
+                          <p className="text-xs text-muted-foreground mb-2">
                             Sample events: {calendarData.events.length}
                           </p>
                           <div className="space-y-1">
@@ -318,13 +318,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                               .map((event, index) => (
                                 <div
                                   key={index}
-                                  className="text-xs bg-white rounded px-2 py-1 border"
+                                  className="text-xs bg-background rounded px-2 py-1 border border-border"
                                 >
                                   {event.summary}
                                 </div>
                               ))}
                             {calendarData.events.length > 3 && (
-                              <p className="text-xs text-[#4b465c]/50">
+                              <p className="text-xs text-muted-foreground">
                                 +{calendarData.events.length - 3} more events
                               </p>
                             )}
@@ -345,14 +345,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </div>
 
                 {/* File Requirements */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                   <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-blue-900">
+                      <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                         File Requirements
                       </p>
-                      <ul className="text-xs text-blue-800 space-y-1">
+                      <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
                         <li>• File must be in .ics format</li>
                         <li>• Maximum file size: 1MB</li>
                         <li>• Must contain valid calendar events</li>
@@ -369,14 +369,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               {/* Other Settings Sections */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Label className="text-base font-medium text-[#4b465c] flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-[#674af5]" />
+                  <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-primary" />
                     Other Settings
                   </Label>
                 </div>
 
-                <div className="bg-[#f8f7fa] border border-[#dbdade] rounded-lg p-4">
-                  <p className="text-sm text-[#4b465c]/70">
+                <div className="bg-muted border border-border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">
                     Additional settings will be available here in future
                     updates.
                   </p>
@@ -384,11 +384,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t border-[#dbdade]">
+            <div className="flex justify-end space-x-3 pt-4 border-t border-border">
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
+                className="border-border text-foreground hover:bg-muted bg-transparent"
               >
                 Close
               </Button>
