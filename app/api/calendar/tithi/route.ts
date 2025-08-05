@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Use provided date or default to today
     const targetDate = dateParam ? new Date(dateParam) : new Date();
-    
+
     // Get user info
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -100,15 +100,31 @@ export async function GET(request: NextRequest) {
       // Use the first event's summary as tithi if it contains common Gujarati terms
       const firstEvent = events[0];
       const summary = firstEvent.summary.toLowerCase();
-      
+
       // Check if the summary itself is a tithi
       const tithiKeywords = [
-        'sud', 'vad', 'panam', 'purnima', 'amavasya', 'ekadashi', 'chaturdashi',
-        'ashtami', 'navami', 'dashami', 'trayodashi', 'dwadashi', 'saptami',
-        'shashthi', 'panchami', 'chaturthi', 'tritiya', 'dwitiya', 'pratipada'
+        "sud",
+        "vad",
+        "panam",
+        "purnima",
+        "amavasya",
+        "ekadashi",
+        "chaturdashi",
+        "ashtami",
+        "navami",
+        "dashami",
+        "trayodashi",
+        "dwadashi",
+        "saptami",
+        "shashthi",
+        "panchami",
+        "chaturthi",
+        "tritiya",
+        "dwitiya",
+        "pratipada",
       ];
-      
-      if (tithiKeywords.some(keyword => summary.includes(keyword))) {
+
+      if (tithiKeywords.some((keyword) => summary.includes(keyword))) {
         tithi = firstEvent.summary;
       }
     }
@@ -119,7 +135,7 @@ export async function GET(request: NextRequest) {
       tithi,
       eventSummary,
       eventsCount: events.length,
-      events: events.map(event => ({
+      events: events.map((event) => ({
         id: event.id,
         summary: event.summary,
         description: event.description,

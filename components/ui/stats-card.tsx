@@ -27,7 +27,7 @@ export function StatsCard({
   return (
     <Card
       className={cn(
-        "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
+        "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
         className,
       )}
     >
@@ -63,7 +63,9 @@ export function StatsCard({
               <div
                 className={cn(
                   "flex items-center space-x-1 text-xs font-medium",
-                  trend.isPositive ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400",
+                  trend.isPositive
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-red-500 dark:text-red-400",
                 )}
               >
                 <span className="text-sm">

@@ -126,7 +126,7 @@ export default function RecipeDetailPage() {
         <div className="flex items-center gap-3">
           <Button
             onClick={handlePrint}
-            className="bg-gradient-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white flex items-center gap-2"
+            className="bg-linear-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white flex items-center gap-2"
           >
             <Printer className="w-4 h-4" />
             Print Recipe
@@ -135,7 +135,7 @@ export default function RecipeDetailPage() {
       </div>
 
       {/* Recipe Detail View */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="bg-white rounded-lg shadow-xs border">
         <RecipeDetailView recipe={recipe} />
       </div>
 

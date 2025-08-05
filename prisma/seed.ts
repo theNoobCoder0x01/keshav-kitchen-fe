@@ -1,5 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
-const crypto = require("crypto").webcrypto; // Use webcrypto for browser compatibility
+import { PrismaClient } from "@prisma/client";
+import crypto from "crypto"; // Use webcrypto for browser compatibility
 
 // Import the crypto utilities for password hashing
 // Note: This is a workaround since we can't directly import ES modules in CommonJS
@@ -9,7 +9,7 @@ const crypto = require("crypto").webcrypto; // Use webcrypto for browser compati
  * Simple PBKDF2 implementation for the seed script
  * This mirrors the crypto-utils.ts implementation
  */
-async function hashPasswordForSeed(password) {
+async function hashPasswordForSeed(password: string) {
   const iterations = 100000;
   const saltLength = 32;
   const hashLength = 32;
@@ -403,8 +403,8 @@ async function main() {
   });
 
   // Function to create menu ingredients from recipe ingredients
-  function createMenuIngredients(recipe, servings) {
-    return recipe.ingredients.map((ingredient) => ({
+  function createMenuIngredients(recipe: any, servings: number) {
+    return recipe.ingredients.map((ingredient: any) => ({
       name: ingredient.name,
       quantity: (ingredient.quantity * servings) / recipe.servings,
       unit: ingredient.unit,

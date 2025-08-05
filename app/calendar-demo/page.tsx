@@ -1,15 +1,23 @@
 "use client";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { PageHeader } from "@/components/ui/page-header";
-import { EnhancedCalendar } from "@/components/ui/enhanced-calendar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { EnhancedCalendar } from "@/components/ui/enhanced-calendar";
+import { PageHeader } from "@/components/ui/page-header";
+import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 
 export default function CalendarDemoPage() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
 
   return (
     <DashboardLayout activeMenuItem="menus">
@@ -42,7 +50,7 @@ export default function CalendarDemoPage() {
                   className="border border-border/50"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-medium">Medium Size</h4>
@@ -56,7 +64,7 @@ export default function CalendarDemoPage() {
                   className="border border-border/50"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-medium">Large Size</h4>
@@ -99,7 +107,7 @@ export default function CalendarDemoPage() {
                   size="md"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-medium">Compact Variant</h4>
@@ -113,7 +121,7 @@ export default function CalendarDemoPage() {
                   size="md"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-medium">Minimal Variant</h4>
@@ -138,7 +146,8 @@ export default function CalendarDemoPage() {
           <CardHeader>
             <CardTitle>Advanced Features</CardTitle>
             <CardDescription>
-              Showcase of advanced features like week numbers, dropdowns, and range selection
+              Showcase of advanced features like week numbers, dropdowns, and
+              range selection
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -157,7 +166,7 @@ export default function CalendarDemoPage() {
                   className="border border-border/50"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-medium">Date Range Selection</h4>
@@ -167,7 +176,11 @@ export default function CalendarDemoPage() {
                   mode="range"
                   selected={{
                     from: selectedDate,
-                    to: selectedDate ? new Date(selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000) : undefined
+                    to: selectedDate
+                      ? new Date(
+                          selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+                        )
+                      : undefined,
                   }}
                   onSelect={(range) => {
                     if (range?.from) setSelectedDate(range.from);
@@ -210,7 +223,9 @@ export default function CalendarDemoPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-medium">With Month/Year Dropdowns</h4>
+                  <h4 className="text-sm font-medium">
+                    With Month/Year Dropdowns
+                  </h4>
                   <Badge variant="secondary">Quick navigation</Badge>
                 </div>
                 <EnhancedCalendar
@@ -223,7 +238,7 @@ export default function CalendarDemoPage() {
                   className="border border-border/50"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-medium">Navigation Only</h4>
@@ -271,18 +286,18 @@ export default function CalendarDemoPage() {
                     event: (date) => {
                       // Example: Highlight weekends as events
                       return date.getDay() === 0 || date.getDay() === 6;
-                    }
+                    },
                   }}
                   modifiersStyles={{
                     event: {
                       backgroundColor: "hsl(var(--primary) / 0.1)",
                       color: "hsl(var(--primary))",
-                      fontWeight: "600"
-                    }
+                      fontWeight: "600",
+                    },
                   }}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-medium">Booking Calendar</h4>
@@ -319,25 +334,35 @@ export default function CalendarDemoPage() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 font-medium">Feature</th>
-                    <th className="text-left py-2 font-medium">Enhanced Calendar</th>
-                    <th className="text-left py-2 font-medium">Original Calendar</th>
+                    <th className="text-left py-2 font-medium">
+                      Enhanced Calendar
+                    </th>
+                    <th className="text-left py-2 font-medium">
+                      Original Calendar
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="space-y-2">
                   <tr className="border-b border-border/50">
                     <td className="py-2">Size Variants</td>
-                    <td className="py-2 text-green-600">✓ Small, Medium, Large</td>
+                    <td className="py-2 text-green-600">
+                      ✓ Small, Medium, Large
+                    </td>
                     <td className="py-2 text-muted-foreground">Single size</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2">Visual Variants</td>
-                    <td className="py-2 text-green-600">✓ Default, Compact, Minimal</td>
+                    <td className="py-2 text-green-600">
+                      ✓ Default, Compact, Minimal
+                    </td>
                     <td className="py-2 text-muted-foreground">Single style</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2">Week Numbers</td>
                     <td className="py-2 text-green-600">✓ Optional display</td>
-                    <td className="py-2 text-muted-foreground">Not available</td>
+                    <td className="py-2 text-muted-foreground">
+                      Not available
+                    </td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2">Month/Year Dropdowns</td>
@@ -347,7 +372,9 @@ export default function CalendarDemoPage() {
                   <tr className="border-b border-border/50">
                     <td className="py-2">Enhanced Styling</td>
                     <td className="py-2 text-green-600">✓ Modern design</td>
-                    <td className="py-2 text-muted-foreground">Basic styling</td>
+                    <td className="py-2 text-muted-foreground">
+                      Basic styling
+                    </td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2">Hover Effects</td>

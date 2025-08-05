@@ -56,7 +56,7 @@ export function MenuCard({
   return (
     <Card
       className={cn(
-        "bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300",
+        "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
         className,
       )}
     >
@@ -66,11 +66,13 @@ export function MenuCard({
             <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">
               {title}
             </h3>
-            <p className="text-sm text-muted-foreground">{items?.length} items</p>
+            <p className="text-sm text-muted-foreground">
+              {items?.length} items
+            </p>
           </div>
           <Button
             size="sm"
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
+            className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
             onClick={onAdd}
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -89,7 +91,7 @@ export function MenuCard({
             >
               {item.isAddItem ? (
                 <>
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10">
+                  <div className="w-10 h-10 bg-linear-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10">
                     <Plus className="w-5 h-5 text-primary" />
                   </div>
                   <span className="text-foreground flex-1 font-medium">
@@ -105,7 +107,7 @@ export function MenuCard({
                           type="text"
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-background"
+                          className="w-full px-3 py-2 text-sm border border-primary rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 bg-background"
                           onKeyDown={(e) => {
                             if (e.key === "Enter") handleEditSave(item);
                             if (e.key === "Escape") handleEditCancel();

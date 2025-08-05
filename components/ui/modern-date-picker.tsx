@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarComponent } from "@/components/ui/enhanced-calendar";
 import { Card, CardContent } from "@/components/ui/card";
+import { Calendar as CalendarComponent } from "@/components/ui/enhanced-calendar";
 import {
   Popover,
   PopoverContent,
@@ -32,7 +32,9 @@ export function ModernDatePicker({
   showToday = true,
   placeholder = "Select date",
 }: ModernDatePickerProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    initialDate || new Date(),
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   const handleDateChange = (newDate: Date) => {
@@ -83,13 +85,18 @@ export function ModernDatePicker({
 
   if (variant === "inline") {
     return (
-      <Card className={cn("bg-card/80 backdrop-blur-sm border-border/50", className)}>
+      <Card
+        className={cn(
+          "bg-card/80 backdrop-blur-xs border-border/50",
+          className,
+        )}
+      >
         <CardContent className="p-4">
           <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-md">
+                <div className="w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-md">
                   <Calendar className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
@@ -107,7 +114,7 @@ export function ModernDatePicker({
                   </p>
                 </div>
               </div>
-              
+
               {showNavigation && (
                 <div className="flex items-center gap-1">
                   <Button
@@ -165,7 +172,7 @@ export function ModernDatePicker({
             className="p-0 h-auto hover:bg-transparent text-left justify-start"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-xs">
                 <Calendar className="w-4 h-4 text-primary-foreground" />
               </div>
               <div>
@@ -212,12 +219,16 @@ export function ModernDatePicker({
             "border-border hover:border-primary/50 hover:bg-muted/50",
             "focus:ring-2 focus:ring-primary/20 focus:ring-offset-2",
             "transition-all duration-200",
-            className
+            className,
           )}
         >
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className={selectedDate ? "text-foreground" : "text-muted-foreground"}>
+            <span
+              className={
+                selectedDate ? "text-foreground" : "text-muted-foreground"
+              }
+            >
               {selectedDate ? formatDate(selectedDate) : placeholder}
             </span>
           </div>
