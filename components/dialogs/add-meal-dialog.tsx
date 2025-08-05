@@ -623,7 +623,7 @@ export function AddMealDialog({
                               unit: "Kg",
                               costPerUnit: 0,
                             };
-                            values.ingredients.push(newIngredient);
+                            push(newIngredient);
                           }}
                           className="text-primary hover:bg-primary/10 gap-1"
                         >
@@ -633,7 +633,7 @@ export function AddMealDialog({
                       </div>
 
                       <FieldArray name="ingredients">
-                        {({ remove }: { remove: (index: number) => void }) => (
+                        {({ remove, push }: { remove: (index: number) => void; push: (value: any) => void }) => (
                           <>
                             {values.ingredients.map((ingredient, index) => (
                               <div
