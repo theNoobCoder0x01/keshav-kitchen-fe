@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Calendar, ChefHat, ChevronDown, Home, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -27,20 +27,22 @@ export function Sidebar() {
   // Listen for clicks outside sidebar on mobile
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const sidebar = document.getElementById('sidebar');
-      const menuButton = document.querySelector('[data-menu-button]');
-      
-      if (window.innerWidth < 1024 && 
-          sidebar && 
-          !sidebar.contains(event.target as Node) &&
-          menuButton &&
-          !menuButton.contains(event.target as Node)) {
+      const sidebar = document.getElementById("sidebar");
+      const menuButton = document.querySelector("[data-menu-button]");
+
+      if (
+        window.innerWidth < 1024 &&
+        sidebar &&
+        !sidebar.contains(event.target as Node) &&
+        menuButton &&
+        !menuButton.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Listen for header menu button clicks
@@ -49,10 +51,10 @@ export function Sidebar() {
       setIsOpen(!isOpen);
     };
 
-    const menuButton = document.querySelector('[data-menu-button]');
+    const menuButton = document.querySelector("[data-menu-button]");
     if (menuButton) {
-      menuButton.addEventListener('click', handleMenuToggle);
-      return () => menuButton.removeEventListener('click', handleMenuToggle);
+      menuButton.addEventListener("click", handleMenuToggle);
+      return () => menuButton.removeEventListener("click", handleMenuToggle);
     }
   }, [isOpen]);
 
@@ -119,7 +121,12 @@ export function Sidebar() {
               </div>
               <span className="font-semibold text-foreground">Menu</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+              className="p-2"
+            >
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -133,7 +140,11 @@ export function Sidebar() {
             </div>
 
             {menuItems.map((item) => (
-              <Link key={item.id} href={item.href} onClick={() => setIsOpen(false)}>
+              <Link
+                key={item.id}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+              >
                 <div
                   className={cn(
                     "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200",
@@ -188,8 +199,7 @@ export function Sidebar() {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-border space-y-3">
-            {/* Help Section */}
+          {/* <div className="p-4 border-t border-border space-y-3">
             <div className="bg-linear-to-r from-primary/5 to-primary/5 rounded-xl p-4 border border-primary/10">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-linear-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
@@ -205,7 +215,7 @@ export function Sidebar() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </aside>
     </>
