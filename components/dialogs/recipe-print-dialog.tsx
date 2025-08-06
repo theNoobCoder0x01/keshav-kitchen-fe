@@ -3,11 +3,10 @@
 import { type RecipeDetailData } from "@/components/recipes/recipe-detail-view";
 import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
 import { Badge } from "@/components/ui/badge";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BaseDialog } from "@/components/ui/base-dialog";
-import { Separator } from "@/components/ui/separator";
-import { Download, Eye, Loader2, Printer, FileText } from "lucide-react";
+import { Download, Eye, FileText, Loader2, Printer } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -145,45 +144,45 @@ export function RecipePrintDialog({
       }
     >
       <div className="space-y-6">
-            {/* Preview Toggle */}
-            <Card className="bg-muted/30 border border-border">
-              <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-primary" />
-                  {showPreview ? "Preview" : "Show Preview"}
-                </CardTitle>
-                <Button
-                  variant={showPreview ? "default" : "outline-solid"}
-                  size="sm"
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="flex items-center gap-2"
-                >
-                  <Eye className="w-4 h-4 mr-1" />
-                  {showPreview ? "Hide Preview" : "Show Preview"}
-                </Button>
-              </CardHeader>
-              {showPreview && (
-                <CardContent className="pt-2">
-                  <div className="border rounded-lg p-4 bg-background max-h-[50vh] overflow-y-auto">
-                    <RecipePdfTemplate
-                      recipe={recipe}
-                      isPrintMode={true}
-                      ref={printRef}
-                    />
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+        {/* Preview Toggle */}
+        <Card className="bg-muted/30 border border-border">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Eye className="w-4 h-4 text-primary" />
+              {showPreview ? "Preview" : "Show Preview"}
+            </CardTitle>
+            <Button
+              variant={showPreview ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className="flex items-center gap-2"
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              {showPreview ? "Hide Preview" : "Show Preview"}
+            </Button>
+          </CardHeader>
+          {showPreview && (
+            <CardContent className="pt-2">
+              <div className="border rounded-lg p-4 bg-background max-h-[50vh] overflow-y-auto">
+                <RecipePdfTemplate
+                  recipe={recipe}
+                  isPrintMode={true}
+                  ref={printRef}
+                />
+              </div>
+            </CardContent>
+          )}
+        </Card>
 
-            {/* Hidden print content */}
-            <div className="hidden">
-              <RecipePdfTemplate
-                recipe={recipe}
-                isPrintMode={true}
-                ref={printRef}
-              />
-            </div>
-          </div>
-        </BaseDialog>
-      );
+        {/* Hidden print content */}
+        <div className="hidden">
+          <RecipePdfTemplate
+            recipe={recipe}
+            isPrintMode={true}
+            ref={printRef}
+          />
+        </div>
+      </div>
+    </BaseDialog>
+  );
 }

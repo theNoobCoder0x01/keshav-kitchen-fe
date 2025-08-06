@@ -178,7 +178,7 @@ export function KitchensTable({
           ).map((page) => (
             <Button
               key={page}
-              variant={page === currentPage ? "default" : "outline-solid"}
+              variant={page === currentPage ? "default" : "outline"}
               size="sm"
               onClick={() => setCurrentPage(page)}
               className={

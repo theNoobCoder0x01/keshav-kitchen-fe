@@ -53,8 +53,6 @@ interface IngredientCombineOptions {
   selectedKitchens?: string[];
 }
 
-import { normalizeUnit } from "@/lib/constants/units";
-
 /**
  * Convert units to a standard unit for combination
  * This is a simple conversion - you may want to expand this based on your needs

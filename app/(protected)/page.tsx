@@ -116,11 +116,11 @@ export default function HomePage() {
         <PageHeader
           title="Welcome back!"
           subtitle={
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="flex flex-col sm:flex-row sm:items-center gap-2">
               <span>
                 Here&apos;s what&apos;s happening in your kitchen today
               </span>
-            </div>
+            </span>
           }
           actions={
             <Button

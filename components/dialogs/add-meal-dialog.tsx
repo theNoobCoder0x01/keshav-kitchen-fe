@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import * as Yup from "yup";
 
-import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/ui/base-dialog";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -79,7 +79,7 @@ const validationSchema = Yup.object().shape({
         costPerUnit: Yup.number()
           .required("Cost per unit is required")
           .min(0, "Cost cannot be negative"),
-      })
+      }),
     )
     .min(1, "At least one ingredient is required"),
 });
@@ -87,7 +87,7 @@ const validationSchema = Yup.object().shape({
 // This will be computed dynamically based on editMeal prop
 const getInitialValues = (
   editMeal?: AddMealDialogProps["editMeal"],
-  recipes?: Recipe[]
+  recipes?: Recipe[],
 ): MealFormValues => {
   if (editMeal) {
     // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
@@ -189,7 +189,7 @@ interface IngredientOption {
   costPerUnit: number | null;
 }
 
-import { UNIT_OPTIONS, DEFAULT_UNIT } from "@/lib/constants/units";
+import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 
 // Use centralized unit options
 const UNITS = UNIT_OPTIONS;
@@ -265,7 +265,7 @@ export function AddMealDialog({
 
   const handleRecipeSelect = (
     recipeId: string,
-    setFieldValue: (field: string, value: any) => void
+    setFieldValue: (field: string, value: any) => void,
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
@@ -283,7 +283,7 @@ export function AddMealDialog({
 
   const handleSubmit = async (
     values: MealFormValues,
-    { resetForm }: { resetForm: () => void }
+    { resetForm }: { resetForm: () => void },
   ) => {
     try {
       setIsFormSubmitting(true);
@@ -316,7 +316,7 @@ export function AddMealDialog({
       if (editMeal) {
         // Update existing meal
         console.log(
-          `Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`
+          `Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`,
         );
 
         const updateData = {
@@ -334,12 +334,12 @@ export function AddMealDialog({
 
         const result = await updateMenu(editMeal.id, updateData);
         toast.success(
-          `Meal updated successfully for ${mealType.toLowerCase()}!`
+          `Meal updated successfully for ${mealType.toLowerCase()}!`,
         );
       } else {
         // Create new meal
         console.log(
-          `Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`
+          `Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`,
         );
 
         const menuData = {
@@ -369,7 +369,7 @@ export function AddMealDialog({
       console.error("Error creating menu:", error);
       toast.error(
         error.message ||
-          "Failed to add meal. Please check your inputs and try again."
+          "Failed to add meal. Please check your inputs and try again.",
       );
     } finally {
       setIsFormSubmitting(false);
@@ -468,369 +468,368 @@ export function AddMealDialog({
           return (
             <div className="overflow-y-auto">
               <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSubmit(values, { resetForm });
-                  }}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                    <div className="sm:col-span-9">
-                      <Label
-                        htmlFor="recipe"
-                        className="text-base font-medium text-foreground mb-2"
-                      >
-                        Recipe
-                      </Label>
-                      <Field name={`recipeId`}>
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) => {
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSubmit(values, { resetForm });
+                }}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                  <div className="sm:col-span-9">
+                    <Label
+                      htmlFor="recipe"
+                      className="text-base font-medium text-foreground mb-2"
+                    >
+                      Recipe
+                    </Label>
+                    <Field name={`recipeId`}>
+                      {({ field }: { field: any }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange({
+                              target: { name: field.name, value },
+                            });
+                            handleRecipeSelect(value, setFieldValue);
+                          }}
+                        >
+                          <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                            <SelectValue placeholder="Select a recipe" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {recipes.map((recipe) => (
+                              <SelectItem key={recipe.id} value={recipe.id}>
+                                {recipe.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </Field>
+                    <ErrorMessage
+                      name={`recipeId`}
+                      component="p"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <Label className="text-base font-medium text-foreground">
+                      Follow Recipe
+                    </Label>
+                    <Field name={`followRecipe`}>
+                      {({ field }: { field: any }) => (
+                        <div className="w-full h-10 flex items-center">
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={(checked) =>
                               field.onChange({
-                                target: { name: field.name, value },
-                              });
-                              handleRecipeSelect(value, setFieldValue);
-                            }}
-                          >
-                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                              <SelectValue placeholder="Select a recipe" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {recipes.map((recipe) => (
-                                <SelectItem key={recipe.id} value={recipe.id}>
-                                  {recipe.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
-                      <ErrorMessage
-                        name={`recipeId`}
-                        component="p"
-                        className="text-red-500 text-xs mt-1"
-                      />
-                    </div>
-                    <div className="sm:col-span-3">
-                      <Label className="text-base font-medium text-foreground">
-                        Follow Recipe
-                      </Label>
-                      <Field name={`followRecipe`}>
-                        {({ field }: { field: any }) => (
-                          <div className="w-full h-10 flex items-center">
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={(checked) =>
-                                field.onChange({
-                                  target: { name: field.name, value: checked },
-                                })
-                              }
-                              className="data-[state=checked]:bg-primary"
-                            />
-                          </div>
-                        )}
-                      </Field>
-                    </div>
-
-                    <div className="sm:col-span-4">
-                      <Label className="text-base font-medium text-foreground mb-2 block">
-                        Ghan
-                      </Label>
-                      <Field
-                        as={Input}
-                        name={`ghan`}
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                      />
-                      <ErrorMessage
-                        name={`ghan`}
-                        component="p"
-                        className="text-red-500 text-xs mt-1"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-4">
-                      <Label className="text-base font-medium text-foreground mb-2 block">
-                        Serving amount
-                      </Label>
-                      <Field
-                        as={Input}
-                        name={`servingAmount`}
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                      />
-                      <ErrorMessage
-                        name={`servingAmount`}
-                        component="p"
-                        className="text-red-500 text-xs mt-1"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-4">
-                      <Label className="text-base font-medium text-[#4b465c] mb-2 block">
-                        Serving unit
-                      </Label>
-                      <Field name={`servingUnit`}>
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) =>
-                              field.onChange({
-                                target: { name: field.name, value },
+                                target: { name: field.name, value: checked },
                               })
                             }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {UNITS.map((unit) => (
-                                <SelectItem key={unit.value} value={unit.value}>
-                                  {unit.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
-                      <ErrorMessage
-                        name={`servingUnit`}
-                        component="p"
-                        className="text-red-500 text-xs mt-1"
-                      />
-                    </div>
-
-                    <FieldArray name="ingredients">
-                      {({
-                        remove,
-                        push,
-                      }: {
-                        remove: (index: number) => void;
-                        push: (value: any) => void;
-                      }) => (
-                        <div className="col-span-12 space-y-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-lg font-medium text-foreground">
-                              Ingredients
-                            </h3>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const newIngredient = {
-                                  id: undefined,
-                                  name: "",
-                                  quantity: 0,
-                                  unit: DEFAULT_UNIT,
-                                  costPerUnit: 0,
-                                };
-                                push(newIngredient);
-                              }}
-                              className="text-primary hover:bg-primary/10 gap-1"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Add Ingredients
-                            </Button>
-                          </div>
-
-                          {values.ingredients.map((ingredient, index) => (
-                            <div
-                              key={index}
-                              className="grid grid-cols-12 gap-2 items-end mb-2"
-                            >
-                              <div className="col-span-6 sm:col-span-4">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  Ingredient
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredients[${index}].name`}
-                                  placeholder="Ingredient name"
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredients[${index}].name`}
-                                  component="p"
-                                  className="text-red-500 text-xs mt-1"
-                                />
-                              </div>
-                              <div className="col-span-5 sm:col-span-3">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  Quantity
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredients[${index}].quantity`}
-                                  placeholder="5"
-                                  type="number"
-                                  step="0.1"
-                                  min="0"
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredients[${index}].quantity`}
-                                  component="p"
-                                  className="text-red-500 text-xs mt-1"
-                                />
-                              </div>
-                              <div className="col-span-4 sm:col-span-2">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  Cost/Unit
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredients[${index}].costPerUnit`}
-                                  placeholder="30"
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredients[${index}].costPerUnit`}
-                                  component="p"
-                                  className="text-red-500 text-xs mt-1"
-                                />
-                              </div>
-                              <div className="col-span-4 sm:col-span-2">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  Unit
-                                </Label>
-                                <Field name={`ingredients[${index}].unit`}>
-                                  {({ field }: { field: any }) => (
-                                    <Select
-                                      value={field.value}
-                                      onValueChange={(value) =>
-                                        field.onChange({
-                                          target: { name: field.name, value },
-                                        })
-                                      }
-                                    >
-                                      <SelectTrigger className="border-border h-10">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {UNITS.map((unit) => (
-                                          <SelectItem
-                                            key={unit.value}
-                                            value={unit.value}
-                                          >
-                                            {unit.label}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  )}
-                                </Field>
-                              </div>
-                              <div className="col-span-1">
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => remove(index)}
-                                  className="w-10 h-10 p-0"
-                                  disabled={values.ingredients.length === 1}
-                                >
-                                  <X />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
+                            className="data-[state=checked]:bg-primary"
+                          />
                         </div>
                       )}
-                    </FieldArray>
-
-                    <div className="col-span-12 bg-muted p-4 rounded-lg space-y-2">
-                      {calculations ? (
-                        <>
-                          <div className="grid grid-cols-12 gap-8 text-sm">
-                            <div className="col-span-6 flex justify-between">
-                              <span className="font-medium text-foreground">
-                                Per Person
-                              </span>
-                              <span className="text-foreground">
-                                {calculations.display.perPersonServing}
-                              </span>
-                            </div>
-                            <div className="col-span-6 flex justify-between">
-                              <span className="font-medium text-foreground">
-                                Per Person cost
-                              </span>
-                              <span className="text-foreground">
-                                {calculations.display.costPerPerson}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-12 gap-8 text-sm">
-                            <div className="col-span-6 flex justify-between">
-                              <span className="font-medium text-foreground">
-                                1 Ghan
-                              </span>
-                              <span className="text-foreground">
-                                {calculations.display.personsPerGhan}
-                              </span>
-                            </div>
-                            <div className="col-span-6 flex justify-between">
-                              <span className="font-medium text-foreground">
-                                {values.ghan} Ghan
-                              </span>
-                              <span className="text-foreground">
-                                {calculations.display.totalPersons}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-12 gap-8 text-sm">
-                            <div className="col-span-6 flex justify-between">
-                              <span className="font-medium text-foreground">
-                                Total Cost
-                              </span>
-                              <span className="text-foreground">
-                                {calculations.display.totalCost}
-                              </span>
-                            </div>
-                            <div className="col-span-6 flex justify-between">
-                              <span className="font-medium text-foreground">
-                                Total Weight
-                              </span>
-                              <span className="text-foreground">
-                                {calculations.display.totalWeight}
-                              </span>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center text-sm text-gray-500 py-4">
-                          {validation.errors.length > 0 ? (
-                            <div className="space-y-1">
-                              <p>
-                                Please fix the following issues to see
-                                calculations:
-                              </p>
-                              <ul className="text-xs text-red-500 list-disc list-inside">
-                                {validation.errors.map((error, index) => (
-                                  <li key={index}>{error}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          ) : (
-                            <p>Enter ingredient details to see calculations</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    </Field>
                   </div>
 
-                </form>
-              </div>
-            );
-          }}
-        </Formik>
-      </BaseDialog>
-    );
+                  <div className="sm:col-span-4">
+                    <Label className="text-base font-medium text-foreground mb-2 block">
+                      Ghan
+                    </Label>
+                    <Field
+                      as={Input}
+                      name={`ghan`}
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      className="border-border focus:border-primary focus:ring-primary/20"
+                    />
+                    <ErrorMessage
+                      name={`ghan`}
+                      component="p"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-4">
+                    <Label className="text-base font-medium text-foreground mb-2 block">
+                      Serving amount
+                    </Label>
+                    <Field
+                      as={Input}
+                      name={`servingAmount`}
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      className="border-border focus:border-primary focus:ring-primary/20"
+                    />
+                    <ErrorMessage
+                      name={`servingAmount`}
+                      component="p"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-4">
+                    <Label className="text-base font-medium text-[#4b465c] mb-2 block">
+                      Serving unit
+                    </Label>
+                    <Field name={`servingUnit`}>
+                      {({ field }: { field: any }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) =>
+                            field.onChange({
+                              target: { name: field.name, value },
+                            })
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {UNITS.map((unit) => (
+                              <SelectItem key={unit.value} value={unit.value}>
+                                {unit.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </Field>
+                    <ErrorMessage
+                      name={`servingUnit`}
+                      component="p"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  <FieldArray name="ingredients">
+                    {({
+                      remove,
+                      push,
+                    }: {
+                      remove: (index: number) => void;
+                      push: (value: any) => void;
+                    }) => (
+                      <div className="col-span-12 space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-lg font-medium text-foreground">
+                            Ingredients
+                          </h3>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const newIngredient = {
+                                id: undefined,
+                                name: "",
+                                quantity: 0,
+                                unit: DEFAULT_UNIT,
+                                costPerUnit: 0,
+                              };
+                              push(newIngredient);
+                            }}
+                            className="text-primary hover:bg-primary/10 gap-1"
+                          >
+                            <Plus className="w-3 h-3" />
+                            Add Ingredients
+                          </Button>
+                        </div>
+
+                        {values.ingredients.map((ingredient, index) => (
+                          <div
+                            key={index}
+                            className="grid grid-cols-12 gap-2 items-end mb-2"
+                          >
+                            <div className="col-span-6 sm:col-span-4">
+                              <Label className="text-sm font-medium text-foreground mb-1 block">
+                                Ingredient
+                              </Label>
+                              <Field
+                                as={Input}
+                                name={`ingredients[${index}].name`}
+                                placeholder="Ingredient name"
+                                className="border-border focus:border-primary focus:ring-primary/20"
+                              />
+                              <ErrorMessage
+                                name={`ingredients[${index}].name`}
+                                component="p"
+                                className="text-red-500 text-xs mt-1"
+                              />
+                            </div>
+                            <div className="col-span-5 sm:col-span-3">
+                              <Label className="text-sm font-medium text-foreground mb-1 block">
+                                Quantity
+                              </Label>
+                              <Field
+                                as={Input}
+                                name={`ingredients[${index}].quantity`}
+                                placeholder="5"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                className="border-border focus:border-primary focus:ring-primary/20"
+                              />
+                              <ErrorMessage
+                                name={`ingredients[${index}].quantity`}
+                                component="p"
+                                className="text-red-500 text-xs mt-1"
+                              />
+                            </div>
+                            <div className="col-span-4 sm:col-span-2">
+                              <Label className="text-sm font-medium text-foreground mb-1 block">
+                                Cost/Unit
+                              </Label>
+                              <Field
+                                as={Input}
+                                name={`ingredients[${index}].costPerUnit`}
+                                placeholder="30"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                className="border-border focus:border-primary focus:ring-primary/20"
+                              />
+                              <ErrorMessage
+                                name={`ingredients[${index}].costPerUnit`}
+                                component="p"
+                                className="text-red-500 text-xs mt-1"
+                              />
+                            </div>
+                            <div className="col-span-4 sm:col-span-2">
+                              <Label className="text-sm font-medium text-foreground mb-1 block">
+                                Unit
+                              </Label>
+                              <Field name={`ingredients[${index}].unit`}>
+                                {({ field }: { field: any }) => (
+                                  <Select
+                                    value={field.value}
+                                    onValueChange={(value) =>
+                                      field.onChange({
+                                        target: { name: field.name, value },
+                                      })
+                                    }
+                                  >
+                                    <SelectTrigger className="border-border h-10">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {UNITS.map((unit) => (
+                                        <SelectItem
+                                          key={unit.value}
+                                          value={unit.value}
+                                        >
+                                          {unit.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </Field>
+                            </div>
+                            <div className="col-span-1">
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => remove(index)}
+                                className="w-10 h-10 p-0"
+                                disabled={values.ingredients.length === 1}
+                              >
+                                <X />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </FieldArray>
+
+                  <div className="col-span-12 bg-muted p-4 rounded-lg space-y-2">
+                    {calculations ? (
+                      <>
+                        <div className="grid grid-cols-12 gap-8 text-sm">
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-foreground">
+                              Per Person
+                            </span>
+                            <span className="text-foreground">
+                              {calculations.display.perPersonServing}
+                            </span>
+                          </div>
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-foreground">
+                              Per Person cost
+                            </span>
+                            <span className="text-foreground">
+                              {calculations.display.costPerPerson}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-12 gap-8 text-sm">
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-foreground">
+                              1 Ghan
+                            </span>
+                            <span className="text-foreground">
+                              {calculations.display.personsPerGhan}
+                            </span>
+                          </div>
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-foreground">
+                              {values.ghan} Ghan
+                            </span>
+                            <span className="text-foreground">
+                              {calculations.display.totalPersons}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-12 gap-8 text-sm">
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-foreground">
+                              Total Cost
+                            </span>
+                            <span className="text-foreground">
+                              {calculations.display.totalCost}
+                            </span>
+                          </div>
+                          <div className="col-span-6 flex justify-between">
+                            <span className="font-medium text-foreground">
+                              Total Weight
+                            </span>
+                            <span className="text-foreground">
+                              {calculations.display.totalWeight}
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center text-sm text-gray-500 py-4">
+                        {validation.errors.length > 0 ? (
+                          <div className="space-y-1">
+                            <p>
+                              Please fix the following issues to see
+                              calculations:
+                            </p>
+                            <ul className="text-xs text-red-500 list-disc list-inside">
+                              {validation.errors.map((error, index) => (
+                                <li key={index}>{error}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <p>Enter ingredient details to see calculations</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </form>
+            </div>
+          );
+        }}
+      </Formik>
+    </BaseDialog>
+  );
 }
