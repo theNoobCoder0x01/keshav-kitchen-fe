@@ -1,8 +1,8 @@
 "use client";
 
+import { SimpleFormDialog } from "@/components/ui/base-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SimpleFormDialog } from "@/components/ui/base-dialog";
 import { Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -53,7 +53,9 @@ export function AddEditKitchenDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={initialKitchen ? "Edit Kitchen" : "Add Kitchen"}
-      description={initialKitchen ? "Update kitchen details" : "Create a new kitchen"}
+      description={
+        initialKitchen ? "Update kitchen details" : "Create a new kitchen"
+      }
       icon={<Building2 className="w-5 h-5 text-primary-foreground" />}
       size="md"
       onSubmit={handleSubmit}

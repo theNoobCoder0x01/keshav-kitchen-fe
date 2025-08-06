@@ -1,5 +1,6 @@
 "use client";
 
+import { SimpleFormDialog } from "@/components/ui/base-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,10 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SimpleFormDialog } from "@/components/ui/base-dialog";
+import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { Package } from "lucide-react";
 import { useEffect, useState } from "react";
-import { UNIT_OPTIONS, DEFAULT_UNIT } from "@/lib/constants/units";
 
 interface AddEditIngredientDialogProps {
   open: boolean;
@@ -76,7 +76,11 @@ export function AddEditIngredientDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={initialIngredient ? "Edit Ingredient" : "Add Ingredient"}
-      description={initialIngredient ? "Update ingredient details" : "Create a new ingredient"}
+      description={
+        initialIngredient
+          ? "Update ingredient details"
+          : "Create a new ingredient"
+      }
       icon={<Package className="w-5 h-5 text-primary-foreground" />}
       size="md"
       onSubmit={handleSubmit}

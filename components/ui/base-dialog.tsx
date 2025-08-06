@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 
 export interface BaseDialogProps {
   open: boolean;
@@ -63,11 +63,7 @@ export function BaseDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn(
-          sizeClasses[size],
-          "max-h-[90vh]",
-          className
-        )}
+        className={cn(sizeClasses[size], "max-h-[90vh]", className)}
       >
         <div className={cn("overflow-y-auto", contentClassName)}>
           <DialogHeader className="pb-4 border-b border-border">
@@ -90,20 +86,14 @@ export function BaseDialog({
             </div>
           </DialogHeader>
 
-          <div className="py-6">
-            {children}
-          </div>
+          <div className="py-6">{children}</div>
 
           {footer && (
             <>
               <Separator className="my-4" />
               <DialogFooter className="flex justify-end gap-2 pt-4">
                 {showCloseButton && (
-                  <Button
-                    variant="outline"
-                    onClick={handleClose}
-                    type="button"
-                  >
+                  <Button variant="outline" onClick={handleClose} type="button">
                     Cancel
                   </Button>
                 )}
@@ -118,10 +108,17 @@ export function BaseDialog({
 }
 
 // Convenience component for simple forms
-export interface SimpleFormDialogProps extends Omit<BaseDialogProps, 'children' | 'footer'> {
+export interface SimpleFormDialogProps
+  extends Omit<BaseDialogProps, "children" | "footer"> {
   onSubmit: () => void;
   submitLabel?: string;
-  submitVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  submitVariant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
   isSubmitting?: boolean;
   children: ReactNode;
 }

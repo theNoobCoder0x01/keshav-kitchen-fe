@@ -1,11 +1,11 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateSelector } from "@/components/ui/date-selector";
-import { BaseDialog } from "@/components/ui/base-dialog";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -484,600 +484,581 @@ export function ReportsGenerationDialog({
         }
       >
         <div className="space-y-6">
-              {/* Progress Bar */}
-              {isGenerating && (
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      {getProgressIcon()}
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">
-                          Generating Reports ({reportProgress.current}/
-                          {reportProgress.total})
-                        </p>
-                        {reportProgress.currentReport && (
-                          <p className="text-xs text-muted-foreground">
-                            Current: {reportProgress.currentReport}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Progress
-                      value={
-                        (reportProgress.current / reportProgress.total) * 100
-                      }
-                      className="h-2"
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Date Selection */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary" />
-                    Report Date
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs">
-                          Select the date for which you want to generate
-                          reports. This will include all menu items and recipes
-                          scheduled for this specific date.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DateSelector
-                    date={selectedDate}
-                    onDateChange={setSelectedDate}
-                    className="w-full"
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Kitchen Selection */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Users className="w-4 h-4 text-primary" />
-                      Select Kitchens
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            Choose which kitchens to include in your reports.
-                            You can select multiple kitchens to generate
-                            combined reports or individual reports for each
-                            kitchen.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleSelectAllKitchens}
-                        disabled={
-                          selectedKitchens.length === allKitchens.length
-                        }
-                      >
-                        Select All
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDeselectAllKitchens}
-                        disabled={selectedKitchens.length === 0}
-                      >
-                        Deselect All
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {allKitchens.map((kitchen) => (
-                      <div
-                        key={kitchen.id}
-                        className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-                      >
-                        <Checkbox
-                          id={kitchen.id}
-                          checked={selectedKitchens.includes(kitchen.id)}
-                          onCheckedChange={() =>
-                            handleKitchenToggle(kitchen.id)
-                          }
-                        />
-                        <Label
-                          htmlFor={kitchen.id}
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          {kitchen.name}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                  {selectedKitchens.length > 0 && (
-                    <Badge className="mt-3 bg-primary text-primary-foreground">
-                      {selectedKitchens.length} kitchen(s) selected
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Report Types Selection */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-primary" />
-                      Report Types
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            Select which types of reports to generate. Each
-                            report type provides different insights and data for
-                            your kitchen operations.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </CardTitle>
-                    {selectedCount > 0 && (
-                      <Badge className="bg-primary text-primary-foreground">
-                        {selectedCount} selected
-                      </Badge>
+          {/* Progress Bar */}
+          {isGenerating && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  {getProgressIcon()}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Generating Reports ({reportProgress.current}/
+                      {reportProgress.total})
+                    </p>
+                    {reportProgress.currentReport && (
+                      <p className="text-xs text-muted-foreground">
+                        Current: {reportProgress.currentReport}
+                      </p>
                     )}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {["meal", "analysis", "summary"].map((category) => {
-                      const categoryReports = reportTypes.filter(
-                        (r) => r.category === category,
-                      );
-                      if (categoryReports.length === 0) return null;
+                </div>
+                <Progress
+                  value={(reportProgress.current / reportProgress.total) * 100}
+                  className="h-2"
+                />
+              </CardContent>
+            </Card>
+          )}
 
-                      return (
-                        <div key={category} className="space-y-3">
-                          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                            {getReportCategoryIcon(category)}
-                            {category.charAt(0).toUpperCase() +
-                              category.slice(1)}{" "}
-                            Reports
-                          </div>
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                            {categoryReports.map((report) => (
-                              <div
-                                key={report.id}
-                                className={cn(
-                                  "p-4 border-2 rounded-lg transition-all cursor-pointer",
-                                  report.checked
-                                    ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50 hover:bg-muted/50",
-                                )}
-                                onClick={() =>
+          {/* Date Selection */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                Report Date
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      Select the date for which you want to generate reports.
+                      This will include all menu items and recipes scheduled for
+                      this specific date.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DateSelector
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                className="w-full"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Kitchen Selection */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  Select Kitchens
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">
+                        Choose which kitchens to include in your reports. You
+                        can select multiple kitchens to generate combined
+                        reports or individual reports for each kitchen.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSelectAllKitchens}
+                    disabled={selectedKitchens.length === allKitchens.length}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDeselectAllKitchens}
+                    disabled={selectedKitchens.length === 0}
+                  >
+                    Deselect All
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {allKitchens.map((kitchen) => (
+                  <div
+                    key={kitchen.id}
+                    className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                  >
+                    <Checkbox
+                      id={kitchen.id}
+                      checked={selectedKitchens.includes(kitchen.id)}
+                      onCheckedChange={() => handleKitchenToggle(kitchen.id)}
+                    />
+                    <Label
+                      htmlFor={kitchen.id}
+                      className="text-sm cursor-pointer flex-1"
+                    >
+                      {kitchen.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedKitchens.length > 0 && (
+                <Badge className="mt-3 bg-primary text-primary-foreground">
+                  {selectedKitchens.length} kitchen(s) selected
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Report Types Selection */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  Report Types
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">
+                        Select which types of reports to generate. Each report
+                        type provides different insights and data for your
+                        kitchen operations.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </CardTitle>
+                {selectedCount > 0 && (
+                  <Badge className="bg-primary text-primary-foreground">
+                    {selectedCount} selected
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {["meal", "analysis", "summary"].map((category) => {
+                  const categoryReports = reportTypes.filter(
+                    (r) => r.category === category,
+                  );
+                  if (categoryReports.length === 0) return null;
+
+                  return (
+                    <div key={category} className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        {getReportCategoryIcon(category)}
+                        {category.charAt(0).toUpperCase() +
+                          category.slice(1)}{" "}
+                        Reports
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        {categoryReports.map((report) => (
+                          <div
+                            key={report.id}
+                            className={cn(
+                              "p-4 border-2 rounded-lg transition-all cursor-pointer",
+                              report.checked
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50 hover:bg-muted/50",
+                            )}
+                            onClick={() =>
+                              handleReportTypeChange(report.id, !report.checked)
+                            }
+                          >
+                            <div className="flex items-start space-x-3">
+                              <Checkbox
+                                id={report.id}
+                                checked={report.checked}
+                                onCheckedChange={(checked) =>
                                   handleReportTypeChange(
                                     report.id,
-                                    !report.checked,
+                                    checked as boolean,
                                   )
                                 }
-                              >
-                                <div className="flex items-start space-x-3">
-                                  <Checkbox
-                                    id={report.id}
-                                    checked={report.checked}
-                                    onCheckedChange={(checked) =>
-                                      handleReportTypeChange(
-                                        report.id,
-                                        checked as boolean,
-                                      )
-                                    }
-                                    className="mt-1"
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <report.icon className="w-4 h-4 text-primary" />
-                                      <Label
-                                        htmlFor={report.id}
-                                        className="text-foreground font-medium cursor-pointer"
-                                      >
-                                        {report.label}
-                                      </Label>
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="max-w-xs">
-                                            {report.detailedDescription}
-                                          </p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">
-                                      {report.description}
-                                    </p>
-                                  </div>
+                                className="mt-1"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <report.icon className="w-4 h-4 text-primary" />
+                                  <Label
+                                    htmlFor={report.id}
+                                    className="text-foreground font-medium cursor-pointer"
+                                  >
+                                    {report.label}
+                                  </Label>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">
+                                        {report.detailedDescription}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
                                 </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {report.description}
+                                </p>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Advanced Options */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-primary" />
-                    Advanced Options
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs">
-                          Configure advanced report options for enhanced
-                          functionality and detailed analysis.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Combination Options */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Combine className="w-4 h-4" />
-                      Combination Options
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Label
-                              htmlFor="combine-meals"
-                              className="text-sm font-medium"
-                            >
-                              Combine Meal Types
-                            </Label>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">
-                                  Aggregate ingredients from all selected meal
-                                  types (breakfast, lunch, dinner) into a single
-                                  report. This creates a comprehensive daily
-                                  overview.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Aggregate ingredients from selected meal types
-                          </p>
-                        </div>
-                        <Switch
-                          id="combine-meals"
-                          checked={combineMealTypes}
-                          onCheckedChange={setCombineMealTypes}
-                          disabled={selectedMealTypes < 2}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Label
-                              htmlFor="combine-kitchens"
-                              className="text-sm font-medium"
-                            >
-                              Combine Kitchens
-                            </Label>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">
-                                  Merge data from all selected kitchens into
-                                  unified reports. Useful for multi-kitchen
-                                  operations and centralized planning.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Aggregate ingredients from all selected kitchens
-                          </p>
-                        </div>
-                        <Switch
-                          id="combine-kitchens"
-                          checked={combineKitchens}
-                          onCheckedChange={setCombineKitchens}
-                          disabled={selectedKitchens.length < 2}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Label
-                              htmlFor="both-versions"
-                              className="text-sm font-medium"
-                            >
-                              Generate Both Versions
-                            </Label>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">
-                                  Create both combined and individual reports.
-                                  This gives you both detailed breakdowns and
-                                  consolidated views for maximum flexibility.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Create both combined and separate reports
-                          </p>
-                        </div>
-                        <Switch
-                          id="both-versions"
-                          checked={generateBothVersions}
-                          onCheckedChange={setGenerateBothVersions}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Content Options */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <FileText className="w-4 h-4" />
-                      Content Options
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Label
-                              htmlFor="attach-recipes"
-                              className="text-sm font-medium"
-                            >
-                              Attach Recipe Prints
-                            </Label>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">
-                                  Include detailed recipe pages with
-                                  instructions, ingredients, and cooking
-                                  methods. Each unique recipe appears only once,
-                                  even if used multiple times.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Include detailed recipe pages for all used recipes
-                          </p>
-                        </div>
-                        <Switch
-                          id="attach-recipes"
-                          checked={attachRecipePrints}
-                          onCheckedChange={setAttachRecipePrints}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Label
-                              htmlFor="nutritional-info"
-                              className="text-sm font-medium"
-                            >
-                              Include Nutritional Info
-                            </Label>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">
-                                  Add nutritional information including
-                                  calories, protein, carbohydrates, fats, and
-                                  other dietary details for each recipe and
-                                  meal.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Include calories, protein, carbs, and other
-                            nutrients
-                          </p>
-                        </div>
-                        <Switch
-                          id="nutritional-info"
-                          checked={includeNutritionalInfo}
-                          onCheckedChange={setIncludeNutritionalInfo}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Label
-                              htmlFor="cost-analysis"
-                              className="text-sm font-medium"
-                            >
-                              Include Cost Analysis
-                            </Label>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="max-w-xs">
-                                  Add detailed cost breakdowns including
-                                  ingredient costs, total meal costs, cost per
-                                  serving, and budget analysis for financial
-                                  planning.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Include ingredient costs and budget analysis
-                          </p>
-                        </div>
-                        <Switch
-                          id="cost-analysis"
-                          checked={includeCostAnalysis}
-                          onCheckedChange={setIncludeCostAnalysis}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Format Selection */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Download className="w-4 h-4 text-primary" />
-                    Export Format
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs">
-                          Choose the file format for your reports. Each format
-                          has different advantages for viewing, editing, and
-                          sharing your data.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select
-                    value={selectedFormat}
-                    onValueChange={setSelectedFormat}
-                  >
-                    <SelectTrigger className="border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {formatOptions.map((format) => (
-                        <SelectItem key={format.value} value={format.value}>
-                          <div className="flex items-center gap-2">
-                            <format.icon className="w-4 h-4" />
-                            <div className="flex flex-col items-start">
-                              <span className="font-medium">
-                                {format.label}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {format.description}
-                              </span>
                             </div>
                           </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
-
-              {/* Preview Info */}
-              {selectedCount > 0 && selectedKitchens.length > 0 && (
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-primary" />
-                      Report Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>Date: {selectedDate.toLocaleDateString()}</p>
-                      <p>
-                        Format:{" "}
-                        {
-                          formatOptions.find((f) => f.value === selectedFormat)
-                            ?.label
-                        }
-                      </p>
-                      <p>Kitchens: {selectedKitchens.length} selected</p>
-                      <p>
-                        Reports:{" "}
-                        {reportTypes
-                          .filter((r) => r.checked)
-                          .map((r) => r.label)
-                          .join(", ")}
-                      </p>
-                      {(combineMealTypes || combineKitchens) && (
-                        <p className="text-primary font-medium">
-                          Combination mode: {combineMealTypes ? "Meals" : ""}{" "}
-                          {combineMealTypes && combineKitchens ? "+" : ""}{" "}
-                          {combineKitchens ? "Kitchens" : ""}
-                        </p>
-                      )}
-                      {attachRecipePrints && (
-                        <p className="text-primary font-medium flex items-center gap-1">
-                          <BookOpen className="w-3 h-3" />
-                          Recipe prints will be attached
-                        </p>
-                      )}
-                      {includeNutritionalInfo && (
-                        <p className="text-primary font-medium flex items-center gap-1">
-                          <BarChart3 className="w-3 h-3" />
-                          Nutritional information included
-                        </p>
-                      )}
-                      {includeCostAnalysis && (
-                        <p className="text-primary font-medium flex items-center gap-1">
-                          <ShoppingCart className="w-3 h-3" />
-                          Cost analysis included
-                        </p>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-        </BaseDialog>
-      </TooltipProvider>
-    );
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Advanced Options */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" />
+                Advanced Options
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      Configure advanced report options for enhanced
+                      functionality and detailed analysis.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Combination Options */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Combine className="w-4 h-4" />
+                  Combination Options
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor="combine-meals"
+                          className="text-sm font-medium"
+                        >
+                          Combine Meal Types
+                        </Label>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">
+                              Aggregate ingredients from all selected meal types
+                              (breakfast, lunch, dinner) into a single report.
+                              This creates a comprehensive daily overview.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Aggregate ingredients from selected meal types
+                      </p>
+                    </div>
+                    <Switch
+                      id="combine-meals"
+                      checked={combineMealTypes}
+                      onCheckedChange={setCombineMealTypes}
+                      disabled={selectedMealTypes < 2}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor="combine-kitchens"
+                          className="text-sm font-medium"
+                        >
+                          Combine Kitchens
+                        </Label>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">
+                              Merge data from all selected kitchens into unified
+                              reports. Useful for multi-kitchen operations and
+                              centralized planning.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Aggregate ingredients from all selected kitchens
+                      </p>
+                    </div>
+                    <Switch
+                      id="combine-kitchens"
+                      checked={combineKitchens}
+                      onCheckedChange={setCombineKitchens}
+                      disabled={selectedKitchens.length < 2}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor="both-versions"
+                          className="text-sm font-medium"
+                        >
+                          Generate Both Versions
+                        </Label>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">
+                              Create both combined and individual reports. This
+                              gives you both detailed breakdowns and
+                              consolidated views for maximum flexibility.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Create both combined and separate reports
+                      </p>
+                    </div>
+                    <Switch
+                      id="both-versions"
+                      checked={generateBothVersions}
+                      onCheckedChange={setGenerateBothVersions}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Content Options */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  Content Options
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor="attach-recipes"
+                          className="text-sm font-medium"
+                        >
+                          Attach Recipe Prints
+                        </Label>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">
+                              Include detailed recipe pages with instructions,
+                              ingredients, and cooking methods. Each unique
+                              recipe appears only once, even if used multiple
+                              times.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Include detailed recipe pages for all used recipes
+                      </p>
+                    </div>
+                    <Switch
+                      id="attach-recipes"
+                      checked={attachRecipePrints}
+                      onCheckedChange={setAttachRecipePrints}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor="nutritional-info"
+                          className="text-sm font-medium"
+                        >
+                          Include Nutritional Info
+                        </Label>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">
+                              Add nutritional information including calories,
+                              protein, carbohydrates, fats, and other dietary
+                              details for each recipe and meal.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Include calories, protein, carbs, and other nutrients
+                      </p>
+                    </div>
+                    <Switch
+                      id="nutritional-info"
+                      checked={includeNutritionalInfo}
+                      onCheckedChange={setIncludeNutritionalInfo}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor="cost-analysis"
+                          className="text-sm font-medium"
+                        >
+                          Include Cost Analysis
+                        </Label>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground hover:text-primary cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">
+                              Add detailed cost breakdowns including ingredient
+                              costs, total meal costs, cost per serving, and
+                              budget analysis for financial planning.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Include ingredient costs and budget analysis
+                      </p>
+                    </div>
+                    <Switch
+                      id="cost-analysis"
+                      checked={includeCostAnalysis}
+                      onCheckedChange={setIncludeCostAnalysis}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Format Selection */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Download className="w-4 h-4 text-primary" />
+                Export Format
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      Choose the file format for your reports. Each format has
+                      different advantages for viewing, editing, and sharing
+                      your data.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select value={selectedFormat} onValueChange={setSelectedFormat}>
+                <SelectTrigger className="border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {formatOptions.map((format) => (
+                    <SelectItem key={format.value} value={format.value}>
+                      <div className="flex items-center gap-2">
+                        <format.icon className="w-4 h-4" />
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{format.label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {format.description}
+                          </span>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          {/* Preview Info */}
+          {selectedCount > 0 && selectedKitchens.length > 0 && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  Report Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>Date: {selectedDate.toLocaleDateString()}</p>
+                  <p>
+                    Format:{" "}
+                    {
+                      formatOptions.find((f) => f.value === selectedFormat)
+                        ?.label
+                    }
+                  </p>
+                  <p>Kitchens: {selectedKitchens.length} selected</p>
+                  <p>
+                    Reports:{" "}
+                    {reportTypes
+                      .filter((r) => r.checked)
+                      .map((r) => r.label)
+                      .join(", ")}
+                  </p>
+                  {(combineMealTypes || combineKitchens) && (
+                    <p className="text-primary font-medium">
+                      Combination mode: {combineMealTypes ? "Meals" : ""}{" "}
+                      {combineMealTypes && combineKitchens ? "+" : ""}{" "}
+                      {combineKitchens ? "Kitchens" : ""}
+                    </p>
+                  )}
+                  {attachRecipePrints && (
+                    <p className="text-primary font-medium flex items-center gap-1">
+                      <BookOpen className="w-3 h-3" />
+                      Recipe prints will be attached
+                    </p>
+                  )}
+                  {includeNutritionalInfo && (
+                    <p className="text-primary font-medium flex items-center gap-1">
+                      <BarChart3 className="w-3 h-3" />
+                      Nutritional information included
+                    </p>
+                  )}
+                  {includeCostAnalysis && (
+                    <p className="text-primary font-medium flex items-center gap-1">
+                      <ShoppingCart className="w-3 h-3" />
+                      Cost analysis included
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </BaseDialog>
+    </TooltipProvider>
+  );
 }

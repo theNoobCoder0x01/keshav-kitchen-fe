@@ -199,9 +199,9 @@ export default function MenuPage() {
         <PageHeader
           title="Kitchen Dashboard"
           subtitle={
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="flex flex-col sm:flex-row sm:items-center gap-2">
               <span>Manage your daily menu and track kitchen operations</span>
-            </div>
+            </span>
           }
           actions={
             <div className="flex items-center gap-3">
