@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar as CalendarComponent } from "@/components/ui/enhanced-calendar";
 import {
   Popover,
   PopoverContent,
@@ -12,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { addDays, format, subDays } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DatePicker } from "./date-picker";
 
 interface DateSelectorProps {
   date?: Date;
@@ -96,15 +96,16 @@ export function DateSelector({
     return format(date, "EEEE, dd MMM yyyy");
   };
 
+  const formatDay = (date: Date) => {
+    return format(date, "EEEE");
+  };
+
   // Determine what to show as subtitle
   const getSubtitle = () => {
-    if (currentEventInfo.tithi) {
-      return currentEventInfo.tithi;
-    }
     if (currentEventInfo.eventSummary) {
       return currentEventInfo.eventSummary;
     }
-    return subtitle || "-"; // Fallback to default or provided subtitle
+    return formatDay(selectedDate);
   };
 
   return (
@@ -138,11 +139,9 @@ export function DateSelector({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={handleCalendarSelect}
-                    initialFocus
+                  <DatePicker
+                    value={selectedDate.getTime()}
+                    onChangeDate={handleCalendarSelect}
                     className="rounded-md border"
                   />
                 </PopoverContent>

@@ -1,5 +1,5 @@
 // Unit conversion utilities for meal calculations
-import { UNIT_OPTIONS, getUnitByValue, normalizeUnit } from "@/lib/constants/units";
+import { UNIT_OPTIONS, normalizeUnit } from "@/lib/constants/units";
 
 export interface UnitConversion {
   unit: string;
@@ -9,14 +9,18 @@ export interface UnitConversion {
 
 // Unit conversion table - all conversions to grams as base unit
 // This is now derived from the centralized UNIT_OPTIONS
-export const UNIT_CONVERSIONS: Record<string, UnitConversion> = UNIT_OPTIONS.reduce((acc, unit) => {
-  acc[unit.value] = {
-    unit: unit.value,
-    toGrams: unit.conversionToGrams,
-    category: unit.category,
-  };
-  return acc;
-}, {} as Record<string, UnitConversion>);
+export const UNIT_CONVERSIONS: Record<string, UnitConversion> =
+  UNIT_OPTIONS.reduce(
+    (acc, unit) => {
+      acc[unit.value] = {
+        unit: unit.value,
+        toGrams: unit.conversionToGrams,
+        category: unit.category,
+      };
+      return acc;
+    },
+    {} as Record<string, UnitConversion>,
+  );
 
 /**
  * Convert any unit to grams
