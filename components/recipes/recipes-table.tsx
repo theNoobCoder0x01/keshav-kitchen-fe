@@ -94,7 +94,7 @@ export function RecipesTable({
   );
 
   return (
-    <div className="rounded-lg border shadow-xs">
+    <div className="bg-card rounded-lg border shadow-xs">
       <Table>
         <TableHeader>
           <TableRow>

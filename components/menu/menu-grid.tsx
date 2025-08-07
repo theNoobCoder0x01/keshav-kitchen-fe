@@ -144,10 +144,11 @@ export function MenuGrid({
   );
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-6">
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-12 gap-2 md:gap-4">
         <MenuCard
           title="Breakfast"
+          className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.breakfast}
           onAdd={() => onAddMeal(MealType.BREAKFAST)}
           onEdit={(item) => {
@@ -164,6 +165,7 @@ export function MenuGrid({
         />
         <MenuCard
           title="Lunch"
+          className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.lunch}
           onAdd={() => onAddMeal(MealType.LUNCH)}
           onEdit={(item) => {
@@ -178,6 +180,7 @@ export function MenuGrid({
         />
         <MenuCard
           title="Dinner"
+          className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.dinner}
           onAdd={() => onAddMeal(MealType.DINNER)}
           onEdit={(item) => {
@@ -190,12 +193,9 @@ export function MenuGrid({
           onDelete={(itemId) => onDeleteMeal(itemId)}
           showActions
         />
-      </div>
-
-      {/* Extra Section - Now using MenuCard like other meal types */}
-      <div className="grid grid-cols-1">
         <MenuCard
           title="Extra"
+          className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.snack || []}
           onAdd={() => onAddMeal(MealType.SNACK)}
           onEdit={(item) => {

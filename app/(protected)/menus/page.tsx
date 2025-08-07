@@ -193,9 +193,9 @@ export default function MenuPage() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col gap-2 md:gap-4">
       {/* Header Section */}
-      <div className="mb-6 sm:mb-8">
+      <div>
         <PageHeader
           title="Kitchen Dashboard"
           subtitle={
@@ -228,29 +228,22 @@ export default function MenuPage() {
       </div>
 
       {/* Stats Section */}
-      <div className="mb-6 sm:mb-8">
-        <div className="mb-6">
-          {/* Enhanced Stats Grid */}
-          <EnhancedStatsGrid stats={getStatsForTab()} />
-        </div>
+      <EnhancedStatsGrid stats={getStatsForTab()} />
 
-        <TabNavigation
-          tabs={kitchens.map((k) => k.name)}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
-      </div>
+      <TabNavigation
+        tabs={kitchens.map((k) => k.name)}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       {/* Menu Section */}
-      <div className="space-y-6">
-        <MenuGrid
-          onAddMeal={handleAddMeal}
-          onEditMeal={handleEditMeal}
-          onDeleteMeal={handleDeleteMeal}
-          dailyMenus={dailyMenus}
-          selectedDate={selectedDate}
-        />
-      </div>
+      <MenuGrid
+        onAddMeal={handleAddMeal}
+        onEditMeal={handleEditMeal}
+        onDeleteMeal={handleDeleteMeal}
+        dailyMenus={dailyMenus}
+        selectedDate={selectedDate}
+      />
 
       {/* Dialogs */}
       <AddMealDialog

@@ -73,7 +73,12 @@ export function EnhancedStatsGrid({
   };
 
   return (
-    <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-4", className)}>
+    <div
+      className={cn(
+        "grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4",
+        className,
+      )}
+    >
       {stats.map((stat, index) => {
         const colors = getColorClasses(stat.color);
 
