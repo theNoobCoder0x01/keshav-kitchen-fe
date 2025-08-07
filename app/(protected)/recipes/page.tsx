@@ -499,6 +499,7 @@ export default function RecipesPage() {
           onPrint={handlePrintRecipe}
           deletingId={deletingId}
           itemsPerPageOptions={[5, 10, 20, 50]}
+          loading={loading} // Show skeleton loader when loading
         />
       </div>
 

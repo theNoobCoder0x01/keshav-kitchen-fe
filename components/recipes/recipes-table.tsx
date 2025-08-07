@@ -17,6 +17,7 @@ import {
 import { ChevronDown, ChevronUp, Edit, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface Recipe {
   id: string;
@@ -41,6 +42,10 @@ interface RecipesTableProps {
   onPrint: (recipe: Recipe) => void;
   deletingId: string | null;
   itemsPerPageOptions?: number[];
+  /**
+   * If true, show skeleton loader in table body instead of data rows.
+   */
+  loading?: boolean;
 }
 
 export function RecipesTable({
@@ -50,6 +55,7 @@ export function RecipesTable({
   onPrint,
   deletingId,
   itemsPerPageOptions = [5, 10, 20],
+  loading = false,
 }: RecipesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 5);
@@ -130,8 +136,31 @@ export function RecipesTable({
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {paginatedRecipes.length > 0 ? (
+        <TableBody aria-busy={loading}>
+          {/* Skeleton Loader: Only show when loading is true */}
+          {loading ? (
+            // Render 5 skeleton rows for loading state
+            Array.from({ length: 5 }).map((_, idx) => (
+              <TableRow key={"skeleton-" + idx}>
+                <TableCell className="py-4 px-6">
+                  <Skeleton className="h-5 w-32 rounded" />
+                </TableCell>
+                <TableCell className="py-4 px-6">
+                  <Skeleton className="h-5 w-24 rounded" />
+                </TableCell>
+                <TableCell className="py-4 px-6">
+                  <Skeleton className="h-5 w-24 rounded" />
+                </TableCell>
+                <TableCell className="py-4 px-6">
+                  <div className="flex items-center space-x-2">
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : paginatedRecipes.length > 0 ? (
             paginatedRecipes.map((recipe: Recipe) => (
               <TableRow key={recipe.id}>
                 <TableCell className="py-4 px-6 font-medium text-foreground">
