@@ -4,7 +4,7 @@ import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
 import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
-import { RecipesTable } from "@/components/recipes/recipes-table";
+import { RecipesTable, RecipesTableSkeleton } from "@/components/recipes/recipes-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -315,19 +315,6 @@ export default function RecipesPage() {
     getRecipes();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="w-full">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading recipes...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full flex flex-col gap-2 md:gap-4">
       {/* Header Section */}
@@ -359,7 +346,7 @@ export default function RecipesPage() {
 
       {/* Search and Filter Section */}
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="p-4 pb-0">
           <CardTitle className="text-lg flex items-center gap-2">
             <Search className="w-5 h-5 text-primary" />
             Search & Filter
@@ -368,9 +355,9 @@ export default function RecipesPage() {
             Find and filter recipes by name, category, and subcategory
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-4 space-y-4">
           {/* Basic Search */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -392,7 +379,7 @@ export default function RecipesPage() {
               filterCategory !== "all" ||
               filterSubcategory !== "all") && (
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={clearFilters}
                 className="flex items-center gap-2"
               >
@@ -404,7 +391,7 @@ export default function RecipesPage() {
 
           {/* Advanced Filters */}
           {showAdvancedFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category</label>
                 <select
@@ -467,39 +454,40 @@ export default function RecipesPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold">Recipes</h3>
-          <Badge variant="outline">
+          <Badge variant="outline" className="bg-card">
             {filteredRecipes.length} of {recipes.length}
           </Badge>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Showing filtered results</span>
         </div>
       </div>
 
       {/* Recipes Table */}
       <div>
-        <RecipesTable
-          recipes={filteredRecipes}
-          onEdit={(recipe) => {
-            setEditRecipe({
-              recipeName: recipe.name,
-              category: recipe.category,
-              subcategory: recipe.subcategory,
-              selectedRecipe: recipe.id,
-              ingredients: (recipe.ingredients || []).map((ingredient) => ({
-                name: ingredient.name,
-                quantity: ingredient.quantity.toString(),
-                unit: ingredient.unit,
-                costPerUnit: (ingredient.costPerUnit || "").toString(),
-              })),
-            });
-            setIsEditDialogOpen(true);
-          }}
-          onDelete={handleDeleteRecipe}
-          onPrint={handlePrintRecipe}
-          deletingId={deletingId}
-          itemsPerPageOptions={[5, 10, 20, 50]}
-        />
+        {loading ? (
+          <RecipesTableSkeleton />
+        ) : (
+          <RecipesTable
+            recipes={filteredRecipes}
+            onEdit={(recipe) => {
+              setEditRecipe({
+                recipeName: recipe.name,
+                category: recipe.category,
+                subcategory: recipe.subcategory,
+                selectedRecipe: recipe.id,
+                ingredients: (recipe.ingredients || []).map((ingredient) => ({
+                  name: ingredient.name,
+                  quantity: ingredient.quantity.toString(),
+                  unit: ingredient.unit,
+                  costPerUnit: (ingredient.costPerUnit || "").toString(),
+                })),
+              });
+              setIsEditDialogOpen(true);
+            }}
+            onDelete={handleDeleteRecipe}
+            onPrint={handlePrintRecipe}
+            deletingId={deletingId}
+            itemsPerPageOptions={[5, 10, 20, 50]}
+          />
+        )}
       </div>
 
       {/* Dialogs */}

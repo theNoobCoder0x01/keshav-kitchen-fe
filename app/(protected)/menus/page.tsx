@@ -11,7 +11,10 @@ import {
   createMenuStats,
 } from "@/components/ui/enhanced-stats-grid";
 import { PageHeader } from "@/components/ui/page-header";
-import { TabNavigation, TabNavigationSkeleton } from "@/components/ui/tab-navigation";
+import {
+  TabNavigation,
+  TabNavigationSkeleton,
+} from "@/components/ui/tab-navigation";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
@@ -43,19 +46,42 @@ export default function MenuPage() {
   const [kitchens, setKitchens] = useState<any[]>([]);
   const [menuStats, setMenuStats] = useState<any>(null);
   const [dailyMenus, setDailyMenus] = useState<any>({});
-  const [loading, setLoading] = useState(true);
+  const [loadingStates, setLoadingStates] = useState({
+    kitchens: 0,
+    stats: 0,
+    menus: 0,
+  });
 
-  const loadData = useCallback(async () => {
+  const loadKitchens = useCallback(async () => {
     try {
-      setLoading(true);
-
-      // Get kitchens first
+      setLoadingStates((prev) => ({
+        ...prev,
+        kitchens: prev.kitchens + 1,
+        stats: prev.stats + 1,
+        menus: prev.menus + 1,
+      }));
       const kitchensData = await getKitchens();
       setKitchens(kitchensData);
+    } catch (error) {
+      console.error("Failed to load kitchens:", error);
+      toast.error("Failed to load kitchens");
+    } finally {
+      setLoadingStates((prev) => ({
+        ...prev,
+        kitchens: prev.kitchens - 1,
+        stats: prev.stats - 1,
+        menus: prev.menus - 1,
+      }));
+    }
+  }, []);
 
+  const loadMenuData = useCallback(async () => {
+    if (kitchens.length === 0) return; // Wait for kitchens to load first
+
+    try {
       // Get current kitchen ID
       const currentKitchenId =
-        kitchensData[activeTab]?.id || session?.user?.kitchenId;
+        kitchens[activeTab]?.id || session?.user?.kitchenId;
 
       if (!currentKitchenId) {
         setMenuStats({
@@ -70,7 +96,13 @@ export default function MenuPage() {
         `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`
       );
 
-      // Fetch menus and stats
+      // Load stats and menus in parallel
+      setLoadingStates((prev) => ({
+        ...prev,
+        stats: prev.stats + 1,
+        menus: prev.menus + 1,
+      }));
+
       const [statsData, menusResponse] = await Promise.all([
         getMenuStats(selectedDate, currentKitchenId),
         fetchMenus({
@@ -95,16 +127,28 @@ export default function MenuPage() {
       setMenuStats(statsData);
       setDailyMenus(groupedMenus);
     } catch (error) {
-      console.error("Failed to load data:", error);
-      toast.error("Failed to load data");
+      console.error("Failed to load menu data:", error);
+      toast.error("Failed to load menu data");
     } finally {
-      setLoading(false);
+      setLoadingStates((prev) => ({
+        ...prev,
+        stats: prev.stats - 1,
+        menus: prev.menus - 1,
+      }));
     }
-  }, [selectedDate, activeTab, session?.user?.kitchenId]);
+  }, [selectedDate, activeTab, session?.user?.kitchenId, kitchens]);
 
+  // Load kitchens once on mount
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadKitchens();
+  }, [loadKitchens]);
+
+  // Load menu data when date, tab, or kitchens change
+  useEffect(() => {
+    if (kitchens.length > 0) {
+      loadMenuData();
+    }
+  }, [loadMenuData]);
 
   const getStatsForTab = () => {
     if (!menuStats) {
@@ -114,6 +158,11 @@ export default function MenuPage() {
     }
 
     return createMenuStats(menuStats);
+  };
+
+  // Helper to check if any loading state is active
+  const isAnyLoading = () => {
+    return loadingStates.kitchens || loadingStates.stats || loadingStates.menus;
   };
 
   const handleAddMeal = (mealType: MealType) => {
@@ -136,7 +185,7 @@ export default function MenuPage() {
 
         if (response.ok) {
           toast.success("Meal deleted successfully");
-          loadData(); // Reload data
+          loadMenuData(); // Reload data
         } else {
           toast.error("Failed to delete meal");
         }
@@ -159,7 +208,7 @@ export default function MenuPage() {
     setAddMealDialog(open);
     if (!open) {
       setEditMeal(null);
-      loadData(); // Reload data when dialog closes
+      loadMenuData(); // Reload data when dialog closes
     }
   };
 
@@ -215,7 +264,7 @@ export default function MenuPage() {
         />
       </div>
 
-      {loading ? (
+      {loadingStates.kitchens ? (
         <TabNavigationSkeleton tabCount={kitchens.length || 3} />
       ) : (
         <TabNavigation
@@ -226,14 +275,14 @@ export default function MenuPage() {
       )}
 
       {/* Stats Section */}
-      {loading ? (
+      {loadingStates.stats ? (
         <EnhancedStatsGridSkeleton />
       ) : (
         <EnhancedStatsGrid stats={getStatsForTab()} />
       )}
 
       {/* Menu Section */}
-      {loading ? (
+      {loadingStates.menus ? (
         <MenuGridSkeleton />
       ) : (
         <MenuGrid
