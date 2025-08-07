@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "./button";
+import { Skeleton } from "./skeleton";
 
 interface TabNavigationProps {
   tabs: string[];
@@ -62,6 +63,24 @@ export function TabNavigation({
           >
             {tab}
           </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Skeleton loader for TabNavigation
+export function TabNavigationSkeleton({ tabCount = 3, className = "" }: { tabCount?: number; className?: string }) {
+  return (
+    <div className={cn(className)}>
+      {/* Mobile Dropdown Skeleton */}
+      <div className="sm:hidden">
+        <Skeleton className="w-full h-10 rounded-xl" />
+      </div>
+      {/* Desktop Tabs Skeleton */}
+      <div className="hidden sm:flex space-x-1 bg-card backdrop-blur-xs p-1 rounded-xl border border-border/50">
+        {Array.from({ length: tabCount }).map((_, idx) => (
+          <Skeleton key={idx} className="px-4 py-2.5 h-10 w-24 rounded-lg flex-1 sm:flex-none" />
         ))}
       </div>
     </div>

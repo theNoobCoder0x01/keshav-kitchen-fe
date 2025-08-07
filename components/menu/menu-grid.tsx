@@ -1,9 +1,10 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { MealType } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MenuCard } from "./menu-card";
+import { MenuCard, MenuCardSkeleton } from "./menu-card";
 
 interface MenuItem {
   id: string;
@@ -208,6 +209,20 @@ export function MenuGrid({
           onDelete={(itemId) => onDeleteMeal(itemId)}
           showActions
         />
+      </div>
+    </div>
+  );
+}
+
+// Skeleton loader for MenuGrid
+export function MenuGridSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div className={cn("flex flex-col gap-4", className)}>
+      <div className="grid grid-cols-12 gap-2 md:gap-4">
+        <MenuCardSkeleton className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3" />
+        <MenuCardSkeleton className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3" />
+        <MenuCardSkeleton className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3" />
+        <MenuCardSkeleton className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3" />
       </div>
     </div>
   );

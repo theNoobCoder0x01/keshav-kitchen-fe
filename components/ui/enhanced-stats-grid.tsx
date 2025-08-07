@@ -12,6 +12,7 @@ import {
   Users,
   Utensils,
 } from "lucide-react";
+import { Skeleton } from "./skeleton";
 
 interface EnhancedStatData {
   label: string;
@@ -133,6 +134,29 @@ export function EnhancedStatsGrid({
           </Card>
         );
       })}
+    </div>
+  );
+}
+
+// Skeleton loader for EnhancedStatsGrid
+export function EnhancedStatsGridSkeleton({ cardCount = 4, className = "" }: { cardCount?: number; className?: string }) {
+  return (
+    <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4", className)}>
+      {Array.from({ length: cardCount }).map((_, idx) => (
+        <Card key={idx} className="bg-card/80 backdrop-blur-xs border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <Skeleton className="w-10 h-10 rounded-lg" />
+              <Skeleton className="w-12 h-6 rounded-md" />
+            </div>
+            <div className="space-y-1">
+              <Skeleton className="h-7 w-20 rounded" />
+              <Skeleton className="h-4 w-24 rounded" />
+              <Skeleton className="h-3 w-16 rounded" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
