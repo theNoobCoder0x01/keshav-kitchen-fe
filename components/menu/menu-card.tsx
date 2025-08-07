@@ -56,7 +56,7 @@ export function MenuCard({
   return (
     <Card
       className={cn(
-        "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
+        "bg-card/100 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
         className,
       )}
     >

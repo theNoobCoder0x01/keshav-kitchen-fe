@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { Button } from "./button";
 
 interface TabNavigationProps {
   tabs: string[];
@@ -29,7 +30,7 @@ export function TabNavigation({
   };
 
   return (
-    <div className={cn("mb-6 sm:mb-8", className)}>
+    <div className={cn(className)}>
       {/* Mobile Dropdown */}
       <div className="sm:hidden">
         <select
@@ -46,20 +47,21 @@ export function TabNavigation({
       </div>
 
       {/* Desktop Tabs */}
-      <div className="hidden sm:flex space-x-1 bg-background/50 backdrop-blur-xs p-1 rounded-xl border border-border/50">
+      <div className="hidden sm:flex space-x-1 bg-card backdrop-blur-xs p-1 rounded-xl border border-border/50">
         {tabs.map((tab, index) => (
-          <button
+          <Button
+            variant="link"
             key={tab}
             onClick={() => handleTabClick(index)}
             className={cn(
               "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex-1 sm:flex-none",
               index === activeTab
-                ? "bg-background text-primary shadow-xs border border-primary/10"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/50",
+                ? "bg-accent text-primary shadow-xs border border-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/80",
             )}
           >
             {tab}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

@@ -16,17 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import {
-  BookOpen,
-  ChefHat,
-  Clock,
-  Filter,
-  Plus,
-  RefreshCw,
-  Search,
-  TrendingUp,
-  Upload,
-} from "lucide-react";
+import { Filter, Plus, RefreshCw, Search, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -47,14 +37,6 @@ export default function RecipesPage() {
     }>;
     createdAt: Date;
     updatedAt: Date;
-  }
-
-  interface RecipeStats {
-    total: number;
-    byCategory: Record<string, number>;
-    bySubcategory: Record<string, number>;
-    averageCost: number;
-    recentlyAdded: number;
   }
 
   const { data: session } = useSession();
@@ -86,48 +68,6 @@ export default function RecipesPage() {
   const [filterSubcategory, setFilterSubcategory] = useState("all");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(true); // Filters open by default
 
-  // Calculate recipe statistics
-  const calculateRecipeStats = (): RecipeStats => {
-    const total = recipes.length;
-    const byCategory: Record<string, number> = {};
-    const bySubcategory: Record<string, number> = {};
-    let totalCost = 0;
-    let costCount = 0;
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    let recentlyAdded = 0;
-
-    recipes.forEach((recipe) => {
-      // Category stats
-      byCategory[recipe.category] = (byCategory[recipe.category] || 0) + 1;
-
-      // Subcategory stats
-      bySubcategory[recipe.subcategory] =
-        (bySubcategory[recipe.subcategory] || 0) + 1;
-
-      // Cost stats
-      if (recipe.cost) {
-        totalCost += recipe.cost;
-        costCount++;
-      }
-
-      // Recently added stats
-      if (new Date(recipe.createdAt) > oneWeekAgo) {
-        recentlyAdded++;
-      }
-    });
-
-    return {
-      total,
-      byCategory,
-      bySubcategory,
-      averageCost: costCount > 0 ? totalCost / costCount : 0,
-      recentlyAdded,
-    };
-  };
-
-  const recipeStats = calculateRecipeStats();
-
   // Get unique categories and subcategories for filters
   const categories = [
     "all",
@@ -152,44 +92,6 @@ export default function RecipesPage() {
 
     return matchesSearch && matchesCategory && matchesSubcategory;
   });
-
-  // Create stats for the enhanced stats grid
-  const getRecipeStatsForDisplay = () => {
-    const topCategory = Object.entries(recipeStats.byCategory).sort(
-      ([, a], [, b]) => b - a,
-    )[0];
-
-    return [
-      {
-        label: "Total Recipes",
-        value: recipeStats.total,
-        icon: BookOpen,
-        subtitle: "All recipes in database",
-        color: "primary" as const,
-      },
-      {
-        label: "Top Category",
-        value: topCategory ? topCategory[0] : "N/A",
-        icon: ChefHat,
-        subtitle: `${topCategory ? topCategory[1] : 0} recipes`,
-        color: "success" as const,
-      },
-      {
-        label: "Avg Cost",
-        value: `$${recipeStats.averageCost.toFixed(2)}`,
-        icon: TrendingUp,
-        subtitle: "Per recipe",
-        color: "warning" as const,
-      },
-      {
-        label: "Recently Added",
-        value: recipeStats.recentlyAdded,
-        icon: Clock,
-        subtitle: "Last 7 days",
-        color: "info" as const,
-      },
-    ];
-  };
 
   // Print handler
   const handlePrintRecipe = async (recipe: Recipe) => {
@@ -233,25 +135,6 @@ export default function RecipesPage() {
       console.error("Error fetching recipe details:", error);
       toast.error("Failed to load recipe details for printing");
     }
-  };
-
-  // Edit handler
-  const handleEditRecipe = (recipe: Recipe) => {
-    setEditRecipe({
-      recipeName: recipe.name,
-      category: recipe.category,
-      subcategory: recipe.subcategory,
-      selectedRecipe: recipe.name,
-      ingredients: recipe.ingredients
-        ? recipe.ingredients.map((ing) => ({
-            name: ing.name,
-            quantity: String(ing.quantity),
-            unit: ing.unit,
-            costPerUnit: ing.costPerUnit ? String(ing.costPerUnit) : "",
-          }))
-        : [],
-    });
-    setIsEditDialogOpen(true);
   };
 
   // Delete handler
@@ -446,9 +329,9 @@ export default function RecipesPage() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col gap-2 md:gap-4">
       {/* Header Section */}
-      <div className="mb-6 sm:mb-8">
+      <div>
         <PageHeader
           title="Recipe Management"
           subtitle="Create, manage, and organize your kitchen recipes"
@@ -475,7 +358,7 @@ export default function RecipesPage() {
       </div>
 
       {/* Search and Filter Section */}
-      <Card className="mb-6">
+      <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
             <Search className="w-5 h-5 text-primary" />
@@ -581,7 +464,7 @@ export default function RecipesPage() {
       </Card>
 
       {/* Results Summary */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold">Recipes</h3>
           <Badge variant="outline">
@@ -594,7 +477,7 @@ export default function RecipesPage() {
       </div>
 
       {/* Recipes Table */}
-      <div className="space-y-6">
+      <div>
         <RecipesTable
           recipes={filteredRecipes}
           onEdit={(recipe) => {
