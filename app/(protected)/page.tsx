@@ -1,5 +1,6 @@
 "use client";
 
+import { HomePageSkeleton } from "@/components/home/home-skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,23 +10,97 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import { formatTimeAgo } from "@/lib/utils/date";
 import {
   ArrowRight,
-  BarChart3,
   Calendar,
   ChefHat,
   Clock,
   Plus,
   TrendingUp,
-  Users,
+  Users
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+
+interface HomeStats {
+  totalMealsPlanned: number;
+  activeRecipes: number;
+  totalCostToday: number;
+  mealsPlannedChange: number;
+  recipesChange: number;
+  costChange: number;
+}
+
+interface RecentActivity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  time: string;
+  icon: string;
+}
+
+interface QuickActionsData {
+  menusCount: number;
+  recipesCount: number;
+  kitchensCount: number;
+  ingredientsCount: number;
+}
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [homeStats, setHomeStats] = useState<HomeStats | null>(null);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [quickActionsData, setQuickActionsData] =
+    useState<QuickActionsData | null>(null);
+  const [loadingStates, setLoadingStates] = useState({
+    stats: true,
+    activity: true,
+    quickActions: true,
+  });
+
+  const loadHomeData = useCallback(async () => {
+    try {
+      setLoadingStates({
+        stats: true,
+        activity: true,
+        quickActions: true,
+      });
+
+      // Load all data in one API call
+      const response = await fetch("/api/home");
+
+      if (response.ok) {
+        const data = await response.json();
+        setHomeStats(data.stats);
+        setRecentActivity(data.activity);
+        setQuickActionsData(data.quickActions);
+      } else {
+        console.error("Failed to fetch home data");
+        toast.error("Failed to load dashboard data");
+      }
+    } catch (error) {
+      console.error("Error loading home data:", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setLoadingStates({
+        stats: false,
+        activity: false,
+        quickActions: false,
+      });
+    }
+  }, []);
+
+  // Load data when component mounts
+  useEffect(() => {
+    if (status === "authenticated") {
+      loadHomeData();
+    }
+  }, [status, loadHomeData]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -53,6 +128,15 @@ export default function HomePage() {
     return null;
   }
 
+  // Show skeleton while loading data
+  if (
+    loadingStates.stats ||
+    loadingStates.activity ||
+    loadingStates.quickActions
+  ) {
+    return <HomePageSkeleton />;
+  }
+
   const quickActions = [
     {
       title: "Manage Menus",
@@ -61,6 +145,7 @@ export default function HomePage() {
       href: "/menus",
       color: "bg-linear-to-br from-orange-500 to-red-500",
       iconColor: "text-white",
+      count: quickActionsData?.menusCount || 0,
     },
     {
       title: "Recipes",
@@ -69,6 +154,7 @@ export default function HomePage() {
       href: "/recipes",
       color: "bg-linear-to-br from-blue-500 to-purple-500",
       iconColor: "text-white",
+      count: quickActionsData?.recipesCount || 0,
     },
     {
       title: "Kitchens",
@@ -77,37 +163,22 @@ export default function HomePage() {
       href: "/kitchens",
       color: "bg-linear-to-br from-green-500 to-emerald-500",
       iconColor: "text-white",
-    },
-    {
-      title: "Ingredients",
-      description: "Track inventory and costs",
-      icon: BarChart3,
-      href: "/ingredients",
-      color: "bg-linear-to-br from-purple-500 to-pink-500",
-      iconColor: "text-white",
+      count: quickActionsData?.kitchensCount || 0,
     },
   ];
 
-  const recentActivity = [
-    {
-      title: "Menu Updated",
-      description: "Breakfast menu for today was modified",
-      time: "2 hours ago",
-      icon: Clock,
-    },
-    {
-      title: "New Recipe Added",
-      description: "Curry recipe was created",
-      time: "4 hours ago",
-      icon: Plus,
-    },
-    {
-      title: "Cost Report Generated",
-      description: "Weekly cost analysis report ready",
-      time: "1 day ago",
-      icon: TrendingUp,
-    },
-  ];
+  const getIconComponent = (iconName: string) => {
+    switch (iconName) {
+      case "Clock":
+        return Clock;
+      case "Plus":
+        return Plus;
+      case "TrendingUp":
+        return TrendingUp;
+      default:
+        return Clock;
+    }
+  };
 
   return (
     <div className="w-full">
@@ -161,6 +232,11 @@ export default function HomePage() {
                 <CardDescription className="text-sm">
                   {action.description}
                 </CardDescription>
+                {action.count > 0 && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {action.count} items
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -180,9 +256,15 @@ export default function HomePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">24</div>
+              <div className="text-2xl font-bold text-foreground">
+                {homeStats?.totalMealsPlanned || 0}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
-                +12% from yesterday
+                {homeStats?.mealsPlannedChange &&
+                homeStats.mealsPlannedChange >= 0
+                  ? "+"
+                  : ""}
+                {homeStats?.mealsPlannedChange || 0}% from yesterday
               </p>
             </CardContent>
           </Card>
@@ -193,9 +275,14 @@ export default function HomePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">156</div>
+              <div className="text-2xl font-bold text-foreground">
+                {homeStats?.activeRecipes || 0}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
-                +3 new this week
+                {homeStats?.recipesChange && homeStats.recipesChange >= 0
+                  ? "+"
+                  : ""}
+                {homeStats?.recipesChange || 0}% from last week
               </p>
             </CardContent>
           </Card>
@@ -206,9 +293,12 @@ export default function HomePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">₹2,450</div>
+              <div className="text-2xl font-bold text-foreground">
+                ₹{homeStats?.totalCostToday || 0}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
-                -5% from yesterday
+                {homeStats?.costChange && homeStats.costChange >= 0 ? "+" : ""}
+                {homeStats?.costChange || 0}% from yesterday
               </p>
             </CardContent>
           </Card>
@@ -223,29 +313,38 @@ export default function HomePage() {
         <Card>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
-              {recentActivity.map((activity, index) => (
-                <div
-                  key={index}
-                  className="p-4 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <activity.icon className="w-4 h-4 text-primary" />
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => {
+                  const IconComponent = getIconComponent(activity.icon);
+                  return (
+                    <div
+                      key={activity.id}
+                      className="p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <IconComponent className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground">
+                            {activity.title}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {activity.description}
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimeAgo(new Date(activity.time))}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">
-                        {activity.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {activity.description}
-                      </p>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {activity.time}
-                    </span>
-                  </div>
+                  );
+                })
+              ) : (
+                <div className="p-4 text-center text-muted-foreground">
+                  No recent activity
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
