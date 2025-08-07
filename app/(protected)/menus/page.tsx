@@ -2,15 +2,16 @@
 
 import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
 import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation-dialog";
-import { MenuGrid } from "@/components/menu/menu-grid";
+import { MenuGrid, MenuGridSkeleton } from "@/components/menu/menu-grid";
 import { Button } from "@/components/ui/button";
 import { CompactDateSelector } from "@/components/ui/compact-date-selector";
 import {
   EnhancedStatsGrid,
+  EnhancedStatsGridSkeleton,
   createMenuStats,
 } from "@/components/ui/enhanced-stats-grid";
 import { PageHeader } from "@/components/ui/page-header";
-import { TabNavigation } from "@/components/ui/tab-navigation";
+import { TabNavigation, TabNavigationSkeleton } from "@/components/ui/tab-navigation";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
@@ -34,7 +35,7 @@ export default function MenuPage() {
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportsDialog, setReportsDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>(
-    MealType.BREAKFAST,
+    MealType.BREAKFAST
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -66,7 +67,7 @@ export default function MenuPage() {
       }
 
       console.log(
-        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`,
+        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`
       );
 
       // Fetch menus and stats
@@ -80,7 +81,7 @@ export default function MenuPage() {
 
       console.log(
         `Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`,
-        menusResponse,
+        menusResponse
       );
 
       // Transform menus data to match the expected format
@@ -179,19 +180,6 @@ export default function MenuPage() {
     return null;
   }
 
-  if (loading) {
-    return (
-      <div className="w-full">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading dashboard...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full flex flex-col gap-2 md:gap-4">
       {/* Header Section */}
@@ -227,23 +215,35 @@ export default function MenuPage() {
         />
       </div>
 
-      {/* Stats Section */}
-      <EnhancedStatsGrid stats={getStatsForTab()} />
+      {loading ? (
+        <TabNavigationSkeleton tabCount={kitchens.length || 3} />
+      ) : (
+        <TabNavigation
+          tabs={kitchens.map((k) => k.name)}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+      )}
 
-      <TabNavigation
-        tabs={kitchens.map((k) => k.name)}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
+      {/* Stats Section */}
+      {loading ? (
+        <EnhancedStatsGridSkeleton />
+      ) : (
+        <EnhancedStatsGrid stats={getStatsForTab()} />
+      )}
 
       {/* Menu Section */}
-      <MenuGrid
-        onAddMeal={handleAddMeal}
-        onEditMeal={handleEditMeal}
-        onDeleteMeal={handleDeleteMeal}
-        dailyMenus={dailyMenus}
-        selectedDate={selectedDate}
-      />
+      {loading ? (
+        <MenuGridSkeleton />
+      ) : (
+        <MenuGrid
+          onAddMeal={handleAddMeal}
+          onEditMeal={handleEditMeal}
+          onDeleteMeal={handleDeleteMeal}
+          dailyMenus={dailyMenus}
+          selectedDate={selectedDate}
+        />
+      )}
 
       {/* Dialogs */}
       <AddMealDialog

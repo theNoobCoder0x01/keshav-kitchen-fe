@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Skeleton } from "../ui/skeleton";
 
 interface MenuItem {
   id: string;
@@ -168,6 +169,34 @@ export function MenuCard({
                   )}
                 </>
               )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Skeleton loader for MenuCard
+export function MenuCardSkeleton({ itemCount = 3, className = "" }: { itemCount?: number; className?: string }) {
+  return (
+    <Card className={cn("bg-card/100 backdrop-blur-xs border-border/50", className)}>
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div>
+            <Skeleton className="h-6 w-24 mb-2 rounded" />
+            <Skeleton className="h-4 w-16 rounded" />
+          </div>
+          <Skeleton className="h-8 w-20 rounded" />
+        </div>
+        <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
+          {Array.from({ length: itemCount }).map((_, idx) => (
+            <div key={idx} className="flex items-center p-3 rounded-xl">
+              <div className="flex-1 min-w-0">
+                <Skeleton className="h-5 w-32 mb-1 rounded" />
+                <Skeleton className="h-3 w-20 rounded" />
+              </div>
+              <Skeleton className="h-8 w-8 ml-2 rounded" />
             </div>
           ))}
         </div>
