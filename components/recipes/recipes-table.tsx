@@ -1,18 +1,19 @@
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { ChevronDown, ChevronUp, Edit, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -262,6 +263,74 @@ export function RecipesTable({
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Skeleton loader for RecipesTable
+export function RecipesTableSkeleton({ rowCount = 5 }: { rowCount?: number }) {
+  return (
+    <div className="bg-card rounded-lg border shadow-xs">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-foreground font-semibold py-4 px-6">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-4 w-16 rounded" />
+                <Skeleton className="h-4 w-4 rounded" />
+              </div>
+            </TableHead>
+            <TableHead className="text-foreground font-semibold py-4 px-6">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-4 w-20 rounded" />
+                <Skeleton className="h-4 w-4 rounded" />
+              </div>
+            </TableHead>
+            <TableHead className="text-foreground font-semibold py-4 px-6">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-4 w-4 rounded" />
+              </div>
+            </TableHead>
+            <TableHead className="text-foreground font-semibold py-4 px-6">
+              <Skeleton className="h-4 w-20 rounded" />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: rowCount }).map((_, idx) => (
+            <TableRow key={idx}>
+              <TableCell className="py-4 px-6">
+                <Skeleton className="h-5 w-32 rounded" />
+              </TableCell>
+              <TableCell className="py-4 px-6">
+                <Skeleton className="h-4 w-24 rounded" />
+              </TableCell>
+              <TableCell className="py-4 px-6">
+                <Skeleton className="h-4 w-20 rounded" />
+              </TableCell>
+              <TableCell className="py-4 px-6">
+                <div className="flex items-center space-x-2">
+                  <Skeleton className="h-8 w-8 rounded" />
+                  <Skeleton className="h-8 w-8 rounded" />
+                  <Skeleton className="h-8 w-8 rounded" />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t">
+        <Skeleton className="h-4 w-48 rounded" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-20 rounded" />
+          <Skeleton className="h-8 w-8 rounded" />
+          <Skeleton className="h-8 w-8 rounded" />
+          <Skeleton className="h-8 w-8 rounded" />
+          <Skeleton className="h-8 w-20 rounded" />
+          <Skeleton className="h-8 w-20 rounded" />
         </div>
       </div>
     </div>

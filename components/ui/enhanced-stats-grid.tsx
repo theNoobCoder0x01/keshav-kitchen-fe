@@ -76,7 +76,7 @@ export function EnhancedStatsGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4",
+        "grid grid-cols-12 gap-2 md:gap-4",
         className,
       )}
     >
@@ -88,44 +88,44 @@ export function EnhancedStatsGrid({
             key={index}
             className={cn(
               "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
+              "col-span-12 sm:col-span-6 md:col-span-3",
               colors.border,
             )}
           >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
+            <CardContent className="p-3 md:p-3.5">
+              <div className="flex items-center gap-2 mb-2">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center",
+                    "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
                     colors.bg,
                   )}
                 >
                   <stat.icon className={cn("w-5 h-5", colors.icon)} />
                 </div>
+                <p className="text-xl md:text-2xl font-bold text-foreground leading-tight">
+                  {stat.value}
+                </p>
                 {stat.trend && (
                   <Badge
                     variant="secondary"
                     className={cn(
-                      "text-xs px-2 py-1",
+                      "text-xs px-2 py-1 flex items-center gap-1 ml-1",
                       stat.trend.isPositive
                         ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                         : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
                     )}
                   >
                     {getTrendIcon(stat.trend)}
-                    <span className="ml-1">{Math.abs(stat.trend.value)}%</span>
+                    <span>{Math.abs(stat.trend.value)}%</span>
                   </Badge>
                 )}
               </div>
-
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-foreground">
-                  {stat.value}
-                </p>
-                <p className="text-sm font-medium text-foreground">
+              <div>
+                <p className="text-sm font-medium text-foreground leading-tight">
                   {stat.label}
                 </p>
                 {stat.subtitle && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground leading-tight">
                     {stat.subtitle}
                   </p>
                 )}
@@ -141,17 +141,17 @@ export function EnhancedStatsGrid({
 // Skeleton loader for EnhancedStatsGrid
 export function EnhancedStatsGridSkeleton({ cardCount = 4, className = "" }: { cardCount?: number; className?: string }) {
   return (
-    <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4", className)}>
+    <div className={cn("grid grid-cols-12 gap-2 md:gap-4", className)}>
       {Array.from({ length: cardCount }).map((_, idx) => (
-        <Card key={idx} className="bg-card/80 backdrop-blur-xs border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <Skeleton className="w-10 h-10 rounded-lg" />
-              <Skeleton className="w-12 h-6 rounded-md" />
+        <Card key={idx} className={cn("bg-card/80 backdrop-blur-xs border-border/50 col-span-12 sm:col-span-6 md:col-span-3")}> 
+          <CardContent className="p-3 md:p-3.5">
+            <div className="flex items-center gap-2 mb-2">
+              <Skeleton className="w-9 h-9 rounded-lg" />
+              <Skeleton className="h-6 w-16 md:w-20 rounded" />
+              <Skeleton className="h-6 w-10 rounded ml-1" />
             </div>
-            <div className="space-y-1">
-              <Skeleton className="h-7 w-20 rounded" />
-              <Skeleton className="h-4 w-24 rounded" />
+            <div>
+              <Skeleton className="h-4 w-20 mb-1 rounded" />
               <Skeleton className="h-3 w-16 rounded" />
             </div>
           </CardContent>
