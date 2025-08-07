@@ -1,7 +1,7 @@
 "use client";
 
 import { AddEditKitchenDialog } from "@/components/dialogs/add-edit-kitchen-dialog";
-import { KitchensTable } from "@/components/kitchens/kitchens-table";
+import { KitchensTable, KitchensTableSkeleton } from "@/components/kitchens/kitchens-table";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -67,7 +67,7 @@ export default function KitchensPage() {
   const handleDelete = async (id: string) => {
     if (
       window.confirm(
-        "Are you sure you want to delete this kitchen? This action cannot be undone.",
+        "Are you sure you want to delete this kitchen? This action cannot be undone."
       )
     ) {
       setDeletingId(id);
@@ -84,7 +84,7 @@ export default function KitchensPage() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col gap-2 md:gap-4">
       <PageHeader
         title="Kitchens Management"
         subtitle="Manage your kitchen locations and settings"
@@ -100,7 +100,7 @@ export default function KitchensPage() {
         }
       />
 
-      <div className="max-w-6xl mx-auto">
+      <div>
         <AddEditKitchenDialog
           open={dialogOpen}
           onOpenChange={(open) => {
@@ -112,9 +112,7 @@ export default function KitchensPage() {
         />
 
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-muted-foreground">Loading kitchens...</div>
-          </div>
+          <KitchensTableSkeleton />
         ) : error ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-destructive">{error}</div>

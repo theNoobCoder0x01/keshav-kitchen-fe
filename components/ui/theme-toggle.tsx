@@ -23,7 +23,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="sm" className="p-2">
+      <Button variant="ghost" size="default" className="p-2">
         <Sun className="w-5 h-5" />
       </Button>
     );

@@ -1,11 +1,10 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Bell, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useState } from "react";
 
 export function Header() {
@@ -34,45 +33,16 @@ export function Header() {
                 K
               </span>
             </div>
-            <div className="hidden sm:flex items-center space-x-1">
-              <h1 className="text-xl sm:text-2xl font-bold bg-linear-to-r from-[#e26b2b] to-[#ff8c42] bg-clip-text text-transparent">
-                KESHAV
-              </h1>
-              <span className="text-base sm:text-lg font-medium text-[#e26b2b] italic">
-                Kitchen
-              </span>
+            <div className="hidden sm:flex items-center space-x-1 h-15">
+              <img src="logo.svg" alt="Keshav Kitchen" className="h-full" />
             </div>
           </div>
         </div>
 
         {/* Right Side Actions */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Mobile Search Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="md:hidden p-2 hover:bg-muted"
-            onClick={() => setSearchOpen(!searchOpen)}
-          >
-            <Search className="w-5 h-5 text-foreground" />
-          </Button>
-
+        <div className="flex items-center gap-2 md:gap-4">
           {/* Theme Toggle */}
           <ThemeToggle />
-
-          {/* Notifications */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 hover:bg-muted transition-colors"
-            >
-              <Bell className="w-5 h-5 text-foreground hover:text-primary transition-colors" />
-            </Button>
-            <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 bg-linear-to-r from-[#ea5455] to-[#ff6b6b] text-white text-xs flex items-center justify-center animate-pulse">
-              3
-            </Badge>
-          </div>
 
           {/* User Profile */}
           <ProfileDropdown />
