@@ -48,16 +48,13 @@ export function DateSelector({
         });
 
         const response = await fetch(`/api/calendar/tithi?${params}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setCurrentEventInfo({
-              tithi: data.tithi,
-              eventSummary: data.eventSummary,
-            });
-          } else {
-            setCurrentEventInfo({});
-          }
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          setCurrentEventInfo({
+            tithi: data.data.tithi,
+            eventSummary: data.data.eventSummary,
+          });
         } else {
           setCurrentEventInfo({});
         }
