@@ -57,13 +57,13 @@ export const RecipeDetailView = forwardRef<
       {/* Header Section */}
       <div className="text-center space-y-4">
         <h1
-          className={`${isPrintMode ? "text-3xl" : "text-4xl"} font-bold text-gray-900`}
+          className={`${isPrintMode ? "text-3xl" : "text-4xl"} font-bold text-foreground`}
         >
           {recipe.name}
         </h1>
 
         {recipe.description && (
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {recipe.description}
           </p>
         )}
@@ -88,30 +88,30 @@ export const RecipeDetailView = forwardRef<
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {recipe.servings && (
               <div className="text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2">
-                  <Users className="w-6 h-6 text-blue-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full mx-auto mb-2">
+                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <p className="text-sm text-gray-500">Servings</p>
-                <p className="text-xl font-semibold">{recipe.servings}</p>
+                <p className="text-sm text-muted-foreground">Servings</p>
+                <p className="text-xl font-semibold text-foreground">{recipe.servings}</p>
               </div>
             )}
 
             {totalTime > 0 && (
               <div className="text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-2">
-                  <Clock className="w-6 h-6 text-green-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full mx-auto mb-2">
+                  <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-                <p className="text-sm text-gray-500">Total Time</p>
-                <p className="text-xl font-semibold">{totalTime} min</p>
+                <p className="text-sm text-muted-foreground">Total Time</p>
+                <p className="text-xl font-semibold text-foreground">{totalTime} min</p>
               </div>
             )}
 
             <div className="text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mx-auto mb-2">
-                <DollarSign className="w-6 h-6 text-purple-600" />
+              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full mx-auto mb-2">
+                <DollarSign className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-sm text-gray-500">Cost per Serving</p>
-              <p className="text-xl font-semibold">
+              <p className="text-sm text-muted-foreground">Cost per Serving</p>
+              <p className="text-xl font-semibold text-foreground">
                 ₹
                 {recipe.servings
                   ? (totalCost / recipe.servings).toFixed(2)
@@ -120,11 +120,11 @@ export const RecipeDetailView = forwardRef<
             </div>
 
             <div className="text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-orange-100 rounded-full mx-auto mb-2">
-                <ChefHat className="w-6 h-6 text-orange-600" />
+              <div className="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full mx-auto mb-2">
+                <ChefHat className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <p className="text-sm text-gray-500">Total Cost</p>
-              <p className="text-xl font-semibold">₹{totalCost.toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">Total Cost</p>
+              <p className="text-xl font-semibold text-foreground">₹{totalCost.toFixed(2)}</p>
             </div>
           </div>
         </CardContent>
@@ -143,16 +143,16 @@ export const RecipeDetailView = forwardRef<
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {recipe.prepTime && (
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Prep Time</p>
-                  <p className="text-lg font-medium">
+                  <p className="text-sm text-muted-foreground mb-1">Prep Time</p>
+                  <p className="text-lg font-medium text-foreground">
                     {recipe.prepTime} minutes
                   </p>
                 </div>
               )}
               {recipe.cookTime && (
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Cook Time</p>
-                  <p className="text-lg font-medium">
+                  <p className="text-sm text-muted-foreground mb-1">Cook Time</p>
+                  <p className="text-lg font-medium text-foreground">
                     {recipe.cookTime} minutes
                   </p>
                 </div>
@@ -175,19 +175,19 @@ export const RecipeDetailView = forwardRef<
             {recipe.ingredients.map((ingredient, index) => (
               <div
                 key={ingredient.id || index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
               >
                 <div className="flex-1">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-foreground">
                     {ingredient.name}
                   </span>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-foreground">
                     {ingredient.quantity} {ingredient.unit}
                   </div>
                   {ingredient.costPerUnit && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       {ingredient.costPerUnit.toFixed(2)} per {ingredient.unit}
                       {ingredient.quantity > 1 && (
                         <span className="ml-1">
@@ -208,8 +208,8 @@ export const RecipeDetailView = forwardRef<
           {/* Ingredients Summary */}
           <Separator className="my-4" />
           <div className="flex justify-between items-center text-lg font-semibold">
-            <span>Total Ingredients Cost:</span>
-            <span className="text-green-600">₹{totalCost.toFixed(2)}</span>
+            <span className="text-foreground">Total Ingredients Cost:</span>
+            <span className="text-green-600 dark:text-green-400">₹{totalCost.toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
@@ -228,10 +228,10 @@ export const RecipeDetailView = forwardRef<
 
                 return (
                   <div key={index} className="flex gap-4 mb-4">
-                    <div className="shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                    <div className="shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
                       {index + 1}
                     </div>
-                    <p className="text-gray-700 leading-relaxed pt-1">
+                    <p className="text-foreground leading-relaxed pt-1">
                       {trimmedInstruction}
                     </p>
                   </div>
@@ -246,7 +246,7 @@ export const RecipeDetailView = forwardRef<
       {!isPrintMode && (recipe.createdAt || recipe.updatedAt) && (
         <Card>
           <CardContent className="pt-6">
-            <div className="text-sm text-gray-500 space-y-1">
+            <div className="text-sm text-muted-foreground space-y-1">
               {recipe.createdAt && (
                 <p>
                   Created: {new Date(recipe.createdAt).toLocaleDateString()}
@@ -265,7 +265,7 @@ export const RecipeDetailView = forwardRef<
 
       {/* Print Footer */}
       {isPrintMode && (
-        <div className="mt-8 pt-6 border-t border-gray-300 text-center text-sm text-gray-500">
+        <div className="mt-8 pt-6 border-t border-border text-center text-sm text-muted-foreground">
           <p>Recipe printed from Keshav Kitchen Management System</p>
           <p>Generated on {new Date().toLocaleDateString()}</p>
         </div>
