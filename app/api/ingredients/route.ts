@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { ERR } from "@/lib/api/errors";
 import { apiHandler } from "@/lib/api/handler";
 import { respondError } from "@/lib/api/response";
-import { ERR } from "@/lib/api/errors";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 
 const IngredientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -18,15 +18,17 @@ export const GET = apiHandler({
   method: "GET",
   async handle({ ctx }) {
     const id = ctx.searchParams.get("id");
-    
+
     if (id) {
       const ingredient = await prisma.ingredient.findUnique({ where: { id } });
       if (!ingredient) {
-        throw respondError("Ingredient not found", 404, { code: ERR.NOT_FOUND });
+        throw respondError("Ingredient not found", 404, {
+          code: ERR.NOT_FOUND,
+        });
       }
       return { ingredient };
     }
-    
+
     const ingredients = await prisma.ingredient.findMany({
       orderBy: { name: "asc" },
     });
@@ -51,16 +53,22 @@ export const PUT = apiHandler({
   async handle({ body, ctx }) {
     const id = ctx.searchParams.get("id");
     if (!id) {
-      throw respondError("Ingredient ID is required", 400, { code: ERR.VALIDATION });
+      throw respondError("Ingredient ID is required", 400, {
+        code: ERR.VALIDATION,
+      });
     }
-    
-    const ingredient = await prisma.ingredient.update({ 
-      where: { id }, 
-      data: body 
-    }).catch(() => {
-      throw respondError("Ingredient not found", 404, { code: ERR.NOT_FOUND });
-    });
-    
+
+    const ingredient = await prisma.ingredient
+      .update({
+        where: { id },
+        data: body,
+      })
+      .catch(() => {
+        throw respondError("Ingredient not found", 404, {
+          code: ERR.NOT_FOUND,
+        });
+      });
+
     return { ingredient };
   },
 });
@@ -71,13 +79,15 @@ export const DELETE = apiHandler({
   async handle({ ctx }) {
     const id = ctx.searchParams.get("id");
     if (!id) {
-      throw respondError("Ingredient ID is required", 400, { code: ERR.VALIDATION });
+      throw respondError("Ingredient ID is required", 400, {
+        code: ERR.VALIDATION,
+      });
     }
-    
+
     await prisma.ingredient.delete({ where: { id } }).catch(() => {
       throw respondError("Ingredient not found", 404, { code: ERR.NOT_FOUND });
     });
-    
+
     return { message: "Ingredient deleted successfully" };
   },
 });

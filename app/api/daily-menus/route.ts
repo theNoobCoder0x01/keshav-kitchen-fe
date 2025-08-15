@@ -1,12 +1,14 @@
-import { z } from "zod";
+import { ERR } from "@/lib/api/errors";
 import { apiHandler } from "@/lib/api/handler";
 import { respondError } from "@/lib/api/response";
-import { ERR } from "@/lib/api/errors";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 
 const DailyMenuSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  date: z.string().refine((date) => !isNaN(Date.parse(date)), "Invalid date format"),
+  date: z
+    .string()
+    .refine((date) => !isNaN(Date.parse(date)), "Invalid date format"),
   mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
   recipes: z.array(z.string()).optional(),
   notes: z.string().optional(),
@@ -17,15 +19,17 @@ export const GET = apiHandler({
   method: "GET",
   async handle({ ctx }) {
     const id = ctx.searchParams.get("id");
-    
+
     if (id) {
       const dailyMenu = await prisma.dailyMenu.findUnique({ where: { id } });
       if (!dailyMenu) {
-        throw respondError("Daily menu not found", 404, { code: ERR.NOT_FOUND });
+        throw respondError("Daily menu not found", 404, {
+          code: ERR.NOT_FOUND,
+        });
       }
       return { dailyMenu };
     }
-    
+
     const dailyMenus = await prisma.dailyMenu.findMany({
       orderBy: { date: "desc" },
     });
@@ -38,11 +42,11 @@ export const POST = apiHandler({
   method: "POST",
   bodySchema: DailyMenuSchema,
   async handle({ body }) {
-    const dailyMenu = await prisma.dailyMenu.create({ 
+    const dailyMenu = await prisma.dailyMenu.create({
       data: {
         ...body,
         date: new Date(body.date),
-      }
+      },
     });
     return { dailyMenu };
   },
@@ -55,7 +59,9 @@ export const PUT = apiHandler({
   async handle({ body, ctx }) {
     const id = ctx.searchParams.get("id");
     if (!id) {
-      throw respondError("Daily menu ID is required", 400, { code: ERR.VALIDATION });
+      throw respondError("Daily menu ID is required", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     const updateData = { ...body };
@@ -63,13 +69,17 @@ export const PUT = apiHandler({
       updateData.date = new Date(body.date);
     }
 
-    const dailyMenu = await prisma.dailyMenu.update({ 
-      where: { id }, 
-      data: updateData 
-    }).catch(() => {
-      throw respondError("Daily menu not found", 404, { code: ERR.NOT_FOUND });
-    });
-    
+    const dailyMenu = await prisma.dailyMenu
+      .update({
+        where: { id },
+        data: updateData,
+      })
+      .catch(() => {
+        throw respondError("Daily menu not found", 404, {
+          code: ERR.NOT_FOUND,
+        });
+      });
+
     return { dailyMenu };
   },
 });
@@ -80,13 +90,15 @@ export const DELETE = apiHandler({
   async handle({ ctx }) {
     const id = ctx.searchParams.get("id");
     if (!id) {
-      throw respondError("Daily menu ID is required", 400, { code: ERR.VALIDATION });
+      throw respondError("Daily menu ID is required", 400, {
+        code: ERR.VALIDATION,
+      });
     }
-    
+
     await prisma.dailyMenu.delete({ where: { id } }).catch(() => {
       throw respondError("Daily menu not found", 404, { code: ERR.NOT_FOUND });
     });
-    
+
     return { message: "Daily menu deleted successfully" };
   },
 });

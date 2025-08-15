@@ -1,7 +1,6 @@
-import { z } from "zod";
+import { ERR } from "@/lib/api/errors";
 import { apiHandler } from "@/lib/api/handler";
 import { respondError } from "@/lib/api/response";
-import { ERR } from "@/lib/api/errors";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parseICSFileForImport } from "@/lib/utils/ics-parser";
@@ -25,12 +24,16 @@ export const POST = apiHandler({
 
     // Validate file type
     if (!file.name.toLowerCase().endsWith(".ics")) {
-      throw respondError("Invalid file type. Please upload an ICS file.", 400, { code: ERR.VALIDATION });
+      throw respondError("Invalid file type. Please upload an ICS file.", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     // Validate file size (max 1MB)
     if (file.size > 1024 * 1024) {
-      throw respondError("File size must be less than 1MB", 400, { code: ERR.VALIDATION });
+      throw respondError("File size must be less than 1MB", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     // Read file content
@@ -41,7 +44,9 @@ export const POST = apiHandler({
       !content.includes("BEGIN:VCALENDAR") ||
       !content.includes("END:VCALENDAR")
     ) {
-      throw respondError("Invalid ICS file format", 400, { code: ERR.VALIDATION });
+      throw respondError("Invalid ICS file format", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     // Get user and kitchen info
@@ -56,14 +61,18 @@ export const POST = apiHandler({
 
     const kitchenId = user.kitchenId;
     if (!kitchenId) {
-      throw respondError("User not associated with any kitchen", 400, { code: ERR.VALIDATION });
+      throw respondError("User not associated with any kitchen", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     // Parse ICS file - get ALL events
     const parsedData = parseICSFileForImport(content);
 
     if (parsedData.events.length === 0) {
-      throw respondError("No valid events found in the ICS file", 400, { code: ERR.VALIDATION });
+      throw respondError("No valid events found in the ICS file", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     // Clear existing calendar events for this kitchen

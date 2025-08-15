@@ -1,7 +1,6 @@
-import { z } from "zod";
+import { ERR } from "@/lib/api/errors";
 import { apiHandler } from "@/lib/api/handler";
 import { respondError } from "@/lib/api/response";
-import { ERR } from "@/lib/api/errors";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -21,7 +20,9 @@ export const GET = apiHandler({
     const kitchenId = ctx.searchParams.get("kitchenId");
 
     if (!date) {
-      throw respondError("Date parameter is required", 400, { code: ERR.VALIDATION });
+      throw respondError("Date parameter is required", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     // Get user info
