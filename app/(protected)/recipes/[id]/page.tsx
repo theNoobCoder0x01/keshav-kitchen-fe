@@ -85,8 +85,8 @@ export default function RecipeDetailPage() {
       <div className="w-full">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#674af5] mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading recipe...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading recipe...</p>
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function RecipeDetailPage() {
       <div className="w-full">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <p className="text-gray-600 mb-4">Recipe not found</p>
+            <p className="text-muted-foreground mb-4">Recipe not found</p>
             <Button onClick={handleBack} variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Recipes
@@ -125,7 +125,7 @@ export default function RecipeDetailPage() {
         <div className="flex items-center gap-3">
           <Button
             onClick={handlePrint}
-            className="bg-linear-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white flex items-center gap-2"
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground flex items-center gap-2"
           >
             <Printer className="w-4 h-4" />
             Print Recipe
@@ -134,7 +134,7 @@ export default function RecipeDetailPage() {
       </div>
 
       {/* Recipe Detail View */}
-      <div className="bg-white rounded-lg shadow-xs border">
+      <div className="bg-card rounded-lg shadow-sm border border-border">
         <RecipeDetailView recipe={recipe} />
       </div>
 
