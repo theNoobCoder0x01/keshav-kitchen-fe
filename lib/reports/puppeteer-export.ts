@@ -72,7 +72,7 @@ function generateRecipeHTML(recipe: any): string {
   const totalCost = recipe.ingredients.reduce(
     (sum: number, ingredient: any) =>
       sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0,
+    0
   );
 
   return `
@@ -316,7 +316,7 @@ function generateRecipeHTML(recipe: any): string {
                     }
                   </td>
                 </tr>
-              `,
+              `
                 )
                 .join("")}
               <tr class="pdf-total-cost-row">
@@ -339,15 +339,20 @@ function generateRecipeHTML(recipe: any): string {
             <h2 class="pdf-section-title">Instructions</h2>
             <ol class="pdf-instructions-list">
               ${(() => {
-                  try {
-                    const { extractStepsFromInstructions } = require("@/lib/utils/rich-text");
-                    return extractStepsFromInstructions(recipe.instructions)
-                      .map((step: string) => `<li class="pdf-instruction-item">${encodeTextForPDF(step)}</li>`)
-                      .join("");
-                  } catch {
-                    return "";
-                  }
-                })()}
+                try {
+                  const {
+                    extractStepsFromInstructions,
+                  } = require("@/lib/utils/rich-text");
+                  return extractStepsFromInstructions(recipe.instructions)
+                    .map(
+                      (step: string) =>
+                        `<li class="pdf-instruction-item">${encodeTextForPDF(step)}</li>`
+                    )
+                    .join("");
+                } catch {
+                  return "";
+                }
+              })()}
             </ol>
           </div>
         `
@@ -371,8 +376,8 @@ export async function createReportPDFWithPuppeteer(
   data: ReportData,
   type: string,
   date: string,
-  attachRecipePrints: boolean = false,
-): Promise<Buffer> {
+  attachRecipePrints: boolean = false
+): Promise<Uint8Array> {
   console.log("Creating PDF with Puppeteer for type:", type, "date:", date);
 
   let browser;
@@ -384,25 +389,25 @@ export async function createReportPDFWithPuppeteer(
     let recipeHTMLPages: string[] = [];
     if (attachRecipePrints && data.menus && data.menus.length > 0) {
       console.log(
-        `Recipe attachment requested. Processing ${data.menus.length} menus...`,
+        `Recipe attachment requested. Processing ${data.menus.length} menus...`
       );
       console.log(
         "Sample menu structure:",
-        JSON.stringify(data.menus[0], null, 2),
+        JSON.stringify(data.menus[0], null, 2)
       );
 
       const uniqueRecipes = extractUniqueRecipes(data.menus);
       console.log(
-        `Extracted ${uniqueRecipes.length} unique recipes for attachment`,
+        `Extracted ${uniqueRecipes.length} unique recipes for attachment`
       );
 
       if (uniqueRecipes.length > 0) {
         console.log(
           "Sample recipe:",
-          JSON.stringify(uniqueRecipes[0], null, 2),
+          JSON.stringify(uniqueRecipes[0], null, 2)
         );
         recipeHTMLPages = uniqueRecipes.map((recipe) =>
-          generateRecipeHTML(recipe),
+          generateRecipeHTML(recipe)
         );
         console.log(`Generated ${recipeHTMLPages.length} recipe HTML pages`);
       }
@@ -445,7 +450,7 @@ export async function createReportPDFWithPuppeteer(
     }
 
     // Generate recipe PDFs and combine them
-    const recipePDFs: Buffer[] = [];
+    const recipePDFs: Uint8Array[] = [];
 
     for (let i = 0; i < recipeHTMLPages.length; i++) {
       console.log(`Generating recipe PDF ${i + 1}/${recipeHTMLPages.length}`);
@@ -475,19 +480,19 @@ export async function createReportPDFWithPuppeteer(
     const mainPdfDoc = await PDFDocument.load(mainPDF);
     const mainPages = await mergedPdf.copyPages(
       mainPdfDoc,
-      mainPdfDoc.getPageIndices(),
+      mainPdfDoc.getPageIndices()
     );
     mainPages.forEach((page) => mergedPdf.addPage(page));
 
     // Add recipe pages
     for (let i = 0; i < recipePDFs.length; i++) {
       console.log(
-        `Adding recipe PDF ${i + 1}/${recipePDFs.length} to merged document`,
+        `Adding recipe PDF ${i + 1}/${recipePDFs.length} to merged document`
       );
       const recipePdfDoc = await PDFDocument.load(recipePDFs[i]);
       const recipePages = await mergedPdf.copyPages(
         recipePdfDoc,
-        recipePdfDoc.getPageIndices(),
+        recipePdfDoc.getPageIndices()
       );
       recipePages.forEach((page) => mergedPdf.addPage(page));
     }
@@ -495,7 +500,7 @@ export async function createReportPDFWithPuppeteer(
     const mergedPdfBytes = await mergedPdf.save();
     console.log(
       `PDF generated successfully with ${recipePDFs.length} recipe attachments, total size:`,
-      mergedPdfBytes.length,
+      mergedPdfBytes.length
     );
 
     return Buffer.from(mergedPdfBytes);
