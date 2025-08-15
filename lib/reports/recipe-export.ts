@@ -76,10 +76,9 @@ export function createRecipeExcelWorksheet(
   // Instructions section
   if (recipe.instructions) {
     data.push(["INSTRUCTIONS"]);
-    const instructions = recipe.instructions
-      .split("\n")
-      .filter((line) => line.trim());
-    instructions.forEach((instruction, index) => {
+    const { extractStepsFromInstructions } = require("@/lib/utils/rich-text");
+    const steps = extractStepsFromInstructions(recipe.instructions);
+    steps.forEach((instruction: string, index: number) => {
       data.push([`Step ${index + 1}`, instruction.trim()]);
     });
     data.push([]); // Empty row
@@ -230,10 +229,9 @@ export function createRecipeCSV(recipe: RecipeExportData): string {
   // Instructions
   if (recipe.instructions) {
     lines.push("INSTRUCTIONS");
-    const instructions = recipe.instructions
-      .split("\n")
-      .filter((line) => line.trim());
-    instructions.forEach((instruction, index) => {
+    const { extractStepsFromInstructions } = require("@/lib/utils/rich-text");
+    const steps = extractStepsFromInstructions(recipe.instructions);
+    steps.forEach((instruction: string, index: number) => {
       lines.push(`Step ${index + 1},"${encodeTextForPDF(instruction.trim())}"`);
     });
     lines.push(""); // Empty line

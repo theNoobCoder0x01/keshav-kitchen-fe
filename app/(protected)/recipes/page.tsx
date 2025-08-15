@@ -32,6 +32,7 @@ export default function RecipesPage() {
     category: string;
     subcategory: string;
     cost: number;
+    instructions?: string | null;
     ingredients?: Array<{
       name: string;
       quantity: number | string;
@@ -61,6 +62,7 @@ export default function RecipesPage() {
       unit: string;
       costPerUnit: string;
     }>;
+    instructions?: string | null;
   } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -222,19 +224,20 @@ export default function RecipesPage() {
         });
         return;
       }
-      const payload = {
-        name: data.name,
-        category: data.category,
-        subcategory: data.subcategory,
-        ingredients: parsedIngredients,
-        user: { connect: { id: userId } },
-      };
+             const payload = {
+         name: data.name,
+         category: data.category,
+         subcategory: data.subcategory,
+         ingredients: parsedIngredients,
+         instructions: data.instructions ?? null,
+         user: { connect: { id: userId } },
+       };
       let result;
       try {
-        if (editRecipe) {
-          const { updateRecipe } = await import("@/lib/actions/recipes");
-          result = await updateRecipe(editRecipe.selectedRecipe, payload);
-        } else {
+                 if (editRecipe) {
+           const { updateRecipe } = await import("@/lib/actions/recipes");
+           result = await updateRecipe(editRecipe.selectedRecipe, { ...payload, instructions: data.instructions ?? null });
+         } else {
           const { createRecipe } = await import("@/lib/actions/recipes");
           result = await createRecipe(payload);
         }
@@ -244,22 +247,23 @@ export default function RecipesPage() {
           toast.success("Recipe updated!");
         } else {
           // Transform the result to match the local Recipe interface
-          const transformedRecipe: Recipe = {
-            id: result.id,
-            name: result.name,
-            category: result.category,
-            subcategory: result.subcategory || "",
-            cost: 0, // Calculate cost from ingredients if needed
-            ingredients:
-              result.ingredients?.map((ing: any) => ({
-                name: ing.name,
-                quantity: ing.quantity,
-                unit: ing.unit,
-                costPerUnit: ing.costPerUnit,
-              })) || [],
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
-          };
+                     const transformedRecipe: Recipe = {
+             id: result.id,
+             name: result.name,
+             category: result.category,
+             subcategory: result.subcategory || "",
+             cost: 0,
+             instructions: result.instructions ?? null,
+             ingredients:
+               result.ingredients?.map((ing: any) => ({
+                 name: ing.name,
+                 quantity: ing.quantity,
+                 unit: ing.unit,
+                 costPerUnit: ing.costPerUnit,
+               })) || [],
+             createdAt: result.createdAt,
+             updatedAt: result.updatedAt,
+           };
           setRecipes((prev: Recipe[]) => [transformedRecipe, ...prev]);
           toast.success("Recipe added!");
         }
@@ -282,22 +286,23 @@ export default function RecipesPage() {
         import("@/lib/api/recipes").then((m) => m.fetchRecipes()),
       ]);
       // Transform the API recipes to match local Recipe interface
-      const transformedRecipes: Recipe[] = recipesRes.map((recipe: any) => ({
-        id: recipe.id,
-        name: recipe.name,
-        category: recipe.category,
-        subcategory: recipe.subcategory || "",
-        cost: 0, // Calculate from ingredients if needed
-        ingredients:
-          recipe.ingredients?.map((ing: any) => ({
-            name: ing.name,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            costPerUnit: ing.costPerUnit,
-          })) || [],
-        createdAt: new Date(recipe.createdAt || Date.now()),
-        updatedAt: new Date(recipe.updatedAt || Date.now()),
-      }));
+             const transformedRecipes: Recipe[] = recipesRes.map((recipe: any) => ({
+         id: recipe.id,
+         name: recipe.name,
+         category: recipe.category,
+         subcategory: recipe.subcategory || "",
+         cost: 0,
+         instructions: recipe.instructions ?? null,
+         ingredients:
+           recipe.ingredients?.map((ing: any) => ({
+             name: ing.name,
+             quantity: ing.quantity,
+             unit: ing.unit,
+             costPerUnit: ing.costPerUnit,
+           })) || [],
+         createdAt: new Date(recipe.createdAt || Date.now()),
+         updatedAt: new Date(recipe.updatedAt || Date.now()),
+       }));
       setRecipes(transformedRecipes);
     } catch (err: any) {
       console.error("Error fetching data:", err);
@@ -468,23 +473,24 @@ export default function RecipesPage() {
         {loading ? (
           <RecipesTableSkeleton />
         ) : (
-          <RecipesTable
-            recipes={filteredRecipes}
-            onEdit={(recipe) => {
-              setEditRecipe({
-                recipeName: recipe.name,
-                category: recipe.category,
-                subcategory: recipe.subcategory,
-                selectedRecipe: recipe.id,
-                ingredients: (recipe.ingredients || []).map((ingredient) => ({
-                  name: ingredient.name,
-                  quantity: ingredient.quantity.toString(),
-                  unit: ingredient.unit,
-                  costPerUnit: (ingredient.costPerUnit || "").toString(),
-                })),
-              });
-              setIsEditDialogOpen(true);
-            }}
+                     <RecipesTable
+             recipes={filteredRecipes}
+             onEdit={(recipe) => {
+               setEditRecipe({
+                 recipeName: recipe.name,
+                 category: recipe.category,
+                 subcategory: recipe.subcategory,
+                 selectedRecipe: recipe.id,
+                 ingredients: (recipe.ingredients || []).map((ingredient) => ({
+                   name: ingredient.name,
+                   quantity: ingredient.quantity.toString(),
+                   unit: ingredient.unit,
+                   costPerUnit: (ingredient.costPerUnit || "").toString(),
+                 })),
+                 instructions: recipe.instructions ?? null,
+               });
+               setIsEditDialogOpen(true);
+             }}
             onDelete={handleDeleteRecipe}
             onPrint={handlePrintRecipe}
             deletingId={deletingId}
