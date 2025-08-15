@@ -1,27 +1,27 @@
+import { z } from "zod";
+import { apiHandler } from "@/lib/api/handler";
+import { respondError } from "@/lib/api/response";
+import { ERR } from "@/lib/api/errors";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  try {
+export const GET = apiHandler({
+  method: "GET",
+  async handle({ ctx, req }) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw respondError("Authentication required", 401, { code: ERR.AUTH });
     }
 
-    const { searchParams } = new URL(request.url);
-    const date = searchParams.get("date");
-    const kitchenId = searchParams.get("kitchenId");
+    const date = ctx.searchParams.get("date");
+    const kitchenId = ctx.searchParams.get("kitchenId");
 
     if (!date) {
-      return NextResponse.json(
-        { error: "Date parameter is required" },
-        { status: 400 },
-      );
+      throw respondError("Date parameter is required", 400, { code: ERR.VALIDATION });
     }
 
     // Get user info
@@ -31,21 +31,22 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw respondError("User not found", 404, { code: ERR.NOT_FOUND });
     }
 
     // Use provided kitchenId or user's kitchenId
     const targetKitchenId = kitchenId || user.kitchenId;
 
     if (!targetKitchenId) {
-      return NextResponse.json(
-        { error: "No kitchen specified" },
-        { status: 400 },
-      );
+      throw respondError("No kitchen specified", 400, { code: ERR.VALIDATION });
     }
 
     // Parse the date
     const targetDate = new Date(date);
+    if (isNaN(targetDate.getTime())) {
+      throw respondError("Invalid date format", 400, { code: ERR.VALIDATION });
+    }
+
     const startOfDay = new Date(
       targetDate.getFullYear(),
       targetDate.getMonth(),
@@ -67,16 +68,10 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
+    return {
       events,
       date: targetDate.toISOString().split("T")[0],
-    });
-  } catch (error) {
-    console.error("Error fetching calendar events:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch calendar events" },
-      { status: 500 },
-    );
-  }
-}
+      kitchenId: targetKitchenId,
+    };
+  },
+});

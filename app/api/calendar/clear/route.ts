@@ -1,18 +1,21 @@
+import { z } from "zod";
+import { apiHandler } from "@/lib/api/handler";
+import { respondError } from "@/lib/api/response";
+import { ERR } from "@/lib/api/errors";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
 
-export async function DELETE(request: NextRequest) {
-  try {
+export const DELETE = apiHandler({
+  method: "DELETE",
+  async handle({ ctx, req }) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw respondError("Authentication required", 401, { code: ERR.AUTH });
     }
 
-    const { searchParams } = new URL(request.url);
-    const kitchenId = searchParams.get("kitchenId");
+    const kitchenId = ctx.searchParams.get("kitchenId");
 
     // Get user info
     const user = await prisma.user.findUnique({
@@ -21,17 +24,14 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw respondError("User not found", 404, { code: ERR.NOT_FOUND });
     }
 
     // Use provided kitchenId or user's kitchenId
     const targetKitchenId = kitchenId || user.kitchenId;
 
     if (!targetKitchenId) {
-      return NextResponse.json(
-        { error: "No kitchen specified" },
-        { status: 400 },
-      );
+      throw respondError("No kitchen specified", 400, { code: ERR.VALIDATION });
     }
 
     // Delete all calendar events for this kitchen
@@ -39,16 +39,9 @@ export async function DELETE(request: NextRequest) {
       where: { kitchenId: targetKitchenId },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: `Successfully cleared ${result.count} calendar events`,
+    return {
       deletedCount: result.count,
-    });
-  } catch (error) {
-    console.error("Error clearing calendar events:", error);
-    return NextResponse.json(
-      { error: "Failed to clear calendar events" },
-      { status: 500 },
-    );
-  }
-}
+      kitchenId: targetKitchenId,
+    };
+  },
+});
