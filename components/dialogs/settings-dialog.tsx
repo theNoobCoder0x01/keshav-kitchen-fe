@@ -115,14 +115,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to upload file");
-      }
-
       const result = await response.json();
 
-      toast.success(result.message);
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to upload file");
+      }
+
+      toast.success(`Successfully uploaded ${result.data.eventsCount} calendar events`);
 
       // Reload calendar data
       await loadCalendarData();
@@ -149,14 +148,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to clear data");
-      }
-
       const result = await response.json();
 
-      toast.success(result.message);
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to clear data");
+      }
+
+      toast.success(`Successfully cleared ${result.data.deletedCount} calendar events`);
       setCalendarData(null);
     } catch (error: any) {
       console.error("Error clearing calendar data:", error);

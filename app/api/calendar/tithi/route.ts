@@ -1,8 +1,11 @@
+import { z } from "zod";
+import { apiHandler } from "@/lib/api/handler";
+import { respondError } from "@/lib/api/response";
+import { ERR } from "@/lib/api/errors";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { extractTithi } from "@/lib/utils/ics-parser";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,17 +19,17 @@ interface CalendarEvent {
   uid: string;
 }
 
-export async function GET(request: NextRequest) {
-  try {
+export const GET = apiHandler({
+  method: "GET",
+  async handle({ ctx, req }) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw respondError("Authentication required", 401, { code: ERR.AUTH });
     }
 
-    const { searchParams } = new URL(request.url);
-    const dateParam = searchParams.get("date");
-    const kitchenId = searchParams.get("kitchenId");
+    const dateParam = ctx.searchParams.get("date");
+    const kitchenId = ctx.searchParams.get("kitchenId");
 
     // Use provided date or default to today
     const targetDate = dateParam ? new Date(dateParam) : new Date();
@@ -38,17 +41,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw respondError("User not found", 404, { code: ERR.NOT_FOUND });
     }
 
     // Use provided kitchenId or user's kitchenId
     const targetKitchenId = kitchenId || user.kitchenId;
 
     if (!targetKitchenId) {
-      return NextResponse.json(
-        { error: "No kitchen specified" },
-        { status: 400 },
-      );
+      throw respondError("No kitchen specified", 400, { code: ERR.VALIDATION });
     }
 
     // Calculate date range for the day
@@ -129,8 +129,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
+    return {
       date: targetDate.toISOString().split("T")[0],
       tithi,
       eventSummary,
@@ -143,12 +142,6 @@ export async function GET(request: NextRequest) {
         endDate: event.endDate?.toISOString(),
         location: event.location,
       })),
-    });
-  } catch (error) {
-    console.error("Error fetching tithi information:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch tithi information" },
-      { status: 500 },
-    );
-  }
-}
+    };
+  },
+});

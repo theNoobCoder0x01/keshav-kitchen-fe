@@ -28,21 +28,20 @@ export function useTithi(date?: Date, kitchenId?: string): TithiInfo {
         });
 
         const response = await fetch(`/api/calendar/tithi?${params}`);
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch tithi information");
-        }
-
         const data = await response.json();
 
-        if (data.success) {
-          setTithiInfo({
-            tithi: data.tithi,
-            eventSummary: data.eventSummary,
-            eventsCount: data.eventsCount || 0,
-            isLoading: false,
-          });
-        } else {
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Failed to fetch tithi information");
+        }
+
+        setTithiInfo({
+          tithi: data.data.tithi,
+          eventSummary: data.data.eventSummary,
+          eventsCount: data.data.eventsCount || 0,
+          isLoading: false,
+        });
+
+        if (!data.success) {
           setTithiInfo({
             eventsCount: 0,
             isLoading: false,
