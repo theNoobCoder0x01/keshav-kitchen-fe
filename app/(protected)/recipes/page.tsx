@@ -4,7 +4,10 @@ import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
 import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
-import { RecipesTable, RecipesTableSkeleton } from "@/components/recipes/recipes-table";
+import {
+  RecipesTable,
+  RecipesTableSkeleton,
+} from "@/components/recipes/recipes-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

@@ -178,9 +178,17 @@ export function MenuCard({
 }
 
 // Skeleton loader for MenuCard
-export function MenuCardSkeleton({ itemCount = 3, className = "" }: { itemCount?: number; className?: string }) {
+export function MenuCardSkeleton({
+  itemCount = 3,
+  className = "",
+}: {
+  itemCount?: number;
+  className?: string;
+}) {
   return (
-    <Card className={cn("bg-card/100 backdrop-blur-xs border-border/50", className)}>
+    <Card
+      className={cn("bg-card/100 backdrop-blur-xs border-border/50", className)}
+    >
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div>

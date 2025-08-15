@@ -9,7 +9,7 @@ export async function GET() {
     console.error("Error fetching quick actions data:", error);
     return NextResponse.json(
       { error: "Failed to fetch quick actions data" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

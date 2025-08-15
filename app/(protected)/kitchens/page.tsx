@@ -1,7 +1,10 @@
 "use client";
 
 import { AddEditKitchenDialog } from "@/components/dialogs/add-edit-kitchen-dialog";
-import { KitchensTable, KitchensTableSkeleton } from "@/components/kitchens/kitchens-table";
+import {
+  KitchensTable,
+  KitchensTableSkeleton,
+} from "@/components/kitchens/kitchens-table";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -67,7 +70,7 @@ export default function KitchensPage() {
   const handleDelete = async (id: string) => {
     if (
       window.confirm(
-        "Are you sure you want to delete this kitchen? This action cannot be undone."
+        "Are you sure you want to delete this kitchen? This action cannot be undone.",
       )
     ) {
       setDeletingId(id);

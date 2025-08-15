@@ -29,7 +29,7 @@ export const excelToJson = (fileBuffer: ArrayBuffer, userId: string) => {
   // Parse the recipes sheet
   const recipesSheet = XLSX.utils.sheet_to_json<Recipe>(
     workbook.Sheets["recipes"],
-    { defval: "" }
+    { defval: "" },
   );
 
   const result = recipesSheet.map((recipe) => {
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
           error:
             "Invalid file type. Please upload an Excel file (.xlsx, .xls) or CSV file.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
           error: "Excel file must have at least a header row and one data row",
           sheetData: recipes,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
     console.error("Import recipes API error:", error);
     return NextResponse.json(
       { error: "Failed to import recipes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -38,7 +38,7 @@ export default function MenuPage() {
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportsDialog, setReportsDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>(
-    MealType.BREAKFAST
+    MealType.BREAKFAST,
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -93,7 +93,7 @@ export default function MenuPage() {
       }
 
       console.log(
-        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`
+        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`,
       );
 
       // Load stats and menus in parallel
@@ -113,7 +113,7 @@ export default function MenuPage() {
 
       console.log(
         `Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`,
-        menusResponse
+        menusResponse,
       );
 
       // Transform menus data to match the expected format
