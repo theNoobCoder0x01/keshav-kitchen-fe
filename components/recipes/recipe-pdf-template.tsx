@@ -284,19 +284,14 @@ export const RecipePdfTemplate = forwardRef<
         <div className="pdf-section">
           <h2 className="pdf-section-title">Instructions</h2>
           <ol className="pdf-instructions-list">
-            {recipe.instructions
-              .split("\n")
-              .map((instruction, index) => {
-                const trimmed = instruction.trim();
-                if (!trimmed) return null;
-                return (
-                  <li key={index} className="pdf-instruction-item">
-                    <div className="pdf-instruction-number">{index + 1}</div>
-                    {trimmed}
-                  </li>
-                );
-              })
-              .filter(Boolean)}
+            {require("@/lib/utils/rich-text")
+              .extractStepsFromInstructions(recipe.instructions)
+              .map((step: string, index: number) => (
+                <li key={index} className="pdf-instruction-item">
+                  <div className="pdf-instruction-number">{index + 1}</div>
+                  {step}
+                </li>
+              ))}
           </ol>
         </div>
       )}
