@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -16,12 +16,13 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await req.json();
     const { subcategory } = body;
 
     // Check if user owns this recipe or is admin
     const existingRecipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true },
     });
 
@@ -35,12 +36,12 @@ export async function PATCH(
     ) {
       return NextResponse.json(
         { error: "Unauthorized to update this recipe" },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     const updatedRecipe = await prisma.recipe.update({
-      where: { id: params.id },
+      where: { id },
       // @ts-ignore
       data: { subcategory },
       select: { id: true },
@@ -51,7 +52,7 @@ export async function PATCH(
     console.error("PATCH /api/recipes/[id]/subcategory error:", error);
     return NextResponse.json(
       { error: "Failed to update recipe subcategory" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
