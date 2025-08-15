@@ -32,6 +32,7 @@ import {
   X,
 } from "lucide-react";
 import * as Yup from "yup";
+import type { ClipboardEvent } from "react";
 
 interface Ingredient {
   name: string;
@@ -179,65 +180,119 @@ export function AddRecipeDialog({
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ values, isSubmitting, dirty, errors, touched }) => (
-          <Form className="space-y-6 p-6">
-            {/* Recipe Basic Information */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                  Recipe Information
-                </CardTitle>
-                <CardDescription>
-                  Enter the basic details for your recipe
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label
-                    htmlFor="recipeName"
-                    className="text-sm font-medium text-foreground mb-2 block"
-                  >
-                    Recipe Name *
-                  </Label>
-                  <Field
-                    as={Input}
-                    id="recipeName"
-                    name="recipeName"
-                    placeholder="Enter recipe name (e.g., Curry, Pasta Carbonara)"
-                    className="border-border focus:border-primary focus:ring-primary/20"
-                  />
-                  <ErrorMessage
-                    name="recipeName"
-                    component="p"
-                    className="text-destructive text-xs mt-1 flex items-center gap-1"
-                  >
-                    {(msg) => (
-                      <>
-                        <AlertCircle className="w-3 h-3" />
-                        {msg}
-                      </>
-                    )}
-                  </ErrorMessage>
-                </div>
+        {({ values, isSubmitting, dirty, errors, touched, setFieldValue }) => {
+          const handlePasteIngredients = (e: ClipboardEvent) => {
+            const columnOrder = ["name", "quantity", "unit", "costPerUnit"] as const;
+            const targetElement = e.target as HTMLElement | null;
+            if (!targetElement) return;
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            const inputEl = (targetElement.closest('input[name^="ingredients["]') as HTMLInputElement | null);
+            let fieldName: string | null = inputEl?.name || null;
+            if (!fieldName) {
+              const fieldEl = targetElement.closest("[data-field-name]") as HTMLElement | null;
+              fieldName = fieldEl?.getAttribute("data-field-name");
+            }
+            if (!fieldName) return;
+
+            const match = fieldName.match(/ingredients\[(\d+)\]\.(name|quantity|unit|costPerUnit)/);
+            if (!match) return;
+
+            const startRow = parseInt(match[1], 10);
+            const startCol = columnOrder.indexOf(match[2] as (typeof columnOrder)[number]);
+
+            const text = e.clipboardData.getData("text/plain");
+            if (!text) return;
+
+            // Only prevent default when we know we're handling ingredients paste
+            e.preventDefault();
+
+            const rows = text.replace(/\r/g, "").split("\n");
+            if (rows.length && rows[rows.length - 1] === "") rows.pop();
+            const grid = rows.map((row) => row.split("\t"));
+
+            const nextIngredients = [...values.ingredients];
+
+            const ensureRow = (rowIndex: number) => {
+              while (nextIngredients.length <= rowIndex) {
+                nextIngredients.push({
+                  name: "",
+                  quantity: "",
+                  unit: DEFAULT_UNIT,
+                  costPerUnit: "",
+                });
+              }
+              if (!nextIngredients[rowIndex]) {
+                nextIngredients[rowIndex] = {
+                  name: "",
+                  quantity: "",
+                  unit: DEFAULT_UNIT,
+                  costPerUnit: "",
+                };
+              }
+            };
+
+            const normalizeUnit = (raw: string) => {
+              const trimmed = raw.trim();
+              if (!trimmed) return DEFAULT_UNIT;
+              const found = unitOptions.find(
+                (opt) =>
+                  opt.value.toLowerCase() === trimmed.toLowerCase() ||
+                  opt.label.toLowerCase() === trimmed.toLowerCase(),
+              );
+              return found ? found.value : trimmed;
+            };
+
+            grid.forEach((cells, r) => {
+              const rowIndex = startRow + r;
+              ensureRow(rowIndex);
+              const updatedRow = { ...nextIngredients[rowIndex] } as any;
+              cells.forEach((cell, c) => {
+                const colIndex = startCol + c;
+                if (colIndex > columnOrder.length - 1) return;
+                const key = columnOrder[colIndex];
+                const rawValue = cell ?? "";
+                if (key === "unit") {
+                  updatedRow.unit = normalizeUnit(rawValue);
+                } else {
+                  updatedRow[key] = rawValue.trim();
+                }
+              });
+              nextIngredients[rowIndex] = updatedRow;
+            });
+
+            setFieldValue("ingredients", nextIngredients, true);
+          };
+
+          return (
+            <Form className="space-y-6 p-6">
+              {/* Recipe Basic Information */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    Recipe Information
+                  </CardTitle>
+                  <CardDescription>
+                    Enter the basic details for your recipe
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div>
                     <Label
-                      htmlFor="category"
+                      htmlFor="recipeName"
                       className="text-sm font-medium text-foreground mb-2 block"
                     >
-                      Recipe Category *
+                      Recipe Name *
                     </Label>
                     <Field
                       as={Input}
-                      id="category"
-                      name="category"
-                      placeholder="e.g., Main Course, Dessert, Appetizer"
+                      id="recipeName"
+                      name="recipeName"
+                      placeholder="Enter recipe name (e.g., Curry, Pasta Carbonara)"
                       className="border-border focus:border-primary focus:ring-primary/20"
                     />
                     <ErrorMessage
-                      name="category"
+                      name="recipeName"
                       component="p"
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
                     >
@@ -250,286 +305,316 @@ export function AddRecipeDialog({
                     </ErrorMessage>
                   </div>
 
-                  <div>
-                    <Label
-                      htmlFor="subcategory"
-                      className="text-sm font-medium text-foreground mb-2 block"
-                    >
-                      Subcategory *
-                    </Label>
-                    <Field
-                      as={Input}
-                      id="subcategory"
-                      name="subcategory"
-                      placeholder="e.g., Indian, Italian, Vegetarian"
-                      className="border-border focus:border-primary focus:ring-primary/20"
-                    />
-                    <ErrorMessage
-                      name="subcategory"
-                      component="p"
-                      className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    >
-                      {(msg) => (
-                        <>
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </>
-                      )}
-                    </ErrorMessage>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Ingredients Section */}
-            <FieldArray name="ingredients">
-              {({
-                remove,
-                push,
-              }: {
-                remove: (index: number) => void;
-                push: (value: any) => void;
-              }) => (
-                <Card>
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Utensils className="w-5 h-5 text-primary" />
-                          Ingredients
-                        </CardTitle>
-                        <CardDescription>
-                          Add ingredients with quantities and costs
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {values.ingredients.length} ingredient
-                          {values.ingredients.length !== 1 ? "s" : ""}
-                        </Badge>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const newIngredient = {
-                              name: "",
-                              quantity: "",
-                              unit: DEFAULT_UNIT,
-                              costPerUnit: "",
-                            };
-                            push(newIngredient);
-                          }}
-                          className="flex items-center gap-2"
-                        >
-                          <Plus className="w-3 h-3" />
-                          Add Ingredient
-                        </Button>
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label
+                        htmlFor="category"
+                        className="text-sm font-medium text-foreground mb-2 block"
+                      >
+                        Recipe Category *
+                      </Label>
+                      <Field
+                        as={Input}
+                        id="category"
+                        name="category"
+                        placeholder="e.g., Main Course, Dessert, Appetizer"
+                        className="border-border focus:border-primary focus:ring-primary/20"
+                      />
+                      <ErrorMessage
+                        name="category"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      >
+                        {(msg) => (
+                          <>
+                            <AlertCircle className="w-3 h-3" />
+                            {msg}
+                          </>
+                        )}
+                      </ErrorMessage>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {values.ingredients.map((ingredient, index) => (
-                        <div
-                          key={index}
-                          className={cn(
-                            "p-4 border border-border rounded-lg bg-card/50",
-                            "hover:border-primary/30 transition-colors",
-                          )}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-medium text-foreground">
-                              Ingredient #{index + 1}
-                            </h4>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => remove(index)}
-                              className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
-                              disabled={values.ingredients.length === 1}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                            <div className="sm:col-span-5">
-                              <Label className="text-sm font-medium text-foreground mb-2 block">
-                                Ingredient Name *
-                              </Label>
-                              <Field
-                                as={Input}
-                                name={`ingredients[${index}].name`}
-                                placeholder="e.g., Rice, Tomatoes"
-                                className="border-border focus:border-primary focus:ring-primary/20"
-                              />
-                              <ErrorMessage
-                                name={`ingredients[${index}].name`}
-                                component="p"
-                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                    <div>
+                      <Label
+                        htmlFor="subcategory"
+                        className="text-sm font-medium text-foreground mb-2 block"
+                      >
+                        Subcategory *
+                      </Label>
+                      <Field
+                        as={Input}
+                        id="subcategory"
+                        name="subcategory"
+                        placeholder="e.g., Indian, Italian, Vegetarian"
+                        className="border-border focus:border-primary focus:ring-primary/20"
+                      />
+                      <ErrorMessage
+                        name="subcategory"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      >
+                        {(msg) => (
+                          <>
+                            <AlertCircle className="w-3 h-3" />
+                            {msg}
+                          </>
+                        )}
+                      </ErrorMessage>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Ingredients Section */}
+              <FieldArray name="ingredients">
+                {({
+                  remove,
+                  push,
+                }: {
+                  remove: (index: number) => void;
+                  push: (value: any) => void;
+                }) => (
+                  <Card>
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Utensils className="w-5 h-5 text-primary" />
+                            Ingredients
+                          </CardTitle>
+                          <CardDescription>
+                            Add ingredients with quantities and costs
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {values.ingredients.length} ingredient
+                            {values.ingredients.length !== 1 ? "s" : ""}
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newIngredient = {
+                                name: "",
+                                quantity: "",
+                                unit: DEFAULT_UNIT,
+                                costPerUnit: "",
+                              };
+                              push(newIngredient);
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <Plus className="w-3 h-3" />
+                            Add Ingredient
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent onPaste={handlePasteIngredients}>
+                      <div className="space-y-4">
+                        {values.ingredients.map((ingredient, index) => (
+                          <div
+                            key={index}
+                            className={cn(
+                              "p-4 border border-border rounded-lg bg-card/50",
+                              "hover:border-primary/30 transition-colors",
+                            )}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-sm font-medium text-foreground">
+                                Ingredient #{index + 1}
+                              </h4>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => remove(index)}
+                                className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
+                                disabled={values.ingredients.length === 1}
                               >
-                                {(msg) => (
-                                  <>
-                                    <AlertCircle className="w-3 h-3" />
-                                    {msg}
-                                  </>
-                                )}
-                              </ErrorMessage>
+                                <X className="w-4 h-4" />
+                              </Button>
                             </div>
 
-                            <div className="sm:col-span-3">
-                              <Label className="text-sm font-medium text-foreground mb-2 block">
-                                Quantity *
-                              </Label>
-                              <Field
-                                as={Input}
-                                name={`ingredients[${index}].quantity`}
-                                placeholder="5"
-                                type="number"
-                                step="0.1"
-                                min="0"
-                                className="border-border focus:border-primary focus:ring-primary/20"
-                              />
-                              <ErrorMessage
-                                name={`ingredients[${index}].quantity`}
-                                component="p"
-                                className="text-destructive text-xs mt-1 flex items-center gap-1"
-                              >
-                                {(msg) => (
-                                  <>
-                                    <AlertCircle className="w-3 h-3" />
-                                    {msg}
-                                  </>
-                                )}
-                              </ErrorMessage>
-                            </div>
-
-                            <div className="sm:col-span-2">
-                              <Label className="text-sm font-medium text-foreground mb-2 block">
-                                Unit *
-                              </Label>
-                              <Field name={`ingredients[${index}].unit`}>
-                                {({ field }: { field: any }) => (
-                                  <Select
-                                    value={field.value}
-                                    onValueChange={(value) =>
-                                      field.onChange({
-                                        target: { name: field.name, value },
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger className="border-border focus:border-primary focus:ring-primary/20">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {unitOptions.map((option) => (
-                                        <SelectItem
-                                          key={option.value}
-                                          value={option.value}
-                                        >
-                                          {option.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                              </Field>
-                            </div>
-
-                            <div className="sm:col-span-2">
-                              <Label className="text-sm font-medium text-foreground mb-2 block">
-                                Cost/Unit
-                              </Label>
-                              <div className="relative">
-                                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                              <div className="sm:col-span-5">
+                                <Label className="text-sm font-medium text-foreground mb-2 block">
+                                  Ingredient Name *
+                                </Label>
                                 <Field
                                   as={Input}
-                                  name={`ingredients[${index}].costPerUnit`}
-                                  placeholder="0.00"
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  className="pl-8 border-border focus:border-primary focus:ring-primary/20"
+                                  name={`ingredients[${index}].name`}
+                                  placeholder="e.g., Rice, Tomatoes"
+                                  className="border-border focus:border-primary focus:ring-primary/20"
                                 />
+                                <ErrorMessage
+                                  name={`ingredients[${index}].name`}
+                                  component="p"
+                                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                                >
+                                  {(msg) => (
+                                    <>
+                                      <AlertCircle className="w-3 h-3" />
+                                      {msg}
+                                    </>
+                                  )}
+                                </ErrorMessage>
                               </div>
-                              <ErrorMessage
-                                name={`ingredients[${index}].costPerUnit`}
-                                component="p"
-                                className="text-destructive text-xs mt-1 flex items-center gap-1"
-                              >
-                                {(msg) => (
-                                  <>
-                                    <AlertCircle className="w-3 h-3" />
-                                    {msg}
-                                  </>
-                                )}
-                              </ErrorMessage>
+
+                              <div className="sm:col-span-3">
+                                <Label className="text-sm font-medium text-foreground mb-2 block">
+                                  Quantity *
+                                </Label>
+                                <Field
+                                  as={Input}
+                                  name={`ingredients[${index}].quantity`}
+                                  placeholder="5"
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  className="border-border focus:border-primary focus:ring-primary/20"
+                                />
+                                <ErrorMessage
+                                  name={`ingredients[${index}].quantity`}
+                                  component="p"
+                                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                                >
+                                  {(msg) => (
+                                    <>
+                                      <AlertCircle className="w-3 h-3" />
+                                      {msg}
+                                    </>
+                                  )}
+                                </ErrorMessage>
+                              </div>
+
+                              <div className="sm:col-span-2">
+                                <Label className="text-sm font-medium text-foreground mb-2 block">
+                                  Unit *
+                                </Label>
+                                <Field name={`ingredients[${index}].unit`}>
+                                  {({ field }: { field: any }) => (
+                                    <Select
+                                      value={field.value}
+                                      onValueChange={(value) =>
+                                        field.onChange({
+                                          target: { name: field.name, value },
+                                        })
+                                      }
+                                    >
+                                      <SelectTrigger data-field-name={`ingredients[${index}].unit`} className="border-border focus:border-primary focus:ring-primary/20">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {unitOptions.map((option) => (
+                                          <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                          >
+                                            {option.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                </Field>
+                              </div>
+
+                              <div className="sm:col-span-2">
+                                <Label className="text-sm font-medium text-foreground mb-2 block">
+                                  Cost/Unit
+                                </Label>
+                                <div className="relative">
+                                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                  <Field
+                                    as={Input}
+                                    name={`ingredients[${index}].costPerUnit`}
+                                    placeholder="0.00"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    className="pl-8 border-border focus:border-primary focus:ring-primary/20"
+                                  />
+                                </div>
+                                <ErrorMessage
+                                  name={`ingredients[${index}].costPerUnit`}
+                                  component="p"
+                                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                                >
+                                  {(msg) => (
+                                    <>
+                                      <AlertCircle className="w-3 h-3" />
+                                      {msg}
+                                    </>
+                                  )}
+                                </ErrorMessage>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Cost Summary */}
-                    {values.ingredients.length > 0 && (
-                      <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-foreground">
-                            Estimated Total Cost:
-                          </span>
-                          <span className="text-lg font-bold text-primary">
-                            ${calculateTotalCost(values.ingredients).toFixed(2)}
-                          </span>
-                        </div>
+                        ))}
                       </div>
-                    )}
 
-                    {/* Validation Error for Ingredients Array */}
-                    {errors.ingredients && touched.ingredients && (
-                      <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                        <p className="text-destructive text-sm flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.ingredients as string}
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </FieldArray>
+                      {/* Cost Summary */}
+                      {values.ingredients.length > 0 && (
+                        <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-foreground">
+                              Estimated Total Cost:
+                            </span>
+                            <span className="text-lg font-bold text-primary">
+                              ${calculateTotalCost(values.ingredients).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
 
-            {/* Form Actions */}
-            <div className="flex justify-end space-x-3 pt-4 border-t border-border">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                className="border-border text-foreground hover:bg-muted bg-transparent"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !dirty}
-                className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                    {isEditMode ? "Updating..." : "Creating..."}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    {isEditMode ? "Update Recipe" : "Create Recipe"}
-                  </>
+                      {/* Validation Error for Ingredients Array */}
+                      {errors.ingredients && touched.ingredients && (
+                        <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                          <p className="text-destructive text-sm flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4" />
+                            {errors.ingredients as string}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 )}
-              </Button>
-            </div>
-          </Form>
-        )}
+              </FieldArray>
+
+              {/* Form Actions */}
+              <div className="flex justify-end space-x-3 pt-4 border-t border-border">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  className="border-border text-foreground hover:bg-muted bg-transparent"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !dirty}
+                  className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                      {isEditMode ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      {isEditMode ? "Update Recipe" : "Create Recipe"}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </Form>
+          );
+        }}
       </Formik>
     </BaseDialog>
   );
