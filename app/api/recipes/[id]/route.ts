@@ -7,10 +7,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`Fetching recipe with ID: ${params.id}`);
+    const { id } = await params;
+    console.log(`Fetching recipe with ID: ${id}`);
 
     const session = await getServerSession(authOptions);
 
@@ -20,7 +21,7 @@ export async function GET(
 
     const recipe = await prisma.recipe.findUnique({
       where: {
-        id: params.id,
+        id,
       },
       include: {
         ingredients: {
@@ -54,24 +55,25 @@ export async function GET(
     }
 
     console.log(
-      `Found recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`,
+      `Found recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`
     );
     return NextResponse.json(recipe);
   } catch (error) {
     console.error("Get recipe by ID API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`Deleting recipe with ID: ${params.id}`);
+    const { id } = await params;
+    console.log(`Deleting recipe with ID: ${id}`);
 
     const session = await getServerSession(authOptions);
 
@@ -81,7 +83,7 @@ export async function DELETE(
 
     // Check if recipe exists and user has permission to delete it
     const existingRecipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         userId: true,
         name: true,
@@ -99,13 +101,13 @@ export async function DELETE(
     ) {
       return NextResponse.json(
         { error: "Unauthorized to delete this recipe" },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     // Delete the recipe (ingredients will be deleted automatically due to cascade)
     await prisma.recipe.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     console.log(`Successfully deleted recipe: ${existingRecipe.name}`);
@@ -114,7 +116,7 @@ export async function DELETE(
     console.error("Delete recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to delete recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
