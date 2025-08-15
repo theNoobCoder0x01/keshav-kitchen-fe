@@ -1,7 +1,6 @@
-import { z } from "zod";
+import { ERR } from "@/lib/api/errors";
 import { apiHandler } from "@/lib/api/handler";
 import { respondError } from "@/lib/api/response";
-import { ERR } from "@/lib/api/errors";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { extractTithi } from "@/lib/utils/ics-parser";

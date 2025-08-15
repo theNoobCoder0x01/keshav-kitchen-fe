@@ -1,17 +1,22 @@
-import { z } from "zod";
+import { ERR } from "@/lib/api/errors";
 import { apiHandler } from "@/lib/api/handler";
 import { respondError } from "@/lib/api/response";
-import { ERR } from "@/lib/api/errors";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
+import { z } from "zod";
 
 const ImportEventSchema = z.object({
   uid: z.string().optional(),
   summary: z.string().min(1, "Event summary is required"),
   description: z.string().optional(),
-  startDate: z.string().refine((date) => !isNaN(Date.parse(date)), "Invalid start date"),
-  endDate: z.string().refine((date) => !isNaN(Date.parse(date)), "Invalid end date").optional(),
+  startDate: z
+    .string()
+    .refine((date) => !isNaN(Date.parse(date)), "Invalid start date"),
+  endDate: z
+    .string()
+    .refine((date) => !isNaN(Date.parse(date)), "Invalid end date")
+    .optional(),
   location: z.string().optional(),
   url: z.string().url("Invalid URL format").optional().or(z.literal("")),
 });
@@ -45,7 +50,9 @@ export const POST = apiHandler({
 
     const kitchenId = user.kitchenId;
     if (!kitchenId) {
-      throw respondError("User not associated with any kitchen", 400, { code: ERR.VALIDATION });
+      throw respondError("User not associated with any kitchen", 400, {
+        code: ERR.VALIDATION,
+      });
     }
 
     // Clear existing calendar events if requested

@@ -121,7 +121,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         throw new Error(result.message || "Failed to upload file");
       }
 
-      toast.success(`Successfully uploaded ${result.data.eventsCount} calendar events`);
+      toast.success(
+        `Successfully uploaded ${result.data.eventsCount} calendar events`,
+      );
 
       // Reload calendar data
       await loadCalendarData();
@@ -154,7 +156,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         throw new Error(result.message || "Failed to clear data");
       }
 
-      toast.success(`Successfully cleared ${result.data.deletedCount} calendar events`);
+      toast.success(
+        `Successfully cleared ${result.data.deletedCount} calendar events`,
+      );
       setCalendarData(null);
     } catch (error: any) {
       console.error("Error clearing calendar data:", error);

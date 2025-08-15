@@ -47,7 +47,7 @@ export function CompactDateSelector({
 
         const response = await fetch(`/api/calendar/tithi?${params}`);
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
           setCurrentEventInfo({
             tithi: data.data.tithi,
