@@ -68,21 +68,6 @@ export const excelToJson = (fileBuffer: ArrayBuffer, userId: string) => {
   return result;
 };
 
-interface ImportedRecipe {
-  name: string;
-  category: string;
-  subcategory: string;
-  description?: string;
-  instructions?: string;
-  servings?: number;
-  ingredients: Array<{
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit?: number;
-  }>;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -117,7 +102,11 @@ export async function POST(request: NextRequest) {
 
     // Read the file
     const buffer = await file.arrayBuffer();
-    const recipes = excelToJson(buffer, "");
+    const userId = session?.user?.id ?? "";
+    if (userId.length === 0) {
+      return NextResponse.json({ error: "User not found" }, { status: 400 });
+    }
+    const recipes = excelToJson(buffer, userId);
     if (!recipes) {
       return NextResponse.json(
         {
@@ -134,14 +123,6 @@ export async function POST(request: NextRequest) {
 
     for (const recipe of recipes) {
       try {
-        const userId = session?.user?.id ?? "";
-        if (userId.length === 0) {
-          return NextResponse.json(
-            { error: "User not found" },
-            { status: 400 }
-          );
-        }
-
         const createdRecipe = await prisma.recipe.create({
           data: {
             name: recipe.name,
@@ -150,7 +131,7 @@ export async function POST(request: NextRequest) {
             description: recipe.description,
             instructions: recipe.instructions,
             servings: recipe.servings,
-            userId: userId,
+            userId: recipe.userId ?? userId,
             ingredients: recipe.ingredients,
           },
           include: {
