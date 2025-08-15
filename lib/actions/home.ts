@@ -125,17 +125,21 @@ export async function getHomeStats() {
     const totalCostYesterday = yesterdayIngredients._sum.costPerUnit || 0;
 
     // Calculate changes
-    const mealsPlannedChange = totalMealsYesterday > 0 
-      ? ((totalMealsPlanned - totalMealsYesterday) / totalMealsYesterday) * 100 
-      : 0;
-    
-    const recipesChange = totalRecipesLastWeek > 0 
-      ? ((totalRecipes - totalRecipesLastWeek) / totalRecipesLastWeek) * 100 
-      : 0;
-    
-    const costChange = totalCostYesterday > 0 
-      ? ((totalCostToday - totalCostYesterday) / totalCostYesterday) * 100 
-      : 0;
+    const mealsPlannedChange =
+      totalMealsYesterday > 0
+        ? ((totalMealsPlanned - totalMealsYesterday) / totalMealsYesterday) *
+          100
+        : 0;
+
+    const recipesChange =
+      totalRecipesLastWeek > 0
+        ? ((totalRecipes - totalRecipesLastWeek) / totalRecipesLastWeek) * 100
+        : 0;
+
+    const costChange =
+      totalCostYesterday > 0
+        ? ((totalCostToday - totalCostYesterday) / totalCostYesterday) * 100
+        : 0;
 
     return {
       totalMealsPlanned,
@@ -278,29 +282,33 @@ export async function getQuickActionsData() {
       whereClause.kitchenId = session.user.kitchenId;
     }
 
-    const [menusCount, recipesCount, kitchensCount, ingredientsCount] = await Promise.all([
-      prisma.menu.count({
-        where: {
-          ...whereClause,
-          date: {
-            gte: new Date(),
+    const [menusCount, recipesCount, kitchensCount, ingredientsCount] =
+      await Promise.all([
+        prisma.menu.count({
+          where: {
+            ...whereClause,
+            date: {
+              gte: new Date(),
+            },
           },
-        },
-      }),
-      prisma.recipe.count({
-        where: whereClause,
-      }),
-      prisma.kitchen.count({
-        where: session.user.role === "ADMIN" ? {} : {
-          id: session.user.kitchenId,
-        },
-      }),
-      prisma.ingredient.count({
-        where: {
-          recipe: whereClause,
-        },
-      }),
-    ]);
+        }),
+        prisma.recipe.count({
+          where: whereClause,
+        }),
+        prisma.kitchen.count({
+          where:
+            session.user.role === "ADMIN"
+              ? {}
+              : {
+                  id: session.user.kitchenId,
+                },
+        }),
+        prisma.ingredient.count({
+          where: {
+            recipe: whereClause,
+          },
+        }),
+      ]);
 
     return {
       menusCount,

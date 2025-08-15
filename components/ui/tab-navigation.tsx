@@ -70,7 +70,13 @@ export function TabNavigation({
 }
 
 // Skeleton loader for TabNavigation
-export function TabNavigationSkeleton({ tabCount = 3, className = "" }: { tabCount?: number; className?: string }) {
+export function TabNavigationSkeleton({
+  tabCount = 3,
+  className = "",
+}: {
+  tabCount?: number;
+  className?: string;
+}) {
   return (
     <div className={cn(className)}>
       {/* Mobile Dropdown Skeleton */}
@@ -80,7 +86,10 @@ export function TabNavigationSkeleton({ tabCount = 3, className = "" }: { tabCou
       {/* Desktop Tabs Skeleton */}
       <div className="hidden sm:flex space-x-1 bg-card backdrop-blur-xs p-1 rounded-xl border border-border/50">
         {Array.from({ length: tabCount }).map((_, idx) => (
-          <Skeleton key={idx} className="px-4 py-2.5 h-10 w-24 rounded-lg flex-1 sm:flex-none" />
+          <Skeleton
+            key={idx}
+            className="px-4 py-2.5 h-10 w-24 rounded-lg flex-1 sm:flex-none"
+          />
         ))}
       </div>
     </div>

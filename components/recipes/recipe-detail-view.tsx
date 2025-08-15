@@ -92,7 +92,9 @@ export const RecipeDetailView = forwardRef<
                   <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <p className="text-sm text-muted-foreground">Servings</p>
-                <p className="text-xl font-semibold text-foreground">{recipe.servings}</p>
+                <p className="text-xl font-semibold text-foreground">
+                  {recipe.servings}
+                </p>
               </div>
             )}
 
@@ -102,7 +104,9 @@ export const RecipeDetailView = forwardRef<
                   <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <p className="text-sm text-muted-foreground">Total Time</p>
-                <p className="text-xl font-semibold text-foreground">{totalTime} min</p>
+                <p className="text-xl font-semibold text-foreground">
+                  {totalTime} min
+                </p>
               </div>
             )}
 
@@ -124,7 +128,9 @@ export const RecipeDetailView = forwardRef<
                 <ChefHat className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <p className="text-sm text-muted-foreground">Total Cost</p>
-              <p className="text-xl font-semibold text-foreground">₹{totalCost.toFixed(2)}</p>
+              <p className="text-xl font-semibold text-foreground">
+                ₹{totalCost.toFixed(2)}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -143,7 +149,9 @@ export const RecipeDetailView = forwardRef<
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {recipe.prepTime && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Prep Time</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Prep Time
+                  </p>
                   <p className="text-lg font-medium text-foreground">
                     {recipe.prepTime} minutes
                   </p>
@@ -151,7 +159,9 @@ export const RecipeDetailView = forwardRef<
               )}
               {recipe.cookTime && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Cook Time</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Cook Time
+                  </p>
                   <p className="text-lg font-medium text-foreground">
                     {recipe.cookTime} minutes
                   </p>
@@ -209,7 +219,9 @@ export const RecipeDetailView = forwardRef<
           <Separator className="my-4" />
           <div className="flex justify-between items-center text-lg font-semibold">
             <span className="text-foreground">Total Ingredients Cost:</span>
-            <span className="text-green-600 dark:text-green-400">₹{totalCost.toFixed(2)}</span>
+            <span className="text-green-600 dark:text-green-400">
+              ₹{totalCost.toFixed(2)}
+            </span>
           </div>
         </CardContent>
       </Card>

@@ -74,12 +74,7 @@ export function EnhancedStatsGrid({
   };
 
   return (
-    <div
-      className={cn(
-        "grid grid-cols-12 gap-2 md:gap-4",
-        className,
-      )}
-    >
+    <div className={cn("grid grid-cols-12 gap-2 md:gap-4", className)}>
       {stats.map((stat, index) => {
         const colors = getColorClasses(stat.color);
 
@@ -139,11 +134,22 @@ export function EnhancedStatsGrid({
 }
 
 // Skeleton loader for EnhancedStatsGrid
-export function EnhancedStatsGridSkeleton({ cardCount = 4, className = "" }: { cardCount?: number; className?: string }) {
+export function EnhancedStatsGridSkeleton({
+  cardCount = 4,
+  className = "",
+}: {
+  cardCount?: number;
+  className?: string;
+}) {
   return (
     <div className={cn("grid grid-cols-12 gap-2 md:gap-4", className)}>
       {Array.from({ length: cardCount }).map((_, idx) => (
-        <Card key={idx} className={cn("bg-card/80 backdrop-blur-xs border-border/50 col-span-12 sm:col-span-6 md:col-span-3")}> 
+        <Card
+          key={idx}
+          className={cn(
+            "bg-card/80 backdrop-blur-xs border-border/50 col-span-12 sm:col-span-6 md:col-span-3",
+          )}
+        >
           <CardContent className="p-3 md:p-3.5">
             <div className="flex items-center gap-2 mb-2">
               <Skeleton className="w-9 h-9 rounded-lg" />

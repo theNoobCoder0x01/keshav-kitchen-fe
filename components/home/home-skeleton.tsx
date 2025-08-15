@@ -7,7 +7,10 @@ export function QuickActionsSkeleton() {
       <Skeleton className="h-6 w-32 mb-4" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Card key={index} className="group cursor-pointer hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+          <Card
+            key={index}
+            className="group cursor-pointer hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <Skeleton className="w-12 h-12 rounded-lg" />

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -55,21 +55,21 @@ export async function GET(
     }
 
     console.log(
-      `Found recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`
+      `Found recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`,
     );
     return NextResponse.json(recipe);
   } catch (error) {
     console.error("Get recipe by ID API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -101,7 +101,7 @@ export async function DELETE(
     ) {
       return NextResponse.json(
         { error: "Unauthorized to delete this recipe" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -116,7 +116,7 @@ export async function DELETE(
     console.error("Delete recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to delete recipe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
