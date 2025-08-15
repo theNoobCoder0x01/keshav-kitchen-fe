@@ -31,8 +31,8 @@ import {
   Utensils,
   X,
 } from "lucide-react";
-import * as Yup from "yup";
 import type { ClipboardEvent } from "react";
+import * as Yup from "yup";
 
 interface Ingredient {
   name: string;
@@ -182,23 +182,36 @@ export function AddRecipeDialog({
       >
         {({ values, isSubmitting, dirty, errors, touched, setFieldValue }) => {
           const handlePasteIngredients = (e: ClipboardEvent) => {
-            const columnOrder = ["name", "quantity", "unit", "costPerUnit"] as const;
+            const columnOrder = [
+              "name",
+              "quantity",
+              "unit",
+              "costPerUnit",
+            ] as const;
             const targetElement = e.target as HTMLElement | null;
             if (!targetElement) return;
 
-            const inputEl = (targetElement.closest('input[name^="ingredients["]') as HTMLInputElement | null);
+            const inputEl = targetElement.closest(
+              'input[name^="ingredients["]',
+            ) as HTMLInputElement | null;
             let fieldName: string | null = inputEl?.name || null;
             if (!fieldName) {
-              const fieldEl = targetElement.closest("[data-field-name]") as HTMLElement | null;
-              fieldName = fieldEl?.getAttribute("data-field-name");
+              const fieldEl = targetElement.closest(
+                "[data-field-name]",
+              ) as HTMLElement | null;
+              fieldName = fieldEl?.getAttribute("data-field-name") ?? null;
             }
             if (!fieldName) return;
 
-            const match = fieldName.match(/ingredients\[(\d+)\]\.(name|quantity|unit|costPerUnit)/);
+            const match = fieldName.match(
+              /ingredients\[(\d+)\]\.(name|quantity|unit|costPerUnit)/,
+            );
             if (!match) return;
 
             const startRow = parseInt(match[1], 10);
-            const startCol = columnOrder.indexOf(match[2] as (typeof columnOrder)[number]);
+            const startCol = columnOrder.indexOf(
+              match[2] as (typeof columnOrder)[number],
+            );
 
             const text = e.clipboardData.getData("text/plain");
             if (!text) return;
@@ -504,7 +517,10 @@ export function AddRecipeDialog({
                                         })
                                       }
                                     >
-                                      <SelectTrigger data-field-name={`ingredients[${index}].unit`} className="border-border focus:border-primary focus:ring-primary/20">
+                                      <SelectTrigger
+                                        data-field-name={`ingredients[${index}].unit`}
+                                        className="border-border focus:border-primary focus:ring-primary/20"
+                                      >
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -564,7 +580,10 @@ export function AddRecipeDialog({
                               Estimated Total Cost:
                             </span>
                             <span className="text-lg font-bold text-primary">
-                              ${calculateTotalCost(values.ingredients).toFixed(2)}
+                              $
+                              {calculateTotalCost(values.ingredients).toFixed(
+                                2,
+                              )}
                             </span>
                           </div>
                         </div>
@@ -575,7 +594,7 @@ export function AddRecipeDialog({
                         <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                           <p className="text-destructive text-sm flex items-center gap-2">
                             <AlertCircle className="w-4 h-4" />
-                            {errors.ingredients as string}
+                            {JSON.stringify(errors.ingredients)}
                           </p>
                         </div>
                       )}
