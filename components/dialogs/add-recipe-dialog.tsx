@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
 import * as Yup from "yup";
+import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import { LexicalEditor } from "@/components/rich-text/lexical-editor";
 
 interface Ingredient {
   name: string;
@@ -54,6 +56,7 @@ interface AddRecipeDialogProps {
       unit: string;
       costPerUnit: string;
     }>;
+    instructions?: string | null;
   }) => void;
   initialRecipe?: {
     recipeName: string;
@@ -66,6 +69,7 @@ interface AddRecipeDialogProps {
       unit: string;
       costPerUnit: string;
     }>;
+    instructions?: string | null;
   } | null;
 }
 
@@ -89,8 +93,6 @@ const validationSchema = Yup.object({
     )
     .min(1, "At least one ingredient is required."),
 });
-
-import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 
 // Use centralized unit options
 const unitOptions = UNIT_OPTIONS;
@@ -116,6 +118,7 @@ export function AddRecipeDialog({
             ing.costPerUnit !== undefined ? String(ing.costPerUnit) : "",
         }))
       : [{ name: "", quantity: "", unit: DEFAULT_UNIT, costPerUnit: "" }],
+    instructions: initialRecipe?.instructions || "",
   };
 
   const handleSubmit = (
@@ -134,6 +137,7 @@ export function AddRecipeDialog({
       category: values.category,
       subcategory: values.subcategory,
       ingredients: mappedIngredients,
+      instructions: values.instructions || null,
     };
     if (onSave) {
       onSave(recipeData);
@@ -602,6 +606,26 @@ export function AddRecipeDialog({
                   </Card>
                 )}
               </FieldArray>
+
+              {/* Instructions Section */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    Instructions
+                  </CardTitle>
+                  <CardDescription>
+                    Write step-by-step instructions. Use lists and formatting as needed.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <LexicalEditor
+                    value={values.instructions}
+                    onChange={(val) => setFieldValue("instructions", val)}
+                    placeholder="e.g., 1) Preheat oven to 180°C...\n2) Mix ingredients..."
+                  />
+                </CardContent>
+              </Card>
 
               {/* Form Actions */}
               <div className="flex justify-end space-x-3 pt-4 border-t border-border">

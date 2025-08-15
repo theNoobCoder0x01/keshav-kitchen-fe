@@ -338,15 +338,16 @@ function generateRecipeHTML(recipe: any): string {
           <div class="pdf-section">
             <h2 class="pdf-section-title">Instructions</h2>
             <ol class="pdf-instructions-list">
-              ${recipe.instructions
-                .split("\n")
-                .map((instruction: string) => {
-                  const trimmed = instruction.trim();
-                  if (!trimmed) return "";
-                  return `<li class="pdf-instruction-item">${encodeTextForPDF(trimmed)}</li>`;
-                })
-                .filter((item: string) => item)
-                .join("")}
+              ${(() => {
+                  try {
+                    const { extractStepsFromInstructions } = require("@/lib/utils/rich-text");
+                    return extractStepsFromInstructions(recipe.instructions)
+                      .map((step: string) => `<li class="pdf-instruction-item">${encodeTextForPDF(step)}</li>`)
+                      .join("");
+                  } catch {
+                    return "";
+                  }
+                })()}
             </ol>
           </div>
         `

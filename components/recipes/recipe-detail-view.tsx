@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ChefHat, Clock, DollarSign, Tag, Users } from "lucide-react";
 import { forwardRef } from "react";
+import { extractStepsFromInstructions, isLexicalSerialized } from "@/lib/utils/rich-text";
+import { LexicalViewer } from "@/components/rich-text/lexical-viewer";
 
 export interface RecipeDetailData {
   id: string;
@@ -234,21 +236,18 @@ export const RecipeDetailView = forwardRef<
           </CardHeader>
           <CardContent>
             <div className="prose max-w-none">
-              {recipe.instructions.split("\n").map((instruction, index) => {
-                const trimmedInstruction = instruction.trim();
-                if (!trimmedInstruction) return null;
-
-                return (
+              {isLexicalSerialized(recipe.instructions) ? (
+                <LexicalViewer value={recipe.instructions} />
+              ) : (
+                extractStepsFromInstructions(recipe.instructions).map((step, index) => (
                   <div key={index} className="flex gap-4 mb-4">
                     <div className="shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
                       {index + 1}
                     </div>
-                    <p className="text-foreground leading-relaxed pt-1">
-                      {trimmedInstruction}
-                    </p>
+                    <p className="text-foreground leading-relaxed pt-1">{step}</p>
                   </div>
-                );
-              })}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
