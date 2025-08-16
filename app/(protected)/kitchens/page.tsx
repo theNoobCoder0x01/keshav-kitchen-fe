@@ -7,6 +7,7 @@ import {
 } from "@/components/kitchens/kitchens-table";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import {
   createKitchen,
   deleteKitchen,
@@ -17,6 +18,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function KitchensPage() {
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingKitchen, setEditingKitchen] = useState<any | null>(null);
   const [kitchens, setKitchens] = useState<any[]>([]);
@@ -31,7 +33,7 @@ export default function KitchensPage() {
       const data = await fetchKitchens();
       setKitchens(data);
     } catch (e: any) {
-      setError("Failed to load kitchens");
+      setError(t("messages.failedToLoadKitchens"));
     } finally {
       setLoading(false);
     }
@@ -49,16 +51,16 @@ export default function KitchensPage() {
     try {
       if (kitchen.id) {
         await updateKitchen(kitchen.id, kitchen);
-        toast.success("Kitchen updated");
+        toast.success(t("messages.kitchenUpdated"));
       } else {
         await createKitchen(kitchen);
-        toast.success("Kitchen added");
+        toast.success(t("messages.kitchenAdded"));
       }
       setDialogOpen(false);
       setEditingKitchen(null);
       loadKitchens();
     } catch (e) {
-      toast.error("Failed to save kitchen");
+      toast.error(t("messages.failedToSaveKitchen"));
     }
   };
 
@@ -70,16 +72,16 @@ export default function KitchensPage() {
   const handleDelete = async (id: string) => {
     if (
       window.confirm(
-        "Are you sure you want to delete this kitchen? This action cannot be undone.",
+        t("messages.confirmDeleteKitchen"),
       )
     ) {
       setDeletingId(id);
       try {
         await deleteKitchen(id);
-        toast.success("Kitchen deleted");
+        toast.success(t("messages.kitchenDeleted"));
         loadKitchens();
       } catch {
-        toast.error("Failed to delete kitchen");
+        toast.error(t("messages.failedToDeleteKitchen"));
       } finally {
         setDeletingId(null);
       }
@@ -89,8 +91,8 @@ export default function KitchensPage() {
   return (
     <div className="w-full flex flex-col gap-2 md:gap-4">
       <PageHeader
-        title="Kitchens Management"
-        subtitle="Manage your kitchen locations and settings"
+        title={t("kitchens.management")}
+        subtitle={t("kitchens.managementSubtitle")}
         actions={
           <Button
             onClick={() => {
@@ -98,7 +100,7 @@ export default function KitchensPage() {
               setDialogOpen(true);
             }}
           >
-            Add Kitchen
+            {t("kitchens.addKitchen")}
           </Button>
         }
       />
