@@ -1,6 +1,7 @@
 "use client";
 
-import { SimpleFormDialog } from "@/components/ui/base-dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
-import { Package } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Package, AlertCircle } from "lucide-react";
+import { ErrorMessage, Field, Formik, Form } from "formik";
+import * as Yup from "yup";
 
 interface AddEditIngredientDialogProps {
   open: boolean;
@@ -31,48 +33,42 @@ interface AddEditIngredientDialogProps {
   }) => void;
 }
 
+const validationSchema = Yup.object({
+  name: Yup.string().trim().required("Ingredient name is required."),
+  costPerKg: Yup.number()
+    .required("Cost per unit is required.")
+    .min(0, "Cost cannot be negative."),
+  unit: Yup.string().required("Unit is required."),
+});
+
 export function AddEditIngredientDialog({
   open,
   onOpenChange,
   initialIngredient = null,
   onSave,
 }: AddEditIngredientDialogProps) {
-  const [name, setName] = useState("");
-  const [costPerKg, setCostPerKg] = useState("");
-  const [unit, setUnit] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const initialValues = {
+    name: initialIngredient?.name || "",
+    costPerKg: initialIngredient?.costPerKg || 0,
+    unit: initialIngredient?.unit || DEFAULT_UNIT,
+  };
 
-  useEffect(() => {
-    if (open) {
-      setName(initialIngredient?.name || "");
-      setCostPerKg(initialIngredient?.costPerKg?.toString() || "");
-      setUnit(initialIngredient?.unit || DEFAULT_UNIT);
-      setError(null);
-    }
-  }, [open, initialIngredient]);
-
-  const handleSubmit = () => {
-    if (
-      !name.trim() ||
-      !costPerKg.trim() ||
-      isNaN(Number(costPerKg)) ||
-      Number(costPerKg) < 0 ||
-      !unit.trim()
-    ) {
-      setError("Please enter valid ingredient details.");
-      return;
-    }
+  const handleSubmit = (
+    values: typeof initialValues,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+  ) => {
     onSave({
-      name: name.trim(),
-      costPerKg: Number(costPerKg),
-      unit: unit.trim(),
+      name: values.name.trim(),
+      costPerKg: Number(values.costPerKg),
+      unit: values.unit.trim(),
       id: initialIngredient?.id,
     });
+    setSubmitting(false);
     onOpenChange(false);
   };
 
   return (
-    <SimpleFormDialog
+    <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
       title={initialIngredient ? "Edit Ingredient" : "Add Ingredient"}
@@ -83,58 +79,134 @@ export function AddEditIngredientDialog({
       }
       icon={<Package className="w-5 h-5 text-primary-foreground" />}
       size="md"
-      onSubmit={handleSubmit}
-      submitLabel={initialIngredient ? "Save Changes" : "Add Ingredient"}
     >
-      <div className="space-y-4">
-        <div>
-          <Label className="text-sm font-medium text-foreground mb-2 block">
-            Ingredient Name *
-          </Label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter ingredient name"
-            className="border-border focus:border-primary focus:ring-primary/20"
-          />
-        </div>
-        <div>
-          <Label className="text-sm font-medium text-foreground mb-2 block">
-            Cost per Unit (₹) *
-          </Label>
-          <Input
-            type="number"
-            value={costPerKg}
-            onChange={(e) => setCostPerKg(e.target.value)}
-            placeholder="30"
-            min="0"
-            step="0.01"
-            className="border-border focus:border-primary focus:ring-primary/20"
-          />
-        </div>
-        <div>
-          <Label className="text-sm font-medium text-foreground mb-2 block">
-            Unit *
-          </Label>
-          <Select value={unit} onValueChange={setUnit}>
-            <SelectTrigger className="border-border focus:border-primary focus:ring-primary/20">
-              <SelectValue placeholder="Select unit" />
-            </SelectTrigger>
-            <SelectContent>
-              {UNIT_OPTIONS.map((unitOption) => (
-                <SelectItem key={unitOption.value} value={unitOption.value}>
-                  {unitOption.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {error && (
-          <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md border border-destructive/20">
-            {error}
-          </div>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+        enableReinitialize
+      >
+        {({ isSubmitting }) => (
+          <Form className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  Ingredient Name *
+                </Label>
+                <Field
+                  as={Input}
+                  name="name"
+                  placeholder="Enter ingredient name"
+                  className="border-border focus:border-primary focus:ring-primary/20"
+                />
+                <ErrorMessage
+                  name="name"
+                  component="p"
+                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                >
+                  {(msg) => (
+                    <>
+                      <AlertCircle className="w-3 h-3" />
+                      {msg}
+                    </>
+                  )}
+                </ErrorMessage>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  Cost per Unit (₹) *
+                </Label>
+                <Field
+                  as={Input}
+                  name="costPerKg"
+                  type="number"
+                  placeholder="30"
+                  min="0"
+                  step="0.01"
+                  className="border-border focus:border-primary focus:ring-primary/20"
+                />
+                <ErrorMessage
+                  name="costPerKg"
+                  component="p"
+                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                >
+                  {(msg) => (
+                    <>
+                      <AlertCircle className="w-3 h-3" />
+                      {msg}
+                    </>
+                  )}
+                </ErrorMessage>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  Unit *
+                </Label>
+                <Field name="unit">
+                  {({ field }: { field: any }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) =>
+                        field.onChange({
+                          target: { name: field.name, value },
+                        })
+                      }
+                    >
+                      <SelectTrigger className="border-border focus:border-primary focus:ring-primary/20">
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {UNIT_OPTIONS.map((unitOption) => (
+                          <SelectItem key={unitOption.value} value={unitOption.value}>
+                            {unitOption.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </Field>
+                <ErrorMessage
+                  name="unit"
+                  component="p"
+                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                >
+                  {(msg) => (
+                    <>
+                      <AlertCircle className="w-3 h-3" />
+                      {msg}
+                    </>
+                  )}
+                </ErrorMessage>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t border-border">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="border-border text-foreground hover:bg-muted bg-transparent"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  initialIngredient ? "Save Changes" : "Add Ingredient"
+                )}
+              </Button>
+            </div>
+          </Form>
         )}
-      </div>
-    </SimpleFormDialog>
+      </Formik>
+    </BaseDialog>
   );
 }

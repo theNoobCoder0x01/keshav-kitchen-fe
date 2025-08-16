@@ -1,10 +1,12 @@
 "use client";
 
-import { SimpleFormDialog } from "@/components/ui/base-dialog";
+import { BaseDialog } from "@/components/ui/base-dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Building2, AlertCircle } from "lucide-react";
+import { ErrorMessage, Field, Formik, Form } from "formik";
+import * as Yup from "yup";
 
 interface AddEditKitchenDialogProps {
   open: boolean;
@@ -17,39 +19,37 @@ interface AddEditKitchenDialogProps {
   onSave: (kitchen: { name: string; location: string; id?: string }) => void;
 }
 
+const validationSchema = Yup.object({
+  name: Yup.string().trim().required("Kitchen name is required."),
+  location: Yup.string().trim().required("Location is required."),
+});
+
 export function AddEditKitchenDialog({
   open,
   onOpenChange,
   initialKitchen = null,
   onSave,
 }: AddEditKitchenDialogProps) {
-  const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const initialValues = {
+    name: initialKitchen?.name || "",
+    location: initialKitchen?.location || "",
+  };
 
-  useEffect(() => {
-    if (open) {
-      setName(initialKitchen?.name || "");
-      setLocation(initialKitchen?.location || "");
-      setError(null);
-    }
-  }, [open, initialKitchen]);
-
-  const handleSubmit = () => {
-    if (!name.trim() || !location.trim()) {
-      setError("Please enter valid kitchen details.");
-      return;
-    }
+  const handleSubmit = (
+    values: typeof initialValues,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+  ) => {
     onSave({
-      name: name.trim(),
-      location: location.trim(),
+      name: values.name.trim(),
+      location: values.location.trim(),
       id: initialKitchen?.id,
     });
+    setSubmitting(false);
     onOpenChange(false);
   };
 
   return (
-    <SimpleFormDialog
+    <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
       title={initialKitchen ? "Edit Kitchen" : "Add Kitchen"}
@@ -58,38 +58,91 @@ export function AddEditKitchenDialog({
       }
       icon={<Building2 className="w-5 h-5 text-primary-foreground" />}
       size="md"
-      onSubmit={handleSubmit}
-      submitLabel={initialKitchen ? "Save Changes" : "Add Kitchen"}
     >
-      <div className="space-y-4">
-        <div>
-          <Label className="text-sm font-medium text-foreground mb-2 block">
-            Kitchen Name *
-          </Label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter kitchen name"
-            className="border-border focus:border-primary focus:ring-primary/20"
-          />
-        </div>
-        <div>
-          <Label className="text-sm font-medium text-foreground mb-2 block">
-            Location *
-          </Label>
-          <Input
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Enter location"
-            className="border-border focus:border-primary focus:ring-primary/20"
-          />
-        </div>
-        {error && (
-          <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md border border-destructive/20">
-            {error}
-          </div>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+        enableReinitialize
+      >
+        {({ isSubmitting }) => (
+          <Form className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  Kitchen Name *
+                </Label>
+                <Field
+                  as={Input}
+                  name="name"
+                  placeholder="Enter kitchen name"
+                  className="border-border focus:border-primary focus:ring-primary/20"
+                />
+                <ErrorMessage
+                  name="name"
+                  component="p"
+                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                >
+                  {(msg) => (
+                    <>
+                      <AlertCircle className="w-3 h-3" />
+                      {msg}
+                    </>
+                  )}
+                </ErrorMessage>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  Location *
+                </Label>
+                <Field
+                  as={Input}
+                  name="location"
+                  placeholder="Enter location"
+                  className="border-border focus:border-primary focus:ring-primary/20"
+                />
+                <ErrorMessage
+                  name="location"
+                  component="p"
+                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                >
+                  {(msg) => (
+                    <>
+                      <AlertCircle className="w-3 h-3" />
+                      {msg}
+                    </>
+                  )}
+                </ErrorMessage>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 pt-4 border-t border-border">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="border-border text-foreground hover:bg-muted bg-transparent"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  initialKitchen ? "Save Changes" : "Add Kitchen"
+                )}
+              </Button>
+            </div>
+          </Form>
         )}
-      </div>
-    </SimpleFormDialog>
+      </Formik>
+    </BaseDialog>
   );
 }

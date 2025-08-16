@@ -24,7 +24,7 @@ import {
   validateMealInputs,
 } from "@/lib/utils/meal-calculations";
 import type { MealCalculationInput } from "@/types/calculations";
-import { Plus, Utensils, X } from "lucide-react";
+import { AlertCircle, Plus, Utensils, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
@@ -454,8 +454,15 @@ export function AddMealDialog({
                     <ErrorMessage
                       name={`recipeId`}
                       component="p"
-                      className="text-red-500 text-xs mt-1"
-                    />
+                      className="text-destructive text-xs mt-1 flex items-center gap-1"
+                    >
+                      {(msg) => (
+                        <>
+                          <AlertCircle className="w-3 h-3" />
+                          {msg}
+                        </>
+                      )}
+                    </ErrorMessage>
                   </div>
                   <div className="sm:col-span-3">
                     <Label className="text-base font-medium text-foreground">
@@ -493,8 +500,15 @@ export function AddMealDialog({
                     <ErrorMessage
                       name={`ghan`}
                       component="p"
-                      className="text-red-500 text-xs mt-1"
-                    />
+                      className="text-destructive text-xs mt-1 flex items-center gap-1"
+                    >
+                      {(msg) => (
+                        <>
+                          <AlertCircle className="w-3 h-3" />
+                          {msg}
+                        </>
+                      )}
+                    </ErrorMessage>
                   </div>
 
                   <div className="sm:col-span-4">
@@ -512,8 +526,15 @@ export function AddMealDialog({
                     <ErrorMessage
                       name={`servingAmount`}
                       component="p"
-                      className="text-red-500 text-xs mt-1"
-                    />
+                      className="text-destructive text-xs mt-1 flex items-center gap-1"
+                    >
+                      {(msg) => (
+                        <>
+                          <AlertCircle className="w-3 h-3" />
+                          {msg}
+                        </>
+                      )}
+                    </ErrorMessage>
                   </div>
 
                   <div className="sm:col-span-4">
@@ -546,8 +567,15 @@ export function AddMealDialog({
                     <ErrorMessage
                       name={`servingUnit`}
                       component="p"
-                      className="text-red-500 text-xs mt-1"
-                    />
+                      className="text-destructive text-xs mt-1 flex items-center gap-1"
+                    >
+                      {(msg) => (
+                        <>
+                          <AlertCircle className="w-3 h-3" />
+                          {msg}
+                        </>
+                      )}
+                    </ErrorMessage>
                   </div>
 
                   <FieldArray name="ingredients">
@@ -602,8 +630,15 @@ export function AddMealDialog({
                               <ErrorMessage
                                 name={`ingredients[${index}].name`}
                                 component="p"
-                                className="text-red-500 text-xs mt-1"
-                              />
+                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                              >
+                                {(msg) => (
+                                  <>
+                                    <AlertCircle className="w-3 h-3" />
+                                    {msg}
+                                  </>
+                                )}
+                              </ErrorMessage>
                             </div>
                             <div className="col-span-5 sm:col-span-3">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
@@ -621,8 +656,15 @@ export function AddMealDialog({
                               <ErrorMessage
                                 name={`ingredients[${index}].quantity`}
                                 component="p"
-                                className="text-red-500 text-xs mt-1"
-                              />
+                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                              >
+                                {(msg) => (
+                                  <>
+                                    <AlertCircle className="w-3 h-3" />
+                                    {msg}
+                                  </>
+                                )}
+                              </ErrorMessage>
                             </div>
                             <div className="col-span-4 sm:col-span-2">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
@@ -640,8 +682,15 @@ export function AddMealDialog({
                               <ErrorMessage
                                 name={`ingredients[${index}].costPerUnit`}
                                 component="p"
-                                className="text-red-500 text-xs mt-1"
-                              />
+                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                              >
+                                {(msg) => (
+                                  <>
+                                    <AlertCircle className="w-3 h-3" />
+                                    {msg}
+                                  </>
+                                )}
+                              </ErrorMessage>
                             </div>
                             <div className="col-span-4 sm:col-span-2">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
@@ -758,7 +807,7 @@ export function AddMealDialog({
                               Please fix the following issues to see
                               calculations:
                             </p>
-                            <ul className="text-xs text-red-500 list-disc list-inside">
+                            <ul className="text-xs text-destructive list-disc list-inside">
                               {validation.errors.map((error, index) => (
                                 <li key={index}>{error}</li>
                               ))}

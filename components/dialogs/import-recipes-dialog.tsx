@@ -313,8 +313,8 @@ export function ImportRecipesDialog({
                 </p>
                 {uploadProgress.errors.length > 0 && (
                   <div>
-                    <p className="font-medium text-red-600">Errors:</p>
-                    <ul className="text-sm text-red-600 space-y-1 max-h-32 overflow-y-auto">
+                    <p className="font-medium text-destructive">Errors:</p>
+                    <ul className="text-sm text-destructive space-y-1 max-h-32 overflow-y-auto">
                       {uploadProgress.errors.map((error, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <X className="w-3 h-3 mt-0.5 shrink-0" />
