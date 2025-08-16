@@ -82,6 +82,7 @@ export function LexicalViewer({ value, className }: LexicalViewerProps) {
             <ContentEditable className="prose max-w-none outline-none" />
           }
           placeholder={null}
+          ErrorBoundary={() => null}
         />
       </LexicalComposer>
     </div>

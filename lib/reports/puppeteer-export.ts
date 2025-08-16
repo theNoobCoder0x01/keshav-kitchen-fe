@@ -5,67 +5,7 @@ import { generateReportHTML } from "./pdf-templates";
 import { extractUniqueRecipes } from "./recipe-export";
 
 // Interface matching the report data structure
-interface ReportData {
-  type: string;
-  date: Date;
-  totalQuantity?: number;
-  totalMeals?: number;
-  breakfastCount?: number;
-  lunchCount?: number;
-  dinnerCount?: number;
-  combinedIngredients?: Array<{
-    name: string;
-    totalQuantity: number;
-    unit: string;
-    totalCost: number;
-    sources: Array<{
-      kitchen: string;
-      mealType: string;
-      recipe: string;
-      quantity: number;
-      servings: number;
-    }>;
-  }>;
-  summary?: {
-    totalIngredients: number;
-    totalCost: number;
-    uniqueIngredients: number;
-    mealTypesCombined: boolean;
-    kitchensCombined: boolean;
-  };
-  selectedMealTypes?: string[];
-  combineKitchens?: boolean;
-  combineMealTypes?: boolean;
-  menus: Array<{
-    id: string;
-    date: Date;
-    mealType: string;
-    servings: number;
-    ghanFactor: number;
-    status: string;
-    actualCount?: number;
-    notes?: string;
-    kitchen: {
-      name: string;
-    };
-    recipe: {
-      name: string;
-      description?: string;
-      ingredients?: Array<{
-        name: string;
-        quantity: number;
-        unit: string;
-        costPerUnit?: number;
-      }>;
-    };
-    ingredients?: Array<{
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit: number;
-    }>;
-  }>;
-}
+import type { MenuReportData as ReportData } from "@/types";
 
 // Function to generate recipe HTML using the simplified template
 function generateRecipeHTML(recipe: any): string {

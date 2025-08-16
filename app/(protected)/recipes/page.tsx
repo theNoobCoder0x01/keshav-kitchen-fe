@@ -3,7 +3,7 @@
 import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
 import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
-import type { RecipeDetailData } from "@/components/recipes/recipe-detail-view";
+import type { RecipeDetailData } from "@/types";
 import {
   RecipesTable,
   RecipesTableSkeleton,
@@ -26,22 +26,7 @@ import { toast } from "sonner";
 
 export default function RecipesPage() {
   // Define interfaces for type safety
-  interface Recipe {
-    id: string;
-    name: string;
-    category: string;
-    subcategory: string;
-    cost: number;
-    instructions?: string | null;
-    ingredients?: Array<{
-      name: string;
-      quantity: number | string;
-      unit: string;
-      costPerUnit?: number | string;
-    }>;
-    createdAt: Date;
-    updatedAt: Date;
-  }
+  type Recipe = import("@/types/recipes").RecipeListItem;
 
   const { data: session } = useSession();
 
@@ -80,7 +65,7 @@ export default function RecipesPage() {
   ];
   const subcategories = [
     "all",
-    ...new Set(recipes.map((recipe) => recipe.subcategory)),
+    ...new Set(recipes.map((recipe) => recipe.subcategory || "")),
   ];
 
   // Filter recipes based on search and filters
@@ -93,7 +78,7 @@ export default function RecipesPage() {
       recipe.category.toLowerCase() === filterCategory.toLowerCase();
     const matchesSubcategory =
       filterSubcategory === "all" ||
-      recipe.subcategory.toLowerCase() === filterSubcategory.toLowerCase();
+      (recipe.subcategory || "").toLowerCase() === filterSubcategory.toLowerCase();
 
     return matchesSearch && matchesCategory && matchesSubcategory;
   });
@@ -482,13 +467,13 @@ export default function RecipesPage() {
               setEditRecipe({
                 recipeName: recipe.name,
                 category: recipe.category,
-                subcategory: recipe.subcategory,
+                subcategory: recipe.subcategory || "",
                 selectedRecipe: recipe.id,
                 ingredients: (recipe.ingredients || []).map((ingredient) => ({
                   name: ingredient.name,
-                  quantity: ingredient.quantity.toString(),
+                  quantity: String(ingredient.quantity ?? ""),
                   unit: ingredient.unit,
-                  costPerUnit: (ingredient.costPerUnit || "").toString(),
+                  costPerUnit: String(ingredient.costPerUnit ?? ""),
                 })),
                 instructions: recipe.instructions ?? null,
               });

@@ -1,29 +1,7 @@
 import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
 import * as XLSX from "xlsx";
 
-// Interface for recipe data
-interface RecipeExportData {
-  id: string;
-  name: string;
-  description?: string | null;
-  instructions?: string | null;
-  servings?: number | null;
-  category: string;
-  subcategory?: string | null;
-  ingredients: Array<{
-    id?: string;
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit?: number | null;
-  }>;
-  createdAt?: Date;
-  updatedAt?: Date;
-  user?: {
-    name?: string | null;
-    email?: string;
-  };
-}
+import type { RecipeDetailData as RecipeExportData } from "@/types/recipes";
 
 // Create Excel worksheet for a single recipe
 export function createRecipeExcelWorksheet(
@@ -38,7 +16,8 @@ export function createRecipeExcelWorksheet(
   data.push(["Subcategory", recipe.subcategory || "N/A"]);
   data.push(["Servings", recipe.servings || "N/A"]);
   data.push(["Description", recipe.description || "N/A"]);
-  data.push(["Created By", recipe.user?.name || "Unknown"]);
+  // Created By not available in RecipeDetailData; omit or provide placeholder
+data.push(["Created By", "Unknown"]);
   data.push([
     "Created Date",
     recipe.createdAt ? new Date(recipe.createdAt).toLocaleDateString() : "N/A",
@@ -195,7 +174,7 @@ export function createRecipeCSV(recipe: RecipeExportData): string {
   lines.push(`Subcategory,"${recipe.subcategory || "N/A"}"`);
   lines.push(`Servings,${recipe.servings || "N/A"}`);
   lines.push(`Description,"${recipe.description || "N/A"}"`);
-  lines.push(`Created By,"${recipe.user?.name || "Unknown"}"`);
+  lines.push(`Created By,"Unknown"`);
   lines.push(
     `Created Date,"${recipe.createdAt ? new Date(recipe.createdAt).toLocaleDateString() : "N/A"}"`,
   );
@@ -326,7 +305,6 @@ export function extractUniqueRecipes(menus: any[]): RecipeExportData[] {
         ingredients: menu.ingredients || menu.recipe.ingredients || [],
         createdAt: menu.recipe.createdAt,
         updatedAt: menu.recipe.updatedAt,
-        user: menu.recipe.user,
       };
 
       uniqueRecipes.set(recipe.id, recipe);

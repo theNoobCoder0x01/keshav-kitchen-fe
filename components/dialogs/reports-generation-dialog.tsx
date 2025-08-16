@@ -61,10 +61,7 @@ interface ReportOption {
   category: "meal" | "analysis" | "summary";
 }
 
-interface Kitchen {
-  id: string;
-  name: string;
-}
+import type { Kitchen } from "@/types";
 
 interface ReportProgress {
   current: number;

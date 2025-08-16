@@ -1,61 +1,7 @@
 import ExcelJS from "exceljs";
+import type { CombinedIngredient } from "@/types/menus";
 
-interface MenuReportData {
-  type: string;
-  date: Date;
-  totalQuantity?: number;
-  totalMeals?: number;
-  breakfastCount?: number;
-  lunchCount?: number;
-  dinnerCount?: number;
-  combinedIngredients?: Array<{
-    name: string;
-    totalQuantity: number;
-    unit: string;
-    totalCost: number;
-    sources: Array<{
-      kitchen: string;
-      mealType: string;
-      recipe: string;
-      quantity: number;
-      servings: number;
-    }>;
-  }>;
-  summary?: {
-    totalIngredients: number;
-    totalCost: number;
-    uniqueIngredients: number;
-    mealTypesCombined: boolean;
-    kitchensCombined: boolean;
-  };
-  selectedMealTypes?: string[];
-  combineKitchens?: boolean;
-  combineMealTypes?: boolean;
-  menus: Array<{
-    id: string;
-    date: Date;
-    mealType: string;
-    servings: number;
-    ghanFactor: number;
-    status: string;
-    actualCount?: number;
-    notes?: string;
-    kitchen: {
-      name: string;
-    };
-    recipe: {
-      name: string;
-      description?: string;
-      ingredients?: Array<{
-        ingredient: {
-          name: string;
-          unit: string;
-        };
-        quantity: number;
-      }>;
-    };
-  }>;
-}
+import type { MenuReportData } from "@/types";
 
 // Helper function to safely get text with Unicode support
 function encodeTextForExport(text: string): string {

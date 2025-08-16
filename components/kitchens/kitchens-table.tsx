@@ -18,13 +18,7 @@ import {
 import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-export interface Kitchen {
-  id: string;
-  name: string;
-  location: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { Kitchen } from "@/types";
 
 interface KitchensTableProps {
   kitchens: Kitchen[];
@@ -75,7 +69,9 @@ export function KitchensTable({
   const sortedKitchens = [...kitchens].sort((a, b) => {
     if (sortConfig.direction === null) return 0;
     const multiplier = sortConfig.direction === "ascending" ? 1 : -1;
-    return a[sortConfig.key] > b[sortConfig.key] ? multiplier : -multiplier;
+    const av = (a[sortConfig.key] ?? "").toString();
+    const bv = (b[sortConfig.key] ?? "").toString();
+    return av > bv ? multiplier : av < bv ? -multiplier : 0;
   });
 
   const paginatedKitchens = sortedKitchens.slice(
