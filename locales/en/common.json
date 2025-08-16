@@ -1,0 +1,101 @@
+{
+  "navigation": {
+    "recipes": "Recipes",
+    "menus": "Menus",
+    "reports": "Reports",
+    "kitchens": "Kitchens",
+    "calendar": "Calendar",
+    "settings": "Settings"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close",
+    "open": "Open",
+    "name": "Name",
+    "description": "Description",
+    "actions": "Actions",
+    "date": "Date",
+    "time": "Time",
+    "status": "Status",
+    "notes": "Notes",
+    "language": "Language",
+    "english": "English",
+    "gujarati": "Gujarati"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Configure application settings and upload calendar files",
+    "languageSettings": "Language Settings",
+    "languageDescription": "Choose your preferred language for the application",
+    "selectLanguage": "Select Language",
+    "calendarSettings": "Calendar Settings",
+    "otherSettings": "Other Settings",
+    "uploadCalendar": "Upload ICS Calendar File",
+    "calendarDescription": "Upload a .ics file to display tithi and event information",
+    "chooseFile": "Choose File",
+    "processing": "Processing...",
+    "calendarEventsLoaded": "Calendar Events Loaded",
+    "eventsAvailable": "{count} events available",
+    "fileRequirements": "File Requirements",
+    "fileFormatRequired": "File must be in .ics format",
+    "maxFileSize": "Maximum file size: 1MB",
+    "validCalendarEvents": "Must contain valid calendar events",
+    "gujaratiTithiInfo": "Events with Gujarati tithi information will be displayed"
+  },
+  "recipes": {
+    "title": "Recipes",
+    "addRecipe": "Add Recipe",
+    "editRecipe": "Edit Recipe",
+    "ingredients": "Ingredients",
+    "instructions": "Instructions",
+    "servings": "Servings",
+    "category": "Category",
+    "subcategory": "Subcategory",
+    "cookingTime": "Cooking Time",
+    "difficulty": "Difficulty"
+  },
+  "menus": {
+    "title": "Menus",
+    "addMenu": "Add Menu",
+    "mealType": "Meal Type",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snack": "Snack",
+    "ghanFactor": "Ghan Factor",
+    "actualCount": "Actual Count"
+  },
+  "reports": {
+    "title": "Reports",
+    "visitorCount": "Visitor Count",
+    "mealsCounted": "Meals Counted",
+    "generateReport": "Generate Report",
+    "exportReport": "Export Report"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "welcome": "Welcome",
+    "profile": "Profile"
+  },
+  "messages": {
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Failed to save settings",
+    "languageChanged": "Language changed successfully",
+    "uploadSuccess": "File uploaded successfully",
+    "uploadError": "Failed to upload file",
+    "deleteSuccess": "Item deleted successfully",
+    "deleteError": "Failed to delete item"
+  }
+}
