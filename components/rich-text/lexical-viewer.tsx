@@ -1,13 +1,13 @@
 "use client";
 
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { useMemo } from "react";
-import { HeadingNode } from "@lexical/rich-text";
-import { ListItemNode, ListNode } from "@lexical/list";
 import { LinkNode } from "@lexical/link";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { HeadingNode } from "@lexical/rich-text";
 import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
+import { useMemo } from "react";
 
 interface LexicalViewerProps {
   value?: string | null;
@@ -28,7 +28,10 @@ function parseInitialEditorStateString(value?: string | null): string | null {
 }
 
 export function LexicalViewer({ value, className }: LexicalViewerProps) {
-  const initialSerialized = useMemo(() => parseInitialEditorStateString(value), [value]);
+  const initialSerialized = useMemo(
+    () => parseInitialEditorStateString(value),
+    [value],
+  );
 
   const initialConfig = useMemo(
     () => ({
@@ -74,7 +77,12 @@ export function LexicalViewer({ value, className }: LexicalViewerProps) {
   return (
     <div className={className}>
       <LexicalComposer initialConfig={initialConfig}>
-        <RichTextPlugin contentEditable={<ContentEditable className="prose max-w-none outline-none" />} placeholder={null} />
+        <RichTextPlugin
+          contentEditable={
+            <ContentEditable className="prose max-w-none outline-none" />
+          }
+          placeholder={null}
+        />
       </LexicalComposer>
     </div>
   );
