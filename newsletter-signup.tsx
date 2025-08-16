@@ -9,12 +9,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { Github, Mail, Shield, Twitter } from "lucide-react";
 
 export default function Component() {
-  const { t } = useTranslation();
-  
+  const { t } = useTranslations();
+
   return (
     <div className="min-h-screen bg-linear-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/95 backdrop-blur-xs">

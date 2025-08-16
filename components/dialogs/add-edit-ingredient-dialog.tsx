@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Package } from "lucide-react";
@@ -40,8 +40,8 @@ export function AddEditIngredientDialog({
   initialIngredient = null,
   onSave,
 }: AddEditIngredientDialogProps) {
-  const { t } = useTranslation();
-  
+  const { t } = useTranslations();
+
   const validationSchema = Yup.object({
     name: Yup.string().trim().required(t("ingredients.nameRequired")),
     costPerKg: Yup.number()
@@ -74,7 +74,11 @@ export function AddEditIngredientDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={initialIngredient ? t("ingredients.editIngredient") : t("ingredients.addIngredient")}
+      title={
+        initialIngredient
+          ? t("ingredients.editIngredient")
+          : t("ingredients.addIngredient")
+      }
       description={
         initialIngredient
           ? t("ingredients.updateIngredientDetails")
@@ -142,7 +146,9 @@ export function AddEditIngredientDialog({
                       }
                     >
                       <SelectTrigger className="border-border focus:border-primary focus:ring-primary/20">
-                        <SelectValue placeholder={t("ingredients.selectUnit")} />
+                        <SelectValue
+                          placeholder={t("ingredients.selectUnit")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {UNIT_OPTIONS.map((unitOption) => (
