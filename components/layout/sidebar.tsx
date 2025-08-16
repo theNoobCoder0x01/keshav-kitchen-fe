@@ -3,14 +3,16 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Calendar, ChefHat, ChevronDown, Home, Users, X } from "lucide-react";
+import { BarChart3, Calendar, ChefHat, ChevronDown, Home, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "@/hooks/use-translations";
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { tn } = useTranslations();
 
   // Close sidebar on mobile when route changes
   useEffect(() => {
@@ -71,7 +73,7 @@ export function Sidebar() {
     },
     {
       id: "menus",
-      label: "Menus",
+      label: tn("menus"),
       icon: Calendar,
       href: "/menus",
       isActive: pathname === "/menus",
@@ -81,7 +83,7 @@ export function Sidebar() {
     },
     {
       id: "recipe",
-      label: "Recipes",
+      label: tn("recipes"),
       icon: ChefHat,
       href: "/recipes",
       isActive: pathname === "/recipes",
@@ -90,8 +92,18 @@ export function Sidebar() {
       children: null,
     },
     {
+      id: "reports",
+      label: tn("reports"),
+      icon: BarChart3,
+      href: "/reports",
+      isActive: pathname === "/reports",
+      description: "View reports and analytics",
+      badge: null,
+      children: null,
+    },
+    {
       id: "kitchens",
-      label: "Kitchens",
+      label: tn("kitchens"),
       icon: Users,
       href: "/kitchens",
       isActive: pathname === "/kitchens",
