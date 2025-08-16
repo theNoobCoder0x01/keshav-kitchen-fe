@@ -19,6 +19,7 @@ import {
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import type { MealType as UnifiedMealType } from "@/types/menus";
 import { AlertTriangle, FileText } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -34,6 +35,7 @@ interface MenuGridProps {
 }
 
 export default function MenuPage() {
+  const { t } = useTranslation();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
@@ -64,7 +66,7 @@ export default function MenuPage() {
       setKitchens(kitchensData);
     } catch (error) {
       console.error("Failed to load kitchens:", error);
-      toast.error("Failed to load kitchens");
+      toast.error(t("messages.loadKitchensError"));
     } finally {
       setLoadingStates((prev) => ({
         ...prev,
@@ -73,7 +75,7 @@ export default function MenuPage() {
         menus: prev.menus - 1,
       }));
     }
-  }, []);
+  }, [t]);
 
   const loadMenuData = useCallback(async () => {
     if (kitchens.length === 0) return; // Wait for kitchens to load first
@@ -128,7 +130,7 @@ export default function MenuPage() {
       setDailyMenus(groupedMenus);
     } catch (error) {
       console.error("Failed to load menu data:", error);
-      toast.error("Failed to load menu data");
+      toast.error(t("messages.loadMenuDataError"));
     } finally {
       setLoadingStates((prev) => ({
         ...prev,
@@ -136,7 +138,7 @@ export default function MenuPage() {
         menus: prev.menus - 1,
       }));
     }
-  }, [selectedDate, activeTab, session?.user?.kitchenId, kitchens]);
+  }, [selectedDate, activeTab, session?.user?.kitchenId, kitchens, t]);
 
   // Load kitchens once on mount
   useEffect(() => {
@@ -177,21 +179,21 @@ export default function MenuPage() {
   };
 
   const handleDeleteMeal = async (mealId: string) => {
-    if (window.confirm("Are you sure you want to delete this meal?")) {
+    if (window.confirm(t("messages.confirmDeleteMeal"))) {
       try {
         const response = await fetch(`/api/menus/${mealId}`, {
           method: "DELETE",
         });
 
         if (response.ok) {
-          toast.success("Meal deleted successfully");
+          toast.success(t("messages.mealDeletedSuccess"));
           loadMenuData(); // Reload data
         } else {
-          toast.error("Failed to delete meal");
+          toast.error(t("messages.mealDeleteError"));
         }
       } catch (error) {
         console.error("Error deleting meal:", error);
-        toast.error("Failed to delete meal");
+        toast.error(t("messages.mealDeleteError"));
       }
     }
   };
@@ -218,7 +220,7 @@ export default function MenuPage() {
       <div className="min-h-screen bg-linear-to-br from-background via-background to-primary/20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -234,10 +236,10 @@ export default function MenuPage() {
       {/* Header Section */}
       <div>
         <PageHeader
-          title="Kitchen Dashboard"
+          title={t("menus.kitchenDashboard")}
           subtitle={
             <span className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <span>Manage your daily menu and track kitchen operations</span>
+              <span>{t("menus.kitchenDashboardSubtitle")}</span>
             </span>
           }
           actions={
@@ -257,7 +259,7 @@ export default function MenuPage() {
                 onClick={() => setReportsDialog(true)}
               >
                 <FileText className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Reports</span>
+                <span className="hidden sm:inline">{t("reports.title")}</span>
               </Button>
             </div>
           }
@@ -302,12 +304,12 @@ export default function MenuPage() {
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <p className="text-muted-foreground flex flex-col items-center gap-2 text-xl text-center">
               <span className="flex items-center gap-1">
-                <AlertTriangle className="w-7 h-7" /> No kitchens found.
+                <AlertTriangle className="w-7 h-7" /> {t("menus.noKitchensFound")}
               </span>
-              <span className="text-sm">Please add a kitchen first.</span>
+              <span className="text-sm">{t("menus.addKitchenFirst")}</span>
             </p>
             <Button variant="default" onClick={() => router.push("/kitchens")}>
-              Manage Kitchens
+              {t("menus.manageKitchens")}
             </Button>
           </div>
         </Card>
