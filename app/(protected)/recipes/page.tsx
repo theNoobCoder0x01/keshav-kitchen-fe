@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import type { RecipeDetailData } from "@/types";
 import { Filter, Plus, RefreshCw, Search, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -28,6 +29,7 @@ export default function RecipesPage() {
   // Define interfaces for type safety
   type Recipe = import("@/types/recipes").RecipeListItem;
 
+  const { t } = useTranslation();
   const { data: session } = useSession();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -124,7 +126,7 @@ export default function RecipesPage() {
       setIsPrintDialogOpen(true);
     } catch (error) {
       console.error("Error fetching recipe details:", error);
-      toast.error("Failed to load recipe details for printing");
+      toast.error(t("messages.loadRecipeDetailsError"));
     }
   };
 
@@ -141,12 +143,12 @@ export default function RecipesPage() {
       }
 
       setRecipes((prevRecipes) => prevRecipes.filter((r) => r.id !== id));
-      toast.success("Recipe deleted", {
-        description: `${recipes.find((r) => r.id === id)?.name} has been deleted successfully.`,
+      toast.success(t("messages.recipeDeleted"), {
+        description: t("messages.recipeDeletedDescription", { name: recipes.find((r) => r.id === id)?.name }),
       });
     } catch (error) {
-      toast.error("Error", {
-        description: "Failed to delete recipe. Please try again.",
+      toast.error(t("common.error"), {
+        description: t("messages.recipeDeleteError"),
       });
       console.error("Failed to delete recipe:", error);
     } finally {
@@ -158,36 +160,36 @@ export default function RecipesPage() {
   const handleSaveRecipe = async (data: any) => {
     // Validate required fields
     if (!data.name || data.name.trim() === "") {
-      toast.error("Error", {
-        description: "Recipe name is required.",
+      toast.error(t("common.error"), {
+        description: t("recipes.nameRequired"),
       });
       return;
     }
 
     if (!data.category || data.category.trim() === "") {
-      toast.error("Error", {
-        description: "Recipe category is required.",
+      toast.error(t("common.error"), {
+        description: t("recipes.categoryRequired"),
       });
       return;
     }
 
     if (!data.subcategory || data.subcategory.trim() === "") {
-      toast.error("Error", {
-        description: "Recipe subcategory is required.",
+      toast.error(t("common.error"), {
+        description: t("recipes.subcategoryRequired"),
       });
       return;
     }
 
     if (!data.subcategory || data.subcategory.trim() === "") {
-      toast.error("Error", {
-        description: "Subcategory is required for a recipe.",
+      toast.error(t("common.error"), {
+        description: t("recipes.subcategoryRequired"),
       });
       return;
     }
 
     if (!data.ingredients || data.ingredients.length === 0) {
-      toast.error("Error", {
-        description: "At least one ingredient is required.",
+      toast.error(t("common.error"), {
+        description: t("recipes.ingredientsRequired"),
       });
       return;
     }
@@ -205,8 +207,8 @@ export default function RecipesPage() {
     try {
       const userId = session?.user?.id;
       if (!userId) {
-        toast.error("Error", {
-          description: "User not authenticated.",
+        toast.error(t("common.error"), {
+          description: t("messages.userNotAuthenticated"),
         });
         return;
       }
@@ -233,7 +235,7 @@ export default function RecipesPage() {
 
         if (editRecipe) {
           getRecipes();
-          toast.success("Recipe updated!");
+          toast.success(t("messages.recipeUpdated"));
         } else {
           // Transform the result to match the local Recipe interface
           const transformedRecipe: Recipe = {
@@ -247,16 +249,16 @@ export default function RecipesPage() {
             updatedAt: result.updatedAt,
           };
           setRecipes((prev: Recipe[]) => [transformedRecipe, ...prev]);
-          toast.success("Recipe added!");
+          toast.success(t("messages.recipeAdded"));
         }
         setIsAddDialogOpen(false);
         setIsEditDialogOpen(false);
         setEditRecipe(null);
       } catch (err: any) {
-        toast.error(err.message || "Failed to save recipe.");
+        toast.error(err.message || t("messages.failedToSaveRecipe"));
       }
     } catch (err) {
-      toast.error("Failed to save recipe.");
+      toast.error(t("messages.failedToSaveRecipe"));
     }
   };
 
@@ -281,7 +283,7 @@ export default function RecipesPage() {
       setRecipes(transformedRecipes);
     } catch (err: any) {
       console.error("Error fetching data:", err);
-      toast.error("Failed to load recipes.");
+      toast.error(t("messages.failedToLoadRecipes"));
     } finally {
       setLoading(false);
     }
@@ -303,8 +305,8 @@ export default function RecipesPage() {
       {/* Header Section */}
       <div>
         <PageHeader
-          title="Recipe Management"
-          subtitle="Create, manage, and organize your kitchen recipes"
+          title={t("recipes.management")}
+          subtitle={t("recipes.managementSubtitle")}
           actions={
             <div className="flex items-center gap-3">
               <Button
@@ -313,14 +315,14 @@ export default function RecipesPage() {
                 className="flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
-                <span className="hidden sm:inline">Import</span>
+                <span className="hidden sm:inline">{t("recipes.import")}</span>
               </Button>
               <Button
                 className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => setIsAddDialogOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Recipe
+                {t("recipes.addRecipe")}
               </Button>
             </div>
           }
@@ -332,10 +334,10 @@ export default function RecipesPage() {
         <CardHeader className="p-4 pb-0">
           <CardTitle className="text-lg flex items-center gap-2">
             <Search className="w-5 h-5 text-primary" />
-            Search & Filter
+            {t("recipes.searchAndFilter")}
           </CardTitle>
           <CardDescription>
-            Find and filter recipes by name, category, and subcategory
+            {t("recipes.searchAndFilterDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 space-y-4">
@@ -344,7 +346,7 @@ export default function RecipesPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search recipes by name..."
+                placeholder={t("recipes.searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -356,7 +358,7 @@ export default function RecipesPage() {
               className="flex items-center gap-2"
             >
               <Filter className="w-4 h-4" />
-              Filters
+              {t("recipes.filters")}
             </Button>
             {(searchTerm ||
               filterCategory !== "all" ||
@@ -367,7 +369,7 @@ export default function RecipesPage() {
                 className="flex items-center gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
-                Clear
+                {t("recipes.clear")}
               </Button>
             )}
           </div>
@@ -376,7 +378,7 @@ export default function RecipesPage() {
           {showAdvancedFilters && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Category</label>
+                <label className="text-sm font-medium">{t("recipes.category")}</label>
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
@@ -384,13 +386,13 @@ export default function RecipesPage() {
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
-                      {category === "all" ? "All Categories" : category}
+                      {category === "all" ? t("recipes.allCategories") : category}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Subcategory</label>
+                <label className="text-sm font-medium">{t("recipes.subcategory")}</label>
                 <select
                   value={filterSubcategory}
                   onChange={(e) => setFilterSubcategory(e.target.value)}
@@ -399,7 +401,7 @@ export default function RecipesPage() {
                   {subcategories.map((subcategory) => (
                     <option key={subcategory} value={subcategory}>
                       {subcategory === "all"
-                        ? "All Subcategories"
+                        ? t("recipes.allSubcategories")
                         : subcategory}
                     </option>
                   ))}
@@ -415,17 +417,17 @@ export default function RecipesPage() {
             <div className="flex flex-wrap gap-2 pt-2">
               {searchTerm && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  Search: &quot;{searchTerm}&quot;
+                  {t("recipes.search")}: &quot;{searchTerm}&quot;
                 </Badge>
               )}
               {filterCategory !== "all" && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  Category: {filterCategory}
+                  {t("recipes.category")}: {filterCategory}
                 </Badge>
               )}
               {filterSubcategory !== "all" && (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  Subcategory: {filterSubcategory}
+                  {t("recipes.subcategory")}: {filterSubcategory}
                 </Badge>
               )}
             </div>
@@ -436,9 +438,9 @@ export default function RecipesPage() {
       {/* Results Summary */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold">Recipes</h3>
+          <h3 className="text-lg font-semibold">{t("recipes.title")}</h3>
           <Badge variant="outline" className="bg-card">
-            {filteredRecipes.length} of {recipes.length}
+            {filteredRecipes.length} {t("common.of")} {recipes.length}
           </Badge>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { type RecipeDetailData } from "@/types";
 import { Download, Eye, FileText, Loader2, Printer } from "lucide-react";
 import { useRef, useState } from "react";
@@ -20,6 +21,7 @@ export function RecipePrintDialog({
   onOpenChange,
   recipe,
 }: RecipePrintDialogProps) {
+  const { t } = useTranslation();
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(true); // Changed to true to keep preview open by default
   const printRef = useRef<HTMLDivElement>(null);
@@ -32,7 +34,7 @@ export function RecipePrintDialog({
           <!DOCTYPE html>
           <html>
             <head>
-              <title>Recipe: ${recipe?.name}</title>
+              <title>${t("recipes.printRecipe")}: ${recipe?.name}</title>
               <meta charset="utf-8">
               <style>
                 body {
@@ -94,10 +96,10 @@ export function RecipePrintDialog({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast.success("PDF downloaded successfully");
+      toast.success(t("messages.pdfDownloadedSuccess"));
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF. Please try again.");
+      toast.error(t("messages.pdfGenerationError"));
     } finally {
       setIsGenerating(false);
     }
@@ -109,15 +111,15 @@ export function RecipePrintDialog({
     <BaseDialog
       open={isOpen}
       onOpenChange={onOpenChange}
-      title={`Print Recipe: ${recipe.name}`}
-      description="Preview, print, or download your recipe as a PDF document."
+      title={`${t("recipes.printRecipe")}: ${recipe.name}`}
+      description={t("recipes.printRecipeDescription")}
       icon={<FileText className="w-5 h-5 text-primary-foreground" />}
       size="4xl"
       footer={
         <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="w-4 h-4 mr-2" />
-            Print
+            {t("recipes.print")}
           </Button>
 
           <Button
@@ -130,7 +132,7 @@ export function RecipePrintDialog({
             ) : (
               <Download className="w-4 h-4 mr-2" />
             )}
-            {isGenerating ? "Generating..." : "Download PDF"}
+            {isGenerating ? t("recipes.generating") : t("recipes.downloadPdf")}
           </Button>
         </div>
       }
@@ -141,7 +143,7 @@ export function RecipePrintDialog({
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Eye className="w-4 h-4 text-primary" />
-              {showPreview ? "Preview" : "Show Preview"}
+              {showPreview ? t("recipes.preview") : t("recipes.showPreview")}
             </CardTitle>
             <Button
               variant={showPreview ? "default" : "outline"}
@@ -150,7 +152,7 @@ export function RecipePrintDialog({
               className="flex items-center gap-2"
             >
               <Eye className="w-4 h-4 mr-1" />
-              {showPreview ? "Hide Preview" : "Show Preview"}
+              {showPreview ? t("recipes.hidePreview") : t("recipes.showPreview")}
             </Button>
           </CardHeader>
           {showPreview && (
