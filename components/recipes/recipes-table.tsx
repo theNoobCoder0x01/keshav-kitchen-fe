@@ -193,7 +193,7 @@ export function RecipesTable({
           ) : (
             <TableRow>
               <TableCell colSpan={4} className="h-24 text-center">
-                No results.
+                No recipes found.
               </TableCell>
             </TableRow>
           )}

@@ -4,6 +4,7 @@ import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
 import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation-dialog";
 import { MenuGrid, MenuGridSkeleton } from "@/components/menu/menu-grid";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { CompactDateSelector } from "@/components/ui/compact-date-selector";
 import {
   EnhancedStatsGrid,
@@ -19,7 +20,7 @@ import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
 import type { MealType as UnifiedMealType } from "@/types/menus";
-import { FileText } from "lucide-react";
+import { AlertTriangle, FileText } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -263,34 +264,53 @@ export default function MenuPage() {
         />
       </div>
 
-      {loadingStates.kitchens ? (
-        <TabNavigationSkeleton tabCount={kitchens.length || 3} />
-      ) : (
-        <TabNavigation
-          tabs={kitchens.map((k) => k.name)}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
+      {(loadingStates.kitchens || kitchens.length > 0) && (
+        <>
+          {loadingStates.kitchens ? (
+            <TabNavigationSkeleton tabCount={kitchens.length || 6} />
+          ) : (
+            <TabNavigation
+              tabs={kitchens.map((k) => k.name)}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            />
+          )}
+          {/* Stats Section */}
+          {loadingStates.stats ? (
+            <EnhancedStatsGridSkeleton />
+          ) : (
+            <EnhancedStatsGrid stats={getStatsForTab()} />
+          )}
+
+          {/* Menu Section */}
+          {loadingStates.menus ? (
+            <MenuGridSkeleton />
+          ) : (
+            <MenuGrid
+              onAddMeal={handleAddMeal}
+              onEditMeal={handleEditMeal}
+              onDeleteMeal={handleDeleteMeal}
+              dailyMenus={dailyMenus}
+              selectedDate={selectedDate}
+            />
+          )}
+        </>
       )}
 
-      {/* Stats Section */}
-      {loadingStates.stats ? (
-        <EnhancedStatsGridSkeleton />
-      ) : (
-        <EnhancedStatsGrid stats={getStatsForTab()} />
-      )}
-
-      {/* Menu Section */}
-      {loadingStates.menus ? (
-        <MenuGridSkeleton />
-      ) : (
-        <MenuGrid
-          onAddMeal={handleAddMeal}
-          onEditMeal={handleEditMeal}
-          onDeleteMeal={handleDeleteMeal}
-          dailyMenus={dailyMenus}
-          selectedDate={selectedDate}
-        />
+      {!loadingStates.kitchens && kitchens.length === 0 && (
+        <Card className="p-4">
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <p className="text-muted-foreground flex flex-col items-center gap-2 text-xl text-center">
+              <span className="flex items-center gap-1">
+                <AlertTriangle className="w-7 h-7" /> No kitchens found.
+              </span>
+              <span className="text-sm">Please add a kitchen first.</span>
+            </p>
+            <Button variant="default" onClick={() => router.push("/kitchens")}>
+              Manage Kitchens
+            </Button>
+          </div>
+        </Card>
       )}
 
       {/* Dialogs */}

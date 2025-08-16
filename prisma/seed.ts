@@ -26,7 +26,7 @@ async function hashPasswordForSeed(password: string) {
     passwordBuffer,
     { name: "PBKDF2" },
     false,
-    ["deriveBits"]
+    ["deriveBits"],
   );
 
   // Derive hash
@@ -38,7 +38,7 @@ async function hashPasswordForSeed(password: string) {
       hash: "SHA-256",
     },
     key,
-    hashLength * 8
+    hashLength * 8,
   );
 
   // Convert to base64
