@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +15,7 @@ import {
   Calendar,
   CheckCircle,
   FileText,
+  Globe,
   Info,
   RefreshCw,
   Settings,
@@ -22,6 +24,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useLanguage, LANGUAGE_OPTIONS } from "@/lib/contexts/language-context";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -41,7 +45,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const { language, updateUserLanguage } = useLanguage();
+  const { ts, tc, tmsg } = useTranslations();
 
   // Load calendar data on component mount
   useEffect(() => {
@@ -164,23 +172,81 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     fileInputRef.current?.click();
   };
 
+  const handleLanguageChange = async (newLanguage: string) => {
+    if (newLanguage === language) return;
+    
+    setIsUpdatingLanguage(true);
+    try {
+      await updateUserLanguage(newLanguage as 'en' | 'gu');
+      toast.success(tmsg('languageChanged'));
+    } catch (error) {
+      console.error('Error updating language:', error);
+      toast.error(tmsg('saveError'));
+    } finally {
+      setIsUpdatingLanguage(false);
+    }
+  };
+
   return (
     <TooltipProvider>
-      <BaseDialog
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Settings"
-        description="Configure application settings and upload calendar files"
-        icon={<Settings className="w-5 h-5 text-primary-foreground" />}
-        size="2xl"
-      >
+              <BaseDialog
+          open={open}
+          onOpenChange={onOpenChange}
+          title={ts('title')}
+          description={ts('description')}
+          icon={<Settings className="w-5 h-5 text-primary-foreground" />}
+          size="2xl"
+        >
         <div className="space-y-6">
+          {/* Language Settings */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Label className="text-base font-medium text-foreground flex items-center gap-2">
+                <Globe className="w-4 h-4 text-primary" />
+                {ts('languageSettings')}
+              </Label>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-foreground">
+                {ts('selectLanguage')}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {ts('languageDescription')}
+              </p>
+              
+              <Select 
+                value={language} 
+                onValueChange={handleLanguageChange}
+                disabled={isUpdatingLanguage}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{option.nativeLabel}</span>
+                        {option.value !== option.nativeLabel && (
+                          <span className="text-muted-foreground text-xs">
+                            ({option.label})
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {/* Calendar Settings */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
-                Calendar Settings
+                {ts('calendarSettings')}
               </Label>
               <Tooltip>
                 <TooltipTrigger>
@@ -188,9 +254,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">
-                    Upload an ICS calendar file to display Gujarati tithi and
-                    event information in the date selector. This will show event
-                    summaries and tithi details for selected dates.
+                    {ts('calendarDescription')}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -200,7 +264,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium text-foreground">
-                  Calendar File (ICS)
+                  {ts('uploadCalendar')}
                 </Label>
                 {calendarData && (
                   <Badge className="bg-green-100 text-green-800 border-green-200">
@@ -349,7 +413,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Settings className="w-4 h-4 text-primary" />
-                Other Settings
+                {ts('otherSettings')}
               </Label>
             </div>
 
