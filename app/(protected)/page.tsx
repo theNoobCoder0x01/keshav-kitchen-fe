@@ -10,8 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import { useTranslations } from "@/hooks/use-translations";
 import { formatTimeAgo } from "@/lib/utils/date";
-import { useTranslation } from "@/lib/hooks/use-translation";
 import {
   ArrowRight,
   Calendar,
@@ -52,7 +52,7 @@ interface QuickActionsData {
 }
 
 export default function HomePage() {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [homeStats, setHomeStats] = useState<HomeStats | null>(null);
@@ -95,7 +95,7 @@ export default function HomePage() {
         quickActions: false,
       });
     }
-  }, [t]);
+  }, []);
 
   // Load data when component mounts
   useEffect(() => {
@@ -190,9 +190,7 @@ export default function HomePage() {
           title={t("dashboard.welcomeBack")}
           subtitle={
             <span className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <span>
-                {t("dashboard.welcomeSubtitle")}
-              </span>
+              <span>{t("dashboard.welcomeSubtitle")}</span>
             </span>
           }
           actions={
@@ -266,7 +264,8 @@ export default function HomePage() {
                 homeStats.mealsPlannedChange >= 0
                   ? "+"
                   : ""}
-                {homeStats?.mealsPlannedChange || 0}% {t("dashboard.fromYesterday")}
+                {homeStats?.mealsPlannedChange || 0}%{" "}
+                {t("dashboard.fromYesterday")}
               </p>
             </CardContent>
           </Card>
