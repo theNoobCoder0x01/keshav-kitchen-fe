@@ -16,6 +16,7 @@ CREATE TABLE "User" (
     "password" TEXT,
     "image" TEXT,
     "role" "Role" NOT NULL DEFAULT 'USER',
+    "language" TEXT NOT NULL DEFAULT 'en',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "kitchenId" TEXT,
