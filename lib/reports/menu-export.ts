@@ -362,7 +362,7 @@ export async function createMenuReportWorkbook(
           menu.recipe?.ingredients
             ?.map((ing) =>
               encodeTextForExport(
-                `${ing.ingredient?.name || "N/A"} (${ing.quantity} ${ing.ingredient?.unit || ""})`,
+                `${ing.name || "N/A"} (${ing.quantity} ${ing.unit || ""})`,
               ),
             )
             .join(", ") || "N/A";
@@ -667,7 +667,7 @@ export async function createMenuReportCSV(
             menu.recipe?.ingredients
               ?.map((ing) =>
                 encodeTextForExport(
-                  `${ing.ingredient?.name || "N/A"} (${ing.quantity} ${ing.ingredient?.unit || ""})`,
+                  `${ing.name || "N/A"} (${ing.quantity} ${ing.unit || ""})`,
                 ),
               )
               .join("; ") || "N/A";

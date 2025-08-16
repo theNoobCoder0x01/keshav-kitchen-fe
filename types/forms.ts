@@ -14,3 +14,11 @@ export interface MealFormValues {
   servingUnit: string;
   ingredients: IngredientFormValue[];
 }
+
+// UI form type for recipe dialogs where quantities are entered as strings
+export interface RecipeDialogIngredientValue {
+  name: string;
+  quantity: string;
+  unit: string;
+  costPerUnit?: string;
+}
