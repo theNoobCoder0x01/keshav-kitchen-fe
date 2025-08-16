@@ -24,11 +24,11 @@ import {
   validateMealInputs,
 } from "@/lib/utils/meal-calculations";
 import type { MealCalculationInput } from "@/types/calculations";
-import { AlertCircle, Plus, Utensils, X } from "lucide-react";
+import { Plus, Utensils, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
-import type { RecipeIngredientBase, RecipeApiItem } from "@/types/recipes";
+import type { RecipeApiItem, RecipeIngredientBase } from "@/types/recipes";
 
 const validationSchema = Yup.object().shape({
   recipeId: Yup.string().required("Recipe is required"),
@@ -150,13 +150,14 @@ interface AddMealDialogProps {
   } | null;
 }
 
-
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 
 // Use centralized unit options
 const UNITS = UNIT_OPTIONS;
 
-type Recipe = Pick<RecipeApiItem, "id" | "name"> & { ingredients?: RecipeIngredientBase[] };
+type Recipe = Pick<RecipeApiItem, "id" | "name"> & {
+  ingredients?: RecipeIngredientBase[];
+};
 
 type IngredientOption = {
   id: string;
@@ -213,13 +214,15 @@ export function AddMealDialog({
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
-      const ingredients = (selectedRecipe.ingredients || []).map((ingredient) => ({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        costPerUnit: ingredient.costPerUnit || 0,
-      }));
+      const ingredients = (selectedRecipe.ingredients || []).map(
+        (ingredient) => ({
+          id: ingredient.id,
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          costPerUnit: ingredient.costPerUnit || 0,
+        }),
+      );
       setFieldValue("ingredients", ingredients);
       setFieldValue("followRecipe", true);
     }
@@ -455,14 +458,7 @@ export function AddMealDialog({
                       name={`recipeId`}
                       component="p"
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    >
-                      {(msg) => (
-                        <>
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </>
-                      )}
-                    </ErrorMessage>
+                    />
                   </div>
                   <div className="sm:col-span-3">
                     <Label className="text-base font-medium text-foreground">
@@ -501,14 +497,7 @@ export function AddMealDialog({
                       name={`ghan`}
                       component="p"
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    >
-                      {(msg) => (
-                        <>
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </>
-                      )}
-                    </ErrorMessage>
+                    />
                   </div>
 
                   <div className="sm:col-span-4">
@@ -527,14 +516,7 @@ export function AddMealDialog({
                       name={`servingAmount`}
                       component="p"
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    >
-                      {(msg) => (
-                        <>
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </>
-                      )}
-                    </ErrorMessage>
+                    />
                   </div>
 
                   <div className="sm:col-span-4">
@@ -568,14 +550,7 @@ export function AddMealDialog({
                       name={`servingUnit`}
                       component="p"
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    >
-                      {(msg) => (
-                        <>
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </>
-                      )}
-                    </ErrorMessage>
+                    />
                   </div>
 
                   <FieldArray name="ingredients">
@@ -631,14 +606,7 @@ export function AddMealDialog({
                                 name={`ingredients[${index}].name`}
                                 component="p"
                                 className="text-destructive text-xs mt-1 flex items-center gap-1"
-                              >
-                                {(msg) => (
-                                  <>
-                                    <AlertCircle className="w-3 h-3" />
-                                    {msg}
-                                  </>
-                                )}
-                              </ErrorMessage>
+                              />
                             </div>
                             <div className="col-span-5 sm:col-span-3">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
@@ -657,14 +625,7 @@ export function AddMealDialog({
                                 name={`ingredients[${index}].quantity`}
                                 component="p"
                                 className="text-destructive text-xs mt-1 flex items-center gap-1"
-                              >
-                                {(msg) => (
-                                  <>
-                                    <AlertCircle className="w-3 h-3" />
-                                    {msg}
-                                  </>
-                                )}
-                              </ErrorMessage>
+                              />
                             </div>
                             <div className="col-span-4 sm:col-span-2">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
@@ -683,14 +644,7 @@ export function AddMealDialog({
                                 name={`ingredients[${index}].costPerUnit`}
                                 component="p"
                                 className="text-destructive text-xs mt-1 flex items-center gap-1"
-                              >
-                                {(msg) => (
-                                  <>
-                                    <AlertCircle className="w-3 h-3" />
-                                    {msg}
-                                  </>
-                                )}
-                              </ErrorMessage>
+                              />
                             </div>
                             <div className="col-span-4 sm:col-span-2">
                               <Label className="text-sm font-medium text-foreground mb-1 block">

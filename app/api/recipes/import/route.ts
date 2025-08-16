@@ -31,10 +31,15 @@ export const excelToJson = (fileBuffer: ArrayBuffer, userId: string) => {
     // Find the ingredient sheet for this recipe
     const sheetName = recipe.id;
 
-    const ingredients: RecipeIngredientInput[] = workbook.SheetNames.includes(sheetName)
-      ? XLSX.utils.sheet_to_json<RecipeIngredientInput>(workbook.Sheets[sheetName], {
-          defval: "",
-        })
+    const ingredients: RecipeIngredientInput[] = workbook.SheetNames.includes(
+      sheetName,
+    )
+      ? XLSX.utils.sheet_to_json<RecipeIngredientInput>(
+          workbook.Sheets[sheetName],
+          {
+            defval: "",
+          },
+        )
       : [];
 
     return {

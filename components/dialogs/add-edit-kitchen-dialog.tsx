@@ -4,8 +4,8 @@ import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, AlertCircle } from "lucide-react";
-import { ErrorMessage, Field, Formik, Form } from "formik";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Building2 } from "lucide-react";
 import * as Yup from "yup";
 
 interface AddEditKitchenDialogProps {
@@ -37,7 +37,7 @@ export function AddEditKitchenDialog({
 
   const handleSubmit = (
     values: typeof initialValues,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => {
     onSave({
       name: values.name.trim(),
@@ -82,14 +82,7 @@ export function AddEditKitchenDialog({
                   name="name"
                   component="p"
                   className="text-destructive text-xs mt-1 flex items-center gap-1"
-                >
-                  {(msg) => (
-                    <>
-                      <AlertCircle className="w-3 h-3" />
-                      {msg}
-                    </>
-                  )}
-                </ErrorMessage>
+                />
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
@@ -105,17 +98,10 @@ export function AddEditKitchenDialog({
                   name="location"
                   component="p"
                   className="text-destructive text-xs mt-1 flex items-center gap-1"
-                >
-                  {(msg) => (
-                    <>
-                      <AlertCircle className="w-3 h-3" />
-                      {msg}
-                    </>
-                  )}
-                </ErrorMessage>
+                />
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-3 pt-4 border-t border-border">
               <Button
                 type="button"
@@ -135,8 +121,10 @@ export function AddEditKitchenDialog({
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                     Saving...
                   </>
+                ) : initialKitchen ? (
+                  "Save Changes"
                 ) : (
-                  initialKitchen ? "Save Changes" : "Add Kitchen"
+                  "Add Kitchen"
                 )}
               </Button>
             </div>

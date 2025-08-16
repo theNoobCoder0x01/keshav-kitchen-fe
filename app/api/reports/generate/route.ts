@@ -17,9 +17,9 @@ import {
   combineIngredients,
   generateIngredientSummary,
 } from "@/lib/utils/ingredient-combiner";
+import type { MenuReportData } from "@/types";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import type { MenuReportData } from "@/types";
 
 export const dynamic = "force-dynamic";
 

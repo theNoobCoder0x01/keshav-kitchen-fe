@@ -4,7 +4,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-import type { RecipeIngredientBase, RecipeIngredientInput } from "@/types/recipes";
+import type {
+  RecipeIngredientBase,
+  RecipeIngredientInput,
+} from "@/types/recipes";
 
 export async function getRecipes() {
   try {

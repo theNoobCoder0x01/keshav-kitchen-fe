@@ -5,7 +5,6 @@ import {
 } from "@/lib/fonts/gujarati-font";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { CombinedIngredient } from "@/types";
 
 import type { MenuReportData } from "@/types";
 

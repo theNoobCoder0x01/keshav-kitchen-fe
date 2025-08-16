@@ -15,10 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { RecipeListItem as Recipe } from "@/types";
 import { ChevronDown, ChevronUp, Edit, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import type { RecipeDetailData, RecipeListItem as Recipe } from "@/types";
 
 interface RecipesTableProps {
   recipes: Recipe[];

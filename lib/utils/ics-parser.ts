@@ -1,4 +1,7 @@
-import type { CalendarEventBase as CalendarEvent, ParsedICSData } from "@/types";
+import type {
+  CalendarEventBase as CalendarEvent,
+  ParsedICSData,
+} from "@/types";
 
 /**
  * Parse ICS file content and extract events for a specific date
@@ -22,7 +25,10 @@ export function parseICSFile(
 
       // Look for tithi information in the event summary or description
       if (!tithi) {
-        tithi = extractTithi(event.summary, (event.description ?? undefined) as string | undefined);
+        tithi = extractTithi(
+          event.summary,
+          (event.description ?? undefined) as string | undefined,
+        );
       }
     }
   }
@@ -49,7 +55,10 @@ export function parseICSFileForImport(icsContent: string): ParsedICSData {
 
       // Look for tithi information in the event summary or description
       if (!tithi) {
-        tithi = extractTithi(event.summary, (event.description ?? undefined) as string | undefined);
+        tithi = extractTithi(
+          event.summary,
+          (event.description ?? undefined) as string | undefined,
+        );
       }
     }
   }
@@ -155,8 +164,15 @@ function isEventOnDate(event: CalendarEvent, targetDate: Date): boolean {
   );
   const targetEnd = new Date(targetStart.getTime() + 24 * 60 * 60 * 1000);
 
-  const start = typeof event.startDate === "string" ? new Date(event.startDate) : event.startDate;
-  const endRaw = event.endDate ? (typeof event.endDate === "string" ? new Date(event.endDate) : event.endDate) : undefined;
+  const start =
+    typeof event.startDate === "string"
+      ? new Date(event.startDate)
+      : event.startDate;
+  const endRaw = event.endDate
+    ? typeof event.endDate === "string"
+      ? new Date(event.endDate)
+      : event.endDate
+    : undefined;
 
   const eventStart = new Date(
     start.getFullYear(),
@@ -164,11 +180,7 @@ function isEventOnDate(event: CalendarEvent, targetDate: Date): boolean {
     start.getDate(),
   );
   const eventEnd = endRaw
-    ? new Date(
-        endRaw.getFullYear(),
-        endRaw.getMonth(),
-        endRaw.getDate(),
-      )
+    ? new Date(endRaw.getFullYear(), endRaw.getMonth(), endRaw.getDate())
     : eventStart;
 
   return eventStart < targetEnd && eventEnd >= targetStart;
