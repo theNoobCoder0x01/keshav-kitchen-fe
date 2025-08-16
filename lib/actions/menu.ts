@@ -160,9 +160,11 @@ export async function getMenuStats(date?: Date, kitchenId?: string) {
   }
 }
 
+import type { MealType } from "@/types/menus";
+
 export async function createDailyMenu(data: {
   date: Date;
-  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+  mealType: MealType;
   recipeId: string;
   kitchenId: string;
   servings: number;

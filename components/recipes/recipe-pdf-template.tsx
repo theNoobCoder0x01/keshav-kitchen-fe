@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef } from "react";
-import type { RecipeDetailData } from "./recipe-detail-view";
+import type { RecipeDetailData } from "@/types";
 
 interface RecipePdfTemplateProps {
   recipe: RecipeDetailData;

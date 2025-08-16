@@ -77,7 +77,9 @@ export async function GET(req: NextRequest) {
     return new NextResponse("Failed to generate report file", { status: 500 });
   }
 
-  return new NextResponse(buffer, {
+  // Ensure proper response body type
+  const body: any = buffer;
+  return new NextResponse(body, {
     status: 200,
     headers: {
       "Content-Type": contentType,

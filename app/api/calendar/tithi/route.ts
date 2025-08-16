@@ -8,15 +8,7 @@ import { getServerSession } from "next-auth";
 
 export const dynamic = "force-dynamic";
 
-interface CalendarEvent {
-  id: string;
-  summary: string;
-  description?: string;
-  startDate: Date;
-  endDate?: Date;
-  location?: string;
-  uid: string;
-}
+import type { CalendarEventBase as CalendarEvent } from "@/types";
 
 export const GET = apiHandler({
   method: "GET",
@@ -79,7 +71,7 @@ export const GET = apiHandler({
     if (events.length > 0) {
       // Try to extract tithi from the first event that contains tithi information
       for (const event of events) {
-        const extractedTithi = extractTithi(event.summary, event.description);
+        const extractedTithi = extractTithi(event.summary, event.description ?? undefined);
         if (extractedTithi) {
           tithi = extractedTithi;
           break;

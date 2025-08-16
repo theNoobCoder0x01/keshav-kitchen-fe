@@ -18,23 +18,7 @@ import {
 import { ChevronDown, ChevronUp, Edit, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-
-export interface Recipe {
-  id: string;
-  name: string;
-  category: string;
-  subcategory: string;
-  cost: number;
-  instructions: string | null;
-  ingredients?: Array<{
-    name: string;
-    quantity: number | string;
-    unit: string;
-    costPerUnit?: number | string;
-  }>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { RecipeDetailData, RecipeListItem as Recipe } from "@/types";
 
 interface RecipesTableProps {
   recipes: Recipe[];

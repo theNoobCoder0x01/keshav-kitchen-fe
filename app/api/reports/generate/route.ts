@@ -19,6 +19,7 @@ import {
 } from "@/lib/utils/ingredient-combiner";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import type { MenuReportData } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
   });
 
   // Get kitchen data and menu data based on date, type, and filters
-  let data;
+  let data: MenuReportData;
   try {
     const targetDate = new Date(date);
     const startOfDay = new Date(targetDate);
@@ -162,8 +163,7 @@ export async function POST(req: NextRequest) {
         date: targetDate,
         combinedIngredients,
         summary,
-        menus: menus, // Keep original menus for context
-        kitchenIds,
+        menus: menus as any,
         selectedMealTypes,
         combineMealTypes,
         combineKitchens,
@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
         breakfastCount: menus.filter((m) => m.mealType === "BREAKFAST").length,
         lunchCount: menus.filter((m) => m.mealType === "LUNCH").length,
         dinnerCount: menus.filter((m) => m.mealType === "DINNER").length,
-        menus: menus,
+        menus: menus as any,
         combinedIngredients,
         selectedMealTypes,
         combineKitchens,
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
         breakfastCount: menus.filter((m) => m.mealType === "BREAKFAST").length,
         lunchCount: menus.filter((m) => m.mealType === "LUNCH").length,
         dinnerCount: menus.filter((m) => m.mealType === "DINNER").length,
-        menus: menus,
+        menus: menus as any,
       };
     } else {
       // For specific meal type reports
@@ -214,7 +214,7 @@ export async function POST(req: NextRequest) {
           (sum, menu) => sum + (menu.servings || 0),
           0,
         ),
-        menus: menus,
+        menus: menus as any,
       };
     }
   } catch (err) {
@@ -354,7 +354,8 @@ export async function POST(req: NextRequest) {
       ? generateReportFilename(type, date)
       : `${type}-report-${date}.${fileExt}`;
 
-  return new NextResponse(buffer, {
+  const body: any = buffer;
+  return new NextResponse(body, {
     status: 200,
     headers: {
       "Content-Type": contentType,

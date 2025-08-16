@@ -5,15 +5,17 @@ export async function fetchMenus(params = {}) {
   return response.data;
 }
 
+import type { MealType, MenuStatus } from "@/types/menus";
+
 export async function createMenu(data: {
   date: Date;
-  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+  mealType: MealType;
   recipeId: string;
   kitchenId: string;
   userId: string;
   servings: number;
   ghanFactor?: number;
-  status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  status?: MenuStatus;
   notes?: string;
   ingredients?: Array<{
     name: string;

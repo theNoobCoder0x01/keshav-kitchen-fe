@@ -1,13 +1,7 @@
 // Unit constants for the application
 // This file centralizes all unit definitions and ensures consistency across the app
 
-export interface UnitOption {
-  value: string;
-  label: string;
-  category: "weight" | "volume" | "count";
-  conversionToGrams: number;
-  isDefault?: boolean;
-}
+import type { UnitOption } from "@/types";
 
 // Standardized unit options for dropdowns
 export const UNIT_OPTIONS: UnitOption[] = [

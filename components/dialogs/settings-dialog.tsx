@@ -28,15 +28,7 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface CalendarEvent {
-  id: string;
-  summary: string;
-  description?: string;
-  startDate: string;
-  endDate?: string;
-  location?: string;
-  uid: string;
-}
+import type { CalendarEventBase as CalendarEvent } from "@/types/calendar";
 
 interface CalendarData {
   events: CalendarEvent[];

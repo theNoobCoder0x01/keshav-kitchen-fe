@@ -6,14 +6,14 @@ import * as XLSX from "xlsx";
 
 export const dynamic = "force-dynamic";
 
-interface Ingredient {
+type Ingredient = {
   name: string;
   quantity: number;
   unit: string;
   costPerUnit: number;
-}
+};
 
-interface Recipe {
+type Recipe = {
   id: string;
   name: string;
   category: string;
@@ -21,7 +21,7 @@ interface Recipe {
   description: string;
   instructions: string;
   servings: number;
-}
+};
 
 export const excelToJson = (fileBuffer: ArrayBuffer, userId: string) => {
   const workbook = XLSX.read(fileBuffer, { type: "buffer" });

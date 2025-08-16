@@ -1,10 +1,8 @@
 "use client";
 
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
-import {
-  RecipeDetailView,
-  type RecipeDetailData,
-} from "@/components/recipes/recipe-detail-view";
+import { RecipeDetailView } from "@/components/recipes/recipe-detail-view";
+import type { RecipeDetailData } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";

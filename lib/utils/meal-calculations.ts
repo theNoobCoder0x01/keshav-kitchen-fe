@@ -42,6 +42,8 @@ export interface MealCalculationResult {
   };
 }
 
+import type { MealType } from "@/types/menus";
+
 export interface MealCalculationInput {
   ghan: number;
   servingAmount: number;
@@ -52,7 +54,7 @@ export interface MealCalculationInput {
     unit: string;
     costPerUnit: number;
   }>;
-  mealType?: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+  mealType?: MealType;
 }
 
 /**
@@ -227,7 +229,7 @@ export function validateMealInputs(input: MealCalculationInput): {
  * Get recommended serving sizes by meal type
  */
 export function getRecommendedServingSize(
-  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK",
+  mealType: MealType,
 ): { amount: number; unit: string } {
   const recommendations = {
     BREAKFAST: { amount: 150, unit: "g" },

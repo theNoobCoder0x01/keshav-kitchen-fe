@@ -28,33 +28,7 @@ import { Plus, Utensils, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
-interface RecipeIngredient {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  costPerUnit: number | null;
-}
-
-interface APIFullRecipe {
-  id: string;
-  name: string;
-  description: string | null;
-  instructions: string | null;
-  servings: number | null;
-  category: string;
-  subcategory: string | null;
-  ingredients: Array<{
-    id: string;
-    name: string;
-  }>;
-}
-
-interface Recipe {
-  id: string;
-  name: string;
-  ingredients: RecipeIngredient[];
-}
+import type { RecipeIngredientBase, RecipeApiItem } from "@/types/recipes";
 
 const validationSchema = Yup.object().shape({
   recipeId: Yup.string().required("Recipe is required"),
@@ -155,7 +129,7 @@ const getInitialValues = (
   };
 };
 
-type MealType = "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+import type { MealType } from "@/types/menus";
 
 interface AddMealDialogProps {
   open: boolean;
@@ -182,46 +156,22 @@ interface AddMealDialogProps {
   } | null;
 }
 
-interface IngredientOption {
-  id: string;
-  name: string;
-  unit: string;
-  costPerUnit: number | null;
-}
 
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 
 // Use centralized unit options
 const UNITS = UNIT_OPTIONS;
 
-interface Recipe {
-  id: string;
-  name: string;
-}
+type Recipe = Pick<RecipeApiItem, "id" | "name"> & { ingredients?: RecipeIngredientBase[] };
 
-interface IngredientOption {
+type IngredientOption = {
   id: string;
   name: string;
   unit: string;
   costPerUnit: number | null;
-}
+};
 
-export interface IngredientFormValue {
-  id: string | undefined;
-  name: string;
-  quantity: number;
-  unit: string;
-  costPerUnit: number;
-}
-
-export interface MealFormValues {
-  recipeId: string;
-  followRecipe: boolean;
-  ghan: number;
-  servingAmount: number;
-  servingUnit: string;
-  ingredients: IngredientFormValue[];
-}
+import type { IngredientFormValue, MealFormValues } from "@/types/forms";
 
 interface MealFormProps {
   ingredientOptions: IngredientOption[];
@@ -269,7 +219,7 @@ export function AddMealDialog({
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
-      const ingredients = selectedRecipe.ingredients.map((ingredient) => ({
+      const ingredients = (selectedRecipe.ingredients || []).map((ingredient) => ({
         id: ingredient.id,
         name: ingredient.name,
         quantity: ingredient.quantity,

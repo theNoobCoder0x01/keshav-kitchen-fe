@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { MealType } from "@prisma/client";
+import type { MealType } from "@/types/menus";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MenuCard, MenuCardSkeleton } from "./menu-card";
@@ -151,14 +151,14 @@ export function MenuGrid({
           title="Breakfast"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.breakfast}
-          onAdd={() => onAddMeal(MealType.BREAKFAST)}
+          onAdd={() => onAddMeal("BREAKFAST")}
           onEdit={(item) => {
             // Find the actual meal data from dailyMenus
             const meal = dailyMenus.BREAKFAST?.find(
               (m: any) => m.id === item.id,
             );
             if (meal) {
-              onEditMeal(MealType.BREAKFAST, meal);
+              onEditMeal("BREAKFAST", meal);
             }
           }}
           onDelete={(itemId) => onDeleteMeal(itemId)}
@@ -168,12 +168,12 @@ export function MenuGrid({
           title="Lunch"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.lunch}
-          onAdd={() => onAddMeal(MealType.LUNCH)}
+          onAdd={() => onAddMeal("LUNCH")}
           onEdit={(item) => {
             // Find the actual meal data from dailyMenus
             const meal = dailyMenus.LUNCH?.find((m: any) => m.id === item.id);
             if (meal) {
-              onEditMeal(MealType.LUNCH, meal);
+              onEditMeal("LUNCH", meal);
             }
           }}
           onDelete={(itemId) => onDeleteMeal(itemId)}
@@ -183,12 +183,12 @@ export function MenuGrid({
           title="Dinner"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.dinner}
-          onAdd={() => onAddMeal(MealType.DINNER)}
+          onAdd={() => onAddMeal("DINNER")}
           onEdit={(item) => {
             // Find the actual meal data from dailyMenus
             const meal = dailyMenus.DINNER?.find((m: any) => m.id === item.id);
             if (meal) {
-              onEditMeal(MealType.DINNER, meal);
+              onEditMeal("DINNER", meal);
             }
           }}
           onDelete={(itemId) => onDeleteMeal(itemId)}
@@ -198,12 +198,12 @@ export function MenuGrid({
           title="Extra"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.snack || []}
-          onAdd={() => onAddMeal(MealType.SNACK)}
+          onAdd={() => onAddMeal("SNACK")}
           onEdit={(item) => {
             // Find the actual meal data from dailyMenus
             const meal = dailyMenus.SNACK?.find((m: any) => m.id === item.id);
             if (meal) {
-              onEditMeal(MealType.SNACK, meal);
+              onEditMeal("SNACK", meal);
             }
           }}
           onDelete={(itemId) => onDeleteMeal(itemId)}
