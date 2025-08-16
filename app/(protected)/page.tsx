@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import {
   ArrowRight,
   Calendar,
@@ -51,6 +52,7 @@ interface QuickActionsData {
 }
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [homeStats, setHomeStats] = useState<HomeStats | null>(null);
@@ -81,11 +83,11 @@ export default function HomePage() {
         setQuickActionsData(data.quickActions);
       } else {
         console.error("Failed to fetch home data");
-        toast.error("Failed to load dashboard data");
+        toast.error(t("messages.networkError"));
       }
     } catch (error) {
       console.error("Error loading home data:", error);
-      toast.error("Failed to load dashboard data");
+      toast.error(t("messages.networkError"));
     } finally {
       setLoadingStates({
         stats: false,
@@ -93,7 +95,7 @@ export default function HomePage() {
         quickActions: false,
       });
     }
-  }, []);
+  }, [t]);
 
   // Load data when component mounts
   useEffect(() => {
@@ -117,7 +119,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-linear-to-br from-background via-background to-primary/20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -139,8 +141,8 @@ export default function HomePage() {
 
   const quickActions = [
     {
-      title: "Manage Menus",
-      description: "Plan and organize daily meals",
+      title: t("dashboard.manageMenus"),
+      description: t("dashboard.manageMenusDesc"),
       icon: ChefHat,
       href: "/menus",
       color: "bg-linear-to-br from-orange-500 to-red-500",
@@ -148,8 +150,8 @@ export default function HomePage() {
       count: quickActionsData?.menusCount || 0,
     },
     {
-      title: "Recipes",
-      description: "Browse and manage recipes",
+      title: t("navigation.recipes"),
+      description: t("dashboard.recipesDesc"),
       icon: Calendar,
       href: "/recipes",
       color: "bg-linear-to-br from-blue-500 to-purple-500",
@@ -157,8 +159,8 @@ export default function HomePage() {
       count: quickActionsData?.recipesCount || 0,
     },
     {
-      title: "Kitchens",
-      description: "Manage kitchen locations",
+      title: t("navigation.kitchens"),
+      description: t("dashboard.kitchensDesc"),
       icon: Users,
       href: "/kitchens",
       color: "bg-linear-to-br from-green-500 to-emerald-500",
@@ -185,11 +187,11 @@ export default function HomePage() {
       {/* Header Section */}
       <div className="mb-6 sm:mb-8">
         <PageHeader
-          title="Welcome back!"
+          title={t("dashboard.welcomeBack")}
           subtitle={
             <span className="flex flex-col sm:flex-row sm:items-center gap-2">
               <span>
-                Here&apos;s what&apos;s happening in your kitchen today
+                {t("dashboard.welcomeSubtitle")}
               </span>
             </span>
           }
@@ -199,7 +201,7 @@ export default function HomePage() {
               className="bg-primary hover:bg-primary/90"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Plan Today&apos;s Menu
+              {t("dashboard.planTodaysMenu")}
             </Button>
           }
         />
@@ -208,7 +210,7 @@ export default function HomePage() {
       {/* Quick Actions Grid */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-foreground mb-4">
-          Quick Actions
+          {t("dashboard.quickActions")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
@@ -234,7 +236,7 @@ export default function HomePage() {
                 </CardDescription>
                 {action.count > 0 && (
                   <div className="mt-2 text-xs text-muted-foreground">
-                    {action.count} items
+                    {action.count} {t("common.items")}
                   </div>
                 )}
               </CardContent>
@@ -246,13 +248,13 @@ export default function HomePage() {
       {/* Stats Overview */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-foreground mb-4">
-          Today&apos;s Overview
+          {t("dashboard.todaysOverview")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Meals Planned
+                {t("dashboard.totalMealsPlanned")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -264,14 +266,14 @@ export default function HomePage() {
                 homeStats.mealsPlannedChange >= 0
                   ? "+"
                   : ""}
-                {homeStats?.mealsPlannedChange || 0}% from yesterday
+                {homeStats?.mealsPlannedChange || 0}% {t("dashboard.fromYesterday")}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Active Recipes
+                {t("dashboard.activeRecipes")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -282,14 +284,14 @@ export default function HomePage() {
                 {homeStats?.recipesChange && homeStats.recipesChange >= 0
                   ? "+"
                   : ""}
-                {homeStats?.recipesChange || 0}% from last week
+                {homeStats?.recipesChange || 0}% {t("dashboard.fromLastWeek")}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Cost Today
+                {t("dashboard.totalCostToday")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -298,7 +300,7 @@ export default function HomePage() {
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {homeStats?.costChange && homeStats.costChange >= 0 ? "+" : ""}
-                {homeStats?.costChange || 0}% from yesterday
+                {homeStats?.costChange || 0}% {t("dashboard.fromYesterday")}
               </p>
             </CardContent>
           </Card>
@@ -308,7 +310,7 @@ export default function HomePage() {
       {/* Recent Activity */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-foreground mb-4">
-          Recent Activity
+          {t("dashboard.recentActivity")}
         </h2>
         <Card>
           <CardContent className="p-0">
@@ -342,7 +344,7 @@ export default function HomePage() {
                 })
               ) : (
                 <div className="p-4 text-center text-muted-foreground">
-                  No recent activity
+                  {t("dashboard.noRecentActivity")}
                 </div>
               )}
             </div>

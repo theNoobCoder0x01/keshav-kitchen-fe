@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Package } from "lucide-react";
@@ -33,20 +34,22 @@ interface AddEditIngredientDialogProps {
   }) => void;
 }
 
-const validationSchema = Yup.object({
-  name: Yup.string().trim().required("Ingredient name is required."),
-  costPerKg: Yup.number()
-    .required("Cost per unit is required.")
-    .min(0, "Cost cannot be negative."),
-  unit: Yup.string().required("Unit is required."),
-});
-
 export function AddEditIngredientDialog({
   open,
   onOpenChange,
   initialIngredient = null,
   onSave,
 }: AddEditIngredientDialogProps) {
+  const { t } = useTranslation();
+  
+  const validationSchema = Yup.object({
+    name: Yup.string().trim().required(t("ingredients.nameRequired")),
+    costPerKg: Yup.number()
+      .required(t("ingredients.costRequired"))
+      .min(0, t("ingredients.costCannotBeNegative")),
+    unit: Yup.string().required(t("ingredients.unitRequired")),
+  });
+
   const initialValues = {
     name: initialIngredient?.name || "",
     costPerKg: initialIngredient?.costPerKg || 0,
@@ -71,11 +74,11 @@ export function AddEditIngredientDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={initialIngredient ? "Edit Ingredient" : "Add Ingredient"}
+      title={initialIngredient ? t("ingredients.editIngredient") : t("ingredients.addIngredient")}
       description={
         initialIngredient
-          ? "Update ingredient details"
-          : "Create a new ingredient"
+          ? t("ingredients.updateIngredientDetails")
+          : t("ingredients.createNewIngredient")
       }
       icon={<Package className="w-5 h-5 text-primary-foreground" />}
       size="md"
@@ -91,12 +94,12 @@ export function AddEditIngredientDialog({
             <div className="space-y-4">
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  Ingredient Name *
+                  {t("ingredients.ingredientName")} *
                 </Label>
                 <Field
                   as={Input}
                   name="name"
-                  placeholder="Enter ingredient name"
+                  placeholder={t("ingredients.enterIngredientName")}
                   className="border-border focus:border-primary focus:ring-primary/20"
                 />
                 <ErrorMessage
@@ -107,7 +110,7 @@ export function AddEditIngredientDialog({
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  Cost per Unit (₹) *
+                  {t("ingredients.costPerUnit")} (₹) *
                 </Label>
                 <Field
                   as={Input}
@@ -126,7 +129,7 @@ export function AddEditIngredientDialog({
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  Unit *
+                  {t("ingredients.unit")} *
                 </Label>
                 <Field name="unit">
                   {({ field }: { field: any }) => (
@@ -139,7 +142,7 @@ export function AddEditIngredientDialog({
                       }
                     >
                       <SelectTrigger className="border-border focus:border-primary focus:ring-primary/20">
-                        <SelectValue placeholder="Select unit" />
+                        <SelectValue placeholder={t("ingredients.selectUnit")} />
                       </SelectTrigger>
                       <SelectContent>
                         {UNIT_OPTIONS.map((unitOption) => (
@@ -169,7 +172,7 @@ export function AddEditIngredientDialog({
                 onClick={() => onOpenChange(false)}
                 className="border-border text-foreground hover:bg-muted bg-transparent"
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -179,12 +182,12 @@ export function AddEditIngredientDialog({
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                    Saving...
+                    {t("common.saving")}
                   </>
                 ) : initialIngredient ? (
-                  "Save Changes"
+                  t("common.saveChanges")
                 ) : (
-                  "Add Ingredient"
+                  t("ingredients.addIngredient")
                 )}
               </Button>
             </div>

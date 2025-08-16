@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import {
   Bell,
   Calendar,
@@ -45,6 +46,7 @@ import {
 import { useState } from "react";
 
 export default function RecipesPage() {
+  const { t } = useTranslation();
   const [addRecipeDialog, setAddRecipeDialog] = useState(false);
   const [ingredients, setIngredients] = useState([
     { name: "Potato", quantity: "5 Kg" },
@@ -66,7 +68,7 @@ export default function RecipesPage() {
             <div className="flex items-center space-x-2">
               <h1 className="text-2xl font-bold text-[#e26b2b]">KESHAV</h1>
               <span className="text-lg font-medium text-[#e26b2b] italic">
-                Kitchen
+                {t("common.kitchen")}
               </span>
             </div>
           </div>
@@ -96,7 +98,7 @@ export default function RecipesPage() {
             <div className="flex items-center justify-between p-3 text-[#4b465c] hover:bg-[#f8f7fa] rounded-lg cursor-pointer">
               <div className="flex items-center space-x-3">
                 <Home className="w-5 h-5" />
-                <span>Dashboard</span>
+                <span>{t("navigation.dashboard")}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Badge className="bg-[#674af5] text-white text-xs px-2 py-1">
@@ -109,7 +111,7 @@ export default function RecipesPage() {
             <div className="flex items-center justify-between p-3 text-[#674af5] bg-[#674af5]/10 rounded-lg cursor-pointer">
               <div className="flex items-center space-x-3">
                 <ChefHat className="w-5 h-5" />
-                <span>Recipe</span>
+                <span>{t("navigation.recipes")}</span>
               </div>
               <ChevronDown className="w-4 h-4" />
             </div>
@@ -141,7 +143,7 @@ export default function RecipesPage() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-[#4b465c]">700</p>
-                      <p className="text-sm text-[#4b465c]/70">Visitors</p>
+                      <p className="text-sm text-[#4b465c]/70">{t("dashboard.visitors")}</p>
                     </div>
                   </div>
                 </Card>
@@ -155,7 +157,7 @@ export default function RecipesPage() {
                       <p className="text-2xl font-bold text-[#4b465c]">
                         1.423k
                       </p>
-                      <p className="text-sm text-[#4b465c]/70">Products</p>
+                      <p className="text-sm text-[#4b465c]/70">{t("dashboard.products")}</p>
                     </div>
                   </div>
                 </Card>
@@ -167,7 +169,7 @@ export default function RecipesPage() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-[#4b465c]">₹9745</p>
-                      <p className="text-sm text-[#4b465c]/70">Revenue</p>
+                      <p className="text-sm text-[#4b465c]/70">{t("dashboard.revenue")}</p>
                     </div>
                   </div>
                 </Card>
@@ -178,28 +180,28 @@ export default function RecipesPage() {
           {/* Recipes Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-[#674af5]">Recipes</h2>
+              <h2 className="text-xl font-semibold text-[#674af5]">{t("recipes.title")}</h2>
               <Dialog open={addRecipeDialog} onOpenChange={setAddRecipeDialog}>
                 <DialogTrigger asChild>
                   <Button className="bg-[#674af5] hover:bg-[#674af5]/90 text-white">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add New Recipe
+                    {t("recipes.addRecipe")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-[#4b465c]">
-                      Add New Recipe
+                      {t("recipes.addRecipe")}
                     </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-6 py-4">
                     <div>
                       <Label className="text-base font-medium text-[#4b465c] mb-2 block">
-                        Recipe Name
+                        {t("recipes.name")}
                       </Label>
                       <Input
                         defaultValue="Poha"
-                        placeholder="Enter recipe name"
+                        placeholder={t("recipes.enterRecipeName")}
                         className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                       />
                     </div>
@@ -207,24 +209,24 @@ export default function RecipesPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-base font-medium text-[#4b465c] mb-2 block">
-                          Recipe Type
+                          {t("recipes.type")}
                         </Label>
                         <Select defaultValue="breakfast">
                           <SelectTrigger className="border-[#dbdade]">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="breakfast">Breakfast</SelectItem>
-                            <SelectItem value="lunch">Lunch</SelectItem>
-                            <SelectItem value="dinner">Dinner</SelectItem>
-                            <SelectItem value="snack">Snack</SelectItem>
+                            <SelectItem value="breakfast">{t("menus.breakfast")}</SelectItem>
+                            <SelectItem value="lunch">{t("menus.lunch")}</SelectItem>
+                            <SelectItem value="dinner">{t("menus.dinner")}</SelectItem>
+                            <SelectItem value="snack">{t("menus.snack")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div>
                         <Label className="text-base font-medium text-[#4b465c] mb-2 block">
-                          Recipe
+                          {t("recipes.title")}
                         </Label>
                         <Select defaultValue="poha">
                           <SelectTrigger className="border-[#dbdade]">
@@ -241,23 +243,23 @@ export default function RecipesPage() {
 
                     <div className="space-y-4">
                       <Label className="text-base font-medium text-[#4b465c]">
-                        Ingredients
+                        {t("recipes.ingredients")}
                       </Label>
                       {ingredients.map((ingredient, index) => (
                         <div key={index} className="grid grid-cols-2 gap-4">
                           <Input
                             defaultValue={ingredient.name}
-                            placeholder="Ingredient name"
+                            placeholder={t("recipes.ingredientName")}
                             className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                           />
                           <div className="flex items-center space-x-2">
                             <Input
                               defaultValue={ingredient.quantity}
-                              placeholder="Quantity"
+                              placeholder={t("common.quantity")}
                               className="border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                             />
                             <span className="text-sm text-[#4b465c]/70 whitespace-nowrap">
-                              Quantity
+                              {t("common.quantity")}
                             </span>
                           </div>
                         </div>
@@ -274,7 +276,7 @@ export default function RecipesPage() {
                         }
                       >
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Ingredients
+                        {t("recipes.addIngredients")}
                       </Button>
                     </div>
                   </div>
@@ -284,13 +286,13 @@ export default function RecipesPage() {
                       onClick={() => setAddRecipeDialog(false)}
                       className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                     <Button
                       onClick={() => setAddRecipeDialog(false)}
                       className="bg-[#674af5] hover:bg-[#674af5]/90 text-white"
                     >
-                      Save
+                      {t("common.save")}
                     </Button>
                   </div>
                 </DialogContent>
@@ -305,24 +307,24 @@ export default function RecipesPage() {
                     <TableRow className="border-[#dbdade]">
                       <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
                         <div className="flex items-center space-x-2">
-                          <span>NAME</span>
+                          <span>{t("common.name")}</span>
                           <ChevronDown className="w-4 h-4" />
                         </div>
                       </TableHead>
                       <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
                         <div className="flex items-center space-x-2">
-                          <span>TYPE</span>
+                          <span>{t("recipes.type")}</span>
                           <ChevronDown className="w-4 h-4" />
                         </div>
                       </TableHead>
                       <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
                         <div className="flex items-center space-x-2">
-                          <span>ISSUED DATE</span>
+                          <span>{t("recipes.issuedDate")}</span>
                           <ChevronDown className="w-4 h-4" />
                         </div>
                       </TableHead>
                       <TableHead className="text-[#4b465c] font-semibold py-4 px-6">
-                        ACTIONS
+                        {t("common.actions")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -374,7 +376,7 @@ export default function RecipesPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between px-6 py-4 border-t border-[#dbdade]">
                   <p className="text-sm text-[#4b465c]/70">
-                    Showing 1 to 10 of 100 entries
+                    {t("common.showingEntries", { from: 1, to: 10, total: 100 })}
                   </p>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -382,7 +384,7 @@ export default function RecipesPage() {
                       size="sm"
                       className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
                     >
-                      Previous
+                      {t("common.previous")}
                     </Button>
                     <Button
                       size="sm"
@@ -405,7 +407,7 @@ export default function RecipesPage() {
                       size="sm"
                       className="border-[#dbdade] text-[#4b465c] hover:bg-[#f8f7fa] bg-transparent"
                     >
-                      Next
+                      {t("common.next")}
                     </Button>
                   </div>
                 </div>

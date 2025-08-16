@@ -4,6 +4,7 @@ import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Building2 } from "lucide-react";
 import * as Yup from "yup";
@@ -19,17 +20,19 @@ interface AddEditKitchenDialogProps {
   onSave: (kitchen: { name: string; location: string; id?: string }) => void;
 }
 
-const validationSchema = Yup.object({
-  name: Yup.string().trim().required("Kitchen name is required."),
-  location: Yup.string().trim().required("Location is required."),
-});
-
 export function AddEditKitchenDialog({
   open,
   onOpenChange,
   initialKitchen = null,
   onSave,
 }: AddEditKitchenDialogProps) {
+  const { t } = useTranslation();
+  
+  const validationSchema = Yup.object({
+    name: Yup.string().trim().required(t("kitchens.nameRequired")),
+    location: Yup.string().trim().required(t("kitchens.locationRequired")),
+  });
+
   const initialValues = {
     name: initialKitchen?.name || "",
     location: initialKitchen?.location || "",
@@ -52,9 +55,9 @@ export function AddEditKitchenDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={initialKitchen ? "Edit Kitchen" : "Add Kitchen"}
+      title={initialKitchen ? t("kitchens.editKitchen") : t("kitchens.addKitchen")}
       description={
-        initialKitchen ? "Update kitchen details" : "Create a new kitchen"
+        initialKitchen ? t("kitchens.updateKitchenDetails") : t("kitchens.createNewKitchen")
       }
       icon={<Building2 className="w-5 h-5 text-primary-foreground" />}
       size="md"
@@ -70,12 +73,12 @@ export function AddEditKitchenDialog({
             <div className="space-y-4">
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  Kitchen Name *
+                  {t("kitchens.kitchenName")} *
                 </Label>
                 <Field
                   as={Input}
                   name="name"
-                  placeholder="Enter kitchen name"
+                  placeholder={t("kitchens.enterKitchenName")}
                   className="border-border focus:border-primary focus:ring-primary/20"
                 />
                 <ErrorMessage
@@ -86,12 +89,12 @@ export function AddEditKitchenDialog({
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  Location *
+                  {t("kitchens.location")} *
                 </Label>
                 <Field
                   as={Input}
                   name="location"
-                  placeholder="Enter location"
+                  placeholder={t("kitchens.enterLocation")}
                   className="border-border focus:border-primary focus:ring-primary/20"
                 />
                 <ErrorMessage
@@ -109,7 +112,7 @@ export function AddEditKitchenDialog({
                 onClick={() => onOpenChange(false)}
                 className="border-border text-foreground hover:bg-muted bg-transparent"
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -119,12 +122,12 @@ export function AddEditKitchenDialog({
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                    Saving...
+                    {t("common.saving")}
                   </>
                 ) : initialKitchen ? (
-                  "Save Changes"
+                  t("common.saveChanges")
                 ) : (
-                  "Add Kitchen"
+                  t("kitchens.addKitchen")
                 )}
               </Button>
             </div>
