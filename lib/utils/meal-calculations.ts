@@ -4,58 +4,13 @@ import {
   formatQuantity,
 } from "./unit-conversions";
 
-export interface IngredientCalculation {
-  name: string;
-  quantity: number;
-  unit: string;
-  costPerUnit: number;
-  weightInGrams: number;
-  totalCost: number;
-}
-
-export interface MealCalculationResult {
-  // Basic calculations
-  totalWeightGrams: number;
-  totalCost: number;
-
-  // Per person calculations
-  servingAmountInGrams: number;
-  personsPerGhan: number;
-  totalPersons: number;
-  costPerPerson: number;
-
-  // Ghan calculations
-  ghanWeightGrams: number; // Weight of 1 ghan in grams
-  totalGhanWeight: number; // Total weight for all ghans
-
-  // Ingredient breakdown
-  ingredients: IngredientCalculation[];
-
-  // Display values (formatted)
-  display: {
-    perPersonServing: string;
-    costPerPerson: string;
-    personsPerGhan: string;
-    totalPersons: string;
-    totalCost: string;
-    totalWeight: string;
-  };
-}
+import type {
+  IngredientCalculation,
+  MealCalculationInput,
+  MealCalculationResult,
+} from "@/types/calculations";
 
 import type { MealType } from "@/types/menus";
-
-export interface MealCalculationInput {
-  ghan: number;
-  servingAmount: number;
-  servingUnit: string;
-  ingredients: Array<{
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit: number;
-  }>;
-  mealType?: MealType;
-}
 
 /**
  * Calculate comprehensive meal metrics with proper unit conversions
@@ -153,19 +108,9 @@ export function calculateScalingFactor(
  * Scale recipe ingredients
  */
 export function scaleRecipeIngredients(
-  ingredients: Array<{
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit: number;
-  }>,
+  ingredients: import("@/types/calculations").CalculationIngredient[],
   scalingFactor: number,
-): Array<{
-  name: string;
-  quantity: number;
-  unit: string;
-  costPerUnit: number;
-}> {
+): import("@/types/calculations").CalculationIngredient[] {
   return ingredients.map((ingredient) => ({
     ...ingredient,
     quantity: ingredient.quantity * scalingFactor,
@@ -201,28 +146,7 @@ export function validateMealInputs(input: MealCalculationInput): {
     errors.push("At least one ingredient is required");
   }
 
-  input.ingredients.forEach((ingredient, index) => {
-    if (!ingredient.name.trim()) {
-      errors.push(`Ingredient ${index + 1}: Name is required`);
-    }
-
-    if (ingredient.quantity <= 0) {
-      errors.push(`Ingredient ${index + 1}: Quantity must be greater than 0`);
-    }
-
-    if (!ingredient.unit) {
-      errors.push(`Ingredient ${index + 1}: Unit is required`);
-    }
-
-    if (ingredient.costPerUnit < 0) {
-      errors.push(`Ingredient ${index + 1}: Cost cannot be negative`);
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
+  return { isValid: errors.length === 0, errors };
 }
 
 /**

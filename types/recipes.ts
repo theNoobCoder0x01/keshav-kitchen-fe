@@ -6,6 +6,12 @@ export interface RecipeIngredientBase {
   costPerUnit?: number | null;
 }
 
+// Reusable ingredient aliases
+export type RecipeIngredientApi = Required<Omit<RecipeIngredientBase, "costPerUnit">> & {
+  costPerUnit: number | null;
+};
+export type RecipeIngredientInput = Omit<RecipeIngredientBase, "id">;
+
 export interface RecipeListItem {
   id: string;
   name: string;
@@ -13,12 +19,6 @@ export interface RecipeListItem {
   subcategory: string | null;
   cost?: number;
   instructions?: string | null;
-  ingredients?: Array<{
-    name: string;
-    quantity: number | string;
-    unit: string;
-    costPerUnit?: number | string;
-  }>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,7 +31,7 @@ export interface RecipeApiItem {
   servings: number | null;
   category: string;
   subcategory: string | null;
-  ingredients: Array<Required<Omit<RecipeIngredientBase, "costPerUnit">> & { costPerUnit: number | null }>;
+  ingredients: RecipeIngredientApi[];
   user: { name: string; email: string };
   _count: { menus: number };
 }

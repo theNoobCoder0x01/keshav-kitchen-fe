@@ -22,8 +22,8 @@ import { fetchRecipes } from "@/lib/api/recipes";
 import {
   calculateMealMetrics,
   validateMealInputs,
-  type MealCalculationInput,
 } from "@/lib/utils/meal-calculations";
+import type { MealCalculationInput } from "@/types/calculations";
 import { Plus, Utensils, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
@@ -146,13 +146,7 @@ interface AddMealDialogProps {
       id: string;
       name: string;
     };
-    ingredients?: Array<{
-      id: string;
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit: number;
-    }>;
+    ingredients?: IngredientFormValue[];
   } | null;
 }
 
@@ -275,6 +269,7 @@ export function AddMealDialog({
           ghanFactor: values.ghan,
           notes: `Meal updated for ${mealType.toLowerCase()} with ${values.servingAmount} ${values.servingUnit} servings and ${values.ghan} ghan factor.`,
           ingredients: values.ingredients.map((ingredient) => ({
+            id: ingredient.id ?? undefined,
             name: ingredient.name,
             quantity: ingredient.quantity,
             unit: ingredient.unit,
@@ -303,6 +298,7 @@ export function AddMealDialog({
           status: "PLANNED" as const,
           notes: `Meal planned for ${mealType.toLowerCase()} with ${values.servingAmount} ${values.servingUnit} servings and ${values.ghan} ghan factor.`,
           ingredients: values.ingredients.map((ingredient) => ({
+            id: ingredient.id ?? undefined,
             name: ingredient.name,
             quantity: ingredient.quantity,
             unit: ingredient.unit,

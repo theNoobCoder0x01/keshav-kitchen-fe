@@ -36,12 +36,7 @@ import {
 import type { ClipboardEvent } from "react";
 import * as Yup from "yup";
 
-interface Ingredient {
-  name: string;
-  quantity: string;
-  unit: string;
-  costPerUnit?: string;
-}
+import type { RecipeDialogIngredientValue } from "@/types/forms";
 
 interface AddRecipeDialogProps {
   isOpen: boolean;
@@ -63,12 +58,7 @@ interface AddRecipeDialogProps {
     category: string;
     subcategory: string;
     selectedRecipe: string;
-    ingredients: Array<{
-      name: string;
-      quantity: string;
-      unit: string;
-      costPerUnit: string;
-    }>;
+    ingredients: RecipeDialogIngredientValue[];
     instructions?: string | null;
   } | null;
 }
@@ -151,7 +141,7 @@ export function AddRecipeDialog({
   };
 
   // Calculate total cost
-  const calculateTotalCost = (ingredients: Ingredient[]) => {
+  const calculateTotalCost = (ingredients: RecipeDialogIngredientValue[]) => {
     return ingredients.reduce((total, ingredient) => {
       const quantity = parseFloat(ingredient.quantity) || 0;
       const costPerUnit = parseFloat(ingredient.costPerUnit || "0") || 0;

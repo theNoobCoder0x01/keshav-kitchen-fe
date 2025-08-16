@@ -242,13 +242,6 @@ export default function RecipesPage() {
             subcategory: result.subcategory || "",
             cost: 0,
             instructions: result.instructions ?? null,
-            ingredients:
-              result.ingredients?.map((ing: any) => ({
-                name: ing.name,
-                quantity: ing.quantity,
-                unit: ing.unit,
-                costPerUnit: ing.costPerUnit,
-              })) || [],
             createdAt: result.createdAt,
             updatedAt: result.updatedAt,
           };
@@ -281,13 +274,6 @@ export default function RecipesPage() {
         subcategory: recipe.subcategory || "",
         cost: 0,
         instructions: recipe.instructions ?? null,
-        ingredients:
-          recipe.ingredients?.map((ing: any) => ({
-            name: ing.name,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            costPerUnit: ing.costPerUnit,
-          })) || [],
         createdAt: new Date(recipe.createdAt || Date.now()),
         updatedAt: new Date(recipe.updatedAt || Date.now()),
       }));
@@ -469,12 +455,7 @@ export default function RecipesPage() {
                 category: recipe.category,
                 subcategory: recipe.subcategory || "",
                 selectedRecipe: recipe.id,
-                ingredients: (recipe.ingredients || []).map((ingredient) => ({
-                  name: ingredient.name,
-                  quantity: String(ingredient.quantity ?? ""),
-                  unit: ingredient.unit,
-                  costPerUnit: String(ingredient.costPerUnit ?? ""),
-                })),
+                ingredients: [],
                 instructions: recipe.instructions ?? null,
               });
               setIsEditDialogOpen(true);
