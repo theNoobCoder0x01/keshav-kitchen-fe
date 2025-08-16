@@ -1,5 +1,6 @@
 import { SessionProviderWrapper } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/lib/contexts/language-context";
 import { Inter } from "next/font/google";
 import type React from "react";
 import { Toaster } from "sonner";
@@ -22,8 +23,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProviderWrapper>
-            {children}
-            <Toaster position="top-right" />
+            <LanguageProvider>
+              {children}
+              <Toaster position="top-right" />
+            </LanguageProvider>
           </SessionProviderWrapper>
         </ThemeProvider>
       </body>

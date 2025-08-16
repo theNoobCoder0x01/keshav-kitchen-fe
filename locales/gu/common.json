@@ -1,0 +1,101 @@
+{
+  "navigation": {
+    "recipes": "વાનગીઓ",
+    "menus": "મેન્યુ",
+    "reports": "અહેવાલો",
+    "kitchens": "રસોડા",
+    "calendar": "કેલેન્ડર",
+    "settings": "સેટિંગ્સ"
+  },
+  "common": {
+    "save": "સાચવો",
+    "cancel": "રદ કરો",
+    "edit": "સંપાદન",
+    "delete": "કાઢી નાખો",
+    "add": "ઉમેરો",
+    "search": "શોધો",
+    "loading": "લોડ થઈ રહ્યું છે...",
+    "error": "ભૂલ",
+    "success": "સફળતા",
+    "confirm": "પુષ્ટિ કરો",
+    "close": "બંધ કરો",
+    "open": "ખોલો",
+    "name": "નામ",
+    "description": "વર્ણન",
+    "actions": "ક્રિયાઓ",
+    "date": "તારીખ",
+    "time": "સમય",
+    "status": "સ્થિતિ",
+    "notes": "નોંધો",
+    "language": "ભાષા",
+    "english": "અંગ્રેજી",
+    "gujarati": "ગુજરાતી"
+  },
+  "settings": {
+    "title": "સેટિંગ્સ",
+    "description": "એપ્લિકેશન સેટિંગ્સ ગોઠવો અને કેલેન્ડર ફાઇલો અપલોડ કરો",
+    "languageSettings": "ભાષા સેટિંગ્સ",
+    "languageDescription": "એપ્લિકેશન માટે તમારી પસંદગીની ભાષા પસંદ કરો",
+    "selectLanguage": "ભાષા પસંદ કરો",
+    "calendarSettings": "કેલેન્ડર સેટિંગ્સ",
+    "otherSettings": "અન્ય સેટિંગ્સ",
+    "uploadCalendar": "ICS કેલેન્ડર ફાઇલ અપલોડ કરો",
+    "calendarDescription": "તિથિ અને ઘટના માહિતી દર્શાવવા માટે .ics ફાઇલ અપલોડ કરો",
+    "chooseFile": "ફાઇલ પસંદ કરો",
+    "processing": "પ્રક્રિયા થઈ રહી છે...",
+    "calendarEventsLoaded": "કેલેન્ડર ઇવેન્ટ્સ લોડ થયા",
+    "eventsAvailable": "{count} ઇવેન્ટ્સ ઉપલબ્ધ",
+    "fileRequirements": "ફાઇલ આવશ્યકતાઓ",
+    "fileFormatRequired": "ફાઇલ .ics ફોર્મેટમાં હોવી જોઇએ",
+    "maxFileSize": "મહત્તમ ફાઇલ કદ: 1MB",
+    "validCalendarEvents": "માન્ય કેલેન્ડર ઇવેન્ટ્સ હોવા જોઇએ",
+    "gujaratiTithiInfo": "ગુજરાતી તિથિ માહિતી સાથેના ઇવેન્ટ્સ દર્શાવવામાં આવશે"
+  },
+  "recipes": {
+    "title": "વાનગીઓ",
+    "addRecipe": "વાનગી ઉમેરો",
+    "editRecipe": "વાનગી સંપાદિત કરો",
+    "ingredients": "સામગ્રી",
+    "instructions": "સૂચનાઓ",
+    "servings": "સર્વિંગ્સ",
+    "category": "શ્રેણી",
+    "subcategory": "પેટા શ્રેણી",
+    "cookingTime": "રસોઈનો સમય",
+    "difficulty": "મુશ્કેલી"
+  },
+  "menus": {
+    "title": "મેન્યુ",
+    "addMenu": "મેન્યુ ઉમેરો",
+    "mealType": "ભોજનનો પ્રકાર",
+    "breakfast": "નાસ્તો",
+    "lunch": "લંચ",
+    "dinner": "રાત્રિભોજન",
+    "snack": "સ્નેક",
+    "ghanFactor": "ઘન ફેક્ટર",
+    "actualCount": "વાસ્તવિક સંખ્યા"
+  },
+  "reports": {
+    "title": "અહેવાલો",
+    "visitorCount": "મુલાકાતીઓની સંખ્યા",
+    "mealsCounted": "ગણાયેલ ભોજન",
+    "generateReport": "અહેવાલ બનાવો",
+    "exportReport": "અહેવાલ નિકાસ કરો"
+  },
+  "auth": {
+    "signIn": "સાઇન ઇન",
+    "signOut": "સાઇન આઉટ",
+    "email": "ઇમેઇલ",
+    "password": "પાસવર્ડ",
+    "welcome": "સ્વાગત",
+    "profile": "પ્રોફાઇલ"
+  },
+  "messages": {
+    "saveSuccess": "સેટિંગ્સ સફળતાપૂર્વક સાચવવામાં આવી",
+    "saveError": "સેટિંગ્સ સાચવવામાં નિષ્ફળ",
+    "languageChanged": "ભાષા સફળતાપૂર્વક બદલાઈ",
+    "uploadSuccess": "ફાઇલ સફળતાપૂર્વક અપલોડ થઈ",
+    "uploadError": "ફાઇલ અપલોડ કરવામાં નિષ્ફળ",
+    "deleteSuccess": "આઇટમ સફળતાપૂર્વક કાઢી નાખ્યું",
+    "deleteError": "આઇટમ કાઢી નાખવામાં નિષ્ફળ"
+  }
+}

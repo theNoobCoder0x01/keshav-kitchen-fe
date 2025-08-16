@@ -3,6 +3,7 @@
 import { SettingsDialog } from "@/components/dialogs/settings-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/hooks/use-translations";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,7 @@ export function ProfileDropdown() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { ta, ts } = useTranslations();
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/auth/signin" });
@@ -40,7 +42,7 @@ export function ProfileDropdown() {
 
   const profileMenuItems = [
     {
-      label: "Profile",
+      label: ta("profile"),
       icon: User,
       onClick: () => {
         // TODO: Navigate to profile page
@@ -48,7 +50,7 @@ export function ProfileDropdown() {
       },
     },
     {
-      label: "Settings",
+      label: ts("title"),
       icon: Settings,
       onClick: handleSettingsClick,
     },
@@ -131,7 +133,7 @@ export function ProfileDropdown() {
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            <span>{ta("signOut")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

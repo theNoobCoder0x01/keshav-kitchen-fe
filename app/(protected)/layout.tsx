@@ -1,10 +1,12 @@
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { LanguageLoader } from "@/components/providers/language-loader";
 import type React from "react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col h-full bg-linear-to-br from-background via-background to-muted/20 overflow-hidden">
+      <LanguageLoader />
       <Header />
       <div className="flex flex-grow overflow-hidden">
         <Sidebar />
