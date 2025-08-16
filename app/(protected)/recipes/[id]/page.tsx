@@ -2,8 +2,8 @@
 
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { RecipeDetailView } from "@/components/recipes/recipe-detail-view";
-import type { RecipeDetailData } from "@/types";
 import { Button } from "@/components/ui/button";
+import type { RecipeDetailData } from "@/types";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

@@ -5,8 +5,8 @@ export async function fetchMenus(params = {}) {
   return response.data;
 }
 
-import type { MealType, MenuStatus } from "@/types/menus";
 import type { IngredientFormValue } from "@/types/forms";
+import type { MealType, MenuStatus } from "@/types/menus";
 
 export async function createMenu(data: {
   date: Date;

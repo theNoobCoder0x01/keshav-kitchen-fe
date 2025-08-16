@@ -37,9 +37,8 @@ export default function MenuPage() {
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportsDialog, setReportsDialog] = useState(false);
-  const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
-    "BREAKFAST",
-  );
+  const [selectedMealType, setSelectedMealType] =
+    useState<UnifiedMealType>("BREAKFAST");
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());

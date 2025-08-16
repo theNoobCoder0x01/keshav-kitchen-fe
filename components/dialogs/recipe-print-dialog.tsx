@@ -1,11 +1,10 @@
 "use client";
 
-import { type RecipeDetailData } from "@/types";
 import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
-import { Badge } from "@/components/ui/badge";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type RecipeDetailData } from "@/types";
 import { Download, Eye, FileText, Loader2, Printer } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";

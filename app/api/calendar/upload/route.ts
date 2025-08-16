@@ -82,8 +82,15 @@ export const POST = apiHandler({
 
     // Prepare data for bulk insert
     const calendarEventData = parsedData.events.map((event) => {
-      const start = typeof event.startDate === "string" ? new Date(event.startDate) : event.startDate;
-      const end = event.endDate ? (typeof event.endDate === "string" ? new Date(event.endDate) : event.endDate) : null;
+      const start =
+        typeof event.startDate === "string"
+          ? new Date(event.startDate)
+          : event.startDate;
+      const end = event.endDate
+        ? typeof event.endDate === "string"
+          ? new Date(event.endDate)
+          : event.endDate
+        : null;
       return {
         uid:
           event.uid ||

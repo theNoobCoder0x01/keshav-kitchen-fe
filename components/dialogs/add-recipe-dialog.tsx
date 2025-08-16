@@ -24,7 +24,6 @@ import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { cn } from "@/lib/utils";
 import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
 import {
-  AlertCircle,
   BookOpen,
   CheckCircle2,
   ChefHat,
@@ -302,14 +301,7 @@ export function AddRecipeDialog({
                       name="recipeName"
                       component="p"
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    >
-                      {(msg) => (
-                        <>
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </>
-                      )}
-                    </ErrorMessage>
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -331,14 +323,7 @@ export function AddRecipeDialog({
                         name="category"
                         component="p"
                         className="text-destructive text-xs mt-1 flex items-center gap-1"
-                      >
-                        {(msg) => (
-                          <>
-                            <AlertCircle className="w-3 h-3" />
-                            {msg}
-                          </>
-                        )}
-                      </ErrorMessage>
+                      />
                     </div>
 
                     <div>
@@ -359,14 +344,7 @@ export function AddRecipeDialog({
                         name="subcategory"
                         component="p"
                         className="text-destructive text-xs mt-1 flex items-center gap-1"
-                      >
-                        {(msg) => (
-                          <>
-                            <AlertCircle className="w-3 h-3" />
-                            {msg}
-                          </>
-                        )}
-                      </ErrorMessage>
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -460,14 +438,7 @@ export function AddRecipeDialog({
                                   name={`ingredients[${index}].name`}
                                   component="p"
                                   className="text-destructive text-xs mt-1 flex items-center gap-1"
-                                >
-                                  {(msg) => (
-                                    <>
-                                      <AlertCircle className="w-3 h-3" />
-                                      {msg}
-                                    </>
-                                  )}
-                                </ErrorMessage>
+                                />
                               </div>
 
                               <div className="sm:col-span-3">
@@ -487,14 +458,7 @@ export function AddRecipeDialog({
                                   name={`ingredients[${index}].quantity`}
                                   component="p"
                                   className="text-destructive text-xs mt-1 flex items-center gap-1"
-                                >
-                                  {(msg) => (
-                                    <>
-                                      <AlertCircle className="w-3 h-3" />
-                                      {msg}
-                                    </>
-                                  )}
-                                </ErrorMessage>
+                                />
                               </div>
 
                               <div className="sm:col-span-2">
@@ -552,14 +516,7 @@ export function AddRecipeDialog({
                                   name={`ingredients[${index}].costPerUnit`}
                                   component="p"
                                   className="text-destructive text-xs mt-1 flex items-center gap-1"
-                                >
-                                  {(msg) => (
-                                    <>
-                                      <AlertCircle className="w-3 h-3" />
-                                      {msg}
-                                    </>
-                                  )}
-                                </ErrorMessage>
+                                />
                               </div>
                             </div>
                           </div>
@@ -582,16 +539,6 @@ export function AddRecipeDialog({
                           </div>
                         </div>
                       )}
-
-                      {/* Validation Error for Ingredients Array */}
-                      {errors.ingredients && touched.ingredients && (
-                        <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                          <p className="text-destructive text-sm flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {JSON.stringify(errors.ingredients)}
-                          </p>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 )}
@@ -610,11 +557,15 @@ export function AddRecipeDialog({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <LexicalEditor
-                    value={values.instructions}
-                    onChange={(val) => setFieldValue("instructions", val)}
-                    placeholder="e.g., 1) Preheat oven to 180°C...\n2) Mix ingredients..."
-                  />
+                  <Field name="instructions">
+                    {({ field }: { field: any }) => (
+                      <LexicalEditor
+                        value={field.value}
+                        onChange={(val) => field.onChange(val)}
+                        placeholder="e.g., 1) Preheat oven to 180°C...\n2) Mix ingredients..."
+                      />
+                    )}
+                  </Field>
                 </CardContent>
               </Card>
 

@@ -214,7 +214,7 @@ export async function getRecentActivity() {
       }),
     ]);
 
-    const activities = [];
+    const activities: any[] = [];
 
     // Add menu activities
     recentMenus.forEach((menu) => {

@@ -152,9 +152,10 @@ export function validateMealInputs(input: MealCalculationInput): {
 /**
  * Get recommended serving sizes by meal type
  */
-export function getRecommendedServingSize(
-  mealType: MealType,
-): { amount: number; unit: string } {
+export function getRecommendedServingSize(mealType: MealType): {
+  amount: number;
+  unit: string;
+} {
   const recommendations = {
     BREAKFAST: { amount: 150, unit: "g" },
     LUNCH: { amount: 250, unit: "g" },
