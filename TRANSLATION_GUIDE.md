@@ -22,7 +22,7 @@ function MyComponent() {
   
   return (
     <div>
-      <h1>{tc('title')}</h1>
+      <h1>{tc('save')}</h1>
       <nav>{tn('recipes')}</nav>
       <p>{ts('description')}</p>
     </div>
@@ -71,7 +71,7 @@ function LanguageSelector() {
 
 ## Translation Files
 
-Translation files are located in `/locales/[language]/common.json`:
+Translation files are located in `/locales/[language]/common.json` and use a flattened key structure:
 
 ```
 locales/
@@ -83,24 +83,22 @@ locales/
 
 ### Adding New Translations
 
-1. Add the key-value pair to both `en/common.json` and `gu/common.json`
-2. Use the translation in your component
+1. Add the key-value pair to both `en/common.json` and `gu/common.json` using dot notation
+2. Use the translation in your component with the appropriate helper function
 3. Update TypeScript types if necessary
+
+**Important**: Translation keys use a flattened structure with dot notation (e.g., `"common.save"` not nested objects).
 
 Example:
 ```json
 // locales/en/common.json
 {
-  "common": {
-    "newButton": "Click Me"
-  }
+  "common.newButton": "Click Me"
 }
 
 // locales/gu/common.json
 {
-  "common": {
-    "newButton": "મને ક્લિક કરો"
-  }
+  "common.newButton": "મને ક્લિક કરો"
 }
 ```
 
