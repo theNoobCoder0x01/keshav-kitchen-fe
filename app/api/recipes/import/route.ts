@@ -6,12 +6,7 @@ import * as XLSX from "xlsx";
 
 export const dynamic = "force-dynamic";
 
-type Ingredient = {
-  name: string;
-  quantity: number;
-  unit: string;
-  costPerUnit: number;
-};
+import type { RecipeIngredientInput } from "@/types/recipes";
 
 type Recipe = {
   id: string;
@@ -36,8 +31,8 @@ export const excelToJson = (fileBuffer: ArrayBuffer, userId: string) => {
     // Find the ingredient sheet for this recipe
     const sheetName = recipe.id;
 
-    const ingredients: Ingredient[] = workbook.SheetNames.includes(sheetName)
-      ? XLSX.utils.sheet_to_json<Ingredient>(workbook.Sheets[sheetName], {
+    const ingredients: RecipeIngredientInput[] = workbook.SheetNames.includes(sheetName)
+      ? XLSX.utils.sheet_to_json<RecipeIngredientInput>(workbook.Sheets[sheetName], {
           defval: "",
         })
       : [];
@@ -138,24 +133,17 @@ export async function POST(request: NextRequest) {
             ingredients: true,
           },
         });
+
         importedRecipes.push(createdRecipe);
-      } catch (error) {
-        importErrors.push(`Failed to import "${recipe.name}": ${error}`);
+      } catch (error: any) {
+        importErrors.push(error.message || "Unknown error");
       }
     }
 
     return NextResponse.json({
-      success: true,
       importedCount: importedRecipes.length,
       totalRecipes: recipes.length,
       errors: importErrors,
-      importedRecipes: importedRecipes.map((recipe) => ({
-        id: recipe.id,
-        name: recipe.name,
-        category: recipe.category,
-        subcategory: recipe.subcategory,
-        ingredientsCount: recipe.ingredients.length,
-      })),
     });
   } catch (error) {
     console.error("Import recipes API error:", error);

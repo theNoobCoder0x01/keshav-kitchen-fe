@@ -6,6 +6,7 @@ export async function fetchMenus(params = {}) {
 }
 
 import type { MealType, MenuStatus } from "@/types/menus";
+import type { IngredientFormValue } from "@/types/forms";
 
 export async function createMenu(data: {
   date: Date;
@@ -17,12 +18,7 @@ export async function createMenu(data: {
   ghanFactor?: number;
   status?: MenuStatus;
   notes?: string;
-  ingredients?: Array<{
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit: number;
-  }>;
+  ingredients?: IngredientFormValue[];
 }) {
   const response = await api.post("/menus", data);
   return response.data;

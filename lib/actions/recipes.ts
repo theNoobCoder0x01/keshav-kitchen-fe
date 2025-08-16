@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import type { RecipeIngredientBase, RecipeIngredientInput } from "@/types/recipes";
+
 export async function getRecipes() {
   try {
     const session = await auth();
@@ -95,12 +97,7 @@ export async function createRecipe(data: {
   servings?: number;
   category: string;
   subcategory: string;
-  ingredients: Array<{
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit?: number;
-  }>;
+  ingredients: RecipeIngredientInput[];
 }) {
   try {
     const session = await auth();
@@ -144,13 +141,7 @@ export async function updateRecipe(
     servings?: number;
     category?: string;
     subcategory?: string;
-    ingredients?: Array<{
-      id?: string;
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit?: number;
-    }>;
+    ingredients?: RecipeIngredientBase[];
   },
 ) {
   try {
@@ -195,7 +186,7 @@ export async function updateRecipe(
           name: ingredient.name,
           quantity: ingredient.quantity,
           unit: ingredient.unit,
-          costPerUnit: ingredient.costPerUnit,
+          costPerUnit: ingredient.costPerUnit ?? undefined,
         })),
       });
     }
@@ -241,20 +232,19 @@ export async function deleteRecipe(id: string) {
       existingRecipe.userId !== session.user.id &&
       session.user.role !== "ADMIN"
     ) {
-      throw new Error("Unauthorized to delete this recipe");
+      throw new Error("Unauthorized");
     }
 
     if (existingRecipe._count.menus > 0) {
-      throw new Error(
-        "Cannot delete recipe that is part of a menu. Remove it from all menus first.",
-      );
+      throw new Error("Cannot delete recipe with existing menus");
     }
 
-    await prisma.recipe.delete({
+    const recipe = await prisma.recipe.delete({
       where: { id },
     });
 
     revalidatePath("/recipes");
+    return recipe;
   } catch (error) {
     console.error("Delete recipe error:", error);
     throw error;

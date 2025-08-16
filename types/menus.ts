@@ -1,6 +1,8 @@
 export type MealType = "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
 export type MenuStatus = "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
+import type { RecipeIngredientBase } from "./recipes";
+
 export interface MenuWithIngredients {
   id: string;
   date: Date;
@@ -18,21 +20,9 @@ export interface MenuWithIngredients {
     id: string;
     name: string;
     description?: string;
-    ingredients?: Array<{
-      id: string;
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit?: number;
-    }>;
+    ingredients?: RecipeIngredientBase[];
   };
-  ingredients?: Array<{
-    id: string;
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit: number;
-  }>;
+  ingredients?: Required<RecipeIngredientBase>[];
 }
 
 export interface CombinedIngredient {
@@ -88,18 +78,8 @@ export interface MenuReportData {
     recipe: {
       name: string;
       description?: string;
-      ingredients?: Array<{
-        ingredient?: { name: string; unit: string };
-        name?: string;
-        quantity: number;
-        unit?: string;
-      }>;
+      ingredients?: Partial<RecipeIngredientBase>[];
     };
-    ingredients?: Array<{
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit: number;
-    }>;
+    ingredients?: Required<RecipeIngredientBase>[];
   }>;
 }
