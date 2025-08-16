@@ -1,5 +1,6 @@
 "use client";
 
+import { LexicalEditor } from "@/components/rich-text/lexical-editor";
 import { Badge } from "@/components/ui/badge";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { cn } from "@/lib/utils";
 import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
 import {
@@ -33,8 +35,6 @@ import {
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
 import * as Yup from "yup";
-import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
-import { LexicalEditor } from "@/components/rich-text/lexical-editor";
 
 interface Ingredient {
   name: string;
@@ -615,7 +615,8 @@ export function AddRecipeDialog({
                     Instructions
                   </CardTitle>
                   <CardDescription>
-                    Write step-by-step instructions. Use lists and formatting as needed.
+                    Write step-by-step instructions. Use lists and formatting as
+                    needed.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

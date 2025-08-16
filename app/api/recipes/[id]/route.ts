@@ -122,82 +122,83 @@ export async function DELETE(
 }
 
 export async function PATCH(
-	request: Request,
-	{ params }: { params: Promise<{ id: string }> },
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-	try {
-		const { id } = await params;
-		const session = await getServerSession(authOptions);
-		if (!session?.user) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+  try {
+    const { id } = await params;
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-		const body = await request.json();
-		const {
-			name,
-			description,
-			instructions,
-			servings,
-			category,
-			subcategory,
-			ingredients,
-		} = body || {};
+    const body = await request.json();
+    const {
+      name,
+      description,
+      instructions,
+      servings,
+      category,
+      subcategory,
+      ingredients,
+    } = body || {};
 
-		const existingRecipe = await prisma.recipe.findUnique({
-			where: { id },
-			select: { userId: true },
-		});
-		if (!existingRecipe) {
-			return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
-		}
-		if (
-			existingRecipe.userId !== session.user.id &&
-			session.user.role !== "ADMIN"
-		) {
-			return NextResponse.json(
-				{ error: "Unauthorized to update this recipe" },
-				{ status: 403 },
-			);
-		}
+    const existingRecipe = await prisma.recipe.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+    if (!existingRecipe) {
+      return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+    }
+    if (
+      existingRecipe.userId !== session.user.id &&
+      session.user.role !== "ADMIN"
+    ) {
+      return NextResponse.json(
+        { error: "Unauthorized to update this recipe" },
+        { status: 403 },
+      );
+    }
 
-		// Update core fields
-		const updated = await prisma.$transaction(async (tx) => {
-			if (Array.isArray(ingredients)) {
-				await tx.ingredient.deleteMany({ where: { recipeId: id } });
-				if (ingredients.length > 0) {
-					await tx.ingredient.createMany({
-						data: ingredients.map((ing: any) => ({
-							recipeId: id,
-							name: ing.name,
-							quantity: Number(ing.quantity) || 0,
-							unit: ing.unit,
-							costPerUnit: ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
-						})),
-					});
-				}
-			}
+    // Update core fields
+    const updated = await prisma.$transaction(async (tx) => {
+      if (Array.isArray(ingredients)) {
+        await tx.ingredient.deleteMany({ where: { recipeId: id } });
+        if (ingredients.length > 0) {
+          await tx.ingredient.createMany({
+            data: ingredients.map((ing: any) => ({
+              recipeId: id,
+              name: ing.name,
+              quantity: Number(ing.quantity) || 0,
+              unit: ing.unit,
+              costPerUnit:
+                ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
+            })),
+          });
+        }
+      }
 
-			const recipe = await tx.recipe.update({
-				where: { id },
-				data: {
-					name,
-					description,
-					instructions,
-					servings: servings != null ? Number(servings) : undefined,
-					category,
-					subcategory,
-				},
-				include: { ingredients: true },
-			});
-			return recipe;
-		});
+      const recipe = await tx.recipe.update({
+        where: { id },
+        data: {
+          name,
+          description,
+          instructions,
+          servings: servings != null ? Number(servings) : undefined,
+          category,
+          subcategory,
+        },
+        include: { ingredients: true },
+      });
+      return recipe;
+    });
 
-		return NextResponse.json(updated);
-	} catch (error) {
-		console.error("Patch recipe API error:", error);
-		return NextResponse.json(
-			{ error: "Failed to update recipe" },
-			{ status: 500 },
-		);
-	}
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("Patch recipe API error:", error);
+    return NextResponse.json(
+      { error: "Failed to update recipe" },
+      { status: 500 },
+    );
+  }
 }

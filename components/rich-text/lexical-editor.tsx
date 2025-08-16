@@ -60,7 +60,7 @@ export function LexicalEditor({
 }: LexicalEditorProps) {
   const initialSerialized = useMemo(
     () => parseInitialEditorStateString(value),
-    [value]
+    [value],
   );
 
   const initialConfig = useMemo(
@@ -117,7 +117,7 @@ export function LexicalEditor({
         },
       },
     }),
-    [initialSerialized, value]
+    [initialSerialized, value],
   );
 
   const handleChange = useCallback(
@@ -125,7 +125,7 @@ export function LexicalEditor({
       const serialized = JSON.stringify(editorState);
       onChange?.(serialized);
     },
-    [onChange]
+    [onChange],
   );
 
   return (
