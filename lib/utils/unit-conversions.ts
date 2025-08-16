@@ -1,11 +1,6 @@
 // Unit conversion utilities for meal calculations
 import { UNIT_OPTIONS, normalizeUnit } from "@/lib/constants/units";
-
-export interface UnitConversion {
-  unit: string;
-  toGrams: number; // Conversion factor to grams
-  category: "weight" | "volume" | "count";
-}
+import type { UnitConversion } from "@/types";
 
 // Unit conversion table - all conversions to grams as base unit
 // This is now derived from the centralized UNIT_OPTIONS
@@ -147,9 +142,11 @@ export function calculateTotalWeight(
 /**
  * Estimate serving size based on meal type and ingredients
  */
+import type { MealType } from "@/types/menus";
+
 export function estimateServingSize(
   totalWeightGrams: number,
-  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK",
+  mealType: MealType,
 ): number {
   // Base serving sizes in grams per person
   const baseServingSizes = {

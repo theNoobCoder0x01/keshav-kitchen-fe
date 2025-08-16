@@ -1,16 +1,4 @@
-export interface CalendarEvent {
-  summary: string;
-  description?: string;
-  startDate: Date;
-  endDate?: Date;
-  location?: string;
-  uid?: string;
-}
-
-export interface ParsedICSData {
-  events: CalendarEvent[];
-  tithi?: string;
-}
+import type { CalendarEventBase as CalendarEvent, ParsedICSData } from "@/types";
 
 /**
  * Parse ICS file content and extract events for a specific date
@@ -34,7 +22,7 @@ export function parseICSFile(
 
       // Look for tithi information in the event summary or description
       if (!tithi) {
-        tithi = extractTithi(event.summary, event.description);
+        tithi = extractTithi(event.summary, (event.description ?? undefined) as string | undefined);
       }
     }
   }
@@ -61,7 +49,7 @@ export function parseICSFileForImport(icsContent: string): ParsedICSData {
 
       // Look for tithi information in the event summary or description
       if (!tithi) {
-        tithi = extractTithi(event.summary, event.description);
+        tithi = extractTithi(event.summary, (event.description ?? undefined) as string | undefined);
       }
     }
   }
@@ -167,16 +155,19 @@ function isEventOnDate(event: CalendarEvent, targetDate: Date): boolean {
   );
   const targetEnd = new Date(targetStart.getTime() + 24 * 60 * 60 * 1000);
 
+  const start = typeof event.startDate === "string" ? new Date(event.startDate) : event.startDate;
+  const endRaw = event.endDate ? (typeof event.endDate === "string" ? new Date(event.endDate) : event.endDate) : undefined;
+
   const eventStart = new Date(
-    event.startDate.getFullYear(),
-    event.startDate.getMonth(),
-    event.startDate.getDate(),
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate(),
   );
-  const eventEnd = event.endDate
+  const eventEnd = endRaw
     ? new Date(
-        event.endDate.getFullYear(),
-        event.endDate.getMonth(),
-        event.endDate.getDate(),
+        endRaw.getFullYear(),
+        endRaw.getMonth(),
+        endRaw.getDate(),
       )
     : eventStart;
 

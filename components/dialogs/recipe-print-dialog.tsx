@@ -1,6 +1,6 @@
 "use client";
 
-import { type RecipeDetailData } from "@/components/recipes/recipe-detail-view";
+import { type RecipeDetailData } from "@/types";
 import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
 import { Badge } from "@/components/ui/badge";
 import { BaseDialog } from "@/components/ui/base-dialog";
@@ -110,14 +110,7 @@ export function RecipePrintDialog({
     <BaseDialog
       open={isOpen}
       onOpenChange={onOpenChange}
-      title={
-        <div className="flex items-center gap-2">
-          Print Recipe
-          <Badge variant="outline" className="ml-2 text-xs font-normal">
-            {recipe.name}
-          </Badge>
-        </div>
-      }
+      title={`Print Recipe: ${recipe.name}`}
       description="Preview, print, or download your recipe as a PDF document."
       icon={<FileText className="w-5 h-5 text-primary-foreground" />}
       size="4xl"

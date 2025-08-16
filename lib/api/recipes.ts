@@ -1,28 +1,6 @@
 import axios from "axios";
 
-export interface Recipe {
-  id: string;
-  name: string;
-  description: string | null;
-  instructions: string | null;
-  servings: number | null;
-  category: string;
-  subcategory: string | null;
-  ingredients: Array<{
-    id: string;
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit: number | null;
-  }>;
-  user: {
-    name: string;
-    email: string;
-  };
-  _count: {
-    menus: number;
-  };
-}
+import type { RecipeApiItem as Recipe } from "@/types";
 
 export async function fetchRecipes(): Promise<Recipe[]> {
   try {

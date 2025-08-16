@@ -1,4 +1,5 @@
 import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
+import type { MenuReportData as ReportData } from "@/types/menus";
 
 // Base CSS styles for all PDF reports - PDF-compatible only
 const basePdfStyles = `
@@ -171,69 +172,6 @@ const basePdfStyles = `
     }
   }
 `;
-
-// Interface for report data
-interface ReportData {
-  type: string;
-  date: Date;
-  totalQuantity?: number;
-  totalMeals?: number;
-  breakfastCount?: number;
-  lunchCount?: number;
-  dinnerCount?: number;
-  combinedIngredients?: Array<{
-    name: string;
-    totalQuantity: number;
-    unit: string;
-    totalCost: number;
-    sources: Array<{
-      kitchen: string;
-      mealType: string;
-      recipe: string;
-      quantity: number;
-      servings: number;
-    }>;
-  }>;
-  summary?: {
-    totalIngredients: number;
-    totalCost: number;
-    uniqueIngredients: number;
-    mealTypesCombined: boolean;
-    kitchensCombined: boolean;
-  };
-  selectedMealTypes?: string[];
-  combineKitchens?: boolean;
-  combineMealTypes?: boolean;
-  menus: Array<{
-    id: string;
-    date: Date;
-    mealType: string;
-    servings: number;
-    ghanFactor: number;
-    status: string;
-    actualCount?: number;
-    notes?: string;
-    kitchen: {
-      name: string;
-    };
-    recipe: {
-      name: string;
-      description?: string;
-      ingredients?: Array<{
-        name: string;
-        quantity: number;
-        unit: string;
-        costPerUnit?: number;
-      }>;
-    };
-    ingredients?: Array<{
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit: number;
-    }>;
-  }>;
-}
 
 // Ingredients Report Template
 export function generateIngredientsReportHTML(data: ReportData): string {

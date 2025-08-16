@@ -81,20 +81,24 @@ export const POST = apiHandler({
     });
 
     // Prepare data for bulk insert
-    const calendarEventData = parsedData.events.map((event) => ({
-      uid:
-        event.uid ||
-        event.summary.replace(/\s+/g, "-").toLowerCase() +
-          "-" +
-          event.startDate.getTime(),
-      summary: event.summary,
-      description: event.description,
-      startDate: event.startDate,
-      endDate: event.endDate,
-      location: event.location,
-      userId: user.id,
-      kitchenId: kitchenId,
-    }));
+    const calendarEventData = parsedData.events.map((event) => {
+      const start = typeof event.startDate === "string" ? new Date(event.startDate) : event.startDate;
+      const end = event.endDate ? (typeof event.endDate === "string" ? new Date(event.endDate) : event.endDate) : null;
+      return {
+        uid:
+          event.uid ||
+          event.summary.replace(/\s+/g, "-").toLowerCase() +
+            "-" +
+            start.getTime(),
+        summary: event.summary,
+        description: event.description,
+        startDate: start,
+        endDate: end,
+        location: event.location,
+        userId: user.id,
+        kitchenId: kitchenId,
+      };
+    });
 
     // Bulk insert all calendar events
     const result = await prisma.calendarEvent.createMany({

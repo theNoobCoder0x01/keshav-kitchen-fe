@@ -11,27 +11,7 @@ import {
 import { ChefHat, Clock, DollarSign, Tag, Users } from "lucide-react";
 import { forwardRef } from "react";
 
-export interface RecipeDetailData {
-  id: string;
-  name: string;
-  description?: string | null;
-  instructions?: string | null;
-  servings?: number | null;
-  category: string;
-  subcategory?: string | null;
-  cost?: number;
-  ingredients: Array<{
-    id?: string;
-    name: string;
-    quantity: number;
-    unit: string;
-    costPerUnit?: number | null;
-  }>;
-  createdAt?: Date;
-  updatedAt?: Date;
-  prepTime?: number; // in minutes
-  cookTime?: number; // in minutes
-}
+import type { RecipeDetailData } from "@/types";
 
 interface RecipeDetailViewProps {
   recipe: RecipeDetailData;

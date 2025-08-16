@@ -18,7 +18,7 @@ import {
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
-import { MealType } from "@prisma/client";
+import type { MealType as UnifiedMealType } from "@/types/menus";
 import { FileText } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -27,7 +27,7 @@ import { toast } from "sonner";
 
 // Temporary interface for MenuGrid props to resolve lint errors
 interface MenuGridProps {
-  onAddMeal: (mealType: string) => void;
+  onAddMeal: (mealType: UnifiedMealType) => void;
   dailyMenus: any;
   selectedDate: Date;
 }
@@ -37,8 +37,8 @@ export default function MenuPage() {
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportsDialog, setReportsDialog] = useState(false);
-  const [selectedMealType, setSelectedMealType] = useState<MealType>(
-    MealType.BREAKFAST,
+  const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
+    "BREAKFAST",
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -165,12 +165,12 @@ export default function MenuPage() {
     return loadingStates.kitchens || loadingStates.stats || loadingStates.menus;
   };
 
-  const handleAddMeal = (mealType: MealType) => {
+  const handleAddMeal = (mealType: UnifiedMealType) => {
     setSelectedMealType(mealType);
     setAddMealDialog(true);
   };
 
-  const handleEditMeal = (mealType: MealType, meal: any) => {
+  const handleEditMeal = (mealType: UnifiedMealType, meal: any) => {
     setSelectedMealType(mealType);
     setEditMeal(meal);
     setAddMealDialog(true);
