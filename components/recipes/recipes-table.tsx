@@ -25,6 +25,7 @@ export interface Recipe {
   category: string;
   subcategory: string;
   cost: number;
+  instructions: string | null;
   ingredients?: Array<{
     name: string;
     quantity: number | string;
@@ -86,7 +87,24 @@ export function RecipesTable({
   const sortedRecipes = [...recipes].sort((a, b) => {
     if (sortConfig.direction === null) return 0;
     const multiplier = sortConfig.direction === "ascending" ? 1 : -1;
-    return a[sortConfig.key] > b[sortConfig.key] ? multiplier : -multiplier;
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+
+    // Handle undefined/null values
+    if (aValue == null && bValue == null) return 0;
+    if (aValue == null) return -1 * multiplier;
+    if (bValue == null) return 1 * multiplier;
+
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return aValue.localeCompare(bValue) * multiplier;
+    }
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return (aValue - bValue) * multiplier;
+    }
+    // fallback to default comparison
+    if (aValue > bValue) return 1 * multiplier;
+    if (aValue < bValue) return -1 * multiplier;
+    return 0;
   });
 
   const paginatedRecipes = sortedRecipes.slice(

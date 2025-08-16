@@ -258,15 +258,20 @@ function generateRecipeHTML(recipe: any) {
             <h2 class="section-title">Instructions</h2>
             <ol class="instructions-list">
               ${(() => {
-                  try {
-                    const { extractStepsFromInstructions } = require("@/lib/utils/rich-text");
-                    return extractStepsFromInstructions(recipe.instructions)
-                      .map((step: string) => `<li class="instruction-item">${encodeTextForPDF(step)}</li>`)
-                      .join("");
-                  } catch {
-                    return "";
-                  }
-                })()}
+                try {
+                  const {
+                    extractStepsFromInstructions,
+                  } = require("@/lib/utils/rich-text");
+                  return extractStepsFromInstructions(recipe.instructions)
+                    .map(
+                      (step: string) =>
+                        `<li class="instruction-item">${encodeTextForPDF(step)}</li>`,
+                    )
+                    .join("");
+                } catch {
+                  return "";
+                }
+              })()}
             </ol>
           </div>
         `
