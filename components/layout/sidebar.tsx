@@ -2,12 +2,20 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/hooks/use-translations";
 import { cn } from "@/lib/utils";
-import { BarChart3, Calendar, ChefHat, ChevronDown, Home, Users, X } from "lucide-react";
+import {
+  BarChart3,
+  Calendar,
+  ChefHat,
+  ChevronDown,
+  Home,
+  Users,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTranslations } from "@/hooks/use-translations";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -138,7 +146,9 @@ export function Sidebar() {
               <div className="w-8 h-8 bg-linear-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">K</span>
               </div>
-              <span className="font-semibold text-foreground">{tn("menu")}</span>
+              <span className="font-semibold text-foreground">
+                {tn("menu")}
+              </span>
             </div>
             <Button
               variant="ghost"

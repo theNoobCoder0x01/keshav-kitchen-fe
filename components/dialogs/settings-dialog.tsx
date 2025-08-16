@@ -4,13 +4,21 @@ import { Badge } from "@/components/ui/badge";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslations } from "@/hooks/use-translations";
+import { LANGUAGE_OPTIONS, useLanguage } from "@/lib/contexts/language-context";
 import {
   Calendar,
   CheckCircle,
@@ -24,8 +32,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useLanguage, LANGUAGE_OPTIONS } from "@/lib/contexts/language-context";
-import { useTranslations } from "@/hooks/use-translations";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -47,7 +53,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { language, updateUserLanguage } = useLanguage();
   const { ts, tc, tmsg } = useTranslations();
 
@@ -174,14 +180,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   const handleLanguageChange = async (newLanguage: string) => {
     if (newLanguage === language) return;
-    
+
     setIsUpdatingLanguage(true);
     try {
-      await updateUserLanguage(newLanguage as 'en' | 'gu');
-      toast.success(tmsg('languageChanged'));
+      await updateUserLanguage(newLanguage as "en" | "gu");
+      toast.success(tmsg("languageChanged"));
     } catch (error) {
-      console.error('Error updating language:', error);
-      toast.error(tmsg('saveError'));
+      console.error("Error updating language:", error);
+      toast.error(tmsg("saveError"));
     } finally {
       setIsUpdatingLanguage(false);
     }
@@ -189,34 +195,34 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <TooltipProvider>
-              <BaseDialog
-          open={open}
-          onOpenChange={onOpenChange}
-          title={ts('title')}
-          description={ts('description')}
-          icon={<Settings className="w-5 h-5 text-primary-foreground" />}
-          size="2xl"
-        >
+      <BaseDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title={ts("title")}
+        description={ts("description")}
+        icon={<Settings className="w-5 h-5 text-primary-foreground" />}
+        size="2xl"
+      >
         <div className="space-y-6">
           {/* Language Settings */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Globe className="w-4 h-4 text-primary" />
-                {ts('languageSettings')}
+                {ts("languageSettings")}
               </Label>
             </div>
 
             <div className="space-y-3">
               <Label className="text-sm font-medium text-foreground">
-                {ts('selectLanguage')}
+                {ts("selectLanguage")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                {ts('languageDescription')}
+                {ts("languageDescription")}
               </p>
-              
-              <Select 
-                value={language} 
+
+              <Select
+                value={language}
                 onValueChange={handleLanguageChange}
                 disabled={isUpdatingLanguage}
               >
@@ -246,16 +252,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
-                {ts('calendarSettings')}
+                {ts("calendarSettings")}
               </Label>
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="max-w-xs">
-                    {ts('calendarDescription')}
-                  </p>
+                  <p className="max-w-xs">{ts("calendarDescription")}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -264,7 +268,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium text-foreground">
-                  {ts('uploadCalendar')}
+                  {ts("uploadCalendar")}
                 </Label>
                 {calendarData && (
                   <Badge className="bg-green-100 text-green-800 border-green-200">
@@ -413,7 +417,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Settings className="w-4 h-4 text-primary" />
-                {ts('otherSettings')}
+                {ts("otherSettings")}
               </Label>
             </div>
 

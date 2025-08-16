@@ -1,25 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
+        { success: false, message: "Unauthorized" },
+        { status: 401 },
       );
     }
 
     const { language } = await request.json();
 
     // Validate language parameter
-    if (!language || !['en', 'gu'].includes(language)) {
+    if (!language || !["en", "gu"].includes(language)) {
       return NextResponse.json(
         { success: false, message: 'Invalid language. Must be "en" or "gu"' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,13 +42,13 @@ export async function PATCH(request: NextRequest) {
       data: {
         language: updatedUser.language,
       },
-      message: 'Language preference updated successfully',
+      message: "Language preference updated successfully",
     });
   } catch (error) {
-    console.error('Error updating user language:', error);
+    console.error("Error updating user language:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { success: false, message: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -56,11 +56,11 @@ export async function PATCH(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
+        { success: false, message: "Unauthorized" },
+        { status: 401 },
       );
     }
 
@@ -76,22 +76,22 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'User not found' },
-        { status: 404 }
+        { success: false, message: "User not found" },
+        { status: 404 },
       );
     }
 
     return NextResponse.json({
       success: true,
       data: {
-        language: user.language || 'en',
+        language: user.language || "en",
       },
     });
   } catch (error) {
-    console.error('Error fetching user language:', error);
+    console.error("Error fetching user language:", error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { success: false, message: "Internal server error" },
+      { status: 500 },
     );
   }
 }
