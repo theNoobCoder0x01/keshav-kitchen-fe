@@ -17,7 +17,7 @@ export function createRecipeExcelWorksheet(
   data.push(["Servings", recipe.servings || "N/A"]);
   data.push(["Description", recipe.description || "N/A"]);
   // Created By not available in RecipeDetailData; omit or provide placeholder
-data.push(["Created By", "Unknown"]);
+  data.push(["Created By", "Unknown"]);
   data.push([
     "Created Date",
     recipe.createdAt ? new Date(recipe.createdAt).toLocaleDateString() : "N/A",

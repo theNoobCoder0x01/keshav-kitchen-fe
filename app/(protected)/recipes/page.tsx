@@ -3,7 +3,6 @@
 import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
 import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
-import type { RecipeDetailData } from "@/types";
 import {
   RecipesTable,
   RecipesTableSkeleton,
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
+import type { RecipeDetailData } from "@/types";
 import { Filter, Plus, RefreshCw, Search, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -78,7 +78,8 @@ export default function RecipesPage() {
       recipe.category.toLowerCase() === filterCategory.toLowerCase();
     const matchesSubcategory =
       filterSubcategory === "all" ||
-      (recipe.subcategory || "").toLowerCase() === filterSubcategory.toLowerCase();
+      (recipe.subcategory || "").toLowerCase() ===
+        filterSubcategory.toLowerCase();
 
     return matchesSearch && matchesCategory && matchesSubcategory;
   });

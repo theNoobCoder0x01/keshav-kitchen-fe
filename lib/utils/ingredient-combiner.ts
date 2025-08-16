@@ -1,4 +1,8 @@
-import type { CombinedIngredient, IngredientCombineOptions, MenuWithIngredients } from "@/types";
+import type {
+  CombinedIngredient,
+  IngredientCombineOptions,
+  MenuWithIngredients,
+} from "@/types";
 
 /**
  * Convert units to a standard unit for combination

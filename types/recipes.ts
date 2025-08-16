@@ -7,7 +7,9 @@ export interface RecipeIngredientBase {
 }
 
 // Reusable ingredient aliases
-export type RecipeIngredientApi = Required<Omit<RecipeIngredientBase, "costPerUnit">> & {
+export type RecipeIngredientApi = Required<
+  Omit<RecipeIngredientBase, "costPerUnit">
+> & {
   costPerUnit: number | null;
 };
 export type RecipeIngredientInput = Omit<RecipeIngredientBase, "id">;

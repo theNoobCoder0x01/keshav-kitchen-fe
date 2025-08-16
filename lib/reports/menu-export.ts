@@ -1,5 +1,4 @@
 import ExcelJS from "exceljs";
-import type { CombinedIngredient } from "@/types/menus";
 
 import type { MenuReportData } from "@/types";
 
