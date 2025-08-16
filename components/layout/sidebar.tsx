@@ -63,11 +63,11 @@ export function Sidebar() {
   const menuItems = [
     {
       id: "home",
-      label: "Dashboard",
+      label: tn("dashboard"),
       icon: Home,
       href: "/",
       isActive: pathname === "/",
-      description: "Overview & quick actions",
+      description: tn("dashboardDesc"),
       badge: null,
       children: null,
     },
@@ -77,7 +77,7 @@ export function Sidebar() {
       icon: Calendar,
       href: "/menus",
       isActive: pathname === "/menus",
-      description: "Manage daily menus",
+      description: tn("menusDesc"),
       badge: null,
       children: null,
     },
@@ -87,7 +87,7 @@ export function Sidebar() {
       icon: ChefHat,
       href: "/recipes",
       isActive: pathname === "/recipes",
-      description: "Recipe management",
+      description: tn("recipesDesc"),
       badge: null,
       children: null,
     },
@@ -97,7 +97,7 @@ export function Sidebar() {
       icon: BarChart3,
       href: "/reports",
       isActive: pathname === "/reports",
-      description: "View reports and analytics",
+      description: tn("reportsDesc"),
       badge: null,
       children: null,
     },
@@ -107,7 +107,7 @@ export function Sidebar() {
       icon: Users,
       href: "/kitchens",
       isActive: pathname === "/kitchens",
-      description: "Manage kitchen locations",
+      description: tn("kitchensDesc"),
       badge: null,
       children: null,
     },
@@ -138,7 +138,7 @@ export function Sidebar() {
               <div className="w-8 h-8 bg-linear-to-br from-[#e26b2b] to-[#ff8c42] rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">K</span>
               </div>
-              <span className="font-semibold text-foreground">Menu</span>
+              <span className="font-semibold text-foreground">{tn("menu")}</span>
             </div>
             <Button
               variant="ghost"
@@ -154,7 +154,7 @@ export function Sidebar() {
           <nav className="flex-1 p-4 space-y-2">
             <div className="mb-6">
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
-                Kitchen Management
+                {tn("kitchenManagement")}
               </h2>
             </div>
 
