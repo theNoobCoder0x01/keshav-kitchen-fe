@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { Menu, Search } from "lucide-react";
 import { useState } from "react";
 
 export function Header() {
+  const { t } = useTranslation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -34,7 +36,7 @@ export function Header() {
               </span>
             </div>
             <div className="hidden sm:flex items-center space-x-1 h-15">
-              <img src="logo.svg" alt="Keshav Kitchen" className="h-full" />
+              <img src="logo.svg" alt={t("common.keshavKitchen")} className="h-full" />
             </div>
           </div>
         </div>
@@ -55,7 +57,7 @@ export function Header() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search recipes, ingredients..."
+              placeholder={t("common.searchPlaceholder")}
               className="pl-10 bg-muted/50"
             />
           </div>

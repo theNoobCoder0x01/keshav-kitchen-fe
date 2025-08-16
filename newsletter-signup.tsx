@@ -9,9 +9,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { Github, Mail, Shield, Twitter } from "lucide-react";
 
 export default function Component() {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen bg-linear-to-br from-[#f8f7fa] via-[#e1dbfd] to-[#674af5]/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/95 backdrop-blur-xs">
@@ -23,11 +26,10 @@ export default function Component() {
 
           <div className="space-y-2">
             <CardTitle className="text-2xl font-bold text-[#4b465c]">
-              Subscribe to Our Newsletter
+              {t("newsletter.title")}
             </CardTitle>
             <CardDescription className="text-[#4b465c]/70 text-base">
-              Get the latest updates, exclusive content, and insider tips
-              delivered straight to your inbox.
+              {t("newsletter.description")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -58,7 +60,7 @@ export default function Component() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-2 text-[#4b465c]/60">
-                  Or continue with email
+                  {t("newsletter.orContinueWithEmail")}
                 </span>
               </div>
             </div>
@@ -68,12 +70,12 @@ export default function Component() {
           <form className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-[#4b465c] font-medium">
-                Email address
+                {t("newsletter.emailAddress")}
               </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t("newsletter.enterEmail")}
                 className="h-11 border-[#dbdade] focus:border-[#674af5] focus:ring-[#674af5]/20"
                 required
               />
@@ -83,7 +85,7 @@ export default function Component() {
               type="submit"
               className="w-full h-11 bg-linear-to-r from-[#674af5] to-[#856ef7] hover:from-[#674af5]/90 hover:to-[#856ef7]/90 text-white font-medium"
             >
-              Subscribe Now
+              {t("newsletter.subscribeNow")}
             </Button>
           </form>
 
@@ -94,28 +96,28 @@ export default function Component() {
                 href="#"
                 className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors"
               >
-                Terms
+                {t("newsletter.terms")}
               </a>
               <span className="text-[#dbdade]">•</span>
               <a
                 href="#"
                 className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors"
               >
-                Privacy
+                {t("newsletter.privacy")}
               </a>
               <span className="text-[#dbdade]">•</span>
               <a
                 href="#"
                 className="text-[#4b465c]/60 hover:text-[#674af5] transition-colors"
               >
-                Help
+                {t("newsletter.help")}
               </a>
             </div>
 
             {/* Trust Indicator */}
             <div className="flex items-center justify-center space-x-2 text-sm text-[#4b465c]/60">
               <Shield className="w-4 h-4" />
-              <span>We respect your privacy. Unsubscribe at any time.</span>
+              <span>{t("newsletter.privacyNotice")}</span>
             </div>
           </div>
         </CardContent>
