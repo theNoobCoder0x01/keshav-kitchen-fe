@@ -100,7 +100,12 @@ export async function createRecipe(data: {
   servings?: number;
   category: string;
   subcategory: string;
-  ingredients: RecipeIngredientInput[];
+  ingredients: (RecipeIngredientInput & { groupId?: string | null })[];
+  ingredientGroups?: Array<{
+    id?: string;
+    name: string;
+    sortOrder: number;
+  }>;
 }) {
   try {
     const session = await auth();
@@ -109,22 +114,84 @@ export async function createRecipe(data: {
       throw new Error("Unauthorized");
     }
 
-    const recipe = await prisma.recipe.create({
-      data: {
-        name: data.name,
-        description: data.description,
-        instructions: data.instructions,
-        servings: data.servings,
-        category: data.category,
-        subcategory: data.subcategory,
-        userId: session.user.id,
-        ingredients: {
-          create: data.ingredients,
+    const recipe = await prisma.$transaction(async (tx) => {
+      // Create the recipe first
+      const newRecipe = await tx.recipe.create({
+        data: {
+          name: data.name,
+          description: data.description,
+          instructions: data.instructions,
+          servings: data.servings,
+          category: data.category,
+          subcategory: data.subcategory,
+          userId: session.user.id,
         },
-      },
-      include: {
-        ingredients: true,
-      },
+      });
+
+      // Create ingredient groups if provided
+      const groupIdMap = new Map<string, string>();
+      if (data.ingredientGroups) {
+        for (const group of data.ingredientGroups) {
+          const createdGroup = await tx.ingredientGroup.create({
+            data: {
+              name: group.name,
+              sortOrder: group.sortOrder,
+              recipeId: newRecipe.id,
+            },
+          });
+          if (group.id) {
+            groupIdMap.set(group.id, createdGroup.id);
+          }
+        }
+      }
+
+      // Create ingredients with proper group assignments
+      const ingredientData = data.ingredients.map((ingredient) => {
+        let finalGroupId = null;
+        
+        if (ingredient.groupId) {
+          // If groupId is a temp ID, map it to the real ID
+          if (groupIdMap.has(ingredient.groupId)) {
+            finalGroupId = groupIdMap.get(ingredient.groupId);
+          } else {
+            finalGroupId = ingredient.groupId;
+          }
+        }
+
+        return {
+          recipeId: newRecipe.id,
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          costPerUnit: ingredient.costPerUnit ?? undefined,
+          groupId: finalGroupId,
+        };
+      });
+
+      await tx.ingredient.createMany({
+        data: ingredientData,
+      });
+
+      // Return the complete recipe with relationships
+      return await tx.recipe.findUnique({
+        where: { id: newRecipe.id },
+        include: {
+          ingredients: {
+            include: {
+              group: true,
+            },
+          },
+          ingredientGroups: {
+            include: {
+              ingredients: true,
+            },
+            orderBy: [
+              { sortOrder: 'asc' },
+              { name: 'asc' },
+            ],
+          },
+        },
+      });
     });
 
     revalidatePath("/recipes");
@@ -144,7 +211,12 @@ export async function updateRecipe(
     servings?: number;
     category?: string;
     subcategory?: string;
-    ingredients?: RecipeIngredientBase[];
+    ingredients?: (RecipeIngredientBase & { groupId?: string | null })[];
+    ingredientGroups?: Array<{
+      id?: string;
+      name: string;
+      sortOrder: number;
+    }>;
   },
 ) {
   try {
@@ -170,36 +242,97 @@ export async function updateRecipe(
       throw new Error("Unauthorized to update this recipe");
     }
 
-    const updateData = {
-      name: data.name,
-      description: data.description,
-      instructions: data.instructions,
-      servings: data.servings,
-      category: data.category,
-      subcategory: data.subcategory,
-    };
+    const updatedRecipe = await prisma.$transaction(async (tx) => {
+      // Update basic recipe data
+      const updateData = {
+        name: data.name,
+        description: data.description,
+        instructions: data.instructions,
+        servings: data.servings,
+        category: data.category,
+        subcategory: data.subcategory,
+      };
 
-    if (data.ingredients) {
-      await prisma.ingredient.deleteMany({
-        where: { recipeId: id },
+      await tx.recipe.update({
+        where: { id },
+        data: updateData,
       });
-      await prisma.ingredient.createMany({
-        data: data.ingredients.map((ingredient) => ({
-          recipeId: id,
-          name: ingredient.name,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          costPerUnit: ingredient.costPerUnit ?? undefined,
-        })),
-      });
-    }
 
-    const updatedRecipe = await prisma.recipe.update({
-      where: { id },
-      data: updateData,
-      include: {
-        ingredients: true,
-      },
+      // Handle ingredient groups and ingredients if provided
+      if (data.ingredients !== undefined) {
+        // Delete existing ingredients and groups
+        await tx.ingredient.deleteMany({
+          where: { recipeId: id },
+        });
+        await tx.ingredientGroup.deleteMany({
+          where: { recipeId: id },
+        });
+
+        // Create new ingredient groups if provided
+        const groupIdMap = new Map<string, string>();
+        if (data.ingredientGroups) {
+          for (const group of data.ingredientGroups) {
+            const createdGroup = await tx.ingredientGroup.create({
+              data: {
+                name: group.name,
+                sortOrder: group.sortOrder,
+                recipeId: id,
+              },
+            });
+            if (group.id) {
+              groupIdMap.set(group.id, createdGroup.id);
+            }
+          }
+        }
+
+        // Create new ingredients with proper group assignments
+        const ingredientData = data.ingredients.map((ingredient) => {
+          let finalGroupId = null;
+          
+          if (ingredient.groupId) {
+            // If groupId is a temp ID, map it to the real ID
+            if (groupIdMap.has(ingredient.groupId)) {
+              finalGroupId = groupIdMap.get(ingredient.groupId);
+            } else {
+              finalGroupId = ingredient.groupId;
+            }
+          }
+
+          return {
+            recipeId: id,
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit ?? undefined,
+            groupId: finalGroupId,
+          };
+        });
+
+        await tx.ingredient.createMany({
+          data: ingredientData,
+        });
+      }
+
+      // Return the complete updated recipe with relationships
+      return await tx.recipe.findUnique({
+        where: { id },
+        include: {
+          ingredients: {
+            include: {
+              group: true,
+            },
+          },
+          ingredientGroups: {
+            include: {
+              ingredients: true,
+            },
+            orderBy: [
+              { sortOrder: 'asc' },
+              { name: 'asc' },
+            ],
+          },
+        },
+      });
     });
 
     revalidatePath("/recipes");

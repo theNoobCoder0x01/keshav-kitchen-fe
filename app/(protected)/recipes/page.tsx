@@ -204,6 +204,7 @@ export default function RecipesPage() {
       costPerUnit: ingredient.costPerUnit
         ? parseFloat(ingredient.costPerUnit) || 0
         : undefined,
+      groupId: ingredient.groupId || null,
     }));
 
     try {
@@ -219,6 +220,7 @@ export default function RecipesPage() {
         category: data.category,
         subcategory: data.subcategory,
         ingredients: parsedIngredients,
+        ingredientGroups: data.ingredientGroups || [],
         instructions: data.instructions ?? null,
         user: { connect: { id: userId } },
       };
@@ -241,14 +243,14 @@ export default function RecipesPage() {
         } else {
           // Transform the result to match the local Recipe interface
           const transformedRecipe: Recipe = {
-            id: result.id,
-            name: result.name,
-            category: result.category,
-            subcategory: result.subcategory || "",
+            id: result!.id,
+            name: result!.name,
+            category: result!.category,
+            subcategory: result!.subcategory || "",
             cost: 0,
-            instructions: result.instructions ?? null,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
+            instructions: result!.instructions ?? null,
+            createdAt: result!.createdAt,
+            updatedAt: result!.updatedAt,
           };
           setRecipes((prev: Recipe[]) => [transformedRecipe, ...prev]);
           toast.success(t("messages.recipeAdded"));

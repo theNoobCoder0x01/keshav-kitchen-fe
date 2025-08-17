@@ -2,11 +2,9 @@
 
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { RecipeDetailView } from "@/components/recipes/recipe-detail-view";
-import { RecipeEditorWithGroups } from "@/components/recipes/recipe-editor-with-groups";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { RecipeDetailData } from "@/types";
-import { ArrowLeft, Printer, Package } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +17,6 @@ export default function RecipeDetailPage() {
   const [recipe, setRecipe] = useState<RecipeDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
-  const [isGroupsDialogOpen, setIsGroupsDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -84,54 +81,7 @@ export default function RecipeDetailPage() {
     router.push("/recipes");
   };
 
-  const handleRecipeChange = (updatedRecipe: RecipeDetailData) => {
-    setRecipe(updatedRecipe);
-  };
 
-  const handleSave = () => {
-    // Refresh the recipe data after saving
-    const fetchRecipe = async () => {
-      try {
-        const response = await fetch(`/api/recipes/${recipeId}`);
-        if (!response.ok) throw new Error("Failed to fetch recipe");
-        const detailedRecipe = await response.json();
-        
-        const recipeData: RecipeDetailData = {
-          id: detailedRecipe.id,
-          name: detailedRecipe.name,
-          description: detailedRecipe.description,
-          instructions: detailedRecipe.instructions,
-          servings: detailedRecipe.servings,
-          category: detailedRecipe.category,
-          subcategory: detailedRecipe.subcategory,
-          ingredients:
-            detailedRecipe.ingredients?.map((ingredient: any) => ({
-              id: ingredient.id,
-              name: ingredient.name,
-              quantity: ingredient.quantity,
-              unit: ingredient.unit,
-              costPerUnit: ingredient.costPerUnit,
-              groupId: ingredient.groupId,
-              group: ingredient.group,
-            })) || [],
-          ingredientGroups: detailedRecipe.ingredientGroups || [],
-          createdAt: detailedRecipe.createdAt
-            ? new Date(detailedRecipe.createdAt)
-            : undefined,
-          updatedAt: detailedRecipe.updatedAt
-            ? new Date(detailedRecipe.updatedAt)
-            : undefined,
-        };
-        
-        setRecipe(recipeData);
-      } catch (error) {
-        console.error("Error refreshing recipe:", error);
-      }
-    };
-    
-    fetchRecipe();
-    setIsGroupsDialogOpen(false);
-  };
 
   if (loading) {
     return (
@@ -176,28 +126,6 @@ export default function RecipeDetailPage() {
         </Button>
 
         <div className="flex items-center gap-3">
-          <Dialog open={isGroupsDialogOpen} onOpenChange={setIsGroupsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Package className="w-4 h-4" />
-                Manage Groups
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Manage Ingredient Groups - {recipe?.name}</DialogTitle>
-              </DialogHeader>
-              {recipe && (
-                <RecipeEditorWithGroups
-                  recipe={recipe}
-                  isEditing={true}
-                  onRecipeChange={handleRecipeChange}
-                  onSave={handleSave}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-          
           <Button
             onClick={handlePrint}
             className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground flex items-center gap-2"
