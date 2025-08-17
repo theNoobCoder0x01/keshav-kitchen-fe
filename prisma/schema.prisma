@@ -56,11 +56,26 @@ model Recipe {
   userId       String
   user         User         @relation(fields: [userId], references: [id])
   ingredients  Ingredient[]
+  ingredientGroups IngredientGroup[]
   menus        Menu[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
   @@index([userId])
+}
+
+model IngredientGroup {
+  id          String       @id @default(cuid())
+  name        String
+  recipeId    String
+  recipe      Recipe       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredients Ingredient[]
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([recipeId])
+  @@unique([recipeId, name])
 }
 
 model Ingredient {
@@ -71,10 +86,13 @@ model Ingredient {
   costPerUnit Float?
   recipeId    String
   recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  groupId     String?
+  group       IngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([recipeId])
+  @@index([groupId])
 }
 
 model Menu {

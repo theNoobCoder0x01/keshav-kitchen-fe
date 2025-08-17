@@ -8,7 +8,13 @@ import {
   extractStepsFromInstructions,
   isLexicalSerialized,
 } from "@/lib/utils/rich-text";
-import { ChefHat, Clock, DollarSign, Tag, Users } from "lucide-react";
+import {
+  groupIngredientsByGroup,
+  getSortedGroupNames,
+  calculateGroupCost,
+  hasCustomGroups,
+} from "@/lib/utils/recipe-utils";
+import { ChefHat, Clock, DollarSign, Tag, Users, Package } from "lucide-react";
 import { forwardRef } from "react";
 
 import type { RecipeDetailData } from "@/types";
@@ -29,6 +35,14 @@ export const RecipeDetailView = forwardRef<
   );
 
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
+
+  // Group ingredients by their groups
+  const groupedIngredients = groupIngredientsByGroup(
+    recipe.ingredients,
+    recipe.ingredientGroups
+  );
+  const sortedGroupNames = getSortedGroupNames(groupedIngredients);
+  const showGroupHeaders = hasCustomGroups(recipe.ingredientGroups);
 
   return (
     <div
@@ -166,38 +180,67 @@ export const RecipeDetailView = forwardRef<
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {recipe.ingredients.map((ingredient, index) => (
-              <div
-                key={ingredient.id || index}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-              >
-                <div className="flex-1">
-                  <span className="font-medium text-foreground">
-                    {ingredient.name}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold text-foreground">
-                    {ingredient.quantity} {ingredient.unit}
-                  </div>
-                  {ingredient.costPerUnit && (
-                    <div className="text-sm text-muted-foreground">
-                      {ingredient.costPerUnit.toFixed(2)} per {ingredient.unit}
-                      {ingredient.quantity > 1 && (
-                        <span className="ml-1">
-                          (₹
-                          {(
-                            ingredient.costPerUnit * ingredient.quantity
-                          ).toFixed(2)}{" "}
-                          total)
+          <div className="space-y-6">
+            {sortedGroupNames.map((groupName) => {
+              const group = groupedIngredients[groupName];
+              const groupCost = calculateGroupCost(group.ingredients);
+              
+              return (
+                <div key={groupName} className="space-y-3">
+                  {/* Group Header - only show if there are custom groups */}
+                  {showGroupHeaders && (
+                    <div className="flex items-center gap-2 pb-2">
+                      <Package className="w-4 h-4 text-muted-foreground" />
+                      <h4 className="font-semibold text-foreground text-lg">
+                        {groupName}
+                      </h4>
+                      {groupCost > 0 && (
+                        <span className="text-sm text-muted-foreground ml-auto">
+                          ₹{groupCost.toFixed(2)}
                         </span>
                       )}
                     </div>
                   )}
+                  
+                  {/* Ingredients in this group */}
+                  <div className="space-y-2">
+                    {group.ingredients.map((ingredient, index) => (
+                      <div
+                        key={ingredient.id || index}
+                        className={`flex items-center justify-between p-3 bg-muted/50 rounded-lg ${
+                          showGroupHeaders ? "ml-6" : ""
+                        }`}
+                      >
+                        <div className="flex-1">
+                          <span className="font-medium text-foreground">
+                            {ingredient.name}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-foreground">
+                            {ingredient.quantity} {ingredient.unit}
+                          </div>
+                          {ingredient.costPerUnit && (
+                            <div className="text-sm text-muted-foreground">
+                              ₹{ingredient.costPerUnit.toFixed(2)} per {ingredient.unit}
+                              {ingredient.quantity > 1 && (
+                                <span className="ml-1">
+                                  (₹
+                                  {(
+                                    ingredient.costPerUnit * ingredient.quantity
+                                  ).toFixed(2)}{" "}
+                                  total)
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Ingredients Summary */}

@@ -31,10 +31,41 @@ export async function GET(
             quantity: true,
             unit: true,
             costPerUnit: true,
+            groupId: true,
+            group: {
+              select: {
+                id: true,
+                name: true,
+                sortOrder: true,
+              },
+            },
           },
           orderBy: {
             name: "asc",
           },
+        },
+        ingredientGroups: {
+          select: {
+            id: true,
+            name: true,
+            sortOrder: true,
+            ingredients: {
+              select: {
+                id: true,
+                name: true,
+                quantity: true,
+                unit: true,
+                costPerUnit: true,
+              },
+              orderBy: {
+                name: "asc",
+              },
+            },
+          },
+          orderBy: [
+            { sortOrder: "asc" },
+            { name: "asc" },
+          ],
         },
         user: {
           select: {

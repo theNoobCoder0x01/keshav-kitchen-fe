@@ -24,7 +24,38 @@ export async function GET(request: NextRequest) {
             quantity: true,
             unit: true,
             costPerUnit: true,
+            groupId: true,
+            group: {
+              select: {
+                id: true,
+                name: true,
+                sortOrder: true,
+              },
+            },
           },
+        },
+        ingredientGroups: {
+          select: {
+            id: true,
+            name: true,
+            sortOrder: true,
+            ingredients: {
+              select: {
+                id: true,
+                name: true,
+                quantity: true,
+                unit: true,
+                costPerUnit: true,
+              },
+              orderBy: {
+                name: "asc",
+              },
+            },
+          },
+          orderBy: [
+            { sortOrder: "asc" },
+            { name: "asc" },
+          ],
         },
         user: {
           select: {
