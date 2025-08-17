@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { Menu, Search } from "lucide-react";
 import { useState } from "react";
 
 export function Header() {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const [searchOpen, setSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -36,7 +36,11 @@ export function Header() {
               </span>
             </div>
             <div className="hidden sm:flex items-center space-x-1 h-15">
-              <img src="logo.svg" alt={t("common.keshavKitchen")} className="h-full" />
+              <img
+                src="logo.svg"
+                alt={t("common.keshavKitchen")}
+                className="h-full"
+              />
             </div>
           </div>
         </div>

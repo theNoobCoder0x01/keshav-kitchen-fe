@@ -1,11 +1,19 @@
 "use client";
 
-import { CodeNode } from "@lexical/code";
-import { LinkNode } from "@lexical/link";
-import { ListItemNode, ListNode } from "@lexical/list";
+import { $createCodeNode, CodeNode } from "@lexical/code";
+import { $isLinkNode, LinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import {
+  $isListNode,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  ListItemNode,
+  ListNode,
+  REMOVE_LIST_COMMAND,
+} from "@lexical/list";
 import { TRANSFORMERS } from "@lexical/markdown";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
@@ -14,9 +22,26 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
+import {
+  $createHeadingNode,
+  $isHeadingNode,
+  HeadingNode,
+  QuoteNode,
+} from "@lexical/rich-text";
+import {
+  $getTableColumnIndexFromTableCellNode,
+  $getTableNodeFromLexicalNodeOrThrow,
+  $insertTableColumnAtSelection,
+  $insertTableRowAtSelection,
+  $isTableCellNode,
+  $isTableRowNode,
+  $isTableSelection,
+  TableCellNode,
+  TableNode,
+  TableRowNode,
+} from "@lexical/table";
+import { $getNearestNodeOfType, mergeRegister } from "@lexical/utils";
 import {
   $createParagraphNode,
   $createTextNode,
@@ -26,50 +51,9 @@ import {
   EditorState,
   FORMAT_TEXT_COMMAND,
   SELECTION_CHANGE_COMMAND,
-  $isParagraphNode,
 } from "lexical";
-import {
-  $createHeadingNode,
-  $isHeadingNode,
-} from "@lexical/rich-text";
-import {
-  $createListNode,
-  $createListItemNode,
-  INSERT_UNORDERED_LIST_COMMAND,
-  INSERT_ORDERED_LIST_COMMAND,
-  REMOVE_LIST_COMMAND,
-  $isListNode,
-} from "@lexical/list";
-import {
-  $createLinkNode,
-  $isLinkNode,
-  TOGGLE_LINK_COMMAND,
-} from "@lexical/link";
-import {
-  $createCodeNode,
-  $isCodeNode,
-  CODE_LANGUAGE_FRIENDLY_NAME_MAP,
-  CODE_LANGUAGE_MAP,
-  getDefaultCodeLanguage,
-} from "@lexical/code";
-import {
-  $getTableCellNodeFromLexicalNode,
-  $getTableColumnIndexFromTableCellNode,
-  $getTableNodeFromLexicalNodeOrThrow,
-  $getTableRowIndexFromTableCellNode,
-  $insertTableColumn,
-  $insertTableRow,
-  $isTableCellNode,
-  $isTableRowNode,
-  $isTableSelection,
-  getTableObserverFromTableElement,
-} from "@lexical/table";
-import { $getNearestNodeOfType, mergeRegister } from "@lexical/utils";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -77,52 +61,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Bold,
-  Italic,
-  Underline,
-  Strikethrough,
   Code,
+  Italic,
   Link,
   List,
   ListOrdered,
-  Heading1,
-  Heading2,
-  Heading3,
-  Quote,
-  Minus,
   Plus,
+  Strikethrough,
   Trash2,
-  Merge,
-  Split,
+  Underline,
 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface LexicalEditorProps {
   value?: string | null;
   onChange?: (serialized: string) => void;
   className?: string;
   placeholder?: string;
+  outputFormat?: "json" | "plaintext";
 }
 
 function Placeholder({ text }: { text: string }) {
   return (
-    <div className="absolute top-3 left-3 pointer-events-none select-none text-muted-foreground/70 text-sm">
+    <div className="absolute top-2.5 left-3 pointer-events-none select-none text-muted-foreground/70 text-sm">
       {text}
     </div>
   );
 }
 
-function parseInitialEditorStateString(value?: string | null): string | null {
+function parseInitialEditorStateString(
+  value?: string | null,
+  outputFormat: "json" | "plaintext" = "json",
+): string | null {
   if (!value) return null;
+
+  // If outputFormat is plaintext, only parse as JSON if it's explicitly a valid Lexical state
+  if (outputFormat === "plaintext") {
+    try {
+      const json = JSON.parse(value);
+      if (json && typeof json === "object" && json.root && json.root.children) {
+        return value;
+      }
+    } catch {
+      // Not valid JSON, treat as plain text
+    }
+    return null; // Always treat as plain text for plaintext output format
+  }
+
+  // For JSON output format, try to parse as JSON first
   try {
     const json = JSON.parse(value);
     if (json && typeof json === "object" && json.root) {
       return value;
     }
-    return null;
   } catch {
-    return null;
+    // Not valid JSON, continue to handle as plain text
   }
+
+  // If it's plain text, return null so it gets handled by the plain text fallback
+  return null;
 }
 
 // Text formatting toolbar component
@@ -147,7 +147,7 @@ function TextFormattingToolbar() {
 
       const node = selection.anchor.getNode();
       const parent = node.getParent();
-      
+
       if ($isLinkNode(parent) || $isLinkNode(node)) {
         setIsLink(true);
       } else {
@@ -196,12 +196,14 @@ function TextFormattingToolbar() {
           updateToolbar();
           return false;
         },
-        1
-      )
+        1,
+      ),
     );
   }, [editor, updateToolbar]);
 
-  const formatText = (format: string) => {
+  const formatText = (
+    format: "bold" | "italic" | "underline" | "strikethrough" | "code",
+  ) => {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
   };
 
@@ -223,7 +225,9 @@ function TextFormattingToolbar() {
         if ($isRangeSelection(selection)) {
           const anchorNode = selection.anchor.getNode();
           const element = anchorNode.getTopLevelElementOrThrow();
-          const newHeading = $createHeadingNode(headingSize as "h1" | "h2" | "h3");
+          const newHeading = $createHeadingNode(
+            headingSize as "h1" | "h2" | "h3",
+          );
           element.replace(newHeading);
         }
       });
@@ -375,11 +379,11 @@ function TableToolbar() {
 
   const updateTableToolbar = useCallback(() => {
     const selection = $getSelection();
-    
+
     if ($isRangeSelection(selection) || $isTableSelection(selection)) {
       const anchorNode = selection.anchor.getNode();
       const cellNode = $getNearestNodeOfType(anchorNode, TableCellNode);
-      
+
       if ($isTableCellNode(cellNode)) {
         setIsTableSelected(true);
         setTableCellNode(cellNode);
@@ -406,17 +410,16 @@ function TableToolbar() {
           updateTableToolbar();
           return false;
         },
-        1
-      )
+        1,
+      ),
     );
   }, [editor, updateTableToolbar]);
 
   const insertRowAbove = () => {
     editor.update(() => {
       if (tableCellNode) {
-        const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-        const rowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
-        $insertTableRow(tableNode, rowIndex);
+        // Use the non-deprecated function that works with merged cells
+        $insertTableRowAtSelection(false);
       }
     });
   };
@@ -424,9 +427,8 @@ function TableToolbar() {
   const insertRowBelow = () => {
     editor.update(() => {
       if (tableCellNode) {
-        const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-        const rowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
-        $insertTableRow(tableNode, rowIndex + 1);
+        // Use the non-deprecated function that works with merged cells
+        $insertTableRowAtSelection(true);
       }
     });
   };
@@ -434,9 +436,8 @@ function TableToolbar() {
   const insertColumnLeft = () => {
     editor.update(() => {
       if (tableCellNode) {
-        const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-        const columnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
-        $insertTableColumn(tableNode, columnIndex);
+        // Use the non-deprecated function that works with merged cells
+        $insertTableColumnAtSelection(false);
       }
     });
   };
@@ -444,9 +445,8 @@ function TableToolbar() {
   const insertColumnRight = () => {
     editor.update(() => {
       if (tableCellNode) {
-        const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-        const columnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
-        $insertTableColumn(tableNode, columnIndex + 1);
+        // Use the non-deprecated function that works with merged cells
+        $insertTableColumnAtSelection(true);
       }
     });
   };
@@ -466,8 +466,9 @@ function TableToolbar() {
     editor.update(() => {
       if (tableCellNode) {
         const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-        const columnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
-        
+        const columnIndex =
+          $getTableColumnIndexFromTableCellNode(tableCellNode);
+
         // Remove cells from each row at the specified column index
         const tableRows = tableNode.getChildren();
         tableRows.forEach((row) => {
@@ -487,9 +488,9 @@ function TableToolbar() {
   }
 
   return (
-    <div className="flex items-center gap-1 p-2 border-b bg-blue-50">
-      <span className="text-xs font-medium text-blue-700 mr-2">Table:</span>
-      
+    <div className="flex items-center gap-1 p-2 border-b bg-muted">
+      <span className="text-xs font-medium text-primary mr-2">Table:</span>
+
       <Button variant="ghost" size="sm" onClick={insertRowAbove}>
         <Plus className="h-3 w-3" />
         <span className="text-xs ml-1">Row Above</span>
@@ -498,9 +499,9 @@ function TableToolbar() {
         <Plus className="h-3 w-3" />
         <span className="text-xs ml-1">Row Below</span>
       </Button>
-      
+
       <Separator orientation="vertical" className="h-6" />
-      
+
       <Button variant="ghost" size="sm" onClick={insertColumnLeft}>
         <Plus className="h-3 w-3" />
         <span className="text-xs ml-1">Col Left</span>
@@ -509,9 +510,9 @@ function TableToolbar() {
         <Plus className="h-3 w-3" />
         <span className="text-xs ml-1">Col Right</span>
       </Button>
-      
+
       <Separator orientation="vertical" className="h-6" />
-      
+
       <Button variant="ghost" size="sm" onClick={deleteRow}>
         <Trash2 className="h-3 w-3" />
         <span className="text-xs ml-1">Delete Row</span>
@@ -529,10 +530,11 @@ export function LexicalEditor({
   onChange,
   className,
   placeholder = "Write instructions...",
+  outputFormat = "json",
 }: LexicalEditorProps) {
   const initialSerialized = useMemo(
-    () => parseInitialEditorStateString(value),
-    [value],
+    () => parseInitialEditorStateString(value, outputFormat),
+    [value, outputFormat],
   );
 
   const initialConfig = useMemo(
@@ -631,7 +633,8 @@ export function LexicalEditor({
         },
         table: "border-collapse border border-gray-300",
         tableCell: "border border-gray-300 px-2 py-1 min-w-16",
-        tableCellHeader: "border border-gray-300 px-2 py-1 bg-gray-100 font-semibold",
+        tableCellHeader:
+          "border border-gray-300 px-2 py-1 bg-gray-100 font-semibold",
       },
     }),
     [initialSerialized, value],
@@ -639,23 +642,32 @@ export function LexicalEditor({
 
   const handleChange = useCallback(
     (editorState: EditorState) => {
-      const serialized = JSON.stringify(editorState);
-      onChange?.(serialized);
+      if (outputFormat === "plaintext") {
+        // Extract plain text from the editor state
+        const textContent = editorState.read(() => {
+          const root = $getRoot();
+          return root.getTextContent();
+        });
+        onChange?.(textContent);
+      } else {
+        // Default JSON format
+        const serialized = JSON.stringify(editorState);
+        onChange?.(serialized);
+      }
     },
-    [onChange],
+    [onChange, outputFormat],
   );
 
   return (
     <div
       className={
-        "relative border rounded-md bg-background " +
-        (className || "")
+        "relative border rounded-md bg-background " + (className || "")
       }
     >
       <LexicalComposer initialConfig={initialConfig}>
         <TextFormattingToolbar />
         <TableToolbar />
-        <div className="px-3 py-2">
+        <div className="px-3 py-2 relative">
           <RichTextPlugin
             contentEditable={
               <ContentEditable className="min-h-[160px] outline-none text-sm leading-6" />

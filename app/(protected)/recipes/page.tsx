@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import type { RecipeDetailData } from "@/types";
 import { Filter, Plus, RefreshCw, Search, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -29,7 +29,7 @@ export default function RecipesPage() {
   // Define interfaces for type safety
   type Recipe = import("@/types/recipes").RecipeListItem;
 
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const { data: session } = useSession();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -144,7 +144,9 @@ export default function RecipesPage() {
 
       setRecipes((prevRecipes) => prevRecipes.filter((r) => r.id !== id));
       toast.success(t("messages.recipeDeleted"), {
-        description: t("messages.recipeDeletedDescription", { name: recipes.find((r) => r.id === id)?.name }),
+        description: t("messages.recipeDeletedDescription", {
+          name: recipes.find((r) => r.id === id)?.name,
+        }),
       });
     } catch (error) {
       toast.error(t("common.error"), {
@@ -378,7 +380,9 @@ export default function RecipesPage() {
           {showAdvancedFilters && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t("recipes.category")}</label>
+                <label className="text-sm font-medium">
+                  {t("recipes.category")}
+                </label>
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
@@ -386,13 +390,17 @@ export default function RecipesPage() {
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
-                      {category === "all" ? t("recipes.allCategories") : category}
+                      {category === "all"
+                        ? t("recipes.allCategories")
+                        : category}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t("recipes.subcategory")}</label>
+                <label className="text-sm font-medium">
+                  {t("recipes.subcategory")}
+                </label>
                 <select
                   value={filterSubcategory}
                   onChange={(e) => setFilterSubcategory(e.target.value)}

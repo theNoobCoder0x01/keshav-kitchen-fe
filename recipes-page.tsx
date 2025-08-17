@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import {
   Bell,
   Calendar,
@@ -46,7 +46,7 @@ import {
 import { useState } from "react";
 
 export default function RecipesPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const [addRecipeDialog, setAddRecipeDialog] = useState(false);
   const [ingredients, setIngredients] = useState([
     { name: "Potato", quantity: "5 Kg" },
@@ -143,7 +143,9 @@ export default function RecipesPage() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-[#4b465c]">700</p>
-                      <p className="text-sm text-[#4b465c]/70">{t("dashboard.visitors")}</p>
+                      <p className="text-sm text-[#4b465c]/70">
+                        {t("dashboard.visitors")}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -157,7 +159,9 @@ export default function RecipesPage() {
                       <p className="text-2xl font-bold text-[#4b465c]">
                         1.423k
                       </p>
-                      <p className="text-sm text-[#4b465c]/70">{t("dashboard.products")}</p>
+                      <p className="text-sm text-[#4b465c]/70">
+                        {t("dashboard.products")}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -169,7 +173,9 @@ export default function RecipesPage() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-[#4b465c]">₹9745</p>
-                      <p className="text-sm text-[#4b465c]/70">{t("dashboard.revenue")}</p>
+                      <p className="text-sm text-[#4b465c]/70">
+                        {t("dashboard.revenue")}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -180,7 +186,9 @@ export default function RecipesPage() {
           {/* Recipes Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-[#674af5]">{t("recipes.title")}</h2>
+              <h2 className="text-xl font-semibold text-[#674af5]">
+                {t("recipes.title")}
+              </h2>
               <Dialog open={addRecipeDialog} onOpenChange={setAddRecipeDialog}>
                 <DialogTrigger asChild>
                   <Button className="bg-[#674af5] hover:bg-[#674af5]/90 text-white">
@@ -216,10 +224,18 @@ export default function RecipesPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="breakfast">{t("menus.breakfast")}</SelectItem>
-                            <SelectItem value="lunch">{t("menus.lunch")}</SelectItem>
-                            <SelectItem value="dinner">{t("menus.dinner")}</SelectItem>
-                            <SelectItem value="snack">{t("menus.snack")}</SelectItem>
+                            <SelectItem value="breakfast">
+                              {t("menus.breakfast")}
+                            </SelectItem>
+                            <SelectItem value="lunch">
+                              {t("menus.lunch")}
+                            </SelectItem>
+                            <SelectItem value="dinner">
+                              {t("menus.dinner")}
+                            </SelectItem>
+                            <SelectItem value="snack">
+                              {t("menus.snack")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -376,7 +392,11 @@ export default function RecipesPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between px-6 py-4 border-t border-[#dbdade]">
                   <p className="text-sm text-[#4b465c]/70">
-                    {t("common.showingEntries", { from: 1, to: 10, total: 100 })}
+                    {t("common.showingEntries", {
+                      from: 1,
+                      to: 10,
+                      total: 100,
+                    })}
                   </p>
                   <div className="flex items-center space-x-2">
                     <Button

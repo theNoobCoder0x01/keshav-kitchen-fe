@@ -7,7 +7,7 @@ import {
 } from "@/components/kitchens/kitchens-table";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import {
   createKitchen,
   deleteKitchen,
@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function KitchensPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingKitchen, setEditingKitchen] = useState<any | null>(null);
   const [kitchens, setKitchens] = useState<any[]>([]);
@@ -70,11 +70,7 @@ export default function KitchensPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (
-      window.confirm(
-        t("messages.confirmDeleteKitchen"),
-      )
-    ) {
+    if (window.confirm(t("messages.confirmDeleteKitchen"))) {
       setDeletingId(id);
       try {
         await deleteKitchen(id);

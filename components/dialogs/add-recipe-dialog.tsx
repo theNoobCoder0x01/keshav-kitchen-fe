@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { cn } from "@/lib/utils";
 import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
@@ -69,7 +69,7 @@ export function AddRecipeDialog({
   onSave,
   initialRecipe = null,
 }: AddRecipeDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const isEditMode = !!initialRecipe;
 
   const validationSchema = Yup.object({
@@ -81,7 +81,9 @@ export function AddRecipeDialog({
       .of(
         Yup.object({
           name: Yup.string().trim().required(t("ingredients.nameRequired")),
-          quantity: Yup.string().trim().required(t("ingredients.quantityRequired")),
+          quantity: Yup.string()
+            .trim()
+            .required(t("ingredients.quantityRequired")),
           unit: Yup.string().required(t("ingredients.unitRequired")),
           costPerUnit: Yup.string().test(
             "is-number-or-empty",
@@ -95,8 +97,8 @@ export function AddRecipeDialog({
 
   const initialValues = {
     recipeName: initialRecipe?.recipeName || "",
-    category: initialRecipe?.category || "",
-    subcategory: initialRecipe?.subcategory || "",
+    category: initialRecipe?.category || "Other",
+    subcategory: initialRecipe?.subcategory || "Other",
     selectedRecipe: initialRecipe?.selectedRecipe || "",
     ingredients: initialRecipe?.ingredients
       ? initialRecipe.ingredients.map((ing) => ({
@@ -127,6 +129,7 @@ export function AddRecipeDialog({
       ingredients: mappedIngredients,
       instructions: values.instructions || null,
     };
+
     if (onSave) {
       onSave(recipeData);
     }
@@ -239,7 +242,7 @@ export function AddRecipeDialog({
             const normalizeUnit = (raw: string) => {
               const trimmed = raw.trim();
               if (!trimmed) return DEFAULT_UNIT;
-              const found = unitOptions.find(
+              const found = UNIT_OPTIONS.find(
                 (opt) =>
                   opt.value.toLowerCase() === trimmed.toLowerCase() ||
                   opt.label.toLowerCase() === trimmed.toLowerCase(),
@@ -372,7 +375,8 @@ export function AddRecipeDialog({
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
-                            {values.ingredients.length} {t("recipes.ingredient")}
+                            {values.ingredients.length}{" "}
+                            {t("recipes.ingredient")}
                             {values.ingredients.length !== 1 ? "s" : ""}
                           </Badge>
                           <Button
@@ -430,7 +434,9 @@ export function AddRecipeDialog({
                                 <Field
                                   as={Input}
                                   name={`ingredients[${index}].name`}
-                                  placeholder={t("recipes.ingredientNamePlaceholder")}
+                                  placeholder={t(
+                                    "recipes.ingredientNamePlaceholder",
+                                  )}
                                   className="border-border focus:border-primary focus:ring-primary/20"
                                 />
                                 <ErrorMessage
@@ -449,7 +455,7 @@ export function AddRecipeDialog({
                                   name={`ingredients[${index}].quantity`}
                                   placeholder={t("recipes.quantityPlaceholder")}
                                   type="number"
-                                  step="0.1"
+                                  step="0.000001"
                                   min="0"
                                   className="border-border focus:border-primary focus:ring-primary/20"
                                 />
@@ -481,7 +487,7 @@ export function AddRecipeDialog({
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {unitOptions.map((option) => (
+                                        {UNIT_OPTIONS.map((option) => (
                                           <SelectItem
                                             key={option.value}
                                             value={option.value}
@@ -504,9 +510,11 @@ export function AddRecipeDialog({
                                   <Field
                                     as={Input}
                                     name={`ingredients[${index}].costPerUnit`}
-                                    placeholder={t("recipes.costPerUnitPlaceholder")}
+                                    placeholder={t(
+                                      "recipes.costPerUnitPlaceholder",
+                                    )}
                                     type="number"
-                                    step="0.01"
+                                    step="0.000001"
                                     min="0"
                                     className="pl-8 border-border focus:border-primary focus:ring-primary/20"
                                   />
@@ -555,13 +563,18 @@ export function AddRecipeDialog({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Field name="instructions">
-                    {({ field }: { field: any }) => (
-                      <LexicalEditor
-                        value={field.value}
-                        onChange={(val) => field.onChange(val)}
-                        placeholder={t("recipes.instructionsPlaceholder")}
-                      />
+                  <Field name="instructions" id="instructions">
+                    {({ field: { onChange, name, value } }: { field: any }) => (
+                      <>
+                        <LexicalEditor
+                          onChange={(newValue) => {
+                            setFieldValue("instructions", newValue);
+                          }}
+                          placeholder={t("recipes.instructionsPlaceholder")}
+                          outputFormat="json"
+                          value={value}
+                        />
+                      </>
                     )}
                   </Field>
                 </CardContent>
@@ -585,12 +598,16 @@ export function AddRecipeDialog({
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                      {isEditMode ? t("recipes.updating") : t("recipes.creating")}
+                      {isEditMode
+                        ? t("recipes.updating")
+                        : t("recipes.creating")}
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      {isEditMode ? t("recipes.updateRecipe") : t("recipes.createRecipe")}
+                      {isEditMode
+                        ? t("recipes.updateRecipe")
+                        : t("recipes.createRecipe")}
                     </>
                   )}
                 </Button>
