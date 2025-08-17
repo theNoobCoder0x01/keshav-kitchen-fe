@@ -4,7 +4,7 @@ import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Building2 } from "lucide-react";
 import * as Yup from "yup";
@@ -26,8 +26,8 @@ export function AddEditKitchenDialog({
   initialKitchen = null,
   onSave,
 }: AddEditKitchenDialogProps) {
-  const { t } = useTranslation();
-  
+  const { t } = useTranslations();
+
   const validationSchema = Yup.object({
     name: Yup.string().trim().required(t("kitchens.nameRequired")),
     location: Yup.string().trim().required(t("kitchens.locationRequired")),
@@ -55,9 +55,13 @@ export function AddEditKitchenDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={initialKitchen ? t("kitchens.editKitchen") : t("kitchens.addKitchen")}
+      title={
+        initialKitchen ? t("kitchens.editKitchen") : t("kitchens.addKitchen")
+      }
       description={
-        initialKitchen ? t("kitchens.updateKitchenDetails") : t("kitchens.createNewKitchen")
+        initialKitchen
+          ? t("kitchens.updateKitchenDetails")
+          : t("kitchens.createNewKitchen")
       }
       icon={<Building2 className="w-5 h-5 text-primary-foreground" />}
       size="md"

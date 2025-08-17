@@ -17,15 +17,19 @@ export function LanguageLoader() {
 
   const fetchUserLanguagePreference = async () => {
     try {
-      const response = await fetch('/api/user/language');
+      const response = await fetch("/api/user/language");
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.data.language && data.data.language !== language) {
+        if (
+          data.success &&
+          data.data.language &&
+          data.data.language !== language
+        ) {
           setLanguage(data.data.language);
         }
       }
     } catch (error) {
-      console.error('Error fetching user language preference:', error);
+      console.error("Error fetching user language preference:", error);
       // Fallback to localStorage or default language
     }
   };
