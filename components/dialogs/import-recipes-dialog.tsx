@@ -4,7 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import {
   AlertCircle,
   CheckCircle,
@@ -27,7 +27,7 @@ export function ImportRecipesDialog({
   onOpenChange,
   onImportSuccess,
 }: ImportRecipesDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
@@ -87,9 +87,9 @@ export function ImportRecipesDialog({
             errors: result.errors,
           });
           toast.error(t("messages.importCompletedWithErrors"), {
-            description: t("messages.importCompletedWithErrorsDescription", { 
-              count: result.validRecipes || 0, 
-              errorCount: result.errors.length 
+            description: t("messages.importCompletedWithErrorsDescription", {
+              count: result.validRecipes || 0,
+              errorCount: result.errors.length,
             }),
           });
         } else {
@@ -107,7 +107,9 @@ export function ImportRecipesDialog({
       });
 
       toast.success(t("messages.importSuccessful"), {
-        description: t("messages.importSuccessfulDescription", { count: result.importedCount }),
+        description: t("messages.importSuccessfulDescription", {
+          count: result.importedCount,
+        }),
       });
 
       // Reset form
@@ -241,7 +243,9 @@ export function ImportRecipesDialog({
         {/* File Upload Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="file-upload">{t("recipes.selectExcelCsvFile")}</Label>
+            <Label htmlFor="file-upload">
+              {t("recipes.selectExcelCsvFile")}
+            </Label>
             <Button
               variant="outline"
               size="sm"
@@ -313,14 +317,16 @@ export function ImportRecipesDialog({
             <AlertDescription>
               <div className="space-y-2">
                 <p>
-                  {t("recipes.importCompleted", { 
-                    imported: uploadProgress.imported, 
-                    total: uploadProgress.total 
+                  {t("recipes.importCompleted", {
+                    imported: uploadProgress.imported,
+                    total: uploadProgress.total,
                   })}
                 </p>
                 {uploadProgress.errors.length > 0 && (
                   <div>
-                    <p className="font-medium text-destructive">{t("recipes.errors")}:</p>
+                    <p className="font-medium text-destructive">
+                      {t("recipes.errors")}:
+                    </p>
                     <ul className="text-sm text-destructive space-y-1 max-h-32 overflow-y-auto">
                       {uploadProgress.errors.map((error, index) => (
                         <li key={index} className="flex items-start gap-2">
@@ -338,37 +344,49 @@ export function ImportRecipesDialog({
 
         {/* Instructions */}
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">{t("recipes.requiredFormat")}:</h4>
+          <h4 className="font-medium text-blue-900 mb-2">
+            {t("recipes.requiredFormat")}:
+          </h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>
-              • <strong>{t("recipes.template.recipeName")}:</strong> {t("recipes.template.recipeNameDesc")}
+              • <strong>{t("recipes.template.recipeName")}:</strong>{" "}
+              {t("recipes.template.recipeNameDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.category")}:</strong> {t("recipes.template.categoryDesc")}
+              • <strong>{t("recipes.template.category")}:</strong>{" "}
+              {t("recipes.template.categoryDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.subcategory")}:</strong> {t("recipes.template.subcategoryDesc")}
+              • <strong>{t("recipes.template.subcategory")}:</strong>{" "}
+              {t("recipes.template.subcategoryDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.description")}:</strong> {t("recipes.template.descriptionDesc")}
+              • <strong>{t("recipes.template.description")}:</strong>{" "}
+              {t("recipes.template.descriptionDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.instructions")}:</strong> {t("recipes.template.instructionsDesc")}
+              • <strong>{t("recipes.template.instructions")}:</strong>{" "}
+              {t("recipes.template.instructionsDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.servings")}:</strong> {t("recipes.template.servingsDesc")}
+              • <strong>{t("recipes.template.servings")}:</strong>{" "}
+              {t("recipes.template.servingsDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.ingredients")}:</strong> {t("recipes.template.ingredientsDesc")}
+              • <strong>{t("recipes.template.ingredients")}:</strong>{" "}
+              {t("recipes.template.ingredientsDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.quantities")}:</strong> {t("recipes.template.quantitiesDesc")}
+              • <strong>{t("recipes.template.quantities")}:</strong>{" "}
+              {t("recipes.template.quantitiesDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.units")}:</strong> {t("recipes.template.unitsDesc")}
+              • <strong>{t("recipes.template.units")}:</strong>{" "}
+              {t("recipes.template.unitsDesc")}
             </li>
             <li>
-              • <strong>{t("recipes.template.costPerUnit")}:</strong> {t("recipes.template.costPerUnitDesc")}
+              • <strong>{t("recipes.template.costPerUnit")}:</strong>{" "}
+              {t("recipes.template.costPerUnitDesc")}
             </li>
           </ul>
         </div>

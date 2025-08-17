@@ -23,7 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
@@ -75,7 +75,7 @@ export function ReportsGenerationDialog({
   open,
   onOpenChange,
 }: ReportsGenerationDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedFormat, setSelectedFormat] = useState("pdf");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -126,7 +126,9 @@ export function ReportsGenerationDialog({
       id: "ingredients",
       label: t("reports.combinedIngredientsReport"),
       description: t("reports.combinedIngredientsReportDescription"),
-      detailedDescription: t("reports.combinedIngredientsReportDetailedDescription"),
+      detailedDescription: t(
+        "reports.combinedIngredientsReportDetailedDescription",
+      ),
       icon: BarChart3,
       checked: false,
       category: "analysis",
@@ -364,7 +366,9 @@ export function ReportsGenerationDialog({
           const blob = await response.blob();
 
           if (blob.size === 0) {
-            throw new Error(`${t("reports.emptyFileReceived")} ${reportConfig.filename}`);
+            throw new Error(
+              `${t("reports.emptyFileReceived")} ${reportConfig.filename}`,
+            );
           }
 
           const url = window.URL.createObjectURL(blob);
@@ -391,7 +395,9 @@ export function ReportsGenerationDialog({
       }
 
       setReportProgress((prev) => ({ ...prev, status: "success" }));
-      toast.success(`${reports.length} ${t("reports.report")}(s) ${t("reports.generatedSuccessfully")}!`);
+      toast.success(
+        `${reports.length} ${t("reports.report")}(s) ${t("reports.generatedSuccessfully")}!`,
+      );
       onOpenChange(false);
     } catch (error: any) {
       setReportProgress((prev) => ({ ...prev, status: "error" }));
@@ -482,12 +488,13 @@ export function ReportsGenerationDialog({
                   {getProgressIcon()}
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">
-                      {t("reports.generatingReports")} ({reportProgress.current}/
-                      {reportProgress.total})
+                      {t("reports.generatingReports")} ({reportProgress.current}
+                      /{reportProgress.total})
                     </p>
                     {reportProgress.currentReport && (
                       <p className="text-xs text-muted-foreground">
-                        {t("reports.currentReport")}: {reportProgress.currentReport}
+                        {t("reports.currentReport")}:{" "}
+                        {reportProgress.currentReport}
                       </p>
                     )}
                   </div>
@@ -588,7 +595,8 @@ export function ReportsGenerationDialog({
               </div>
               {selectedKitchens.length > 0 && (
                 <Badge className="mt-3 bg-primary text-primary-foreground">
-                  {selectedKitchens.length} {t("reports.kitchen")}(s) {t("reports.selected")}
+                  {selectedKitchens.length} {t("reports.kitchen")}(s){" "}
+                  {t("reports.selected")}
                 </Badge>
               )}
             </CardContent>
@@ -776,7 +784,9 @@ export function ReportsGenerationDialog({
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t("reports.aggregateIngredientsFromAllSelectedKitchens")}
+                        {t(
+                          "reports.aggregateIngredientsFromAllSelectedKitchens",
+                        )}
                       </p>
                     </div>
                     <Switch
@@ -851,7 +861,9 @@ export function ReportsGenerationDialog({
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t("reports.includeDetailedRecipePagesForAllUsedRecipes")}
+                        {t(
+                          "reports.includeDetailedRecipePagesForAllUsedRecipes",
+                        )}
                       </p>
                     </div>
                     <Switch
@@ -882,7 +894,9 @@ export function ReportsGenerationDialog({
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t("reports.includeCaloriesProteinCarbsAndOtherNutrients")}
+                        {t(
+                          "reports.includeCaloriesProteinCarbsAndOtherNutrients",
+                        )}
                       </p>
                     </div>
                     <Switch
@@ -980,7 +994,9 @@ export function ReportsGenerationDialog({
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p>{t("reports.date")}: {selectedDate.toLocaleDateString()}</p>
+                  <p>
+                    {t("reports.date")}: {selectedDate.toLocaleDateString()}
+                  </p>
                   <p>
                     {t("reports.format")}:{" "}
                     {
@@ -988,7 +1004,10 @@ export function ReportsGenerationDialog({
                         ?.label
                     }
                   </p>
-                  <p>{t("reports.kitchens")}: {selectedKitchens.length} {t("reports.selected")}</p>
+                  <p>
+                    {t("reports.kitchens")}: {selectedKitchens.length}{" "}
+                    {t("reports.selected")}
+                  </p>
                   <p>
                     {t("reports.reports")}:{" "}
                     {reportTypes
@@ -998,7 +1017,8 @@ export function ReportsGenerationDialog({
                   </p>
                   {(combineMealTypes || combineKitchens) && (
                     <p className="text-primary font-medium">
-                      {t("reports.combinationMode")}: {combineMealTypes ? t("reports.meals") : ""}{" "}
+                      {t("reports.combinationMode")}:{" "}
+                      {combineMealTypes ? t("reports.meals") : ""}{" "}
                       {combineMealTypes && combineKitchens ? "+" : ""}{" "}
                       {combineKitchens ? t("reports.kitchens") : ""}
                     </p>

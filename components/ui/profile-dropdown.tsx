@@ -3,7 +3,6 @@
 import { SettingsDialog } from "@/components/dialogs/settings-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useTranslations } from "@/hooks/use-translations";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslations } from "@/hooks/use-translations";
 import {
   Bell,
   HelpCircle,

@@ -4,7 +4,7 @@ import { RecipePdfTemplate } from "@/components/recipes/recipe-pdf-template";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { type RecipeDetailData } from "@/types";
 import { Download, Eye, FileText, Loader2, Printer } from "lucide-react";
 import { useRef, useState } from "react";
@@ -21,7 +21,7 @@ export function RecipePrintDialog({
   onOpenChange,
   recipe,
 }: RecipePrintDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(true); // Changed to true to keep preview open by default
   const printRef = useRef<HTMLDivElement>(null);
@@ -152,7 +152,9 @@ export function RecipePrintDialog({
               className="flex items-center gap-2"
             >
               <Eye className="w-4 h-4 mr-1" />
-              {showPreview ? t("recipes.hidePreview") : t("recipes.showPreview")}
+              {showPreview
+                ? t("recipes.hidePreview")
+                : t("recipes.showPreview")}
             </Button>
           </CardHeader>
           {showPreview && (

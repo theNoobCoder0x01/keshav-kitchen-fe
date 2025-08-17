@@ -16,10 +16,10 @@ import {
   TabNavigation,
   TabNavigationSkeleton,
 } from "@/components/ui/tab-navigation";
+import { useTranslations } from "@/hooks/use-translations";
 import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
-import { useTranslation } from "@/lib/hooks/use-translation";
 import type { MealType as UnifiedMealType } from "@/types/menus";
 import { AlertTriangle, FileText } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -35,7 +35,7 @@ interface MenuGridProps {
 }
 
 export default function MenuPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
@@ -75,7 +75,7 @@ export default function MenuPage() {
         menus: prev.menus - 1,
       }));
     }
-  }, [t]);
+  }, []);
 
   const loadMenuData = useCallback(async () => {
     if (kitchens.length === 0) return; // Wait for kitchens to load first
@@ -138,7 +138,7 @@ export default function MenuPage() {
         menus: prev.menus - 1,
       }));
     }
-  }, [selectedDate, activeTab, session?.user?.kitchenId, kitchens, t]);
+  }, [selectedDate, activeTab, session?.user?.kitchenId, kitchens]);
 
   // Load kitchens once on mount
   useEffect(() => {
@@ -304,7 +304,8 @@ export default function MenuPage() {
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <p className="text-muted-foreground flex flex-col items-center gap-2 text-xl text-center">
               <span className="flex items-center gap-1">
-                <AlertTriangle className="w-7 h-7" /> {t("menus.noKitchensFound")}
+                <AlertTriangle className="w-7 h-7" />{" "}
+                {t("menus.noKitchensFound")}
               </span>
               <span className="text-sm">{t("menus.addKitchenFirst")}</span>
             </p>

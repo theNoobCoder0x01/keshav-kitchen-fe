@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from "@/lib/hooks/use-translation";
+import { useTranslations } from "@/hooks/use-translations";
 import { fetchIngredients } from "@/lib/api/ingredients";
 import { createMenu, updateMenu } from "@/lib/api/menus";
 import { fetchRecipes } from "@/lib/api/recipes";
@@ -29,10 +29,10 @@ import { Plus, Utensils, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
-import type { RecipeApiItem, RecipeIngredientBase } from "@/types/recipes";
-import type { MealType } from "@/types/menus";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
+import type { MealType } from "@/types/menus";
+import type { RecipeApiItem, RecipeIngredientBase } from "@/types/recipes";
 
 // Use centralized unit options
 const UNITS = UNIT_OPTIONS;
@@ -80,7 +80,7 @@ export function AddMealDialog({
   kitchenId,
   editMeal,
 }: AddMealDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const { data: session } = useSession();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [ingredientOptions, setIngredientOptions] = useState<
@@ -281,7 +281,9 @@ export function AddMealDialog({
 
         const result = await updateMenu(editMeal.id, updateData);
         toast.success(
-          t("meals.mealUpdatedSuccessfully", { mealType: mealType.toLowerCase() }),
+          t("meals.mealUpdatedSuccessfully", {
+            mealType: mealType.toLowerCase(),
+          }),
         );
       } else {
         // Create new meal
@@ -298,11 +300,11 @@ export function AddMealDialog({
           servings: values.servingAmount,
           ghanFactor: values.ghan,
           status: "PLANNED" as const,
-          notes: t("meals.mealPlannedNotes", { 
-            mealType: mealType.toLowerCase(), 
-            servings: values.servingAmount, 
-            unit: values.servingUnit, 
-            ghan: values.ghan 
+          notes: t("meals.mealPlannedNotes", {
+            mealType: mealType.toLowerCase(),
+            servings: values.servingAmount,
+            unit: values.servingUnit,
+            ghan: values.ghan,
           }),
           ingredients: values.ingredients.map((ingredient) => ({
             id: ingredient.id ?? undefined,
@@ -314,16 +316,17 @@ export function AddMealDialog({
         };
 
         const result = await createMenu(menuData);
-        toast.success(t("meals.mealAddedSuccessfully", { mealType: mealType.toLowerCase() }));
+        toast.success(
+          t("meals.mealAddedSuccessfully", {
+            mealType: mealType.toLowerCase(),
+          }),
+        );
       }
       resetForm();
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error creating menu:", error);
-      toast.error(
-        error.message ||
-          t("meals.failedToAddMeal"),
-      );
+      toast.error(error.message || t("meals.failedToAddMeal"));
     } finally {
       setIsFormSubmitting(false);
     }
@@ -337,8 +340,14 @@ export function AddMealDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={editMeal ? t("meals.editMeal", { mealType: mealType.toLowerCase() }) : t("meals.addMeal", { mealType: mealType.toLowerCase() })}
-      description={t("meals.configureMealDetails", { mealType: mealType.toLowerCase() })}
+      title={
+        editMeal
+          ? t("meals.editMeal", { mealType: mealType.toLowerCase() })
+          : t("meals.addMeal", { mealType: mealType.toLowerCase() })
+      }
+      description={t("meals.configureMealDetails", {
+        mealType: mealType.toLowerCase(),
+      })}
       icon={<Utensils className="w-5 h-5 text-primary-foreground" />}
       size="6xl"
       footer={
@@ -446,7 +455,9 @@ export function AddMealDialog({
                           }}
                         >
                           <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                            <SelectValue placeholder={t("meals.selectRecipe")} />
+                            <SelectValue
+                              placeholder={t("meals.selectRecipe")}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {recipes.map((recipe) => (
@@ -493,8 +504,8 @@ export function AddMealDialog({
                       as={Input}
                       name={`ghan`}
                       type="number"
-                      min="0.1"
-                      step="0.1"
+                      min="0"
+                      step="0.000001"
                       className="border-border focus:border-primary focus:ring-primary/20"
                     />
                     <ErrorMessage
@@ -513,7 +524,7 @@ export function AddMealDialog({
                       name={`servingAmount`}
                       type="number"
                       min="0.1"
-                      step="0.1"
+                      step="0.000001"
                       className="border-border focus:border-primary focus:ring-primary/20"
                     />
                     <ErrorMessage
@@ -603,7 +614,9 @@ export function AddMealDialog({
                               <Field
                                 as={Input}
                                 name={`ingredients[${index}].name`}
-                                placeholder={t("meals.ingredientNamePlaceholder")}
+                                placeholder={t(
+                                  "meals.ingredientNamePlaceholder",
+                                )}
                                 className="border-border focus:border-primary focus:ring-primary/20"
                               />
                               <ErrorMessage
@@ -621,7 +634,7 @@ export function AddMealDialog({
                                 name={`ingredients[${index}].quantity`}
                                 placeholder="5"
                                 type="number"
-                                step="0.1"
+                                step="0.000001"
                                 min="0"
                                 className="border-border focus:border-primary focus:ring-primary/20"
                               />
@@ -640,7 +653,7 @@ export function AddMealDialog({
                                 name={`ingredients[${index}].costPerUnit`}
                                 placeholder="30"
                                 type="number"
-                                step="0.01"
+                                step="0.000001"
                                 min="0"
                                 className="border-border focus:border-primary focus:ring-primary/20"
                               />
@@ -761,9 +774,7 @@ export function AddMealDialog({
                       <div className="text-center text-sm text-gray-500 py-4">
                         {validation.errors.length > 0 ? (
                           <div className="space-y-1">
-                            <p>
-                              {t("meals.fixIssuesToSeeCalculations")}
-                            </p>
+                            <p>{t("meals.fixIssuesToSeeCalculations")}</p>
                             <ul className="text-xs text-destructive list-disc list-inside">
                               {validation.errors.map((error, index) => (
                                 <li key={index}>{error}</li>
@@ -771,7 +782,9 @@ export function AddMealDialog({
                             </ul>
                           </div>
                         ) : (
-                          <p>{t("meals.enterIngredientDetailsToSeeCalculations")}</p>
+                          <p>
+                            {t("meals.enterIngredientDetailsToSeeCalculations")}
+                          </p>
                         )}
                       </div>
                     )}
