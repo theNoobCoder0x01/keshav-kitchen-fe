@@ -341,7 +341,7 @@ export function AddRecipeDialog({
           };
 
           return (
-            <Form className="space-y-6 p-6">
+            <Form className="space-y-6">
               {/* Recipe Basic Information */}
               <Card>
                 <CardHeader className="pb-4">

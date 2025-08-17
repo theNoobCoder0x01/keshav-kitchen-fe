@@ -65,7 +65,16 @@
     "searchPlaceholder": "Search recipes, ingredients...",
     "saving": "Saving...",
     "saveChanges": "Save Changes",
-    "of": "of"
+    "of": "of",
+    "pagination": {
+      "showing": "Showing {from} to {to} of {total} items",
+      "previous": "Previous",
+      "next": "Next",
+      "itemsPerPage": "Items per page",
+      "page": "Page",
+      "of": "of",
+      "totalPages": "Total pages"
+    }
   },
   "newsletter": {
     "title": "Subscribe to Our Newsletter",

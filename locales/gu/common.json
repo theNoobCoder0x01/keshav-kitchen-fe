@@ -65,7 +65,16 @@
     "searchPlaceholder": "વાનગીઓ, સામગ્રી શોધો...",
     "saving": "સાચવી રહ્યા છીએ...",
     "saveChanges": "ફેરફારો સાચવો",
-    "of": "માંથી"
+    "of": "માંથી",
+    "pagination": {
+      "showing": "{from} થી {to} એન્ટ્રીઓ {total} માંથી બતાવી રહ્યા છીએ",
+      "previous": "અગાઉ",
+      "next": "આગળ",
+      "itemsPerPage": "પાના દીઠ એન્ટ્રીઓ",
+      "page": "પાનું",
+      "of": "માંથી",
+      "totalPages": "કુલ પાનાઓ"
+    }
   },
   "newsletter": {
     "title": "અમારા ન્યૂઝલેટર માટે સબ્સ્ક્રાઇત કરો",

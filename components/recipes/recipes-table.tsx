@@ -1,11 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -13,6 +6,8 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  TablePagination,
+  TablePaginationSkeleton,
   TableRow,
 } from "@/components/ui/table";
 import type { RecipeListItem as Recipe } from "@/types";
@@ -199,74 +194,14 @@ export function RecipesTable({
           )}
         </TableBody>
       </Table>
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t">
-        <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-          {Math.min(currentPage * itemsPerPage, sortedRecipes.length)} of{" "}
-          {sortedRecipes.length} recipes
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          {Array.from(
-            { length: Math.ceil(sortedRecipes.length / itemsPerPage) },
-            (_, i) => i + 1,
-          ).map((page) => (
-            <Button
-              key={page}
-              variant={page === currentPage ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCurrentPage(page)}
-              className={
-                page === currentPage ? "bg-primary text-primary-foreground" : ""
-              }
-            >
-              {page}
-            </Button>
-          ))}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setCurrentPage((prev) =>
-                Math.min(
-                  Math.ceil(sortedRecipes.length / itemsPerPage),
-                  prev + 1,
-                ),
-              )
-            }
-            disabled={
-              currentPage === Math.ceil(sortedRecipes.length / itemsPerPage)
-            }
-          >
-            Next
-          </Button>
-          <Select
-            value={itemsPerPage.toString()}
-            onValueChange={(value) => {
-              setItemsPerPage(Number(value));
-              setCurrentPage(1); // Reset to first page when changing items per page
-            }}
-          >
-            <SelectTrigger className="w-[100px] h-8">
-              <SelectValue placeholder="Items" />
-            </SelectTrigger>
-            <SelectContent>
-              {itemsPerPageOptions.map((option) => (
-                <SelectItem key={option} value={option.toString()}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <TablePagination
+        currentPage={currentPage}
+        totalItems={sortedRecipes.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
+        itemsPerPageOptions={itemsPerPageOptions}
+      />
     </div>
   );
 }
@@ -324,17 +259,7 @@ export function RecipesTableSkeleton({ rowCount = 5 }: { rowCount?: number }) {
           ))}
         </TableBody>
       </Table>
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t">
-        <Skeleton className="h-4 w-48 rounded" />
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-20 rounded" />
-          <Skeleton className="h-8 w-8 rounded" />
-          <Skeleton className="h-8 w-8 rounded" />
-          <Skeleton className="h-8 w-8 rounded" />
-          <Skeleton className="h-8 w-20 rounded" />
-          <Skeleton className="h-8 w-20 rounded" />
-        </div>
-      </div>
+      <TablePaginationSkeleton />
     </div>
   );
 }
