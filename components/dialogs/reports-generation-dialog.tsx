@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
@@ -74,6 +75,7 @@ export function ReportsGenerationDialog({
   open,
   onOpenChange,
 }: ReportsGenerationDialogProps) {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedFormat, setSelectedFormat] = useState("pdf");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -95,51 +97,45 @@ export function ReportsGenerationDialog({
   const [reportTypes, setReportTypes] = useState<ReportOption[]>([
     {
       id: "breakfast",
-      label: "Breakfast Report",
-      description: "Menu items and ingredients for breakfast",
-      detailedDescription:
-        "Detailed breakdown of breakfast menu items, including individual recipes, ingredient quantities, nutritional information, and preparation instructions. Perfect for kitchen staff and nutrition planning.",
+      label: t("reports.breakfastReport"),
+      description: t("reports.breakfastReportDescription"),
+      detailedDescription: t("reports.breakfastReportDetailedDescription"),
       icon: Clock,
       checked: true,
       category: "meal",
     },
     {
       id: "lunch",
-      label: "Lunch Report",
-      description: "Menu items and ingredients for lunch",
-      detailedDescription:
-        "Comprehensive lunch menu analysis with recipe details, ingredient lists, portion sizes, and dietary information. Ideal for meal planning and cost analysis.",
+      label: t("reports.lunchReport"),
+      description: t("reports.lunchReportDescription"),
+      detailedDescription: t("reports.lunchReportDetailedDescription"),
       icon: Utensils,
       checked: true,
       category: "meal",
     },
     {
       id: "dinner",
-      label: "Dinner Report",
-      description: "Menu items and ingredients for dinner",
-      detailedDescription:
-        "Complete dinner menu report featuring all recipes, ingredients, cooking methods, and serving sizes. Essential for inventory management and staff training.",
+      label: t("reports.dinnerReport"),
+      description: t("reports.dinnerReportDescription"),
+      detailedDescription: t("reports.dinnerReportDetailedDescription"),
       icon: ShoppingCart,
       checked: true,
       category: "meal",
     },
     {
       id: "ingredients",
-      label: "Combined Ingredients Report",
-      description:
-        "Aggregated ingredients across selected meal types and kitchens",
-      detailedDescription:
-        "Master ingredient list combining all selected meal types and kitchens. Shows total quantities needed, cost analysis, and shopping lists. Perfect for bulk purchasing and inventory planning.",
+      label: t("reports.combinedIngredientsReport"),
+      description: t("reports.combinedIngredientsReportDescription"),
+      detailedDescription: t("reports.combinedIngredientsReportDetailedDescription"),
       icon: BarChart3,
       checked: false,
       category: "analysis",
     },
     {
       id: "summary",
-      label: "Executive Summary",
-      description: "High-level overview with key metrics and insights",
-      detailedDescription:
-        "Executive-level report with key performance indicators, cost summaries, nutritional overviews, and operational insights. Perfect for management review and strategic planning.",
+      label: t("reports.executiveSummary"),
+      description: t("reports.executiveSummaryDescription"),
+      detailedDescription: t("reports.executiveSummaryDetailedDescription"),
       icon: FileText,
       checked: false,
       category: "summary",
@@ -149,27 +145,24 @@ export function ReportsGenerationDialog({
   const formatOptions = [
     {
       value: "pdf",
-      label: "PDF Document",
-      description: "Formatted printable report",
+      label: t("reports.pdfDocument"),
+      description: t("reports.pdfDocumentDescription"),
       icon: FileText,
-      detailedDescription:
-        "Professional formatted document with tables, charts, and proper layout. Perfect for printing, sharing with management, or archiving records.",
+      detailedDescription: t("reports.pdfDocumentDetailedDescription"),
     },
     {
       value: "xlsx",
-      label: "Excel Spreadsheet",
-      description: "Editable data format",
+      label: t("reports.excelSpreadsheet"),
+      description: t("reports.excelSpreadsheetDescription"),
       icon: FileSpreadsheet,
-      detailedDescription:
-        "Interactive spreadsheet with formulas, filters, and pivot tables. Great for data analysis, cost calculations, and custom reporting.",
+      detailedDescription: t("reports.excelSpreadsheetDetailedDescription"),
     },
     {
       value: "csv",
-      label: "CSV File",
-      description: "Raw data for analysis",
+      label: t("reports.csvFile"),
+      description: t("reports.csvFileDescription"),
       icon: FileType,
-      detailedDescription:
-        "Simple comma-separated values format. Easy to import into other systems, databases, or analysis tools. Minimal formatting, maximum compatibility.",
+      detailedDescription: t("reports.csvFileDetailedDescription"),
     },
   ];
 
@@ -191,7 +184,7 @@ export function ReportsGenerationDialog({
       }
     } catch (error) {
       console.error("Failed to load kitchens:", error);
-      toast.error("Failed to load kitchens");
+      toast.error(t("messages.failedToLoadKitchens"));
     }
   };
 
@@ -223,12 +216,12 @@ export function ReportsGenerationDialog({
     const selectedReports = reportTypes.filter((report) => report.checked);
 
     if (selectedReports.length === 0) {
-      toast.error("Please select at least one report type");
+      toast.error(t("reports.pleaseSelectAtLeastOneReportType"));
       return;
     }
 
     if (selectedKitchens.length === 0) {
-      toast.error("Please select at least one kitchen");
+      toast.error(t("reports.pleaseSelectAtLeastOneKitchen"));
       return;
     }
 
@@ -357,7 +350,7 @@ export function ReportsGenerationDialog({
           });
 
           if (!response.ok) {
-            let errorMessage = `Failed to generate ${reportConfig.filename}`;
+            let errorMessage = `${t("reports.failedToGenerate")} ${reportConfig.filename}`;
             try {
               const errorData = await response.json();
               errorMessage =
@@ -371,7 +364,7 @@ export function ReportsGenerationDialog({
           const blob = await response.blob();
 
           if (blob.size === 0) {
-            throw new Error(`Empty file received for ${reportConfig.filename}`);
+            throw new Error(`${t("reports.emptyFileReceived")} ${reportConfig.filename}`);
           }
 
           const url = window.URL.createObjectURL(blob);
@@ -389,7 +382,7 @@ export function ReportsGenerationDialog({
           }
         } catch (reportError: any) {
           console.error(
-            `Error generating ${reportConfig.filename}:`,
+            `${t("reports.errorGenerating")} ${reportConfig.filename}:`,
             reportError,
           );
           setReportProgress((prev) => ({ ...prev, status: "error" }));
@@ -398,11 +391,11 @@ export function ReportsGenerationDialog({
       }
 
       setReportProgress((prev) => ({ ...prev, status: "success" }));
-      toast.success(`${reports.length} report(s) generated successfully!`);
+      toast.success(`${reports.length} ${t("reports.report")}(s) ${t("reports.generatedSuccessfully")}!`);
       onOpenChange(false);
     } catch (error: any) {
       setReportProgress((prev) => ({ ...prev, status: "error" }));
-      toast.error(error.message || "Failed to generate reports");
+      toast.error(error.message || t("reports.failedToGenerateReports"));
     } finally {
       setIsGenerating(false);
     }
@@ -450,8 +443,8 @@ export function ReportsGenerationDialog({
       <BaseDialog
         open={open}
         onOpenChange={handleClose}
-        title="Generate Reports"
-        description="Create and download detailed reports with ingredient combinations for your kitchen operations"
+        title={t("reports.generateReports")}
+        description={t("reports.generateReportsDescription")}
         icon={<Download className="w-5 h-5 text-primary-foreground" />}
         size="6xl"
         footer={
@@ -468,12 +461,12 @@ export function ReportsGenerationDialog({
               {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Generating...
+                  {t("reports.generating")}...
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4 mr-2" />
-                  Generate & Download
+                  {t("reports.generateAndDownload")}
                 </>
               )}
             </Button>
@@ -489,12 +482,12 @@ export function ReportsGenerationDialog({
                   {getProgressIcon()}
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">
-                      Generating Reports ({reportProgress.current}/
+                      {t("reports.generatingReports")} ({reportProgress.current}/
                       {reportProgress.total})
                     </p>
                     {reportProgress.currentReport && (
                       <p className="text-xs text-muted-foreground">
-                        Current: {reportProgress.currentReport}
+                        {t("reports.currentReport")}: {reportProgress.currentReport}
                       </p>
                     )}
                   </div>
@@ -512,16 +505,14 @@ export function ReportsGenerationDialog({
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
-                Report Date
+                {t("reports.reportDate")}
                 <Tooltip>
                   <TooltipTrigger>
                     <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Select the date for which you want to generate reports.
-                      This will include all menu items and recipes scheduled for
-                      this specific date.
+                      {t("reports.selectReportDateDescription")}
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -542,16 +533,14 @@ export function ReportsGenerationDialog({
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Users className="w-4 h-4 text-primary" />
-                  Select Kitchens
+                  {t("reports.selectKitchens")}
                   <Tooltip>
                     <TooltipTrigger>
                       <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">
-                        Choose which kitchens to include in your reports. You
-                        can select multiple kitchens to generate combined
-                        reports or individual reports for each kitchen.
+                        {t("reports.chooseKitchensDescription")}
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -563,7 +552,7 @@ export function ReportsGenerationDialog({
                     onClick={handleSelectAllKitchens}
                     disabled={selectedKitchens.length === allKitchens.length}
                   >
-                    Select All
+                    {t("reports.selectAll")}
                   </Button>
                   <Button
                     variant="outline"
@@ -571,7 +560,7 @@ export function ReportsGenerationDialog({
                     onClick={handleDeselectAllKitchens}
                     disabled={selectedKitchens.length === 0}
                   >
-                    Deselect All
+                    {t("reports.deselectAll")}
                   </Button>
                 </div>
               </div>
@@ -599,7 +588,7 @@ export function ReportsGenerationDialog({
               </div>
               {selectedKitchens.length > 0 && (
                 <Badge className="mt-3 bg-primary text-primary-foreground">
-                  {selectedKitchens.length} kitchen(s) selected
+                  {selectedKitchens.length} {t("reports.kitchen")}(s) {t("reports.selected")}
                 </Badge>
               )}
             </CardContent>
@@ -611,23 +600,21 @@ export function ReportsGenerationDialog({
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
-                  Report Types
+                  {t("reports.reportTypes")}
                   <Tooltip>
                     <TooltipTrigger>
                       <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">
-                        Select which types of reports to generate. Each report
-                        type provides different insights and data for your
-                        kitchen operations.
+                        {t("reports.selectReportTypesDescription")}
                       </p>
                     </TooltipContent>
                   </Tooltip>
                 </CardTitle>
                 {selectedCount > 0 && (
                   <Badge className="bg-primary text-primary-foreground">
-                    {selectedCount} selected
+                    {selectedCount} {t("reports.selected")}
                   </Badge>
                 )}
               </div>
@@ -646,7 +633,7 @@ export function ReportsGenerationDialog({
                         {getReportCategoryIcon(category)}
                         {category.charAt(0).toUpperCase() +
                           category.slice(1)}{" "}
-                        Reports
+                        {t("reports.reports")}
                       </div>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                         {categoryReports.map((report) => (
@@ -714,15 +701,14 @@ export function ReportsGenerationDialog({
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Zap className="w-4 h-4 text-primary" />
-                Advanced Options
+                {t("reports.advancedOptions")}
                 <Tooltip>
                   <TooltipTrigger>
                     <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Configure advanced report options for enhanced
-                      functionality and detailed analysis.
+                      {t("reports.advancedOptionsDescription")}
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -733,7 +719,7 @@ export function ReportsGenerationDialog({
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Combine className="w-4 h-4" />
-                  Combination Options
+                  {t("reports.combinationOptions")}
                 </div>
 
                 <div className="space-y-3">
@@ -744,7 +730,7 @@ export function ReportsGenerationDialog({
                           htmlFor="combine-meals"
                           className="text-sm font-medium"
                         >
-                          Combine Meal Types
+                          {t("reports.combineMealTypes")}
                         </Label>
                         <Tooltip>
                           <TooltipTrigger>
@@ -752,15 +738,13 @@ export function ReportsGenerationDialog({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-xs">
-                              Aggregate ingredients from all selected meal types
-                              (breakfast, lunch, dinner) into a single report.
-                              This creates a comprehensive daily overview.
+                              {t("reports.combineMealTypesDescription")}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Aggregate ingredients from selected meal types
+                        {t("reports.aggregateIngredientsFromSelectedMealTypes")}
                       </p>
                     </div>
                     <Switch
@@ -778,7 +762,7 @@ export function ReportsGenerationDialog({
                           htmlFor="combine-kitchens"
                           className="text-sm font-medium"
                         >
-                          Combine Kitchens
+                          {t("reports.combineKitchens")}
                         </Label>
                         <Tooltip>
                           <TooltipTrigger>
@@ -786,15 +770,13 @@ export function ReportsGenerationDialog({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-xs">
-                              Merge data from all selected kitchens into unified
-                              reports. Useful for multi-kitchen operations and
-                              centralized planning.
+                              {t("reports.combineKitchensDescription")}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Aggregate ingredients from all selected kitchens
+                        {t("reports.aggregateIngredientsFromAllSelectedKitchens")}
                       </p>
                     </div>
                     <Switch
@@ -812,7 +794,7 @@ export function ReportsGenerationDialog({
                           htmlFor="both-versions"
                           className="text-sm font-medium"
                         >
-                          Generate Both Versions
+                          {t("reports.generateBothVersions")}
                         </Label>
                         <Tooltip>
                           <TooltipTrigger>
@@ -820,15 +802,13 @@ export function ReportsGenerationDialog({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-xs">
-                              Create both combined and individual reports. This
-                              gives you both detailed breakdowns and
-                              consolidated views for maximum flexibility.
+                              {t("reports.generateBothVersionsDescription")}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Create both combined and separate reports
+                        {t("reports.createBothCombinedAndSeparateReports")}
                       </p>
                     </div>
                     <Switch
@@ -846,7 +826,7 @@ export function ReportsGenerationDialog({
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <FileText className="w-4 h-4" />
-                  Content Options
+                  {t("reports.contentOptions")}
                 </div>
 
                 <div className="space-y-3">
@@ -857,7 +837,7 @@ export function ReportsGenerationDialog({
                           htmlFor="attach-recipes"
                           className="text-sm font-medium"
                         >
-                          Attach Recipe Prints
+                          {t("reports.attachRecipePrints")}
                         </Label>
                         <Tooltip>
                           <TooltipTrigger>
@@ -865,16 +845,13 @@ export function ReportsGenerationDialog({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-xs">
-                              Include detailed recipe pages with instructions,
-                              ingredients, and cooking methods. Each unique
-                              recipe appears only once, even if used multiple
-                              times.
+                              {t("reports.attachRecipePrintsDescription")}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Include detailed recipe pages for all used recipes
+                        {t("reports.includeDetailedRecipePagesForAllUsedRecipes")}
                       </p>
                     </div>
                     <Switch
@@ -891,7 +868,7 @@ export function ReportsGenerationDialog({
                           htmlFor="nutritional-info"
                           className="text-sm font-medium"
                         >
-                          Include Nutritional Info
+                          {t("reports.includeNutritionalInfo")}
                         </Label>
                         <Tooltip>
                           <TooltipTrigger>
@@ -899,15 +876,13 @@ export function ReportsGenerationDialog({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-xs">
-                              Add nutritional information including calories,
-                              protein, carbohydrates, fats, and other dietary
-                              details for each recipe and meal.
+                              {t("reports.includeNutritionalInfoDescription")}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Include calories, protein, carbs, and other nutrients
+                        {t("reports.includeCaloriesProteinCarbsAndOtherNutrients")}
                       </p>
                     </div>
                     <Switch
@@ -924,7 +899,7 @@ export function ReportsGenerationDialog({
                           htmlFor="cost-analysis"
                           className="text-sm font-medium"
                         >
-                          Include Cost Analysis
+                          {t("reports.includeCostAnalysis")}
                         </Label>
                         <Tooltip>
                           <TooltipTrigger>
@@ -932,15 +907,13 @@ export function ReportsGenerationDialog({
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="max-w-xs">
-                              Add detailed cost breakdowns including ingredient
-                              costs, total meal costs, cost per serving, and
-                              budget analysis for financial planning.
+                              {t("reports.includeCostAnalysisDescription")}
                             </p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Include ingredient costs and budget analysis
+                        {t("reports.includeIngredientCostsAndBudgetAnalysis")}
                       </p>
                     </div>
                     <Switch
@@ -959,16 +932,14 @@ export function ReportsGenerationDialog({
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Download className="w-4 h-4 text-primary" />
-                Export Format
+                {t("reports.exportFormat")}
                 <Tooltip>
                   <TooltipTrigger>
                     <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Choose the file format for your reports. Each format has
-                      different advantages for viewing, editing, and sharing
-                      your data.
+                      {t("reports.chooseFileFormatDescription")}
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -1004,22 +975,22 @@ export function ReportsGenerationDialog({
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
-                  Report Summary
+                  {t("reports.reportSummary")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p>Date: {selectedDate.toLocaleDateString()}</p>
+                  <p>{t("reports.date")}: {selectedDate.toLocaleDateString()}</p>
                   <p>
-                    Format:{" "}
+                    {t("reports.format")}:{" "}
                     {
                       formatOptions.find((f) => f.value === selectedFormat)
                         ?.label
                     }
                   </p>
-                  <p>Kitchens: {selectedKitchens.length} selected</p>
+                  <p>{t("reports.kitchens")}: {selectedKitchens.length} {t("reports.selected")}</p>
                   <p>
-                    Reports:{" "}
+                    {t("reports.reports")}:{" "}
                     {reportTypes
                       .filter((r) => r.checked)
                       .map((r) => r.label)
@@ -1027,27 +998,27 @@ export function ReportsGenerationDialog({
                   </p>
                   {(combineMealTypes || combineKitchens) && (
                     <p className="text-primary font-medium">
-                      Combination mode: {combineMealTypes ? "Meals" : ""}{" "}
+                      {t("reports.combinationMode")}: {combineMealTypes ? t("reports.meals") : ""}{" "}
                       {combineMealTypes && combineKitchens ? "+" : ""}{" "}
-                      {combineKitchens ? "Kitchens" : ""}
+                      {combineKitchens ? t("reports.kitchens") : ""}
                     </p>
                   )}
                   {attachRecipePrints && (
                     <p className="text-primary font-medium flex items-center gap-1">
                       <BookOpen className="w-3 h-3" />
-                      Recipe prints will be attached
+                      {t("reports.recipePrintsWillBeAttached")}
                     </p>
                   )}
                   {includeNutritionalInfo && (
                     <p className="text-primary font-medium flex items-center gap-1">
                       <BarChart3 className="w-3 h-3" />
-                      Nutritional information included
+                      {t("reports.nutritionalInformationIncluded")}
                     </p>
                   )}
                   {includeCostAnalysis && (
                     <p className="text-primary font-medium flex items-center gap-1">
                       <ShoppingCart className="w-3 h-3" />
-                      Cost analysis included
+                      {t("reports.costAnalysisIncluded")}
                     </p>
                   )}
                 </div>
