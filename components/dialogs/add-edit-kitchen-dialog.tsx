@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "@/hooks/use-translations";
+import { trimSpecificFields } from "@/lib/utils/form-utils";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Building2 } from "lucide-react";
 import * as Yup from "yup";
@@ -42,9 +43,12 @@ export function AddEditKitchenDialog({
     values: typeof initialValues,
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => {
+    // Trim string fields before submission
+    const trimmedValues = trimSpecificFields(values, ["name", "location"]);
+
     onSave({
-      name: values.name.trim(),
-      location: values.location.trim(),
+      name: trimmedValues.name,
+      location: trimmedValues.location,
       id: initialKitchen?.id,
     });
     setSubmitting(false);

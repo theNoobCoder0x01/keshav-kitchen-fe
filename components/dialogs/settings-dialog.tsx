@@ -55,7 +55,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { language, updateUserLanguage } = useLanguage();
-  const { ts, tc, tmsg } = useTranslations();
+  const { settings, common, messages } = useTranslations();
 
   // Load calendar data on component mount
   useEffect(() => {
@@ -100,13 +100,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
     // Validate file type
     if (!file.name.toLowerCase().endsWith(".ics")) {
-      toast.error(tmsg("invalidFileType"));
+      toast.error(messages("invalidFileType"));
       return;
     }
 
     // Validate file size (max 1MB)
     if (file.size > 1024 * 1024) {
-      toast.error(tmsg("fileSizeTooLarge"));
+      toast.error(messages("fileSizeTooLarge"));
       return;
     }
 
@@ -124,11 +124,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || tmsg("uploadFailed"));
+        throw new Error(result.message || messages("uploadFailed"));
       }
 
       toast.success(
-        tc("calendarEventsUploaded", { count: result.data.eventsCount }),
+        common("calendarEventsUploaded", { count: result.data.eventsCount }),
       );
 
       // Reload calendar data
@@ -140,7 +140,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       }
     } catch (error: any) {
       console.error("Error uploading ICS file:", error);
-      toast.error(error.message || tmsg("uploadFailed"));
+      toast.error(error.message || messages("uploadFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -159,16 +159,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || tmsg("clearFailed"));
+        throw new Error(result.message || messages("clearFailed"));
       }
 
       toast.success(
-        tc("calendarEventsCleared", { count: result.data.deletedCount }),
+        common("calendarEventsCleared", { count: result.data.deletedCount }),
       );
       setCalendarData(null);
     } catch (error: any) {
       console.error("Error clearing calendar data:", error);
-      toast.error(error.message || tmsg("clearFailed"));
+      toast.error(error.message || messages("clearFailed"));
     } finally {
       setIsClearing(false);
     }
@@ -184,10 +184,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setIsUpdatingLanguage(true);
     try {
       await updateUserLanguage(newLanguage as "en" | "gu");
-      toast.success(tmsg("languageChanged"));
+      toast.success(messages("languageChanged"));
     } catch (error) {
       console.error("Error updating language:", error);
-      toast.error(tmsg("saveError"));
+      toast.error(messages("saveError"));
     } finally {
       setIsUpdatingLanguage(false);
     }
@@ -198,8 +198,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       <BaseDialog
         open={open}
         onOpenChange={onOpenChange}
-        title={ts("title")}
-        description={ts("description")}
+        title={settings("title")}
+        description={settings("description")}
         icon={<Settings className="w-5 h-5 text-primary-foreground" />}
         size="2xl"
       >
@@ -209,16 +209,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Globe className="w-4 h-4 text-primary" />
-                {ts("languageSettings")}
+                {settings("languageSettings")}
               </Label>
             </div>
 
             <div className="space-y-3">
               <Label className="text-sm font-medium text-foreground">
-                {ts("selectLanguage")}
+                {settings("selectLanguage")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                {ts("languageDescription")}
+                {settings("languageDescription")}
               </p>
 
               <Select
@@ -252,14 +252,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
-                {ts("calendarSettings")}
+                {settings("calendarSettings")}
               </Label>
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="w-4 h-4 text-muted-foreground hover:text-primary cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="max-w-xs">{ts("calendarDescription")}</p>
+                  <p className="max-w-xs">{settings("calendarDescription")}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -268,12 +268,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium text-foreground">
-                  {ts("uploadCalendar")}
+                  {settings("uploadCalendar")}
                 </Label>
                 {calendarData && (
                   <Badge className="bg-green-100 text-green-800 border-green-200">
                     <CheckCircle className="w-3 h-3 mr-1" />
-                    {ts("active")}
+                    {settings("active")}
                   </Badge>
                 )}
               </div>
@@ -286,10 +286,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground mb-1">
-                        {ts("uploadIcsCalendarFile")}
+                        {settings("uploadIcsCalendarFile")}
                       </p>
                       <p className="text-xs text-muted-foreground mb-3">
-                        {ts("uploadIcsDescription")}
+                        {settings("uploadIcsDescription")}
                       </p>
                       <Button
                         onClick={handleFileSelect}
@@ -299,12 +299,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         {isUploading ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            {ts("processing")}
+                            {settings("processing")}
                           </>
                         ) : (
                           <>
                             <Upload className="w-4 h-4 mr-2" />
-                            {ts("chooseFile")}
+                            {settings("chooseFile")}
                           </>
                         )}
                       </Button>
@@ -320,10 +320,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          {ts("calendarEventsLoaded")}
+                          {settings("calendarEventsLoaded")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {tc("eventsAvailable", {
+                          {common("eventsAvailable", {
                             count: calendarData.totalCount,
                           })}
                         </p>
@@ -360,7 +360,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   {calendarData.events.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-border">
                       <p className="text-xs text-muted-foreground mb-2">
-                        {tc("sampleEvents", {
+                        {common("sampleEvents", {
                           count: calendarData.events.length,
                         })}
                       </p>
@@ -375,7 +375,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         ))}
                         {calendarData.events.length > 3 && (
                           <p className="text-xs text-muted-foreground">
-                            +{calendarData.events.length - 3} {ts("moreEvents")}
+                            +{calendarData.events.length - 3}{" "}
+                            {settings("moreEvents")}
                           </p>
                         )}
                       </div>
@@ -400,13 +401,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    {ts("fileRequirements")}
+                    {settings("fileRequirements")}
                   </p>
                   <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>• {ts("fileFormatRequired")}</li>
-                    <li>• {ts("maxFileSize")}</li>
-                    <li>• {ts("validCalendarEvents")}</li>
-                    <li>• {ts("gujaratiTithiInfo")}</li>
+                    <li>• {settings("fileFormatRequired")}</li>
+                    <li>• {settings("maxFileSize")}</li>
+                    <li>• {settings("validCalendarEvents")}</li>
+                    <li>• {settings("gujaratiTithiInfo")}</li>
                   </ul>
                 </div>
               </div>
@@ -418,13 +419,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <div className="flex items-center gap-2">
               <Label className="text-base font-medium text-foreground flex items-center gap-2">
                 <Settings className="w-4 h-4 text-primary" />
-                {ts("otherSettings")}
+                {settings("otherSettings")}
               </Label>
             </div>
 
             <div className="bg-muted border border-border rounded-lg p-4">
               <p className="text-sm text-muted-foreground">
-                {ts("additionalSettingsDescription")}
+                {settings("additionalSettingsDescription")}
               </p>
             </div>
           </div>

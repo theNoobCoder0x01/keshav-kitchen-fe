@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useTranslations } from "@/hooks/use-translations";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import { trimSpecificFields } from "@/lib/utils/form-utils";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Package } from "lucide-react";
 import * as Yup from "yup";
@@ -60,10 +61,13 @@ export function AddEditIngredientDialog({
     values: typeof initialValues,
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => {
+    // Trim string fields before submission
+    const trimmedValues = trimSpecificFields(values, ["name", "unit"]);
+
     onSave({
-      name: values.name.trim(),
-      costPerKg: Number(values.costPerKg),
-      unit: values.unit.trim(),
+      name: trimmedValues.name,
+      costPerKg: Number(trimmedValues.costPerKg),
+      unit: trimmedValues.unit,
       id: initialIngredient?.id,
     });
     setSubmitting(false);

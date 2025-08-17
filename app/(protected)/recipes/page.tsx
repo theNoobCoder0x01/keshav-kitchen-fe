@@ -323,7 +323,7 @@ export default function RecipesPage() {
                 className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => setIsAddDialogOpen(true)}
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4 mr-1" />
                 {t("recipes.addRecipe")}
               </Button>
             </div>
@@ -466,7 +466,7 @@ export default function RecipesPage() {
                 category: recipe.category,
                 subcategory: recipe.subcategory || "",
                 selectedRecipe: recipe.id,
-                ingredients: [],
+                ingredients: [], // This will be overridden by fetched data
                 instructions: recipe.instructions ?? null,
               });
               setIsEditDialogOpen(true);
@@ -490,6 +490,8 @@ export default function RecipesPage() {
         onOpenChange={setIsEditDialogOpen}
         onSave={handleSaveRecipe}
         initialRecipe={editRecipe || null}
+        isEditMode={true}
+        recipeId={editRecipe?.selectedRecipe}
       />
       <RecipePrintDialog
         isOpen={isPrintDialogOpen}

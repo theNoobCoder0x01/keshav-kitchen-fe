@@ -18,48 +18,55 @@ export function useTranslations() {
     }
   };
 
-  // Helper functions for common translation patterns
-  const tn = (key: string, values?: TranslationValues) =>
+  // Helper functions for accessing nested translation sections
+  const navigation = (key: string, values?: TranslationValues) =>
     t(`navigation.${key}`, values);
-  const tc = (key: string, values?: TranslationValues) =>
+  const common = (key: string, values?: TranslationValues) =>
     t(`common.${key}`, values);
-  const ts = (key: string, values?: TranslationValues) =>
+  const newsletter = (key: string, values?: TranslationValues) =>
+    t(`newsletter.${key}`, values);
+  const settings = (key: string, values?: TranslationValues) =>
     t(`settings.${key}`, values);
-  const tr = (key: string, values?: TranslationValues) =>
-    t(`recipes.${key}`, values);
-  const tm = (key: string, values?: TranslationValues) =>
-    t(`menus.${key}`, values);
-  const trep = (key: string, values?: TranslationValues) =>
+  const meals = (key: string, values?: TranslationValues) =>
+    t(`meals.${key}`, values);
+  const reports = (key: string, values?: TranslationValues) =>
     t(`reports.${key}`, values);
-  const ta = (key: string, values?: TranslationValues) =>
+  const recipes = (key: string, values?: TranslationValues) =>
+    t(`recipes.${key}`, values);
+  const ingredients = (key: string, values?: TranslationValues) =>
+    t(`ingredients.${key}`, values);
+  const menus = (key: string, values?: TranslationValues) =>
+    t(`menus.${key}`, values);
+  const auth = (key: string, values?: TranslationValues) =>
     t(`auth.${key}`, values);
-  const tmsg = (key: string, values?: TranslationValues) =>
+  const kitchens = (key: string, values?: TranslationValues) =>
+    t(`kitchens.${key}`, values);
+  const dashboard = (key: string, values?: TranslationValues) =>
+    t(`dashboard.${key}`, values);
+  const messages = (key: string, values?: TranslationValues) =>
     t(`messages.${key}`, values);
 
   return {
     t, // General translation function
-    tn, // Navigation translations
-    tc, // Common translations
-    ts, // Settings translations
-    tr, // Recipe translations
-    tm, // Menu translations
-    trep, // Report translations
-    ta, // Auth translations
-    tmsg, // Message translations
+    navigation, // Navigation translations
+    common, // Common translations
+    newsletter, // Newsletter translations
+    settings, // Settings translations
+    meals, // Meals translations
+    reports, // Report translations
+    recipes, // Recipe translations
+    ingredients, // Ingredient translations
+    menus, // Menu translations
+    auth, // Auth translations
+    kitchens, // Kitchen translations
+    dashboard, // Dashboard translations
+    messages, // Message translations
     intl, // Direct access to intl object for advanced usage
   };
 }
 
-// Type-safe translation key helpers
-export type TranslationKey =
-  | `navigation.${keyof (typeof import("@/locales/en/common.json"))["navigation"]}`
-  | `common.${keyof (typeof import("@/locales/en/common.json"))["common"]}`
-  | `settings.${keyof (typeof import("@/locales/en/common.json"))["settings"]}`
-  | `recipes.${keyof (typeof import("@/locales/en/common.json"))["recipes"]}`
-  | `menus.${keyof (typeof import("@/locales/en/common.json"))["menus"]}`
-  | `reports.${keyof (typeof import("@/locales/en/common.json"))["reports"]}`
-  | `auth.${keyof (typeof import("@/locales/en/common.json"))["auth"]}`
-  | `messages.${keyof (typeof import("@/locales/en/common.json"))["messages"]}`;
+// Type-safe translation key helpers for the flattened structure
+export type TranslationKey = string;
 
 // Export for use in components that need strongly typed keys
 export function useTypedTranslations() {

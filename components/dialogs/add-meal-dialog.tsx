@@ -30,6 +30,7 @@ import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import { trimIngredients } from "@/lib/utils/form-utils";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
 import type { MealType } from "@/types/menus";
 import type { RecipeApiItem, RecipeIngredientBase } from "@/types/recipes";
@@ -89,7 +90,7 @@ export function AddMealDialog({
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
 
   const validationSchema = Yup.object().shape({
-    recipeId: Yup.string().required(t("meals.recipeRequired")),
+    recipeId: Yup.string().trim().required(t("meals.recipeRequired")),
     followRecipe: Yup.boolean().default(false),
     ghan: Yup.number()
       .required(t("meals.ghanRequired"))
@@ -99,15 +100,15 @@ export function AddMealDialog({
       .required(t("meals.servingAmountRequired"))
       .positive(t("meals.servingAmountPositive"))
       .max(10000, t("meals.servingAmountMax")),
-    servingUnit: Yup.string().required(t("meals.servingUnitRequired")),
+    servingUnit: Yup.string().trim().required(t("meals.servingUnitRequired")),
     ingredients: Yup.array()
       .of(
         Yup.object().shape({
-          name: Yup.string().required(t("meals.ingredientNameRequired")),
+          name: Yup.string().trim().required(t("meals.ingredientNameRequired")),
           quantity: Yup.number()
             .required(t("meals.quantityRequired"))
             .positive(t("meals.quantityPositive")),
-          unit: Yup.string().required(t("meals.unitRequired")),
+          unit: Yup.string().trim().required(t("meals.unitRequired")),
           costPerUnit: Yup.number()
             .required(t("meals.costPerUnitRequired"))
             .min(0, t("meals.costPerUnitMin")),
@@ -270,13 +271,15 @@ export function AddMealDialog({
           servings: values.servingAmount,
           ghanFactor: values.ghan,
           notes: `Meal updated for ${mealType.toLowerCase()} with ${values.servingAmount} ${values.servingUnit} servings and ${values.ghan} ghan factor.`,
-          ingredients: values.ingredients.map((ingredient) => ({
-            id: ingredient.id ?? undefined,
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            costPerUnit: ingredient.costPerUnit,
-          })),
+          ingredients: trimIngredients(
+            values.ingredients.map((ingredient) => ({
+              id: ingredient.id ?? undefined,
+              name: ingredient.name,
+              quantity: ingredient.quantity,
+              unit: ingredient.unit,
+              costPerUnit: ingredient.costPerUnit,
+            })),
+          ),
         };
 
         const result = await updateMenu(editMeal.id, updateData);
@@ -306,13 +309,15 @@ export function AddMealDialog({
             unit: values.servingUnit,
             ghan: values.ghan,
           }),
-          ingredients: values.ingredients.map((ingredient) => ({
-            id: ingredient.id ?? undefined,
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            costPerUnit: ingredient.costPerUnit,
-          })),
+          ingredients: trimIngredients(
+            values.ingredients.map((ingredient) => ({
+              id: ingredient.id ?? undefined,
+              name: ingredient.name,
+              quantity: ingredient.quantity,
+              unit: ingredient.unit,
+              costPerUnit: ingredient.costPerUnit,
+            })),
+          ),
         };
 
         const result = await createMenu(menuData);
