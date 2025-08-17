@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 export function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { tn } = useTranslations();
+  const { navigation } = useTranslations();
 
   // Close sidebar on mobile when route changes
   useEffect(() => {
@@ -71,51 +71,51 @@ export function Sidebar() {
   const menuItems = [
     {
       id: "home",
-      label: tn("dashboard"),
+      label: navigation("dashboard"),
       icon: Home,
       href: "/",
       isActive: pathname === "/",
-      description: tn("dashboardDesc"),
+      description: navigation("dashboardDesc"),
       badge: null,
       children: null,
     },
     {
       id: "menus",
-      label: tn("menus"),
+      label: navigation("menus"),
       icon: Calendar,
       href: "/menus",
       isActive: pathname === "/menus",
-      description: tn("menusDesc"),
+      description: navigation("menusDesc"),
       badge: null,
       children: null,
     },
     {
       id: "recipe",
-      label: tn("recipes"),
+      label: navigation("recipes"),
       icon: ChefHat,
       href: "/recipes",
       isActive: pathname === "/recipes",
-      description: tn("recipesDesc"),
+      description: navigation("recipesDesc"),
       badge: null,
       children: null,
     },
     {
       id: "reports",
-      label: tn("reports"),
+      label: navigation("reports"),
       icon: BarChart3,
       href: "/reports",
       isActive: pathname === "/reports",
-      description: tn("reportsDesc"),
+      description: navigation("reportsDesc"),
       badge: null,
       children: null,
     },
     {
       id: "kitchens",
-      label: tn("kitchens"),
+      label: navigation("kitchens"),
       icon: Users,
       href: "/kitchens",
       isActive: pathname === "/kitchens",
-      description: tn("kitchensDesc"),
+      description: navigation("kitchensDesc"),
       badge: null,
       children: null,
     },
@@ -147,7 +147,7 @@ export function Sidebar() {
                 <span className="text-white font-bold text-sm">K</span>
               </div>
               <span className="font-semibold text-foreground">
-                {tn("menu")}
+                {navigation("menu")}
               </span>
             </div>
             <Button
@@ -164,7 +164,7 @@ export function Sidebar() {
           <nav className="flex-1 p-4 space-y-2">
             <div className="mb-6">
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
-                {tn("kitchenManagement")}
+                {navigation("kitchenManagement")}
               </h2>
             </div>
 

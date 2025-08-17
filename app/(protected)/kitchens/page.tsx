@@ -14,6 +14,7 @@ import {
   fetchKitchens,
   updateKitchen,
 } from "@/lib/api/kitchens";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -96,6 +97,7 @@ export default function KitchensPage() {
               setDialogOpen(true);
             }}
           >
+            <Plus className="w-4 h-4 mr-1" />
             {t("kitchens.addKitchen")}
           </Button>
         }

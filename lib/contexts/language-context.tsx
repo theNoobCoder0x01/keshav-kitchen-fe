@@ -18,17 +18,43 @@ export type Language = "en" | "gu";
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  messages: Record<string, any>;
-  updateUserLanguage: (language: Language) => Promise<void>;
+  messages: Record<string, string>;
+  updateUserLanguage: (lang: Language) => Promise<void>;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
 );
 
+// Utility function to flatten nested JSON objects for react-intl
+function flattenMessages(obj: any, prefix = ""): Record<string, string> {
+  const flattened: Record<string, string> = {};
+
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const newKey = prefix ? `${prefix}.${key}` : key;
+
+      if (
+        typeof obj[key] === "object" &&
+        obj[key] !== null &&
+        !Array.isArray(obj[key])
+      ) {
+        // Recursively flatten nested objects
+        Object.assign(flattened, flattenMessages(obj[key], newKey));
+      } else {
+        // Add the flattened key-value pair
+        flattened[newKey] = obj[key];
+      }
+    }
+  }
+
+  return flattened;
+}
+
+// Flatten the nested translation objects
 const messages = {
-  en: enMessages,
-  gu: guMessages,
+  en: flattenMessages(enMessages),
+  gu: flattenMessages(guMessages),
 };
 
 interface LanguageProviderProps {

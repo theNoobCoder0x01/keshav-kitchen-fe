@@ -29,7 +29,7 @@ export function ProfileDropdown() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const { ta, ts } = useTranslations();
+  const { auth, settings } = useTranslations();
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/auth/signin" });
@@ -42,7 +42,7 @@ export function ProfileDropdown() {
 
   const profileMenuItems = [
     {
-      label: ta("profile"),
+      label: auth("profile"),
       icon: User,
       onClick: () => {
         // TODO: Navigate to profile page
@@ -50,7 +50,7 @@ export function ProfileDropdown() {
       },
     },
     {
-      label: ts("title"),
+      label: settings("title"),
       icon: Settings,
       onClick: handleSettingsClick,
     },
@@ -133,7 +133,7 @@ export function ProfileDropdown() {
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>{ta("signOut")}</span>
+            <span>{auth("signOut")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

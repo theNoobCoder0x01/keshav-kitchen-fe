@@ -23,6 +23,7 @@ import {
 import { useTranslations } from "@/hooks/use-translations";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { cn } from "@/lib/utils";
+import { trimObjectStrings } from "@/lib/utils/form-utils";
 import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
 import {
   BookOpen,
@@ -34,6 +35,7 @@ import {
   X,
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
+import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 import type { RecipeDialogIngredientValue } from "@/types/forms";
@@ -61,6 +63,8 @@ interface AddRecipeDialogProps {
     ingredients: RecipeDialogIngredientValue[];
     instructions?: string | null;
   } | null;
+  isEditMode?: boolean;
+  recipeId?: string; // Add recipeId for fetching recipe details
 }
 
 export function AddRecipeDialog({
@@ -68,9 +72,43 @@ export function AddRecipeDialog({
   onOpenChange,
   onSave,
   initialRecipe = null,
+  isEditMode = false,
+  recipeId,
 }: AddRecipeDialogProps) {
   const { t } = useTranslations();
-  const isEditMode = !!initialRecipe;
+  const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
+  const [fetchedRecipe, setFetchedRecipe] = useState<any>(null);
+
+  // Fetch recipe details when in edit mode and recipeId is provided
+  useEffect(() => {
+    const fetchRecipeDetails = async () => {
+      if (isEditMode && recipeId && !fetchedRecipe) {
+        setIsLoadingRecipe(true);
+        try {
+          const response = await fetch(`/api/recipes/${recipeId}`);
+          if (response.ok) {
+            const recipeData = await response.json();
+            setFetchedRecipe(recipeData);
+          } else {
+            console.error("Failed to fetch recipe details");
+          }
+        } catch (error) {
+          console.error("Error fetching recipe details:", error);
+        } finally {
+          setIsLoadingRecipe(false);
+        }
+      }
+    };
+
+    fetchRecipeDetails();
+  }, [isEditMode, recipeId, fetchedRecipe]);
+
+  // Reset fetched recipe when dialog opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setFetchedRecipe(null);
+    }
+  }, [isOpen]);
 
   const validationSchema = Yup.object({
     recipeName: Yup.string().trim().required(t("recipes.nameRequired")),
@@ -84,7 +122,7 @@ export function AddRecipeDialog({
           quantity: Yup.string()
             .trim()
             .required(t("ingredients.quantityRequired")),
-          unit: Yup.string().required(t("ingredients.unitRequired")),
+          unit: Yup.string().trim().required(t("ingredients.unitRequired")),
           costPerUnit: Yup.string().test(
             "is-number-or-empty",
             t("ingredients.costValidationError"),
@@ -96,38 +134,52 @@ export function AddRecipeDialog({
   });
 
   const initialValues = {
-    recipeName: initialRecipe?.recipeName || "",
-    category: initialRecipe?.category || "Other",
-    subcategory: initialRecipe?.subcategory || "Other",
-    selectedRecipe: initialRecipe?.selectedRecipe || "",
-    ingredients: initialRecipe?.ingredients
-      ? initialRecipe.ingredients.map((ing) => ({
+    recipeName: fetchedRecipe?.name || initialRecipe?.recipeName || "",
+    category: fetchedRecipe?.category || initialRecipe?.category || "Other",
+    subcategory:
+      fetchedRecipe?.subcategory || initialRecipe?.subcategory || "Other",
+    selectedRecipe: fetchedRecipe?.id || initialRecipe?.selectedRecipe || "",
+    ingredients: fetchedRecipe?.ingredients
+      ? fetchedRecipe.ingredients.map((ing: any) => ({
           ...ing,
           quantity: ing.quantity !== undefined ? String(ing.quantity) : "",
           costPerUnit:
             ing.costPerUnit !== undefined ? String(ing.costPerUnit) : "",
         }))
-      : [{ name: "", quantity: "", unit: DEFAULT_UNIT, costPerUnit: "" }],
-    instructions: initialRecipe?.instructions || "",
+      : initialRecipe?.ingredients
+        ? initialRecipe.ingredients.map((ing) => ({
+            ...ing,
+            quantity: ing.quantity !== undefined ? String(ing.quantity) : "",
+            costPerUnit:
+              ing.costPerUnit !== undefined ? String(ing.costPerUnit) : "",
+          }))
+        : [{ name: "", quantity: "", unit: DEFAULT_UNIT, costPerUnit: "" }],
+    instructions:
+      fetchedRecipe?.instructions || initialRecipe?.instructions || "",
   };
 
   const handleSubmit = (
     values: typeof initialValues,
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => {
-    const mappedIngredients = values.ingredients.map((ingredient) => ({
-      name: ingredient.name,
-      quantity: ingredient.quantity,
-      unit: ingredient.unit,
-      costPerUnit: ingredient.costPerUnit || "0",
-    }));
+    // Trim all string fields before submission using utility function
+    const trimmedValues = trimObjectStrings(values);
+
+    const mappedIngredients = trimmedValues.ingredients.map(
+      (ingredient: RecipeDialogIngredientValue) => ({
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+        costPerUnit: ingredient.costPerUnit || "0",
+      }),
+    );
 
     const recipeData = {
-      name: values.recipeName,
-      category: values.category,
-      subcategory: values.subcategory,
+      name: trimmedValues.recipeName,
+      category: trimmedValues.category,
+      subcategory: trimmedValues.subcategory,
       ingredients: mappedIngredients,
-      instructions: values.instructions || null,
+      instructions: trimmedValues.instructions,
     };
 
     if (onSave) {
@@ -143,11 +195,14 @@ export function AddRecipeDialog({
 
   // Calculate total cost
   const calculateTotalCost = (ingredients: RecipeDialogIngredientValue[]) => {
-    return ingredients.reduce((total, ingredient) => {
-      const quantity = parseFloat(ingredient.quantity) || 0;
-      const costPerUnit = parseFloat(ingredient.costPerUnit || "0") || 0;
-      return total + quantity * costPerUnit;
-    }, 0);
+    return ingredients.reduce(
+      (total, ingredient: RecipeDialogIngredientValue) => {
+        const quantity = parseFloat(ingredient.quantity) || 0;
+        const costPerUnit = parseFloat(ingredient.costPerUnit || "0") || 0;
+        return total + quantity * costPerUnit;
+      },
+      0,
+    );
   };
 
   return (
@@ -176,6 +231,20 @@ export function AddRecipeDialog({
         enableReinitialize
       >
         {({ values, isSubmitting, dirty, errors, touched, setFieldValue }) => {
+          // Show loading state while fetching recipe details
+          if (isEditMode && recipeId && isLoadingRecipe) {
+            return (
+              <div className="flex items-center justify-center p-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">
+                    {t("recipes.loadingRecipe")}
+                  </p>
+                </div>
+              </div>
+            );
+          }
+
           const handlePasteIngredients = (e: ClipboardEvent) => {
             const columnOrder = [
               "name",
@@ -402,132 +471,139 @@ export function AddRecipeDialog({
                     </CardHeader>
                     <CardContent onPaste={handlePasteIngredients}>
                       <div className="space-y-4">
-                        {values.ingredients.map((ingredient, index) => (
-                          <div
-                            key={index}
-                            className={cn(
-                              "p-4 border border-border rounded-lg bg-card/50",
-                              "hover:border-primary/30 transition-colors",
-                            )}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-sm font-medium text-foreground">
-                                {t("recipes.ingredient")} #{index + 1}
-                              </h4>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => remove(index)}
-                                className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
-                                disabled={values.ingredients.length === 1}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                              <div className="sm:col-span-5">
-                                <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  {t("recipes.ingredientName")} *
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredients[${index}].name`}
-                                  placeholder={t(
-                                    "recipes.ingredientNamePlaceholder",
-                                  )}
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredients[${index}].name`}
-                                  component="p"
-                                  className="text-destructive text-xs mt-1 flex items-center gap-1"
-                                />
+                        {values.ingredients.map(
+                          (
+                            ingredient: RecipeDialogIngredientValue,
+                            index: number,
+                          ) => (
+                            <div
+                              key={index}
+                              className={cn(
+                                "p-4 border border-border rounded-lg bg-card/50",
+                                "hover:border-primary/30 transition-colors",
+                              )}
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="text-sm font-medium text-foreground">
+                                  {t("recipes.ingredient")} #{index + 1}
+                                </h4>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => remove(index)}
+                                  className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
+                                  disabled={values.ingredients.length === 1}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
                               </div>
 
-                              <div className="sm:col-span-3">
-                                <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  {t("recipes.quantity")} *
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredients[${index}].quantity`}
-                                  placeholder={t("recipes.quantityPlaceholder")}
-                                  type="number"
-                                  step="0.000001"
-                                  min="0"
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredients[${index}].quantity`}
-                                  component="p"
-                                  className="text-destructive text-xs mt-1 flex items-center gap-1"
-                                />
-                              </div>
-
-                              <div className="sm:col-span-2">
-                                <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  {t("recipes.unit")} *
-                                </Label>
-                                <Field name={`ingredients[${index}].unit`}>
-                                  {({ field }: { field: any }) => (
-                                    <Select
-                                      value={field.value}
-                                      onValueChange={(value) =>
-                                        field.onChange({
-                                          target: { name: field.name, value },
-                                        })
-                                      }
-                                    >
-                                      <SelectTrigger
-                                        data-field-name={`ingredients[${index}].unit`}
-                                        className="border-border focus:border-primary focus:ring-primary/20"
-                                      >
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {UNIT_OPTIONS.map((option) => (
-                                          <SelectItem
-                                            key={option.value}
-                                            value={option.value}
-                                          >
-                                            {option.label}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  )}
-                                </Field>
-                              </div>
-
-                              <div className="sm:col-span-2">
-                                <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  {t("recipes.costPerUnit")}
-                                </Label>
-                                <div className="relative">
-                                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                                <div className="sm:col-span-5">
+                                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                                    {t("recipes.ingredientName")} *
+                                  </Label>
                                   <Field
                                     as={Input}
-                                    name={`ingredients[${index}].costPerUnit`}
+                                    name={`ingredients[${index}].name`}
                                     placeholder={t(
-                                      "recipes.costPerUnitPlaceholder",
+                                      "recipes.ingredientNamePlaceholder",
+                                    )}
+                                    className="border-border focus:border-primary focus:ring-primary/20"
+                                  />
+                                  <ErrorMessage
+                                    name={`ingredients[${index}].name`}
+                                    component="p"
+                                    className="text-destructive text-xs mt-1 flex items-center gap-1"
+                                  />
+                                </div>
+
+                                <div className="sm:col-span-3">
+                                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                                    {t("recipes.quantity")} *
+                                  </Label>
+                                  <Field
+                                    as={Input}
+                                    name={`ingredients[${index}].quantity`}
+                                    placeholder={t(
+                                      "recipes.quantityPlaceholder",
                                     )}
                                     type="number"
                                     step="0.000001"
                                     min="0"
-                                    className="pl-8 border-border focus:border-primary focus:ring-primary/20"
+                                    className="border-border focus:border-primary focus:ring-primary/20"
+                                  />
+                                  <ErrorMessage
+                                    name={`ingredients[${index}].quantity`}
+                                    component="p"
+                                    className="text-destructive text-xs mt-1 flex items-center gap-1"
                                   />
                                 </div>
-                                <ErrorMessage
-                                  name={`ingredients[${index}].costPerUnit`}
-                                  component="p"
-                                  className="text-destructive text-xs mt-1 flex items-center gap-1"
-                                />
+
+                                <div className="sm:col-span-2">
+                                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                                    {t("recipes.unit")} *
+                                  </Label>
+                                  <Field name={`ingredients[${index}].unit`}>
+                                    {({ field }: { field: any }) => (
+                                      <Select
+                                        value={field.value}
+                                        onValueChange={(value) =>
+                                          field.onChange({
+                                            target: { name: field.name, value },
+                                          })
+                                        }
+                                      >
+                                        <SelectTrigger
+                                          data-field-name={`ingredients[${index}].unit`}
+                                          className="border-border focus:border-primary focus:ring-primary/20"
+                                        >
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {UNIT_OPTIONS.map((option) => (
+                                            <SelectItem
+                                              key={option.value}
+                                              value={option.value}
+                                            >
+                                              {option.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  </Field>
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                                    {t("recipes.costPerUnit")}
+                                  </Label>
+                                  <div className="relative">
+                                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <Field
+                                      as={Input}
+                                      name={`ingredients[${index}].costPerUnit`}
+                                      placeholder={t(
+                                        "recipes.costPerUnitPlaceholder",
+                                      )}
+                                      type="number"
+                                      step="0.000001"
+                                      min="0"
+                                      className="pl-8 border-border focus:border-primary focus:ring-primary/20"
+                                    />
+                                  </div>
+                                  <ErrorMessage
+                                    name={`ingredients[${index}].costPerUnit`}
+                                    component="p"
+                                    className="text-destructive text-xs mt-1 flex items-center gap-1"
+                                  />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
 
                       {/* Cost Summary */}

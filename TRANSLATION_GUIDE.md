@@ -18,13 +18,13 @@ The translation system uses:
 import { useTranslations } from "@/hooks/use-translations";
 
 function MyComponent() {
-  const { tc, tn, ts } = useTranslations();
+  const { common, navigation, settings } = useTranslations();
   
   return (
     <div>
-      <h1>{tc('save')}</h1>
-      <nav>{tn('recipes')}</nav>
-      <p>{ts('description')}</p>
+      <h1>{common('save')}</h1>
+      <nav>{navigation('recipes')}</nav>
+      <p>{settings('description')}</p>
     </div>
   );
 }
@@ -33,14 +33,19 @@ function MyComponent() {
 ### Translation Helper Functions
 
 - `t(key, values?)` - General translation function
-- `tc(key, values?)` - Common translations
-- `tn(key, values?)` - Navigation translations
-- `ts(key, values?)` - Settings translations
-- `tr(key, values?)` - Recipe translations
-- `tm(key, values?)` - Menu translations
-- `trep(key, values?)` - Report translations
-- `ta(key, values?)` - Authentication translations
-- `tmsg(key, values?)` - Message translations
+- `navigation(key, values?)` - Navigation translations
+- `common(key, values?)` - Common translations
+- `newsletter(key, values?)` - Newsletter translations
+- `settings(key, values?)` - Settings translations
+- `meals(key, values?)` - Meals translations
+- `reports(key, values?)` - Report translations
+- `recipes(key, values?)` - Recipe translations
+- `ingredients(key, values?)` - Ingredient translations
+- `menus(key, values?)` - Menu translations
+- `auth(key, values?)` - Authentication translations
+- `kitchens(key, values?)` - Kitchen translations
+- `dashboard(key, values?)` - Dashboard translations
+- `messages(key, values?)` - Message translations
 
 ## Language Management
 
@@ -165,7 +170,7 @@ app/(protected)/layout.tsx      - Protected routes
 
 1. **Use semantic keys**: `common.save` instead of `common.saveButton`
 2. **Group related translations**: Navigation, settings, forms, etc.
-3. **Provide context**: Use specific translation functions (`tc`, `tn`, etc.)
+3. **Provide context**: Use specific translation functions
 4. **Handle pluralization**: Use React Intl's plural support when needed
 5. **Test in both languages**: Ensure UI works well with different text lengths
 
@@ -220,7 +225,7 @@ Example migration:
 <Button>Save Changes</Button>
 
 // After
-<Button>{tc('save')}</Button>
+<Button>{common('save')}</Button>
 ```
 
 ## Performance Considerations
