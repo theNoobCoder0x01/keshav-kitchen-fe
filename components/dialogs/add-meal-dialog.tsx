@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { fetchIngredients } from "@/lib/api/ingredients";
 import { createMenu, updateMenu } from "@/lib/api/menus";
 import { fetchRecipes } from "@/lib/api/recipes";
@@ -29,107 +30,23 @@ import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
 import type { RecipeApiItem, RecipeIngredientBase } from "@/types/recipes";
+import type { MealType } from "@/types/menus";
+import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import type { IngredientFormValue, MealFormValues } from "@/types/forms";
 
-const validationSchema = Yup.object().shape({
-  recipeId: Yup.string().required("Recipe is required"),
-  followRecipe: Yup.boolean().default(false),
-  ghan: Yup.number()
-    .required("Ghan is required")
-    .positive("Ghan must be a positive number")
-    .max(100, "Ghan cannot exceed 100"),
-  servingAmount: Yup.number()
-    .required("Serving amount is required")
-    .positive("Serving amount must be a positive number")
-    .max(10000, "Serving amount cannot exceed 10,000"),
-  servingUnit: Yup.string().required("Serving unit is required"),
-  ingredients: Yup.array()
-    .of(
-      Yup.object().shape({
-        name: Yup.string().required("Ingredient name is required"),
-        quantity: Yup.number()
-          .required("Quantity is required")
-          .positive("Quantity must be a positive number"),
-        unit: Yup.string().required("Unit is required"),
-        costPerUnit: Yup.number()
-          .required("Cost per unit is required")
-          .min(0, "Cost cannot be negative"),
-      }),
-    )
-    .min(1, "At least one ingredient is required"),
-});
+// Use centralized unit options
+const UNITS = UNIT_OPTIONS;
 
-// This will be computed dynamically based on editMeal prop
-const getInitialValues = (
-  editMeal?: AddMealDialogProps["editMeal"],
-  recipes?: Recipe[],
-): MealFormValues => {
-  if (editMeal) {
-    // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
-    let ingredients;
-
-    if (editMeal.ingredients && editMeal.ingredients.length > 0) {
-      // Load ingredients from the saved menu
-      ingredients = editMeal.ingredients.map((ingredient) => ({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        costPerUnit: ingredient.costPerUnit,
-      }));
-    } else {
-      // Fall back to recipe ingredients if menu doesn't have ingredients saved
-      const selectedRecipe = recipes?.find((r) => r.id === editMeal.recipeId);
-      const recipeIngredients = selectedRecipe?.ingredients || [];
-
-      ingredients =
-        recipeIngredients.length > 0
-          ? recipeIngredients.map((ingredient) => ({
-              id: ingredient.id,
-              name: ingredient.name,
-              quantity: ingredient.quantity,
-              unit: ingredient.unit,
-              costPerUnit: ingredient.costPerUnit || 0,
-            }))
-          : [
-              {
-                id: undefined,
-                name: "",
-                quantity: 0,
-                unit: DEFAULT_UNIT,
-                costPerUnit: 0,
-              },
-            ];
-    }
-
-    return {
-      recipeId: editMeal.recipeId,
-      followRecipe: true,
-      ghan: editMeal.ghanFactor || 1.0,
-      servingAmount: editMeal.servings,
-      servingUnit: "g", // Default unit, could be enhanced to store this in the database
-      ingredients,
-    };
-  }
-
-  return {
-    recipeId: "",
-    followRecipe: false,
-    ghan: 1.0,
-    servingAmount: 100,
-    servingUnit: "g",
-    ingredients: [
-      {
-        id: undefined,
-        name: "",
-        quantity: 0,
-        unit: DEFAULT_UNIT,
-        costPerUnit: 0,
-      },
-    ],
-  };
+type Recipe = Pick<RecipeApiItem, "id" | "name"> & {
+  ingredients?: RecipeIngredientBase[];
 };
 
-import type { MealType } from "@/types/menus";
+type IngredientOption = {
+  id: string;
+  name: string;
+  unit: string;
+  costPerUnit: number | null;
+};
 
 interface AddMealDialogProps {
   open: boolean;
@@ -150,24 +67,6 @@ interface AddMealDialogProps {
   } | null;
 }
 
-import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
-
-// Use centralized unit options
-const UNITS = UNIT_OPTIONS;
-
-type Recipe = Pick<RecipeApiItem, "id" | "name"> & {
-  ingredients?: RecipeIngredientBase[];
-};
-
-type IngredientOption = {
-  id: string;
-  name: string;
-  unit: string;
-  costPerUnit: number | null;
-};
-
-import type { IngredientFormValue, MealFormValues } from "@/types/forms";
-
 interface MealFormProps {
   ingredientOptions: IngredientOption[];
   isSubmitting: boolean;
@@ -181,12 +80,112 @@ export function AddMealDialog({
   kitchenId,
   editMeal,
 }: AddMealDialogProps) {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [ingredientOptions, setIngredientOptions] = useState<
     IngredientOption[]
   >([]);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+
+  const validationSchema = Yup.object().shape({
+    recipeId: Yup.string().required(t("meals.recipeRequired")),
+    followRecipe: Yup.boolean().default(false),
+    ghan: Yup.number()
+      .required(t("meals.ghanRequired"))
+      .positive(t("meals.ghanPositive"))
+      .max(100, t("meals.ghanMax")),
+    servingAmount: Yup.number()
+      .required(t("meals.servingAmountRequired"))
+      .positive(t("meals.servingAmountPositive"))
+      .max(10000, t("meals.servingAmountMax")),
+    servingUnit: Yup.string().required(t("meals.servingUnitRequired")),
+    ingredients: Yup.array()
+      .of(
+        Yup.object().shape({
+          name: Yup.string().required(t("meals.ingredientNameRequired")),
+          quantity: Yup.number()
+            .required(t("meals.quantityRequired"))
+            .positive(t("meals.quantityPositive")),
+          unit: Yup.string().required(t("meals.unitRequired")),
+          costPerUnit: Yup.number()
+            .required(t("meals.costPerUnitRequired"))
+            .min(0, t("meals.costPerUnitMin")),
+        }),
+      )
+      .min(1, t("meals.ingredientsRequired")),
+  });
+
+  // This will be computed dynamically based on editMeal prop
+  const getInitialValues = (
+    editMeal?: AddMealDialogProps["editMeal"],
+    recipes?: Recipe[],
+  ): MealFormValues => {
+    if (editMeal) {
+      // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
+      let ingredients;
+
+      if (editMeal.ingredients && editMeal.ingredients.length > 0) {
+        // Load ingredients from the saved menu
+        ingredients = editMeal.ingredients.map((ingredient) => ({
+          id: ingredient.id,
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          costPerUnit: ingredient.costPerUnit,
+        }));
+      } else {
+        // Fall back to recipe ingredients if menu doesn't have ingredients saved
+        const selectedRecipe = recipes?.find((r) => r.id === editMeal.recipeId);
+        const recipeIngredients = selectedRecipe?.ingredients || [];
+
+        ingredients =
+          recipeIngredients.length > 0
+            ? recipeIngredients.map((ingredient) => ({
+                id: ingredient.id,
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                unit: ingredient.unit,
+                costPerUnit: ingredient.costPerUnit || 0,
+              }))
+            : [
+                {
+                  id: undefined,
+                  name: "",
+                  quantity: 0,
+                  unit: DEFAULT_UNIT,
+                  costPerUnit: 0,
+                },
+              ];
+      }
+
+      return {
+        recipeId: editMeal.recipeId,
+        followRecipe: true,
+        ghan: editMeal.ghanFactor || 1.0,
+        servingAmount: editMeal.servings,
+        servingUnit: "g", // Default unit, could be enhanced to store this in the database
+        ingredients,
+      };
+    }
+
+    return {
+      recipeId: "",
+      followRecipe: false,
+      ghan: 1.0,
+      servingAmount: 100,
+      servingUnit: "g",
+      ingredients: [
+        {
+          id: undefined,
+          name: "",
+          quantity: 0,
+          unit: DEFAULT_UNIT,
+          costPerUnit: 0,
+        },
+      ],
+    };
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -282,7 +281,7 @@ export function AddMealDialog({
 
         const result = await updateMenu(editMeal.id, updateData);
         toast.success(
-          `Meal updated successfully for ${mealType.toLowerCase()}!`,
+          t("meals.mealUpdatedSuccessfully", { mealType: mealType.toLowerCase() }),
         );
       } else {
         // Create new meal
@@ -299,7 +298,12 @@ export function AddMealDialog({
           servings: values.servingAmount,
           ghanFactor: values.ghan,
           status: "PLANNED" as const,
-          notes: `Meal planned for ${mealType.toLowerCase()} with ${values.servingAmount} ${values.servingUnit} servings and ${values.ghan} ghan factor.`,
+          notes: t("meals.mealPlannedNotes", { 
+            mealType: mealType.toLowerCase(), 
+            servings: values.servingAmount, 
+            unit: values.servingUnit, 
+            ghan: values.ghan 
+          }),
           ingredients: values.ingredients.map((ingredient) => ({
             id: ingredient.id ?? undefined,
             name: ingredient.name,
@@ -310,7 +314,7 @@ export function AddMealDialog({
         };
 
         const result = await createMenu(menuData);
-        toast.success(`Meal added successfully for ${mealType.toLowerCase()}!`);
+        toast.success(t("meals.mealAddedSuccessfully", { mealType: mealType.toLowerCase() }));
       }
       resetForm();
       onOpenChange(false);
@@ -318,7 +322,7 @@ export function AddMealDialog({
       console.error("Error creating menu:", error);
       toast.error(
         error.message ||
-          "Failed to add meal. Please check your inputs and try again.",
+          t("meals.failedToAddMeal"),
       );
     } finally {
       setIsFormSubmitting(false);
@@ -333,8 +337,8 @@ export function AddMealDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={`${editMeal ? "Edit" : "Add"} ${mealType.toLowerCase()} meal`}
-      description={`Configure meal details for ${mealType.toLowerCase()}`}
+      title={editMeal ? t("meals.editMeal", { mealType: mealType.toLowerCase() }) : t("meals.addMeal", { mealType: mealType.toLowerCase() })}
+      description={t("meals.configureMealDetails", { mealType: mealType.toLowerCase() })}
       icon={<Utensils className="w-5 h-5 text-primary-foreground" />}
       size="6xl"
       footer={
@@ -344,7 +348,7 @@ export function AddMealDialog({
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
             disabled={isFormSubmitting}
           >
-            {isFormSubmitting ? "Saving..." : "Save Meal"}
+            {isFormSubmitting ? t("meals.saving") : t("meals.saveMeal")}
           </Button>
         </div>
       }
@@ -428,7 +432,7 @@ export function AddMealDialog({
                       htmlFor="recipe"
                       className="text-base font-medium text-foreground mb-2"
                     >
-                      Recipe
+                      {t("meals.recipe")}
                     </Label>
                     <Field name={`recipeId`}>
                       {({ field }: { field: any }) => (
@@ -442,7 +446,7 @@ export function AddMealDialog({
                           }}
                         >
                           <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                            <SelectValue placeholder="Select a recipe" />
+                            <SelectValue placeholder={t("meals.selectRecipe")} />
                           </SelectTrigger>
                           <SelectContent>
                             {recipes.map((recipe) => (
@@ -462,7 +466,7 @@ export function AddMealDialog({
                   </div>
                   <div className="sm:col-span-3">
                     <Label className="text-base font-medium text-foreground">
-                      Follow Recipe
+                      {t("meals.followRecipe")}
                     </Label>
                     <Field name={`followRecipe`}>
                       {({ field }: { field: any }) => (
@@ -483,7 +487,7 @@ export function AddMealDialog({
 
                   <div className="sm:col-span-4">
                     <Label className="text-base font-medium text-foreground mb-2 block">
-                      Ghan
+                      {t("meals.ghan")}
                     </Label>
                     <Field
                       as={Input}
@@ -502,7 +506,7 @@ export function AddMealDialog({
 
                   <div className="sm:col-span-4">
                     <Label className="text-base font-medium text-foreground mb-2 block">
-                      Serving amount
+                      {t("meals.servingAmount")}
                     </Label>
                     <Field
                       as={Input}
@@ -521,7 +525,7 @@ export function AddMealDialog({
 
                   <div className="sm:col-span-4">
                     <Label className="text-base font-medium text-[#4b465c] mb-2 block">
-                      Serving unit
+                      {t("meals.servingUnit")}
                     </Label>
                     <Field name={`servingUnit`}>
                       {({ field }: { field: any }) => (
@@ -534,7 +538,7 @@ export function AddMealDialog({
                           }
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select unit" />
+                            <SelectValue placeholder={t("meals.selectUnit")} />
                           </SelectTrigger>
                           <SelectContent>
                             {UNITS.map((unit) => (
@@ -564,7 +568,7 @@ export function AddMealDialog({
                       <div className="col-span-12 space-y-4">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="text-lg font-medium text-foreground">
-                            Ingredients
+                            {t("meals.ingredients")}
                           </h3>
                           <Button
                             type="button"
@@ -583,7 +587,7 @@ export function AddMealDialog({
                             className="text-primary hover:bg-primary/10 gap-1"
                           >
                             <Plus className="w-3 h-3" />
-                            Add Ingredients
+                            {t("meals.addIngredients")}
                           </Button>
                         </div>
 
@@ -594,12 +598,12 @@ export function AddMealDialog({
                           >
                             <div className="col-span-6 sm:col-span-4">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
-                                Ingredient
+                                {t("meals.ingredient")}
                               </Label>
                               <Field
                                 as={Input}
                                 name={`ingredients[${index}].name`}
-                                placeholder="Ingredient name"
+                                placeholder={t("meals.ingredientNamePlaceholder")}
                                 className="border-border focus:border-primary focus:ring-primary/20"
                               />
                               <ErrorMessage
@@ -610,7 +614,7 @@ export function AddMealDialog({
                             </div>
                             <div className="col-span-5 sm:col-span-3">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
-                                Quantity
+                                {t("meals.quantity")}
                               </Label>
                               <Field
                                 as={Input}
@@ -629,7 +633,7 @@ export function AddMealDialog({
                             </div>
                             <div className="col-span-4 sm:col-span-2">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
-                                Cost/Unit
+                                {t("meals.costPerUnit")}
                               </Label>
                               <Field
                                 as={Input}
@@ -648,7 +652,7 @@ export function AddMealDialog({
                             </div>
                             <div className="col-span-4 sm:col-span-2">
                               <Label className="text-sm font-medium text-foreground mb-1 block">
-                                Unit
+                                {t("meals.unit")}
                               </Label>
                               <Field name={`ingredients[${index}].unit`}>
                                 {({ field }: { field: any }) => (
@@ -701,7 +705,7 @@ export function AddMealDialog({
                         <div className="grid grid-cols-12 gap-8 text-sm">
                           <div className="col-span-6 flex justify-between">
                             <span className="font-medium text-foreground">
-                              Per Person
+                              {t("meals.perPerson")}
                             </span>
                             <span className="text-foreground">
                               {calculations.display.perPersonServing}
@@ -709,7 +713,7 @@ export function AddMealDialog({
                           </div>
                           <div className="col-span-6 flex justify-between">
                             <span className="font-medium text-foreground">
-                              Per Person cost
+                              {t("meals.perPersonCost")}
                             </span>
                             <span className="text-foreground">
                               {calculations.display.costPerPerson}
@@ -719,7 +723,7 @@ export function AddMealDialog({
                         <div className="grid grid-cols-12 gap-8 text-sm">
                           <div className="col-span-6 flex justify-between">
                             <span className="font-medium text-foreground">
-                              1 Ghan
+                              {t("meals.oneGhan")}
                             </span>
                             <span className="text-foreground">
                               {calculations.display.personsPerGhan}
@@ -727,7 +731,7 @@ export function AddMealDialog({
                           </div>
                           <div className="col-span-6 flex justify-between">
                             <span className="font-medium text-foreground">
-                              {values.ghan} Ghan
+                              {values.ghan} {t("meals.ghan")}
                             </span>
                             <span className="text-foreground">
                               {calculations.display.totalPersons}
@@ -737,7 +741,7 @@ export function AddMealDialog({
                         <div className="grid grid-cols-12 gap-8 text-sm">
                           <div className="col-span-6 flex justify-between">
                             <span className="font-medium text-foreground">
-                              Total Cost
+                              {t("meals.totalCost")}
                             </span>
                             <span className="text-foreground">
                               {calculations.display.totalCost}
@@ -745,7 +749,7 @@ export function AddMealDialog({
                           </div>
                           <div className="col-span-6 flex justify-between">
                             <span className="font-medium text-foreground">
-                              Total Weight
+                              {t("meals.totalWeight")}
                             </span>
                             <span className="text-foreground">
                               {calculations.display.totalWeight}
@@ -758,8 +762,7 @@ export function AddMealDialog({
                         {validation.errors.length > 0 ? (
                           <div className="space-y-1">
                             <p>
-                              Please fix the following issues to see
-                              calculations:
+                              {t("meals.fixIssuesToSeeCalculations")}
                             </p>
                             <ul className="text-xs text-destructive list-disc list-inside">
                               {validation.errors.map((error, index) => (
@@ -768,7 +771,7 @@ export function AddMealDialog({
                             </ul>
                           </div>
                         ) : (
-                          <p>Enter ingredient details to see calculations</p>
+                          <p>{t("meals.enterIngredientDetailsToSeeCalculations")}</p>
                         )}
                       </div>
                     )}
