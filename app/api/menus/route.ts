@@ -32,7 +32,23 @@ export async function GET(request: Request) {
               quantity: true,
               unit: true,
               costPerUnit: true,
+              groupId: true,
+              group: {
+                select: {
+                  id: true,
+                  name: true,
+                  sortOrder: true,
+                },
+              },
             },
+          },
+          ingredientGroups: {
+            select: {
+              id: true,
+              name: true,
+              sortOrder: true,
+            },
+            orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           },
           kitchen: {
             select: {
@@ -91,7 +107,23 @@ export async function GET(request: Request) {
             quantity: true,
             unit: true,
             costPerUnit: true,
+            groupId: true,
+            group: {
+              select: {
+                id: true,
+                name: true,
+                sortOrder: true,
+              },
+            },
           },
+        },
+        ingredientGroups: {
+          select: {
+            id: true,
+            name: true,
+            sortOrder: true,
+          },
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
         },
         kitchen: {
           select: {
@@ -252,7 +284,23 @@ export async function PUT(request: Request) {
             quantity: true,
             unit: true,
             costPerUnit: true,
+            groupId: true,
+            group: {
+              select: {
+                id: true,
+                name: true,
+                sortOrder: true,
+              },
+            },
           },
+        },
+        ingredientGroups: {
+          select: {
+            id: true,
+            name: true,
+            sortOrder: true,
+          },
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
         },
         kitchen: {
           select: {

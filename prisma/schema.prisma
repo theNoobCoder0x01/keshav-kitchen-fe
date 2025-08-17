@@ -111,12 +111,27 @@ model Menu {
   actualCount Int?
   notes       String?
   ingredients MenuIngredient[] // Store ingredients separately for each menu
+  ingredientGroups MenuIngredientGroup[] // Add ingredient groups for menus
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
   @@index([recipeId])
   @@index([kitchenId])
   @@index([userId])
+}
+
+model MenuIngredientGroup {
+  id          String           @id @default(cuid())
+  name        String
+  menuId      String
+  menu        Menu             @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  ingredients MenuIngredient[]
+  sortOrder   Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([menuId])
+  @@unique([menuId, name])
 }
 
 model MenuIngredient {
@@ -127,10 +142,13 @@ model MenuIngredient {
   costPerUnit Float
   menuId      String
   menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  groupId     String?  // Add groupId to support grouping
+  group       MenuIngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([menuId])
+  @@index([groupId]) // Add index for groupId
 }
 
 model Report {

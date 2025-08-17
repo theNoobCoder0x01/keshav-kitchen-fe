@@ -3,6 +3,56 @@ export type MenuStatus = "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
 import type { RecipeIngredientBase } from "./recipes";
 
+// Menu Ingredient Group types
+export interface MenuIngredientGroup {
+  id: string;
+  name: string;
+  menuId: string;
+  sortOrder: number;
+  ingredients?: MenuIngredient[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MenuIngredientGroupInput {
+  name: string;
+  sortOrder?: number;
+}
+
+export interface MenuIngredientGroupApi {
+  id: string;
+  name: string;
+  menuId: string;
+  sortOrder: number;
+  ingredients: MenuIngredientApi[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Menu Ingredient types with group support
+export interface MenuIngredient {
+  id?: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  costPerUnit: number;
+  groupId?: string | null;
+  group?: MenuIngredientGroup | null;
+}
+
+export interface MenuIngredientApi extends Required<MenuIngredient> {
+  id: string;
+}
+
+// Helper type for grouped menu ingredients display
+export interface GroupedMenuIngredients {
+  [groupName: string]: {
+    groupId: string | null;
+    sortOrder: number;
+    ingredients: MenuIngredient[];
+  };
+}
+
 export interface MenuWithIngredients {
   id: string;
   date: Date;
@@ -22,7 +72,8 @@ export interface MenuWithIngredients {
     description?: string;
     ingredients?: RecipeIngredientBase[];
   };
-  ingredients?: Required<RecipeIngredientBase>[];
+  ingredients?: Required<MenuIngredient>[];
+  ingredientGroups?: MenuIngredientGroup[];
 }
 
 export interface CombinedIngredient {

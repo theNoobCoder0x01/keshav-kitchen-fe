@@ -45,21 +45,29 @@ export function MenuGrid({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
           weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          ingredients: menu.ingredients || [],
+          ingredientGroups: menu.ingredientGroups || [],
         })),
         lunch: (dailyMenus.LUNCH || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
           weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          ingredients: menu.ingredients || [],
+          ingredientGroups: menu.ingredientGroups || [],
         })),
         dinner: (dailyMenus.DINNER || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
           weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          ingredients: menu.ingredients || [],
+          ingredientGroups: menu.ingredientGroups || [],
         })),
         snack: (dailyMenus.SNACK || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
           weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          ingredients: menu.ingredients || [],
+          ingredientGroups: menu.ingredientGroups || [],
         })),
       };
       setMenuData(transformedData);
