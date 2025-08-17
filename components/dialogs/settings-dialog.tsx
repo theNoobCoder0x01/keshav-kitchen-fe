@@ -94,13 +94,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
     // Validate file type
     if (!file.name.toLowerCase().endsWith(".ics")) {
-      toast.error("Please select a valid ICS file (.ics extension)");
+      toast.error(tmsg('invalidFileType'));
       return;
     }
 
     // Validate file size (max 1MB)
     if (file.size > 1024 * 1024) {
-      toast.error("File size must be less than 1MB");
+      toast.error(tmsg('fileSizeTooLarge'));
       return;
     }
 
@@ -118,11 +118,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to upload file");
+        throw new Error(result.message || tmsg('uploadFailed'));
       }
 
       toast.success(
-        `Successfully uploaded ${result.data.eventsCount} calendar events`,
+        tc('calendarEventsUploaded', { count: result.data.eventsCount }),
       );
 
       // Reload calendar data
@@ -134,7 +134,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       }
     } catch (error: any) {
       console.error("Error uploading ICS file:", error);
-      toast.error(error.message || "Failed to upload calendar file");
+      toast.error(error.message || tmsg('uploadFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -153,16 +153,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to clear data");
+        throw new Error(result.message || tmsg('clearFailed'));
       }
 
       toast.success(
-        `Successfully cleared ${result.data.deletedCount} calendar events`,
+        tc('calendarEventsCleared', { count: result.data.deletedCount }),
       );
       setCalendarData(null);
     } catch (error: any) {
       console.error("Error clearing calendar data:", error);
-      toast.error(error.message || "Failed to clear calendar data");
+      toast.error(error.message || tmsg('clearFailed'));
     } finally {
       setIsClearing(false);
     }
@@ -269,7 +269,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 {calendarData && (
                   <Badge className="bg-green-100 text-green-800 border-green-200">
                     <CheckCircle className="w-3 h-3 mr-1" />
-                    Active
+                    {ts('active')}
                   </Badge>
                 )}
               </div>
@@ -282,11 +282,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground mb-1">
-                        Upload ICS Calendar File
+                        {ts('uploadIcsCalendarFile')}
                       </p>
                       <p className="text-xs text-muted-foreground mb-3">
-                        Upload a .ics file to display tithi and event
-                        information
+                        {ts('uploadIcsDescription')}
                       </p>
                       <Button
                         onClick={handleFileSelect}
@@ -296,12 +295,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         {isUploading ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            Processing...
+                            {ts('processing')}
                           </>
                         ) : (
                           <>
                             <Upload className="w-4 h-4 mr-2" />
-                            Choose File
+                            {ts('chooseFile')}
                           </>
                         )}
                       </Button>
@@ -317,10 +316,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          Calendar Events Loaded
+                          {ts('calendarEventsLoaded')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {calendarData.totalCount} events available
+                          {tc('eventsAvailable', { count: calendarData.totalCount })}
                         </p>
                       </div>
                     </div>
@@ -355,7 +354,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   {calendarData.events.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-border">
                       <p className="text-xs text-muted-foreground mb-2">
-                        Sample events: {calendarData.events.length}
+                        {tc('sampleEvents', { count: calendarData.events.length })}
                       </p>
                       <div className="space-y-1">
                         {calendarData.events.slice(0, 3).map((event, index) => (
@@ -368,7 +367,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         ))}
                         {calendarData.events.length > 3 && (
                           <p className="text-xs text-muted-foreground">
-                            +{calendarData.events.length - 3} more events
+                            +{calendarData.events.length - 3} {ts('moreEvents')}
                           </p>
                         )}
                       </div>
@@ -393,14 +392,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    File Requirements
+                    {ts('fileRequirements')}
                   </p>
                   <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>• File must be in .ics format</li>
-                    <li>• Maximum file size: 1MB</li>
-                    <li>• Must contain valid calendar events</li>
+                    <li>• {ts('fileFormatRequired')}</li>
+                    <li>• {ts('maxFileSize')}</li>
+                    <li>• {ts('validCalendarEvents')}</li>
                     <li>
-                      • Events with Gujarati tithi information will be displayed
+                      • {ts('gujaratiTithiInfo')}
                     </li>
                   </ul>
                 </div>
@@ -419,7 +418,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             <div className="bg-muted border border-border rounded-lg p-4">
               <p className="text-sm text-muted-foreground">
-                Additional settings will be available here in future updates.
+                {ts('additionalSettingsDescription')}
               </p>
             </div>
           </div>

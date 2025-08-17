@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { cn } from "@/lib/utils";
 import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
@@ -62,37 +63,35 @@ interface AddRecipeDialogProps {
   } | null;
 }
 
-const validationSchema = Yup.object({
-  recipeName: Yup.string().trim().required("Recipe name is required."),
-  category: Yup.string().trim().required("Recipe category is required."),
-  subcategory: Yup.string().trim().required("Subcategory is required."),
-  selectedRecipe: Yup.string(),
-  ingredients: Yup.array()
-    .of(
-      Yup.object({
-        name: Yup.string().trim().required("Name is required."),
-        quantity: Yup.string().trim().required("Quantity is required."),
-        unit: Yup.string().required("Unit is required."),
-        costPerUnit: Yup.string().test(
-          "is-number-or-empty",
-          "Must be a valid non-negative number.",
-          (value) => !value || (!isNaN(Number(value)) && Number(value) >= 0),
-        ),
-      }),
-    )
-    .min(1, "At least one ingredient is required."),
-});
-
-// Use centralized unit options
-const unitOptions = UNIT_OPTIONS;
-
 export function AddRecipeDialog({
   isOpen,
   onOpenChange,
   onSave,
   initialRecipe = null,
 }: AddRecipeDialogProps) {
+  const { t } = useTranslation();
   const isEditMode = !!initialRecipe;
+
+  const validationSchema = Yup.object({
+    recipeName: Yup.string().trim().required(t("recipes.nameRequired")),
+    category: Yup.string().trim().required(t("recipes.categoryRequired")),
+    subcategory: Yup.string().trim().required(t("recipes.subcategoryRequired")),
+    selectedRecipe: Yup.string(),
+    ingredients: Yup.array()
+      .of(
+        Yup.object({
+          name: Yup.string().trim().required(t("ingredients.nameRequired")),
+          quantity: Yup.string().trim().required(t("ingredients.quantityRequired")),
+          unit: Yup.string().required(t("ingredients.unitRequired")),
+          costPerUnit: Yup.string().test(
+            "is-number-or-empty",
+            t("ingredients.costValidationError"),
+            (value) => !value || (!isNaN(Number(value)) && Number(value) >= 0),
+          ),
+        }),
+      )
+      .min(1, t("recipes.ingredientsRequired")),
+  });
 
   const initialValues = {
     recipeName: initialRecipe?.recipeName || "",
@@ -152,11 +151,11 @@ export function AddRecipeDialog({
     <BaseDialog
       open={isOpen}
       onOpenChange={handleClose}
-      title={isEditMode ? "Edit Recipe" : "Add New Recipe"}
+      title={isEditMode ? t("recipes.editRecipe") : t("recipes.addRecipe")}
       description={
         isEditMode
-          ? "Update your recipe details and ingredients"
-          : "Create a new recipe with ingredients and details"
+          ? t("recipes.editRecipeDescription")
+          : t("recipes.addRecipeDescription")
       }
       icon={
         isEditMode ? (
@@ -276,10 +275,10 @@ export function AddRecipeDialog({
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-primary" />
-                    Recipe Information
+                    {t("recipes.recipeInformation")}
                   </CardTitle>
                   <CardDescription>
-                    Enter the basic details for your recipe
+                    {t("recipes.recipeInformationDescription")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -288,13 +287,13 @@ export function AddRecipeDialog({
                       htmlFor="recipeName"
                       className="text-sm font-medium text-foreground mb-2 block"
                     >
-                      Recipe Name *
+                      {t("recipes.recipeName")} *
                     </Label>
                     <Field
                       as={Input}
                       id="recipeName"
                       name="recipeName"
-                      placeholder="Enter recipe name (e.g., Curry, Pasta Carbonara)"
+                      placeholder={t("recipes.recipeNamePlaceholder")}
                       className="border-border focus:border-primary focus:ring-primary/20"
                     />
                     <ErrorMessage
@@ -310,13 +309,13 @@ export function AddRecipeDialog({
                         htmlFor="category"
                         className="text-sm font-medium text-foreground mb-2 block"
                       >
-                        Recipe Category *
+                        {t("recipes.recipeCategory")} *
                       </Label>
                       <Field
                         as={Input}
                         id="category"
                         name="category"
-                        placeholder="e.g., Main Course, Dessert, Appetizer"
+                        placeholder={t("recipes.recipeCategoryPlaceholder")}
                         className="border-border focus:border-primary focus:ring-primary/20"
                       />
                       <ErrorMessage
@@ -331,13 +330,13 @@ export function AddRecipeDialog({
                         htmlFor="subcategory"
                         className="text-sm font-medium text-foreground mb-2 block"
                       >
-                        Subcategory *
+                        {t("recipes.subcategory")} *
                       </Label>
                       <Field
                         as={Input}
                         id="subcategory"
                         name="subcategory"
-                        placeholder="e.g., Indian, Italian, Vegetarian"
+                        placeholder={t("recipes.subcategoryPlaceholder")}
                         className="border-border focus:border-primary focus:ring-primary/20"
                       />
                       <ErrorMessage
@@ -365,15 +364,15 @@ export function AddRecipeDialog({
                         <div>
                           <CardTitle className="text-lg flex items-center gap-2">
                             <Utensils className="w-5 h-5 text-primary" />
-                            Ingredients
+                            {t("recipes.ingredients")}
                           </CardTitle>
                           <CardDescription>
-                            Add ingredients with quantities and costs
+                            {t("recipes.ingredientsDescription")}
                           </CardDescription>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
-                            {values.ingredients.length} ingredient
+                            {values.ingredients.length} {t("recipes.ingredient")}
                             {values.ingredients.length !== 1 ? "s" : ""}
                           </Badge>
                           <Button
@@ -392,7 +391,7 @@ export function AddRecipeDialog({
                             className="flex items-center gap-2"
                           >
                             <Plus className="w-3 h-3" />
-                            Add Ingredient
+                            {t("recipes.addIngredient")}
                           </Button>
                         </div>
                       </div>
@@ -409,7 +408,7 @@ export function AddRecipeDialog({
                           >
                             <div className="flex items-center justify-between mb-3">
                               <h4 className="text-sm font-medium text-foreground">
-                                Ingredient #{index + 1}
+                                {t("recipes.ingredient")} #{index + 1}
                               </h4>
                               <Button
                                 type="button"
@@ -426,12 +425,12 @@ export function AddRecipeDialog({
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                               <div className="sm:col-span-5">
                                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  Ingredient Name *
+                                  {t("recipes.ingredientName")} *
                                 </Label>
                                 <Field
                                   as={Input}
                                   name={`ingredients[${index}].name`}
-                                  placeholder="e.g., Rice, Tomatoes"
+                                  placeholder={t("recipes.ingredientNamePlaceholder")}
                                   className="border-border focus:border-primary focus:ring-primary/20"
                                 />
                                 <ErrorMessage
@@ -443,12 +442,12 @@ export function AddRecipeDialog({
 
                               <div className="sm:col-span-3">
                                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  Quantity *
+                                  {t("recipes.quantity")} *
                                 </Label>
                                 <Field
                                   as={Input}
                                   name={`ingredients[${index}].quantity`}
-                                  placeholder="5"
+                                  placeholder={t("recipes.quantityPlaceholder")}
                                   type="number"
                                   step="0.1"
                                   min="0"
@@ -463,7 +462,7 @@ export function AddRecipeDialog({
 
                               <div className="sm:col-span-2">
                                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  Unit *
+                                  {t("recipes.unit")} *
                                 </Label>
                                 <Field name={`ingredients[${index}].unit`}>
                                   {({ field }: { field: any }) => (
@@ -498,14 +497,14 @@ export function AddRecipeDialog({
 
                               <div className="sm:col-span-2">
                                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                                  Cost/Unit
+                                  {t("recipes.costPerUnit")}
                                 </Label>
                                 <div className="relative">
                                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                   <Field
                                     as={Input}
                                     name={`ingredients[${index}].costPerUnit`}
-                                    placeholder="0.00"
+                                    placeholder={t("recipes.costPerUnitPlaceholder")}
                                     type="number"
                                     step="0.01"
                                     min="0"
@@ -528,7 +527,7 @@ export function AddRecipeDialog({
                         <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-foreground">
-                              Estimated Total Cost:
+                              {t("recipes.estimatedTotalCost")}:
                             </span>
                             <span className="text-lg font-bold text-primary">
                               $
@@ -549,11 +548,10 @@ export function AddRecipeDialog({
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-primary" />
-                    Instructions
+                    {t("recipes.instructions")}
                   </CardTitle>
                   <CardDescription>
-                    Write step-by-step instructions. Use lists and formatting as
-                    needed.
+                    {t("recipes.instructionsDescription")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -562,7 +560,7 @@ export function AddRecipeDialog({
                       <LexicalEditor
                         value={field.value}
                         onChange={(val) => field.onChange(val)}
-                        placeholder="e.g., 1) Preheat oven to 180°C...\n2) Mix ingredients..."
+                        placeholder={t("recipes.instructionsPlaceholder")}
                       />
                     )}
                   </Field>
@@ -577,7 +575,7 @@ export function AddRecipeDialog({
                   onClick={handleClose}
                   className="border-border text-foreground hover:bg-muted bg-transparent"
                 >
-                  Cancel
+                  {t("recipes.cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -587,12 +585,12 @@ export function AddRecipeDialog({
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                      {isEditMode ? "Updating..." : "Creating..."}
+                      {isEditMode ? t("recipes.updating") : t("recipes.creating")}
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      {isEditMode ? "Update Recipe" : "Create Recipe"}
+                      {isEditMode ? t("recipes.updateRecipe") : t("recipes.createRecipe")}
                     </>
                   )}
                 </Button>

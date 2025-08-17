@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/lib/hooks/use-translation";
 import {
   AlertCircle,
   CheckCircle,
@@ -26,6 +27,7 @@ export function ImportRecipesDialog({
   onOpenChange,
   onImportSuccess,
 }: ImportRecipesDialogProps) {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
@@ -46,8 +48,8 @@ export function ImportRecipesDialog({
       ];
 
       if (!allowedTypes.includes(selectedFile.type)) {
-        toast.error("Invalid file type", {
-          description: "Please select an Excel file (.xlsx, .xls) or CSV file.",
+        toast.error(t("messages.invalidFileType"), {
+          description: t("messages.invalidFileTypeDescription"),
         });
         return;
       }
@@ -59,7 +61,7 @@ export function ImportRecipesDialog({
 
   const handleUpload = async () => {
     if (!file) {
-      toast.error("Please select a file to upload");
+      toast.error(t("messages.pleaseSelectFile"));
       return;
     }
 
@@ -84,12 +86,15 @@ export function ImportRecipesDialog({
             total: result.validRecipes || 0,
             errors: result.errors,
           });
-          toast.error("Import completed with errors", {
-            description: `Imported ${result.validRecipes || 0} recipes with ${result.errors.length} errors.`,
+          toast.error(t("messages.importCompletedWithErrors"), {
+            description: t("messages.importCompletedWithErrorsDescription", { 
+              count: result.validRecipes || 0, 
+              errorCount: result.errors.length 
+            }),
           });
         } else {
-          toast.error("Import failed", {
-            description: result.error || "Failed to import recipes",
+          toast.error(t("messages.importFailed"), {
+            description: result.error || t("messages.failedToImportRecipes"),
           });
         }
         return;
@@ -101,8 +106,8 @@ export function ImportRecipesDialog({
         errors: result.errors || [],
       });
 
-      toast.success("Import successful", {
-        description: `Successfully imported ${result.importedCount} recipes.`,
+      toast.success(t("messages.importSuccessful"), {
+        description: t("messages.importSuccessfulDescription", { count: result.importedCount }),
       });
 
       // Reset form
@@ -115,8 +120,8 @@ export function ImportRecipesDialog({
       onImportSuccess();
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Upload failed", {
-        description: "An error occurred while uploading the file.",
+      toast.error(t("messages.uploadFailed"), {
+        description: t("messages.uploadFailedDescription"),
       });
     } finally {
       setIsUploading(false);
@@ -127,16 +132,16 @@ export function ImportRecipesDialog({
     // Create a sample Excel template
     const templateData = [
       [
-        "Recipe Name",
-        "Category",
-        "Subcategory",
-        "Description (optional)",
-        "Instructions (optional)",
-        "Servings (optional)",
-        "Ingredients (comma-separated)",
-        "Quantities (comma-separated)",
-        "Units (comma-separated)",
-        "Cost Per Unit (comma-separated, optional)",
+        t("recipes.template.recipeName"),
+        t("recipes.template.category"),
+        t("recipes.template.subcategory"),
+        t("recipes.template.description"),
+        t("recipes.template.instructions"),
+        t("recipes.template.servings"),
+        t("recipes.template.ingredients"),
+        t("recipes.template.quantities"),
+        t("recipes.template.units"),
+        t("recipes.template.costPerUnit"),
       ],
       [
         "Butter Potato",
@@ -180,8 +185,8 @@ export function ImportRecipesDialog({
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 
-    toast.success("Template downloaded", {
-      description: "Recipe import template has been downloaded.",
+    toast.success(t("messages.templateDownloaded"), {
+      description: t("messages.templateDownloadedDescription"),
     });
   };
 
@@ -198,8 +203,8 @@ export function ImportRecipesDialog({
     <BaseDialog
       open={isOpen}
       onOpenChange={handleClose}
-      title="Import Recipes from Excel"
-      description="Upload an Excel or CSV file to import multiple recipes at once. Make sure your file follows the required format."
+      title={t("recipes.importRecipesFromExcel")}
+      description={t("recipes.importRecipesDescription")}
       icon={<FileSpreadsheet className="w-5 h-5 text-primary-foreground" />}
       size="4xl"
       footer={
@@ -210,7 +215,7 @@ export function ImportRecipesDialog({
             className="flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
-            Download Template
+            {t("recipes.downloadTemplate")}
           </Button>
           <Button
             onClick={handleUpload}
@@ -220,12 +225,12 @@ export function ImportRecipesDialog({
             {isUploading ? (
               <>
                 <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Importing...
+                {t("recipes.importing")}
               </>
             ) : (
               <>
                 <Upload className="w-4 h-4" />
-                Import Recipes
+                {t("recipes.importRecipes")}
               </>
             )}
           </Button>
@@ -236,7 +241,7 @@ export function ImportRecipesDialog({
         {/* File Upload Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="file-upload">Select Excel/CSV File</Label>
+            <Label htmlFor="file-upload">{t("recipes.selectExcelCsvFile")}</Label>
             <Button
               variant="outline"
               size="sm"
@@ -244,7 +249,7 @@ export function ImportRecipesDialog({
               className="flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
-              Download Template
+              {t("recipes.downloadTemplate")}
             </Button>
           </div>
 
@@ -263,17 +268,17 @@ export function ImportRecipesDialog({
                 <Upload className="w-12 h-12 mx-auto text-gray-400" />
                 <div>
                   <p className="text-sm text-gray-600">
-                    Click to select a file or drag and drop
+                    {t("recipes.clickToSelectOrDragDrop")}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Supports .xlsx, .xls, and .csv files
+                    {t("recipes.supportsFileTypes")}
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  Choose File
+                  {t("recipes.chooseFile")}
                 </Button>
               </div>
             ) : (
@@ -294,7 +299,7 @@ export function ImportRecipesDialog({
                     }
                   }}
                 >
-                  Change File
+                  {t("recipes.changeFile")}
                 </Button>
               </div>
             )}
@@ -308,12 +313,14 @@ export function ImportRecipesDialog({
             <AlertDescription>
               <div className="space-y-2">
                 <p>
-                  Import completed: {uploadProgress.imported} of{" "}
-                  {uploadProgress.total} recipes imported successfully.
+                  {t("recipes.importCompleted", { 
+                    imported: uploadProgress.imported, 
+                    total: uploadProgress.total 
+                  })}
                 </p>
                 {uploadProgress.errors.length > 0 && (
                   <div>
-                    <p className="font-medium text-destructive">Errors:</p>
+                    <p className="font-medium text-destructive">{t("recipes.errors")}:</p>
                     <ul className="text-sm text-destructive space-y-1 max-h-32 overflow-y-auto">
                       {uploadProgress.errors.map((error, index) => (
                         <li key={index} className="flex items-start gap-2">
@@ -331,39 +338,37 @@ export function ImportRecipesDialog({
 
         {/* Instructions */}
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">Required Format:</h4>
+          <h4 className="font-medium text-blue-900 mb-2">{t("recipes.requiredFormat")}:</h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>
-              • <strong>Recipe Name:</strong> Name of the recipe (required)
+              • <strong>{t("recipes.template.recipeName")}:</strong> {t("recipes.template.recipeNameDesc")}
             </li>
             <li>
-              • <strong>Category:</strong> Recipe category (required)
+              • <strong>{t("recipes.template.category")}:</strong> {t("recipes.template.categoryDesc")}
             </li>
             <li>
-              • <strong>Subcategory:</strong> Recipe subcategory (required)
+              • <strong>{t("recipes.template.subcategory")}:</strong> {t("recipes.template.subcategoryDesc")}
             </li>
             <li>
-              • <strong>Description:</strong> Recipe description (optional)
+              • <strong>{t("recipes.template.description")}:</strong> {t("recipes.template.descriptionDesc")}
             </li>
             <li>
-              • <strong>Instructions:</strong> Cooking instructions (optional)
+              • <strong>{t("recipes.template.instructions")}:</strong> {t("recipes.template.instructionsDesc")}
             </li>
             <li>
-              • <strong>Servings:</strong> Number of servings (optional)
+              • <strong>{t("recipes.template.servings")}:</strong> {t("recipes.template.servingsDesc")}
             </li>
             <li>
-              • <strong>Ingredients:</strong> Comma-separated ingredient names
-              (required)
+              • <strong>{t("recipes.template.ingredients")}:</strong> {t("recipes.template.ingredientsDesc")}
             </li>
             <li>
-              • <strong>Quantities:</strong> Comma-separated quantities
-              (required)
+              • <strong>{t("recipes.template.quantities")}:</strong> {t("recipes.template.quantitiesDesc")}
             </li>
             <li>
-              • <strong>Units:</strong> Comma-separated units (required)
+              • <strong>{t("recipes.template.units")}:</strong> {t("recipes.template.unitsDesc")}
             </li>
             <li>
-              • <strong>Cost Per Unit:</strong> Comma-separated costs (optional)
+              • <strong>{t("recipes.template.costPerUnit")}:</strong> {t("recipes.template.costPerUnitDesc")}
             </li>
           </ul>
         </div>
