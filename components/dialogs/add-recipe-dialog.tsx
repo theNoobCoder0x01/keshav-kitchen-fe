@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { IngredientsInput } from "@/components/ui/ingredients-input";
 import { useTranslations } from "@/hooks/use-translations";
-import { DEFAULT_UNIT } from "@/lib/constants/units";
+import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { trimObjectStrings } from "@/lib/utils/form-utils";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import {
