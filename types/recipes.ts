@@ -32,6 +32,7 @@ export interface RecipeIngredientBase {
   costPerUnit?: number | null;
   groupId?: string | null;
   group?: IngredientGroup | null;
+  localId?: string;
 }
 
 // Reusable ingredient aliases

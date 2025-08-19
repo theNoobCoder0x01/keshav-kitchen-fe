@@ -5,6 +5,7 @@ export type CalculationIngredient = Required<
   Omit<RecipeIngredientBase, "id" | "costPerUnit">
 > & {
   costPerUnit: number;
+  localId: string;
 };
 
 export interface IngredientCalculation {
