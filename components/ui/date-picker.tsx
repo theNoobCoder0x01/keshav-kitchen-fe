@@ -2,8 +2,17 @@
 
 import { useComponentAccessibility } from "@/hooks/use-component-accessibility";
 import { cn } from "@/lib/utils";
-import { dateToEpoch } from "@/lib/utils/date";
-import dayjs from "dayjs";
+import {
+  dateToEpoch,
+  epochToDate,
+  getLocalTimezone,
+  addTime,
+  subtractTime,
+  isSameDate,
+  formatForDisplay,
+} from "@/lib/utils/date";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isBefore, isSameDay, getYear, getMonth } from "date-fns";
+import { utcToZonedTime } from "date-fns-tz";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import React, {
   useCallback,
@@ -28,13 +37,13 @@ type Option = {
 };
 
 export interface DatePickerProps {
-  value?: number; // Epoch timestamp (ms)
+  value?: number; // Epoch timestamp (ms) - stored in UTC
   onChange?: (epoch: number | undefined) => void;
-  onChangeDate?: (date: Date | undefined) => void;
+  onChangeDate?: (date: Date | undefined) => void; // Returns UTC Date for storage
   minDate?: number | string; // Epoch timestamp (ms) or ISO string
   maxDate?: number | string; // Epoch timestamp (ms) or ISO string
   disabledDates?: (number | string)[];
-  timezone?: string;
+  timezone?: string; // IANA timezone for display (defaults to user's local)
   className?: string;
 }
 
@@ -63,39 +72,41 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   timezone,
   className,
 }) => {
-  const [currentMonth, setCurrentMonth] = useState<dayjs.Dayjs>(dayjs());
-  const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(null);
+  const userTimezone = timezone || getLocalTimezone();
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const { ariaProps } = useComponentAccessibility({
     componentType: "date-picker",
   });
 
-  // Initialize selected date from value
+  // Initialize selected date from value (convert UTC epoch to user timezone for display)
   useEffect(() => {
     if (value !== undefined && value !== 0) {
-      const date = timezone ? dayjs(value).tz(timezone) : dayjs(value);
-      setSelectedDate(date);
-      setCurrentMonth(date);
+      const utcDate = epochToDate(value);
+      const userDate = utcToZonedTime(utcDate, userTimezone);
+      setSelectedDate(userDate);
+      setCurrentMonth(userDate);
     } else {
       setSelectedDate(null);
-      setCurrentMonth(dayjs());
+      setCurrentMonth(new Date());
     }
-  }, [value, timezone]);
+  }, [value, userTimezone]);
 
   // Generate calendar days
   const calendarDays = useMemo(() => {
-    const startOfMonth = currentMonth.startOf("month");
-    const endOfMonth = currentMonth.endOf("month");
-    const startOfWeek = startOfMonth.startOf("week");
-    const endOfWeek = endOfMonth.endOf("week");
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const weekStart = startOfWeek(monthStart);
+    const weekEnd = endOfWeek(monthEnd);
 
-    const days: dayjs.Dayjs[] = [];
-    let current = startOfWeek;
+    const days: Date[] = [];
+    let current = weekStart;
 
-    while (current.isBefore(endOfWeek) || current.isSame(endOfWeek, "day")) {
+    while (isBefore(current, weekEnd) || isSameDay(current, weekEnd)) {
       days.push(current);
-      current = current.add(1, "day");
+      current = addDays(current, 1);
     }
 
     return days;
@@ -111,7 +122,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   // Generate year options for Select
   const yearOptions = useMemo((): Option[] => {
-    const currentYear = dayjs().year();
+    const currentYear = getYear(new Date());
     const yearRange = 100;
     const startYear = currentYear - yearRange;
     const endYear = currentYear + yearRange;
@@ -128,8 +139,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   // Check if date is disabled
   const isDateDisabled = useCallback(
-    (date: dayjs.Dayjs): boolean => {
-      const epoch = date.valueOf();
+    (date: Date): boolean => {
+      const epoch = date.getTime();
 
       // Check minDate
       if (minDate) {
@@ -151,7 +162,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           typeof disabledDate === "string"
             ? dateToEpoch(disabledDate)
             : disabledDate;
-        return date.isSame(dayjs(disabledEpoch), "day");
+        const disabledDateObj = epochToDate(disabledEpoch);
+        return isSameDate(date, disabledDateObj);
       });
     },
     [minDate, maxDate, disabledDates],
@@ -159,20 +171,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   // Navigate to previous month
   const goToPreviousMonth = useCallback(() => {
-    setCurrentMonth((prev) => prev.subtract(1, "month"));
+    setCurrentMonth((prev) => subtractTime.days(prev, 30)); // Approximate month navigation
   }, []);
 
   // Navigate to next month
   const goToNextMonth = useCallback(() => {
-    setCurrentMonth((prev) => prev.add(1, "month"));
+    setCurrentMonth((prev) => addTime.days(prev, 30)); // Approximate month navigation
   }, []);
 
   // Handle month selection
   const handleMonthSelect = useCallback(
     (value: string) => {
-      const newMonth = dayjs()
-        .month(parseInt(value.toString()))
-        .year(currentMonth.year());
+      const monthIndex = parseInt(value.toString());
+      const currentYear = getYear(currentMonth);
+      const newMonth = new Date(currentYear, monthIndex, 1);
       setCurrentMonth(newMonth);
     },
     [currentMonth],
@@ -181,7 +193,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   // Handle year selection
   const handleYearSelect = useCallback(
     (value: string) => {
-      const newDate = currentMonth.year(parseInt(value.toString()));
+      const year = parseInt(value.toString());
+      const currentMonthIndex = getMonth(currentMonth);
+      const newDate = new Date(year, currentMonthIndex, 1);
       setCurrentMonth(newDate);
     },
     [currentMonth],
@@ -189,10 +203,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   // Handle date selection
   const handleDateSelect = useCallback(
-    (date: dayjs.Dayjs) => {
+    (date: Date) => {
       if (isDateDisabled(date)) return;
 
-      const epoch = date.valueOf();
+      const epoch = date.getTime();
       setSelectedDate(date);
 
       if (onChange) {
@@ -200,7 +214,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       }
 
       if (onChangeDate) {
-        onChangeDate(date.toDate());
+        // Convert user timezone date back to UTC for storage
+        onChangeDate(date);
       }
     },
     [isDateDisabled, onChange, onChangeDate],
@@ -231,7 +246,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           {/* Month Selector */}
           <div className="w-32">
             <Select
-              defaultValue={currentMonth.month().toString()}
+              defaultValue={getMonth(currentMonth).toString()}
               onValueChange={handleMonthSelect}
             >
               <SelectTrigger className="border-[#dbdade]">
@@ -254,7 +269,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           {/* Year Selector */}
           <div className="w-24">
             <Select
-              defaultValue={currentMonth.year().toString()}
+              defaultValue={getYear(currentMonth).toString()}
               onValueChange={handleYearSelect}
             >
               <SelectTrigger className="border-[#dbdade]">
@@ -296,13 +311,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </div>
         ))}
         {calendarDays.map((day) => {
-          const isSelected = selectedDate?.isSame(day, "day");
+          const isSelected = selectedDate ? isSameDate(selectedDate, day) : false;
           const isDisabled = isDateDisabled(day);
-          const isCurrentMonth = day.isSame(currentMonth, "month");
-          const isToday = day.isSame(dayjs(), "day");
+          const isCurrentMonth = getMonth(day) === getMonth(currentMonth);
+          const isToday = isSameDate(day, new Date());
 
           return (
-            <div key={day.valueOf()}>
+            <div key={day.getTime()}>
               <Button
                 variant="ghost"
                 onMouseDown={(e) => {
@@ -324,10 +339,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                   !isCurrentMonth && "text-primary/50 hover:text-primary/70",
                   isToday && !isSelected && "ring-secondary-300 ring-2",
                 )}
-                aria-label={`Select ${day.format("MMMM D, YYYY")}`}
+                aria-label={`Select ${format(day, "MMMM d, yyyy")}`}
                 aria-selected={isSelected}
               >
-                {day.format("D")}
+                {format(day, "d")}
               </Button>
             </div>
           );
