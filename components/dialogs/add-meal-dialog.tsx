@@ -1,13 +1,32 @@
 "use client";
 
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { ErrorMessage, Field, FieldArray, Formik } from "formik";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import * as Yup from "yup";
 
+import { Badge } from "@/components/ui/badge";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -16,8 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "@/hooks/use-translations";
 import { fetchIngredients } from "@/lib/api/ingredients";
 import { createMenu, updateMenu } from "@/lib/api/menus";
@@ -27,7 +44,7 @@ import {
   validateMealInputs,
 } from "@/lib/utils/meal-calculations";
 import type { MealCalculationInput } from "@/types/calculations";
-import { Plus, Utensils, X, Package, GripVertical, Trash2 } from "lucide-react";
+import { ChevronDown, GripVertical, Package, Plus, Trash2, Utensils, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
@@ -35,15 +52,18 @@ import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { trimIngredients } from "@/lib/utils/form-utils";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
 import type { MealType } from "@/types/menus";
-import type { RecipeApiItem, RecipeIngredientBase } from "@/types/recipes";
-import type { MenuIngredientGroup } from "@/types/menus";
+import type {
+  IngredientGroupApi,
+  RecipeApiItem,
+  RecipeIngredientApi
+} from "@/types/recipes";
 
 // Use centralized unit options
 const UNITS = UNIT_OPTIONS;
 
 type Recipe = Pick<RecipeApiItem, "id" | "name"> & {
-  ingredients?: RecipeIngredientBase[];
-  ingredientGroups?: MenuIngredientGroup[];
+  ingredients?: RecipeIngredientApi[];
+  ingredientGroups?: IngredientGroupApi[];
 };
 
 type IngredientOption = {
@@ -104,6 +124,13 @@ export function AddMealDialog({
     IngredientOption[]
   >([]);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 4 },
+    })
+  );
 
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = (
@@ -115,21 +142,34 @@ export function AddMealDialog({
     // Create a map of existing groups
     const groupMap = new Map(ingredientGroups.map((g) => [g.id, g]));
 
-    // Create groups with their ingredients
+    // Create groups with their ingredients - preserve ALL groups even if empty
     ingredientGroups.forEach((group) => {
+      const groupIngredients = ingredients
+        .filter((ing) => ing.groupId === group.id)
+        .map((ing) => ({
+          id: ing.id,
+          name: ing.name,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          costPerUnit: ing.costPerUnit,
+          localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+        }));
+
+      // Always preserve the group, even if it has no ingredients
       groups.push({
         id: group.id,
         name: group.name,
         sortOrder: group.sortOrder,
-        ingredients: ingredients
-          .filter((ing) => ing.groupId === group.id)
-          .map((ing) => ({
-            id: ing.id,
-            name: ing.name,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            costPerUnit: ing.costPerUnit,
-          })),
+        ingredients: groupIngredients.length > 0 ? groupIngredients : [
+          {
+            id: undefined,
+            name: "",
+            quantity: 0,
+            unit: DEFAULT_UNIT,
+            costPerUnit: 0,
+            localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
+          }
+        ],
       });
     });
 
@@ -142,6 +182,7 @@ export function AddMealDialog({
         quantity: ing.quantity,
         unit: ing.unit,
         costPerUnit: ing.costPerUnit,
+        localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
       }));
 
     if (ungroupedIngredients.length > 0) {
@@ -163,6 +204,7 @@ export function AddMealDialog({
           quantity: ing.quantity,
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
+          localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
         })),
       });
     }
@@ -170,6 +212,8 @@ export function AddMealDialog({
     // Sort groups by sortOrder
     return groups.sort((a, b) => a.sortOrder - b.sortOrder);
   };
+
+  
 
   const validationSchema = Yup.object().shape({
     recipeId: Yup.string().trim().required(t("meals.recipeRequired")),
@@ -201,10 +245,16 @@ export function AddMealDialog({
                   .min(0, t("meals.costPerUnitMin")),
               }),
             )
-            .min(1, "Each group must have at least one ingredient"),
+            .min(0), // Allow empty groups
         }),
       )
-      .min(1, t("meals.ingredientsRequired")),
+      .min(1, t("meals.ingredientsRequired"))
+      .test("has-ingredients", t("meals.ingredientsRequired"), (groups) => {
+        if (!groups) return false;
+        return groups.some(
+          (group) => group.ingredients && group.ingredients.length > 0
+        );
+      }),
   });
 
   // This will be computed dynamically based on editMeal prop
@@ -225,6 +275,7 @@ export function AddMealDialog({
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit,
+          localId: ingredient.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
         }));
         
         // For now, we'll create a default "Ungrouped" group for existing menus
@@ -233,7 +284,10 @@ export function AddMealDialog({
           {
             name: "Ungrouped",
             sortOrder: 999,
-            ingredients,
+            ingredients: ingredients.map(ing => ({
+              ...ing,
+              localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`)
+            })),
           },
         ];
       } else {
@@ -254,6 +308,7 @@ export function AddMealDialog({
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
                 costPerUnit: ingredient.costPerUnit || 0,
+                localId: ingredient.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
               }))
             : [
                 {
@@ -262,6 +317,7 @@ export function AddMealDialog({
                   quantity: 0,
                   unit: DEFAULT_UNIT,
                   costPerUnit: 0,
+                  localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
                 },
               ];
 
@@ -291,21 +347,22 @@ export function AddMealDialog({
       ghan: 1.0,
       servingAmount: 100,
       servingUnit: "g",
-      ingredientGroups: [
-        {
-          name: "Ungrouped",
-          sortOrder: 999,
-          ingredients: [
-            {
-              id: undefined,
-              name: "",
-              quantity: 0,
-              unit: DEFAULT_UNIT,
-              costPerUnit: 0,
-            },
-          ],
-        },
-      ],
+              ingredientGroups: [
+          {
+            name: "Ungrouped",
+            sortOrder: 999,
+            ingredients: [
+              {
+                id: undefined,
+                name: "",
+                quantity: 0,
+                unit: DEFAULT_UNIT,
+                costPerUnit: 0,
+                localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
+              },
+            ],
+          },
+        ],
     };
   };
 
@@ -350,6 +407,7 @@ export function AddMealDialog({
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit || 0,
+          localId: ingredient.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
         }));
         
         const ingredientGroups = [
@@ -544,7 +602,7 @@ export function AddMealDialog({
         initialValues={getInitialValues(editMeal, recipes)}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
-        enableReinitialize
+        enableReinitialize={false}
         key={editMeal?.id || "new"} // Force re-initialization when switching between add/edit
       >
         {({
@@ -558,6 +616,191 @@ export function AddMealDialog({
           handleSubmit: formikHandleSubmit,
           resetForm,
         }) => {
+          // Helper functions for ingredient selection and moving
+          const toggleRowSelected = (localId: string, checked: boolean) => {
+            setSelectedIds((prev) => {
+              const next = new Set(prev);
+              if (checked) next.add(localId);
+              else next.delete(localId);
+              return next;
+            });
+          };
+
+          const setGroupSelection = (groupIndex: number, checked: boolean) => {
+            const ids = values.ingredientGroups[groupIndex].ingredients.map(
+              (ing: any) => ing.localId
+            );
+            setSelectedIds((prev) => {
+              const next = new Set(prev);
+              if (checked) ids.forEach((id: string) => next.add(id));
+              else ids.forEach((id: string) => next.delete(id));
+              return next;
+            });
+          };
+
+          const clearSelection = () => setSelectedIds(new Set());
+
+          const removeIngredientWithPlaceholder = (
+            groupIndex: number,
+            ingredientIndex: number,
+            removeIngredient: (index: number) => void
+          ) => {
+            const group = values.ingredientGroups[groupIndex];
+            if (group.ingredients.length === 1) {
+              // If this is the last ingredient, replace it with a placeholder instead of removing
+              setFieldValue(
+                `ingredientGroups[${groupIndex}].ingredients[0]`,
+                {
+                  id: undefined,
+                  name: "",
+                  quantity: 0,
+                  unit: DEFAULT_UNIT,
+                  costPerUnit: 0,
+                  localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
+                },
+                false
+              );
+            } else {
+              // Otherwise, remove the ingredient normally
+              removeIngredient(ingredientIndex);
+            }
+          };
+
+          const moveSelectedIngredients = (
+            destinationGroupIndex: number,
+            position: "end" | "start" = "end"
+          ) => {
+            if (selectedIds.size === 0) return;
+            const nextGroups = values.ingredientGroups.map((g) => ({
+              ...g,
+              ingredients: [...g.ingredients],
+            }));
+            const moved: any[] = [];
+            nextGroups.forEach((group) => {
+              const keep: any[] = [];
+              for (const ing of group.ingredients as any[]) {
+                if (selectedIds.has(ing.localId)) moved.push(ing);
+                else keep.push(ing);
+              }
+              group.ingredients = keep.length
+                ? keep
+                : [
+                    {
+                      id: undefined,
+                      name: "",
+                      quantity: 0,
+                      unit: DEFAULT_UNIT,
+                      costPerUnit: 0,
+                      localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
+                    },
+                  ];
+            });
+            const dest = nextGroups[destinationGroupIndex];
+            dest.ingredients =
+              position === "start"
+                ? [...moved, ...dest.ingredients]
+                : [...dest.ingredients, ...moved];
+            setFieldValue("ingredientGroups", nextGroups, false);
+            clearSelection();
+          };
+
+          const GroupDroppable = ({
+            id,
+            children,
+          }: {
+            id: string;
+            children: React.ReactNode;
+          }) => {
+            const { setNodeRef } = useDroppable({ id });
+            return (
+              <div ref={setNodeRef} data-group-droppable={id}>
+                {children}
+              </div>
+            );
+          };
+
+          const DraggableRow = ({
+            id,
+            children,
+          }: {
+            id: string;
+            children: React.ReactNode;
+          }) => {
+            const { attributes, listeners, setNodeRef, isDragging } =
+              useDraggable({ id });
+            return (
+              <div
+                ref={setNodeRef}
+                {...attributes}
+                {...listeners}
+                className={isDragging ? "opacity-50" : undefined}
+              >
+                {children}
+              </div>
+            );
+          };
+
+          const findGroupIndexByRowId = (rowId: string) => {
+            const localId = rowId.replace(/^row-/, "");
+            for (let g = 0; g < values.ingredientGroups.length; g++) {
+              if (
+                values.ingredientGroups[g].ingredients.some(
+                  (ing: any) => ing.localId === localId
+                )
+              )
+                return g;
+            }
+            return -1;
+          };
+
+          const onDragEnd = (event: DragEndEvent) => {
+            const { active, over } = event;
+            setActiveDragId(null);
+            if (!over) return;
+            const overId = String(over.id);
+            const isOverGroup = overId.startsWith("group-");
+            const activeId = String(active.id);
+            const sourceGroupIndex = findGroupIndexByRowId(activeId);
+            if (sourceGroupIndex === -1) return;
+
+            if (isOverGroup) {
+              const destGroupIndex = parseInt(overId.replace("group-", ""), 10);
+              const activeLocalId = activeId.replace("row-", "");
+              const moveIds = selectedIds.has(activeLocalId)
+                ? selectedIds
+                : new Set([activeLocalId]);
+
+              const nextGroups = values.ingredientGroups.map((g) => ({
+                ...g,
+                ingredients: [...g.ingredients],
+              }));
+              const moved: any[] = [];
+              nextGroups.forEach((group) => {
+                const keep: any[] = [];
+                for (const ing of group.ingredients as any[]) {
+                  if (moveIds.has(ing.localId)) moved.push(ing);
+                  else keep.push(ing);
+                }
+                group.ingredients = keep.length
+                  ? keep
+                  : [
+                      {
+                        id: undefined,
+                        name: "",
+                        quantity: 0,
+                        unit: DEFAULT_UNIT,
+                        costPerUnit: 0,
+                        localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
+                      },
+                    ];
+              });
+              const dest = nextGroups[destGroupIndex];
+              dest.ingredients = [...dest.ingredients, ...moved];
+              setFieldValue("ingredientGroups", nextGroups, false);
+              setSelectedIds(new Set());
+            }
+          };
+
           // Calculate meal metrics using our utility functions
           const allIngredients = values.ingredientGroups.flatMap(group => 
             group.ingredients.map(ing => ({
@@ -565,6 +808,7 @@ export function AddMealDialog({
               quantity: ing.quantity || 0,
               unit: ing.unit || "g",
               costPerUnit: ing.costPerUnit || 0,
+              localId: ing.localId,
             }))
           );
           
@@ -572,7 +816,15 @@ export function AddMealDialog({
             ghan: values.ghan || 1,
             servingAmount: values.servingAmount || 100,
             servingUnit: values.servingUnit || "g",
-            ingredients: allIngredients,
+            ingredients: allIngredients.map((ing) => ({
+              name: ing.name,
+              quantity: ing.quantity,
+              unit: ing.unit,
+              costPerUnit: ing.costPerUnit,
+              groupId: null,
+              group: null,
+              localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+            })),
             mealType,
           };
 
@@ -588,27 +840,7 @@ export function AddMealDialog({
             return touchedField && error ? String(error) : null;
           };
 
-          // Helper to safely get form field errors
-          const getFieldError = (field: string, index?: number) => {
-            if (index !== undefined) {
-              const fieldError = errors.ingredients?.[index];
-              if (typeof fieldError === "string") return fieldError;
-              return fieldError?.[field as keyof IngredientFormValue] as
-                | string
-                | undefined;
-            }
-            return errors[field as keyof typeof errors] as string | undefined;
-          };
-
-          // Helper to check if field is touched
-          const isFieldTouched = (field: string, index?: number) => {
-            if (index !== undefined) {
-              return touched.ingredients?.[index]?.[
-                field as keyof IngredientFormValue
-              ];
-            }
-            return touched[field as keyof typeof touched];
-          };
+          // Removing helpers that referenced non-existent fields in this form
           return (
             <div className="overflow-y-auto">
               <form
@@ -751,229 +983,310 @@ export function AddMealDialog({
                   </div>
 
                   {/* Ingredient Groups Section */}
-                  <FieldArray name="ingredientGroups">
-                    {({ remove: removeGroup, push: pushGroup }) => (
-                      <div className="col-span-12 space-y-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-lg font-medium text-foreground">
-                            {t("meals.ingredients")}
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              {values.ingredientGroups.reduce(
-                                (total, group) =>
-                                  total + group.ingredients.length,
-                                0
-                              )}{" "}
-                              ingredients
-                            </Badge>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                pushGroup({
-                                  name: "",
-                                  sortOrder: values.ingredientGroups.length,
-                                  ingredients: [
-                                    {
-                                      id: undefined,
-                                      name: "",
-                                      quantity: 0,
-                                      unit: DEFAULT_UNIT,
-                                      costPerUnit: 0,
-                                    },
-                                  ],
-                                });
-                              }}
-                              className="text-primary hover:bg-primary/10 gap-1"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Add Group
-                            </Button>
-                          </div>
-                        </div>
-
-                        {values.ingredientGroups.map((group, groupIndex) => (
-                          <Card key={groupIndex} className="border border-border rounded-lg p-4 bg-card/30">
-                            {/* Group Header */}
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center gap-3 flex-1">
-                                <GripVertical className="w-4 h-4 text-muted-foreground" />
-                                <div className="flex-1">
-                                  <Field
-                                    as={Input}
-                                    name={`ingredientGroups[${groupIndex}].name`}
-                                    placeholder="Group name (e.g., Main Course, Side Dish, Dessert)"
-                                    className="font-medium"
-                                  />
-                                  <ErrorMessage
-                                    name={`ingredientGroups[${groupIndex}].name`}
-                                    component="p"
-                                    className="text-destructive text-xs mt-1"
-                                  />
-                                </div>
+                  <div className="sm:col-span-12">
+                    <FieldArray name="ingredientGroups">
+                      {({ remove: removeGroup, push: pushGroup }) => (
+                        <Card>
+                          <CardHeader className="pb-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                  <Package className="w-5 h-5 text-primary" />
+                                  {t("meals.ingredients")}
+                                </CardTitle>
+                                <CardDescription>
+                                  Organize ingredients into logical groups
+                                </CardDescription>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="text-xs">
-                                  {group.ingredients.length} items
+                                <Badge variant="outline" className="text-xs">
+                                  {values.ingredientGroups.reduce(
+                                    (total, group) => total + group.ingredients.length,
+                                    0
+                                  )}{" "}
+                                  ingredients
                                 </Badge>
-                                {values.ingredientGroups.length > 1 && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeGroup(groupIndex)}
-                                    className="text-destructive hover:bg-destructive/10"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Group Ingredients */}
-                            <FieldArray
-                              name={`ingredientGroups[${groupIndex}].ingredients`}
-                            >
-                              {({
-                                remove: removeIngredient,
-                                push: pushIngredient,
-                              }) => (
-                                <div className="space-y-3">
-                                  {group.ingredients.map((ingredient, ingredientIndex) => (
-                                    <div
-                                      key={ingredientIndex}
-                                      className="grid grid-cols-12 gap-2 items-end"
-                                    >
-                                                          <div className="col-span-6 sm:col-span-4">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  {t("meals.ingredient")}
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
-                                  placeholder={t("meals.ingredientNamePlaceholder")}
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
-                                  component="p"
-                                  className="text-destructive text-xs mt-1"
-                                />
-                              </div>
-                                                          <div className="col-span-5 sm:col-span-3">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  {t("meals.quantity")}
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
-                                  placeholder="5"
-                                  type="number"
-                                  step="0.000001"
-                                  min="0"
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
-                                  component="p"
-                                  className="text-destructive text-xs mt-1"
-                                />
-                              </div>
-                                                          <div className="col-span-4 sm:col-span-2">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  {t("meals.costPerUnit")}
-                                </Label>
-                                <Field
-                                  as={Input}
-                                  name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
-                                  placeholder="30"
-                                  type="number"
-                                  step="0.000001"
-                                  min="0"
-                                  className="border-border focus:border-primary focus:ring-primary/20"
-                                />
-                                <ErrorMessage
-                                  name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
-                                  component="p"
-                                  className="text-destructive text-xs mt-1"
-                                />
-                              </div>
-                                                          <div className="col-span-4 sm:col-span-2">
-                                <Label className="text-sm font-medium text-foreground mb-1 block">
-                                  {t("meals.unit")}
-                                </Label>
-                                <Field name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].unit`}>
-                                {({ field }: { field: any }) => (
-                                  <Select
-                                    value={field.value}
-                                    onValueChange={(value) =>
-                                      field.onChange({
-                                        target: { name: field.name, value },
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger className="border-border h-10">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {UNITS.map((unit) => (
-                                        <SelectItem
-                                          key={unit.value}
-                                          value={unit.value}
+                                {selectedIds.size > 0 && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">
+                                      {selectedIds.size} selected
+                                    </span>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-xs px-3 py-1 h-7"
                                         >
-                                          {unit.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                          Move To <ChevronDown className="w-3 h-3 ml-1" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-48">
+                                        {values.ingredientGroups.map((g, idx) => (
+                                          <DropdownMenuItem
+                                            key={idx}
+                                            onClick={() => {
+                                              // Move ingredients immediately when group is selected
+                                              moveSelectedIngredients(idx);
+                                            }}
+                                            className="cursor-pointer"
+                                          >
+                                            {g.name || `Group ${idx + 1}`}
+                                          </DropdownMenuItem>
+                                        ))}
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={clearSelection}
+                                    >
+                                      Clear
+                                    </Button>
+                                  </div>
                                 )}
-                              </Field>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    pushGroup({
+                                      name: "",
+                                      sortOrder: values.ingredientGroups.length,
+                                      ingredients: [
+                                        {
+                                          id: undefined,
+                                          name: "",
+                                          quantity: 0,
+                                          unit: DEFAULT_UNIT,
+                                          costPerUnit: 0,
+                                          localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
+                                        },
+                                      ],
+                                    });
+                                  }}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  Add Group
+                                </Button>
+                              </div>
                             </div>
-                            <div className="col-span-1">
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => removeIngredient(ingredientIndex)}
-                                className="w-10 h-10 p-0"
-                                disabled={group.ingredients.length === 1}
-                              >
-                                <X />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                        
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            pushIngredient({
-                              id: undefined,
-                              name: "",
-                              quantity: 0,
-                              unit: DEFAULT_UNIT,
-                              costPerUnit: 0,
-                            });
-                          }}
-                          className="text-primary hover:bg-primary/10 gap-1"
-                        >
-                          <Plus className="w-3 h-3" />
-                          Add Ingredient to {group.name || "Group"}
-                        </Button>
-                      </div>
-                    )}
-                  </FieldArray>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </FieldArray>
+                          </CardHeader>
+                          <CardContent className="space-y-6">
+                            <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+                              {values.ingredientGroups.map((group, groupIndex) => (
+                                <GroupDroppable id={`group-${groupIndex}`} key={groupIndex}>
+                                  <div
+                                    className="border border-border rounded-lg p-4 bg-card/30"
+                                  >
+                                {/* Group Header */}
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-3 flex-1">
+                                    <Checkbox
+                                      checked={
+                                        group.ingredients.length > 0 &&
+                                        group.ingredients.every(
+                                          (ing: any) => selectedIds.has(ing.localId)
+                                        )
+                                      }
+                                      onCheckedChange={(checked) =>
+                                        setGroupSelection(groupIndex, Boolean(checked))
+                                      }
+                                      className="mr-1"
+                                    />
+                                    <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                    <div className="flex-1">
+                                      <Field
+                                        as={Input}
+                                        name={`ingredientGroups[${groupIndex}].name`}
+                                        placeholder="Group name (e.g., Main Course, Side Dish, Dessert)"
+                                        className="font-medium"
+                                      />
+                                      <ErrorMessage
+                                        name={`ingredientGroups[${groupIndex}].name`}
+                                        component="p"
+                                        className="text-destructive text-xs mt-1"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {group.ingredients.length} items
+                                    </Badge>
+                                    {values.ingredientGroups.length > 1 && (
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeGroup(groupIndex)}
+                                        className="text-destructive hover:bg-destructive/10"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
 
+                                {/* Group Ingredients */}
+                                <FieldArray name={`ingredientGroups[${groupIndex}].ingredients`}>
+                                  {({ remove: removeIngredient, push: pushIngredient }) => (
+                                    <div className="space-y-3">
+                                      {group.ingredients.map((ingredient, ingredientIndex) => (
+                                        <DraggableRow key={ingredient.localId || ingredientIndex} id={`row-${ingredient.localId || ingredientIndex}`}>
+                                          <div className="grid grid-cols-12 gap-2 items-end p-3 border border-border/50 rounded-lg bg-background/50">
+                                            <div className="col-span-12 flex items-center justify-between mb-3">
+                                              <div className="flex items-center gap-2">
+                                                <Checkbox
+                                                  checked={Boolean(selectedIds.has(ingredient.localId || String(ingredientIndex)))}
+                                                  onCheckedChange={(checked) =>
+                                                    toggleRowSelected(ingredient.localId || String(ingredientIndex), Boolean(checked))
+                                                  }
+                                                />
+                                                <h5 className="text-sm font-medium text-muted-foreground">
+                                                  Ingredient #{ingredientIndex + 1}
+                                                </h5>
+                                              </div>
+                                            </div>
+                                          <div className="col-span-12 sm:col-span-5">
+                                            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                              {t("meals.ingredient")}
+                                            </Label>
+                                            <Field
+                                              as={Input}
+                                              name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
+                                              placeholder={t("meals.ingredientNamePlaceholder")}
+                                              className="text-sm"
+                                            />
+                                            <ErrorMessage
+                                              name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
+                                              component="p"
+                                              className="text-destructive text-xs mt-1"
+                                            />
+                                          </div>
+
+                                          <div className="col-span-6 sm:col-span-3">
+                                            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                              {t("meals.quantity")}
+                                            </Label>
+                                            <Field
+                                              as={Input}
+                                              name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+                                              placeholder="5"
+                                              type="number"
+                                              step="0.000001"
+                                              min="0"
+                                              className="text-sm"
+                                            />
+                                            <ErrorMessage
+                                              name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+                                              component="p"
+                                              className="text-destructive text-xs mt-1"
+                                            />
+                                          </div>
+
+                                          <div className="col-span-6 sm:col-span-2">
+                                            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                              {t("meals.unit")}
+                                            </Label>
+                                            <Field name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].unit`}>
+                                              {({ field }: { field: any }) => (
+                                                <Select
+                                                  value={field.value}
+                                                  onValueChange={(value) =>
+                                                    field.onChange({
+                                                      target: { name: field.name, value },
+                                                    })
+                                                  }
+                                                >
+                                                  <SelectTrigger className="text-sm">
+                                                    <SelectValue />
+                                                  </SelectTrigger>
+                                                  <SelectContent>
+                                                    {UNITS.map((unit) => (
+                                                      <SelectItem key={unit.value} value={unit.value}>
+                                                        {unit.label}
+                                                      </SelectItem>
+                                                    ))}
+                                                  </SelectContent>
+                                                </Select>
+                                              )}
+                                            </Field>
+                                          </div>
+
+                                          <div className="col-span-10 sm:col-span-2">
+                                            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                              {t("meals.costPerUnit")}
+                                            </Label>
+                                            <Field
+                                              as={Input}
+                                              name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
+                                              placeholder="30"
+                                              type="number"
+                                              step="0.000001"
+                                              min="0"
+                                              className="text-sm"
+                                            />
+                                            <ErrorMessage
+                                              name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
+                                              component="p"
+                                              className="text-destructive text-xs mt-1"
+                                            />
+                                          </div>
+
+                                          <div className="col-span-2 flex justify-end">
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => removeIngredientWithPlaceholder(groupIndex, ingredientIndex, removeIngredient)}
+                                              className="w-6 h-6 p-0 text-destructive hover:bg-destructive/10"
+                                            >
+                                              <X className="w-3 h-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </DraggableRow>
+                                    ))}
+
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          pushIngredient({
+                                            id: undefined,
+                                            name: "",
+                                            quantity: 0,
+                                            unit: DEFAULT_UNIT,
+                                            costPerUnit: 0,
+                                            localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
+                                          });
+                                        }}
+                                        className="w-full border-dashed"
+                                      >
+                                        <Plus className="w-3 h-3 mr-2" />
+                                        Add Ingredient to {group.name || "Group"}
+                                      </Button>
+                                    </div>
+                                  )}
+                                </FieldArray>
+                              </div>
+                            </GroupDroppable>
+                          ))}
+                          <DragOverlay>
+                            {activeDragId ? (
+                              <div className="p-2 text-xs bg-muted border rounded">Moving…</div>
+                            ) : null}
+                          </DragOverlay>
+                        </DndContext>
+                      </CardContent>
+                        </Card>
+                      )}
+                    </FieldArray>
+                  </div>
                   <div className="col-span-12 bg-muted p-4 rounded-lg space-y-2">
                     {calculations ? (
                       <>

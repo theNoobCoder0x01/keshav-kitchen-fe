@@ -11,6 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,11 +30,13 @@ import {
 import { useTranslations } from "@/hooks/use-translations";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import { trimObjectStrings } from "@/lib/utils/form-utils";
+// Removed drag-and-drop imports
 import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
 import {
   BookOpen,
   CheckCircle2,
   ChefHat,
+  ChevronDown,
   DollarSign,
   GripVertical,
   Package,
@@ -36,7 +45,7 @@ import {
   X,
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import type { RecipeDialogIngredientValue } from "@/types/forms";
@@ -93,6 +102,14 @@ export function AddRecipeDialog({
   const { t } = useTranslations();
   const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
   const [fetchedRecipe, setFetchedRecipe] = useState<any>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Removed drag-and-drop state and sensors
+
+  // Stable ID generation to prevent unnecessary re-renders
+  const generateStableId = useCallback(() => {
+    return typeof crypto !== "undefined" ? crypto.randomUUID() : `id_${Date.now()}_${Math.random()}`;
+  }, []);
 
   // Fetch recipe details when in edit mode and recipeId is provided
   useEffect(() => {
@@ -116,43 +133,90 @@ export function AddRecipeDialog({
     };
 
     fetchRecipeDetails();
-  }, [isEditMode, recipeId, fetchedRecipe]);
+  }, [isEditMode, recipeId]); // Removed fetchedRecipe from dependencies
 
   // Helper function to organize ingredients by groups
-  const organizeIngredientsIntoGroups = (
+  const organizeIngredientsIntoGroups = useCallback((
     ingredients: any[],
     ingredientGroups: any[] = []
   ) => {
     const groups: IngredientGroupFormValue[] = [];
 
-    // Create a map of existing groups
-    const groupMap = new Map(ingredientGroups.map((g) => [g.id, g]));
+    // Ensure ingredients is an array
+    const safeIngredients = Array.isArray(ingredients) ? ingredients : [];
+    const safeGroups = Array.isArray(ingredientGroups) ? ingredientGroups : [];
 
-    // Create groups with their ingredients
-    ingredientGroups.forEach((group) => {
+    // If no ingredient groups exist, create a default "Ungrouped" group
+    if (safeGroups.length === 0) {
+      if (safeIngredients.length > 0) {
+        groups.push({
+          name: "Ungrouped",
+          sortOrder: 999,
+          ingredients: safeIngredients.map((ing) => ({
+            name: ing.name || "",
+            quantity: String(ing.quantity || ""),
+            unit: ing.unit || DEFAULT_UNIT,
+            costPerUnit: String(ing.costPerUnit || ""),
+            localId: ing.localId || generateStableId(),
+          })),
+        });
+      } else {
+        // Create empty default group
+        groups.push({
+          name: "Ungrouped",
+          sortOrder: 999,
+          ingredients: [
+            {
+              name: "",
+              quantity: "",
+              unit: DEFAULT_UNIT,
+              costPerUnit: "",
+              localId: generateStableId(),
+            },
+          ],
+        });
+      }
+      return groups;
+    }
+
+    // Process each ingredient group
+    safeGroups.forEach((group) => {
+      const groupIngredients = safeIngredients
+        .filter((ing) => ing.groupId === group.id)
+        .map((ing) => ({
+          name: ing.name || "",
+          quantity: String(ing.quantity || ""),
+          unit: ing.unit || DEFAULT_UNIT,
+          costPerUnit: String(ing.costPerUnit || ""),
+          localId: ing.localId || generateStableId(),
+        }));
+
+      // Always preserve the group, even if it has no ingredients
       groups.push({
         id: group.id,
-        name: group.name,
-        sortOrder: group.sortOrder,
-        ingredients: ingredients
-          .filter((ing) => ing.groupId === group.id)
-          .map((ing) => ({
-            name: ing.name,
-            quantity: String(ing.quantity || ""),
-            unit: ing.unit,
-            costPerUnit: String(ing.costPerUnit || ""),
-          })),
+        name: group.name || "",
+        sortOrder: group.sortOrder || 0,
+        ingredients: groupIngredients.length > 0 ? groupIngredients : [
+          {
+            name: "",
+            quantity: "",
+            unit: DEFAULT_UNIT,
+            costPerUnit: "",
+            localId: generateStableId(),
+          }
+        ],
       });
     });
 
     // Handle ingredients without groups (create "Ungrouped" group)
-    const ungroupedIngredients = ingredients
+    const ungroupedIngredients = safeIngredients
       .filter((ing) => !ing.groupId)
       .map((ing) => ({
-        name: ing.name,
+        name: ing.name || "",
         quantity: String(ing.quantity || ""),
-        unit: ing.unit,
+        unit: ing.unit || DEFAULT_UNIT,
         costPerUnit: String(ing.costPerUnit || ""),
+        localId: ing.localId || generateStableId(),
       }));
 
     if (ungroupedIngredients.length > 0) {
@@ -163,30 +227,24 @@ export function AddRecipeDialog({
       });
     }
 
-    // If no groups exist, create a default "Ungrouped" group with all ingredients
-    if (groups.length === 0 && ingredients.length > 0) {
-      groups.push({
-        name: "Ungrouped",
-        sortOrder: 999,
-        ingredients: ingredients.map((ing) => ({
-          name: ing.name,
-          quantity: String(ing.quantity || ""),
-          unit: ing.unit,
-          costPerUnit: String(ing.costPerUnit || ""),
-        })),
-      });
-    }
-
     // Sort groups by sortOrder
-    return groups.sort((a, b) => a.sortOrder - b.sortOrder);
-  };
+    const sortedGroups = groups.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    return sortedGroups;
+  }, []);
 
-  // Reset fetched recipe when dialog opens/closes
+  // Reset fetched recipe when dialog opens/closes or recipeId changes
   useEffect(() => {
     if (!isOpen) {
       setFetchedRecipe(null);
+      setSelectedIds(new Set());
     }
   }, [isOpen]);
+
+  // Reset fetched recipe when recipeId changes
+  useEffect(() => {
+    setFetchedRecipe(null);
+    setSelectedIds(new Set());
+  }, [recipeId]);
 
   const validationSchema = Yup.object({
     recipeName: Yup.string().trim().required(t("recipes.nameRequired")),
@@ -230,31 +288,41 @@ export function AddRecipeDialog({
       }),
   });
 
-  const initialValues = {
-    recipeName: fetchedRecipe?.name || initialRecipe?.recipeName || "",
-    category: fetchedRecipe?.category || initialRecipe?.category || "Other",
-    subcategory:
-      fetchedRecipe?.subcategory || initialRecipe?.subcategory || "Other",
-    selectedRecipe: fetchedRecipe?.id || initialRecipe?.selectedRecipe || "",
-    ingredientGroups: fetchedRecipe?.ingredients
-      ? organizeIngredientsIntoGroups(
-          fetchedRecipe.ingredients,
-          fetchedRecipe.ingredientGroups
-        )
-      : initialRecipe?.ingredientGroups
-        ? initialRecipe.ingredientGroups
-        : [
-            {
-              name: "Ungrouped",
-              sortOrder: 999,
-              ingredients: [
-                { name: "", quantity: "", unit: DEFAULT_UNIT, costPerUnit: "" },
-              ],
-            },
-          ],
-    instructions:
-      fetchedRecipe?.instructions || initialRecipe?.instructions || "",
-  };
+  const initialValues = useMemo(() => {
+    const values = {
+      recipeName: fetchedRecipe?.name || initialRecipe?.recipeName || "",
+      category: fetchedRecipe?.category || initialRecipe?.category || "Other",
+      subcategory:
+        fetchedRecipe?.subcategory || initialRecipe?.subcategory || "Other",
+      selectedRecipe: fetchedRecipe?.id || initialRecipe?.selectedRecipe || "",
+      ingredientGroups: fetchedRecipe?.ingredients
+        ? organizeIngredientsIntoGroups(
+            fetchedRecipe.ingredients,
+            fetchedRecipe.ingredientGroups
+          )
+        : initialRecipe?.ingredientGroups
+          ? initialRecipe.ingredientGroups.map(group => ({
+              ...group,
+              ingredients: group.ingredients.map(ing => ({
+                ...ing,
+                localId: ing.localId || generateStableId()
+              }))
+            }))
+          : [
+              {
+                name: "Ungrouped",
+                sortOrder: 999,
+                ingredients: [
+                  { name: "", quantity: "", unit: DEFAULT_UNIT, costPerUnit: "", localId: generateStableId() },
+                ],
+              },
+            ],
+      instructions:
+        fetchedRecipe?.instructions || initialRecipe?.instructions || "",
+    };
+
+    return values;
+  }, [fetchedRecipe, initialRecipe, organizeIngredientsIntoGroups]);
 
   const handleSubmit = (
     values: typeof initialValues,
@@ -344,14 +412,79 @@ export function AddRecipeDialog({
       size="5xl"
     >
       <Formik
+        key={`${isEditMode ? 'edit' : 'new'}-${fetchedRecipe?.id || 'new-recipe'}`}
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
-        enableReinitialize
+        enableReinitialize={false}
       >
         {({ values, isSubmitting, dirty, errors, touched, setFieldValue }) => {
+          // Ensure stable localId per ingredient for selection & DnD
+          // We'll handle this in the render function instead of useEffect to avoid form interference
+
+          const toggleRowSelected = (localId: string, checked: boolean) => {
+            setSelectedIds((prev) => {
+              const next = new Set(prev);
+              if (checked) next.add(localId);
+              else next.delete(localId);
+              return next;
+            });
+          };
+
+          const setGroupSelection = (groupIndex: number, checked: boolean) => {
+            const ids = values.ingredientGroups[groupIndex].ingredients.map(
+              (ing: any) => ing.localId
+            );
+            setSelectedIds((prev) => {
+              const next = new Set(prev);
+              if (checked) ids.forEach((id: string) => next.add(id));
+              else ids.forEach((id: string) => next.delete(id));
+              return next;
+            });
+          };
+
+          const clearSelection = () => setSelectedIds(new Set());
+
+          const moveSelectedIngredients = (
+            destinationGroupIndex: number,
+            position: "end" | "start" = "end"
+          ) => {
+            if (selectedIds.size === 0) return;
+            const nextGroups = values.ingredientGroups.map((g) => ({
+              ...g,
+              ingredients: [...g.ingredients],
+            }));
+            const moved: any[] = [];
+            nextGroups.forEach((group) => {
+              const keep: any[] = [];
+              for (const ing of group.ingredients as any[]) {
+                if (selectedIds.has(ing.localId)) moved.push(ing);
+                else keep.push(ing);
+              }
+              group.ingredients = keep.length
+                ? keep
+                : [
+                    {
+                      name: "",
+                      quantity: "",
+                      unit: DEFAULT_UNIT,
+                      costPerUnit: "",
+                      localId: generateStableId(),
+                    },
+                  ];
+            });
+            const dest = nextGroups[destinationGroupIndex];
+            dest.ingredients =
+              position === "start"
+                ? [...moved, ...dest.ingredients]
+                : [...dest.ingredients, ...moved];
+            setFieldValue("ingredientGroups", nextGroups, false);
+            clearSelection();
+          };
+
+          // Removed drag-and-drop helpers and handlers
           // Show loading state while fetching recipe details
-          if (isEditMode && recipeId && isLoadingRecipe) {
+          if (isEditMode && recipeId && (isLoadingRecipe || !fetchedRecipe)) {
             return (
               <div className="flex items-center justify-center p-12">
                 <div className="text-center">
@@ -418,6 +551,7 @@ export function AddRecipeDialog({
                   quantity: "",
                   unit: DEFAULT_UNIT,
                   costPerUnit: "",
+                  localId: generateStableId(),
                 });
               }
               if (!nextIngredients[rowIndex]) {
@@ -426,6 +560,7 @@ export function AddRecipeDialog({
                   quantity: "",
                   unit: DEFAULT_UNIT,
                   costPerUnit: "",
+                  localId: generateStableId(),
                 };
               }
             };
@@ -572,6 +707,47 @@ export function AddRecipeDialog({
                             )}{" "}
                             ingredients
                           </Badge>
+                          {selectedIds.size > 0 && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">
+                                {selectedIds.size} selected
+                              </span>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs px-3 py-1 h-7"
+                                  >
+                                    Move To <ChevronDown className="w-3 h-3 ml-1" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                  {values.ingredientGroups.map((g, idx) => (
+                                    <DropdownMenuItem
+                                      key={idx}
+                                      onClick={() => {
+                                        // Move ingredients immediately when group is selected
+                                        moveSelectedIngredients(idx);
+                                      }}
+                                      className="cursor-pointer"
+                                    >
+                                      {g.name || `Group ${idx + 1}`}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearSelection}
+                              >
+                                Clear
+                              </Button>
+                            </div>
+                          )}
                           <Button
                             type="button"
                             variant="outline"
@@ -586,6 +762,7 @@ export function AddRecipeDialog({
                                     quantity: "",
                                     unit: DEFAULT_UNIT,
                                     costPerUnit: "",
+                                    localId: generateStableId(),
                                   },
                                 ],
                               });
@@ -600,13 +777,22 @@ export function AddRecipeDialog({
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {values.ingredientGroups.map((group, groupIndex) => (
-                        <div
-                          key={groupIndex}
-                          className="border border-border rounded-lg p-4 bg-card/30"
-                        >
+                        <div key={groupIndex} className="border border-border rounded-lg p-4 bg-card/30">
                           {/* Group Header */}
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3 flex-1">
+                              <Checkbox
+                                checked={
+                                  group.ingredients.length > 0 &&
+                                  group.ingredients.every(
+                                    (ing: any) => selectedIds.has(ing.localId)
+                                  )
+                                }
+                                onCheckedChange={(checked) =>
+                                  setGroupSelection(groupIndex, Boolean(checked))
+                                }
+                                className="mr-1"
+                              />
                               <GripVertical className="w-4 h-4 text-muted-foreground" />
                               <div className="flex-1">
                                 <Field
@@ -641,146 +827,117 @@ export function AddRecipeDialog({
                           </div>
 
                           {/* Group Ingredients */}
-                          <FieldArray
-                            name={`ingredientGroups[${groupIndex}].ingredients`}
-                          >
-                            {({
-                              remove: removeIngredient,
-                              push: pushIngredient,
-                            }) => (
-                              <div
-                                className="space-y-3"
-                                onPaste={handlePasteIngredients}
-                              >
-                                {group.ingredients.map(
-                                  (ingredient, ingredientIndex) => (
-                                    <div
-                                      key={ingredientIndex}
-                                      className="p-3 border border-border/50 rounded-lg bg-background/50"
-                                    >
-                                      <div className="flex items-center justify-between mb-3">
+                          <FieldArray name={`ingredientGroups[${groupIndex}].ingredients`}>
+                            {({ remove: removeIngredient, push: pushIngredient }) => (
+                              <div className="space-y-3" onPaste={handlePasteIngredients}>
+                                {group.ingredients.map((ingredient: any, ingredientIndex) => (
+                                  <div key={ingredient.localId} className="p-3 border border-border/50 rounded-lg bg-background/50">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-2">
+                                        <Checkbox
+                                          checked={Boolean(selectedIds.has(ingredient.localId))}
+                                          onCheckedChange={(checked) =>
+                                            toggleRowSelected(ingredient.localId, Boolean(checked))
+                                          }
+                                        />
                                         <h5 className="text-sm font-medium text-muted-foreground">
                                           Ingredient #{ingredientIndex + 1}
                                         </h5>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() =>
-                                            removeIngredient(ingredientIndex)
-                                          }
-                                          className="w-6 h-6 p-0 text-destructive hover:bg-destructive/10"
-                                          disabled={
-                                            group.ingredients.length === 1
-                                          }
-                                        >
-                                          <X className="w-3 h-3" />
-                                        </Button>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeIngredient(ingredientIndex)}
+                                        className="w-6 h-6 p-0 text-destructive hover:bg-destructive/10"
+                                        disabled={group.ingredients.length === 1}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                                      <div className="sm:col-span-5">
+                                        <Label className="text-xs font-medium text-muted-foreground mb-1 block">Name *</Label>
+                                        <Field
+                                          as={Input}
+                                          name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
+                                          placeholder="Ingredient name"
+                                          className="text-sm"
+                                        />
+                                        <ErrorMessage
+                                          name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
+                                          component="p"
+                                          className="text-destructive text-xs mt-1"
+                                        />
                                       </div>
 
-                                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                                        <div className="sm:col-span-5">
-                                          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                            Name *
-                                          </Label>
-                                          <Field
-                                            as={Input}
-                                            name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
-                                            placeholder="Ingredient name"
-                                            className="text-sm"
-                                          />
-                                          <ErrorMessage
-                                            name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].name`}
-                                            component="p"
-                                            className="text-destructive text-xs mt-1"
-                                          />
-                                        </div>
+                                      <div className="sm:col-span-3">
+                                        <Label className="text-xs font-medium text-muted-foreground mb-1 block">Quantity *</Label>
+                                        <Field
+                                          as={Input}
+                                          name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+                                          placeholder="Amount"
+                                          type="number"
+                                          step="0.000001"
+                                          min="0"
+                                          className="text-sm"
+                                        />
+                                        <ErrorMessage
+                                          name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+                                          component="p"
+                                          className="text-destructive text-xs mt-1"
+                                        />
+                                      </div>
 
-                                        <div className="sm:col-span-3">
-                                          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                            Quantity *
-                                          </Label>
+                                      <div className="sm:col-span-2">
+                                        <Label className="text-xs font-medium text-muted-foreground mb-1 block">Unit *</Label>
+                                        <Field name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].unit`}>
+                                          {({ field }: { field: any }) => (
+                                            <Select
+                                              value={field.value}
+                                              onValueChange={(value) =>
+                                                field.onChange({ target: { name: field.name, value } })
+                                              }
+                                            >
+                                              <SelectTrigger className="text-sm">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                {UNIT_OPTIONS.map((option) => (
+                                                  <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                          )}
+                                        </Field>
+                                      </div>
+
+                                      <div className="sm:col-span-2">
+                                        <Label className="text-xs font-medium text-muted-foreground mb-1 block">Cost/Unit</Label>
+                                        <div className="relative">
+                                          <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                                           <Field
                                             as={Input}
-                                            name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
-                                            placeholder="Amount"
+                                            name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
+                                            placeholder="0.00"
                                             type="number"
                                             step="0.000001"
                                             min="0"
-                                            className="text-sm"
-                                          />
-                                          <ErrorMessage
-                                            name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
-                                            component="p"
-                                            className="text-destructive text-xs mt-1"
+                                            className="pl-6 text-sm"
                                           />
                                         </div>
-
-                                        <div className="sm:col-span-2">
-                                          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                            Unit *
-                                          </Label>
-                                          <Field
-                                            name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].unit`}
-                                          >
-                                            {({ field }: { field: any }) => (
-                                              <Select
-                                                value={field.value}
-                                                onValueChange={(value) =>
-                                                  field.onChange({
-                                                    target: {
-                                                      name: field.name,
-                                                      value,
-                                                    },
-                                                  })
-                                                }
-                                              >
-                                                <SelectTrigger className="text-sm">
-                                                  <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  {UNIT_OPTIONS.map(
-                                                    (option) => (
-                                                      <SelectItem
-                                                        key={option.value}
-                                                        value={option.value}
-                                                      >
-                                                        {option.label}
-                                                      </SelectItem>
-                                                    )
-                                                  )}
-                                                </SelectContent>
-                                              </Select>
-                                            )}
-                                          </Field>
-                                        </div>
-
-                                        <div className="sm:col-span-2">
-                                          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                            Cost/Unit
-                                          </Label>
-                                          <div className="relative">
-                                            <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                                            <Field
-                                              as={Input}
-                                              name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
-                                              placeholder="0.00"
-                                              type="number"
-                                              step="0.000001"
-                                              min="0"
-                                              className="pl-6 text-sm"
-                                            />
-                                          </div>
-                                          <ErrorMessage
-                                            name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
-                                            component="p"
-                                            className="text-destructive text-xs mt-1"
-                                          />
-                                        </div>
+                                        <ErrorMessage
+                                          name={`ingredientGroups[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
+                                          component="p"
+                                          className="text-destructive text-xs mt-1"
+                                        />
                                       </div>
                                     </div>
-                                  )
-                                )}
+                                  </div>
+                                ))}
 
                                 <Button
                                   type="button"
@@ -792,6 +949,7 @@ export function AddRecipeDialog({
                                       quantity: "",
                                       unit: DEFAULT_UNIT,
                                       costPerUnit: "",
+                                      localId: generateStableId(),
                                     });
                                   }}
                                   className="w-full border-dashed"
