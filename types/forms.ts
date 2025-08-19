@@ -4,6 +4,7 @@ export interface IngredientFormValue {
   quantity: number;
   unit: string;
   costPerUnit: number;
+  localId?: string;
 }
 
 export interface MealFormValues {
@@ -21,4 +22,5 @@ export interface RecipeDialogIngredientValue {
   quantity: string;
   unit: string;
   costPerUnit?: string;
+  localId?: string;
 }
