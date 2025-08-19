@@ -31,7 +31,7 @@ import {
   X,
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 // Generic ingredient interface to support both recipe and meal ingredient types
 export interface GenericIngredient {
@@ -171,7 +171,7 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
       {({ remove: removeGroup, push: pushGroup }) => (
         <Card>
           <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Package className="w-5 h-5 text-primary" />
@@ -179,7 +179,7 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
                 </CardTitle>
                 <CardDescription>{description}</CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-end gap-2">
                 <Badge variant="outline" className="text-xs">
                   {ingredientGroups.reduce(
                     (total, group) => total + group.ingredients.length,
