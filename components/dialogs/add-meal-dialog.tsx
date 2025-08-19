@@ -562,17 +562,7 @@ export function AddMealDialog({
       })}
       icon={<Utensils className="w-5 h-5 text-primary-foreground" />}
       size="6xl"
-      footer={
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            type="submit"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            disabled={isFormSubmitting}
-          >
-            {isFormSubmitting ? t("meals.saving") : t("meals.saveMeal")}
-          </Button>
-        </div>
-      }
+
     >
       <Formik
         initialValues={getInitialValues(editMeal, recipes)}
@@ -639,12 +629,7 @@ export function AddMealDialog({
           // Removing helpers that referenced non-existent fields in this form
           return (
             <div className="overflow-y-auto">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmit(values, { resetForm });
-                }}
-              >
+              <form onSubmit={formikHandleSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                   <div className="sm:col-span-9">
                     <Label
@@ -869,6 +854,25 @@ export function AddMealDialog({
                         )}
                       </div>
                     )}
+                  </div>
+                  
+                  {/* Form Actions */}
+                  <div className="flex justify-end space-x-3 pt-4 border-t border-border mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleClose}
+                      className="border-border text-foreground hover:bg-muted bg-transparent"
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isFormSubmitting}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                    >
+                      {isFormSubmitting ? t("meals.saving") : t("meals.saveMeal")}
+                    </Button>
                   </div>
                 </div>
               </form>
