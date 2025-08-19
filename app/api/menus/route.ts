@@ -2,6 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { parseISOString, createStartOfDayUTC, createEndOfDayUTC, getCurrentDateUTC } from "@/lib/utils/date";
 
 export const dynamic = "force-dynamic";
 
@@ -77,11 +78,10 @@ export async function GET(request: Request) {
     }
 
     if (date) {
-      const targetDate = new Date(date);
-      const startOfDay = new Date(targetDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(targetDate);
-      endOfDay.setHours(23, 59, 59, 999);
+      // Parse date string and create UTC day boundaries for database queries
+      const targetDate = parseISOString(date);
+      const startOfDay = createStartOfDayUTC(targetDate);
+      const endOfDay = createEndOfDayUTC(targetDate);
 
       where.date = {
         gte: startOfDay,
@@ -174,9 +174,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Ensure date is properly formatted
+    // Ensure date is properly formatted (parse to UTC Date for storage)
     if (data.date) {
-      data.date = new Date(data.date);
+      data.date = parseISOString(data.date.toString());
     }
 
     // Extract ingredients from data

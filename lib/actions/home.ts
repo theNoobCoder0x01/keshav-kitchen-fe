@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createStartOfDayUTC, createEndOfDayUTC, getCurrentDateUTC, subtractTime } from "@/lib/utils/date";
 
 export async function getHomeStats() {
   try {
@@ -18,19 +19,16 @@ export async function getHomeStats() {
       };
     }
 
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    // Use UTC dates for consistent server-side operations
+    const today = getCurrentDateUTC();
+    const yesterday = subtractTime.days(today, 1);
 
-    const startOfToday = new Date(today);
-    startOfToday.setHours(0, 0, 0, 0);
-    const endOfToday = new Date(today);
-    endOfToday.setHours(23, 59, 59, 999);
+    // Use date-fns for consistent day boundary handling in UTC
+    const startOfToday = createStartOfDayUTC(today);
+    const endOfToday = createEndOfDayUTC(today);
 
-    const startOfYesterday = new Date(yesterday);
-    startOfYesterday.setHours(0, 0, 0, 0);
-    const endOfYesterday = new Date(yesterday);
-    endOfYesterday.setHours(23, 59, 59, 999);
+    const startOfYesterday = createStartOfDayUTC(yesterday);
+    const endOfYesterday = createEndOfDayUTC(yesterday);
 
     const whereClause: any = {};
 
