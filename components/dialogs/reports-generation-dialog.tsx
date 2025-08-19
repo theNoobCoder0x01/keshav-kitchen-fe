@@ -134,6 +134,15 @@ export function ReportsGenerationDialog({
       category: "analysis",
     },
     {
+      id: "meal-plan",
+      label: t("reports.mealPlanReport"),
+      description: t("reports.mealPlanReportDescription"),
+      detailedDescription: t("reports.mealPlanReportDetailedDescription"),
+      icon: BookOpen,
+      checked: false,
+      category: "summary",
+    },
+    {
       id: "summary",
       label: t("reports.executiveSummary"),
       description: t("reports.executiveSummaryDescription"),
