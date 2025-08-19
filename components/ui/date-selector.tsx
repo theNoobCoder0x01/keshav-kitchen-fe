@@ -8,17 +8,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { addDays, format, subDays } from "date-fns";
+import { addTime, subtractTime, formatForStorage, getLocalTimezone } from "@/lib/utils/date";
+import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DatePicker } from "./date-picker";
 
 interface DateSelectorProps {
-  date?: Date;
-  onDateChange?: (date: Date) => void;
+  date?: Date; // UTC Date for storage
+  onDateChange?: (date: Date) => void; // Returns UTC Date for storage
   subtitle?: string;
   className?: string;
   kitchenId?: string;
+  timezone?: string; // IANA timezone for display (defaults to user's local)
 }
 
 export function DateSelector({
@@ -27,9 +30,11 @@ export function DateSelector({
   subtitle,
   className,
   kitchenId,
+  timezone,
 }: DateSelectorProps) {
+  const userTimezone = timezone || getLocalTimezone();
   const [selectedDate, setSelectedDate] = useState<Date>(
-    initialDate || new Date(),
+    initialDate || new Date(), // Store in UTC
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [currentEventInfo, setCurrentEventInfo] = useState<{
@@ -41,7 +46,7 @@ export function DateSelector({
   useEffect(() => {
     const fetchTithiInfo = async () => {
       try {
-        const dateStr = selectedDate.toISOString().split("T")[0];
+        const dateStr = formatForStorage(selectedDate).split("T")[0];
         const params = new URLSearchParams({
           date: dateStr,
           ...(kitchenId && { kitchenId }),
@@ -73,12 +78,12 @@ export function DateSelector({
   };
 
   const goToPreviousDay = () => {
-    const newDate = subDays(selectedDate, 1);
+    const newDate = subtractTime.days(selectedDate, 1);
     handleDateChange(newDate);
   };
 
   const goToNextDay = () => {
-    const newDate = addDays(selectedDate, 1);
+    const newDate = addTime.days(selectedDate, 1);
     handleDateChange(newDate);
   };
 
@@ -90,11 +95,11 @@ export function DateSelector({
   };
 
   const formatDate = (date: Date) => {
-    return format(date, "EEEE, dd MMM yyyy");
+    return formatInTimeZone(date, userTimezone, "EEEE, dd MMM yyyy");
   };
 
   const formatDay = (date: Date) => {
-    return format(date, "EEEE");
+    return formatInTimeZone(date, userTimezone, "EEEE");
   };
 
   // Determine what to show as subtitle

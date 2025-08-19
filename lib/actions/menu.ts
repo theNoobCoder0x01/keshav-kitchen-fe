@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { createStartOfDayUTC, createEndOfDayUTC, getCurrentDateUTC } from "@/lib/utils/date";
 
 export async function getDailyMenus(date?: Date, kitchenId?: string) {
   try {
@@ -12,18 +13,16 @@ export async function getDailyMenus(date?: Date, kitchenId?: string) {
       return {};
     }
 
-    const targetDate = date || new Date();
+    const targetDate = date || getCurrentDateUTC(); // Use UTC for consistency
     const targetKitchenId = kitchenId || session.user.kitchenId;
 
     if (!targetKitchenId) {
       return {};
     }
 
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Use date-fns for consistent day boundary handling in UTC
+    const startOfDay = createStartOfDayUTC(targetDate);
+    const endOfDay = createEndOfDayUTC(targetDate);
 
     const menus = await prisma.menu.findMany({
       where: {

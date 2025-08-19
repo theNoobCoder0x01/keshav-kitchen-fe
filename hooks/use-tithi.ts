@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatForStorage, getCurrentDateUTC } from "@/lib/utils/date";
 
 interface TithiInfo {
   tithi?: string;
@@ -19,8 +20,8 @@ export function useTithi(date?: Date, kitchenId?: string): TithiInfo {
       setTithiInfo((prev) => ({ ...prev, isLoading: true, error: undefined }));
 
       try {
-        const targetDate = date || new Date();
-        const dateStr = targetDate.toISOString().split("T")[0];
+        const targetDate = date || getCurrentDateUTC(); // Use UTC for consistency
+        const dateStr = formatForStorage(targetDate).split("T")[0];
 
         const params = new URLSearchParams({
           date: dateStr,
@@ -65,5 +66,5 @@ export function useTithi(date?: Date, kitchenId?: string): TithiInfo {
 }
 
 export function useTodayTithi(kitchenId?: string): TithiInfo {
-  return useTithi(new Date(), kitchenId);
+  return useTithi(getCurrentDateUTC(), kitchenId); // Use UTC current date
 }
