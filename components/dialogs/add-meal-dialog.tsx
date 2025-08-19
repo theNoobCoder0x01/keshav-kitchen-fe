@@ -8,6 +8,7 @@ import * as Yup from "yup";
 
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
+import { IngredientsInput } from "@/components/ui/ingredients-input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -16,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IngredientsInput } from "@/components/ui/ingredients-input";
 import { useTranslations } from "@/hooks/use-translations";
 import { fetchIngredients } from "@/lib/api/ingredients";
 import { createMenu, updateMenu } from "@/lib/api/menus";
@@ -630,8 +630,8 @@ export function AddMealDialog({
           return (
             <div className="overflow-y-auto">
               <form onSubmit={formikHandleSubmit}>
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                  <div className="sm:col-span-9">
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-12 sm:col-span-9">
                     <Label
                       htmlFor="recipe"
                       className="text-base font-medium text-foreground mb-2"
@@ -670,7 +670,7 @@ export function AddMealDialog({
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
                     />
                   </div>
-                  <div className="sm:col-span-3">
+                  <div className="col-span-12 sm:col-span-3">
                     <Label className="text-base font-medium text-foreground">
                       {t("meals.followRecipe")}
                     </Label>
@@ -691,7 +691,7 @@ export function AddMealDialog({
                     </Field>
                   </div>
 
-                  <div className="sm:col-span-4">
+                  <div className="col-span-12 sm:col-span-4">
                     <Label className="text-base font-medium text-foreground mb-2 block">
                       {t("meals.ghan")}
                     </Label>
@@ -710,7 +710,7 @@ export function AddMealDialog({
                     />
                   </div>
 
-                  <div className="sm:col-span-4">
+                  <div className="col-span-12 sm:col-span-4">
                     <Label className="text-base font-medium text-foreground mb-2 block">
                       {t("meals.servingAmount")}
                     </Label>
@@ -729,7 +729,7 @@ export function AddMealDialog({
                     />
                   </div>
 
-                  <div className="sm:col-span-4">
+                  <div className="col-span-12 sm:col-span-4">
                     <Label className="text-base font-medium text-[#4b465c] mb-2 block">
                       {t("meals.servingUnit")}
                     </Label>
@@ -764,7 +764,7 @@ export function AddMealDialog({
                   </div>
 
                   {/* Ingredient Groups Section */}
-                  <div className="sm:col-span-12">
+                  <div className="col-span-12">
                     <IngredientsInput
                       name="ingredientGroups"
                       ingredientGroups={values.ingredientGroups}
@@ -857,7 +857,7 @@ export function AddMealDialog({
                   </div>
                   
                   {/* Form Actions */}
-                  <div className="flex justify-end space-x-3 pt-4 border-t border-border mt-6">
+                  <div className="col-span-12 flex justify-end space-x-3 pt-4 border-t border-border mt-6">
                     <Button
                       type="button"
                       variant="outline"
