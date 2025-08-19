@@ -193,6 +193,17 @@ export async function POST(req: NextRequest) {
         selectedMealTypes,
         combineKitchens,
       };
+    } else if (type === "meal-plan") {
+      // For meal plan report, get all data for the day organized by meal types
+      data = {
+        type: "meal-plan",
+        date: targetDate,
+        totalMeals: menus.length,
+        breakfastCount: menus.filter((m) => m.mealType === "BREAKFAST").length,
+        lunchCount: menus.filter((m) => m.mealType === "LUNCH").length,
+        dinnerCount: menus.filter((m) => m.mealType === "DINNER").length,
+        menus: menus as any,
+      };
     } else if (type === "summary") {
       // For summary report, get all data for the day
       data = {
