@@ -712,6 +712,145 @@ export function generateMealTypeReportHTML(
   `;
 }
 
+// Generate meal plan report HTML (simplified view of all meals by type)
+export function generateMealPlanReportHTML(data: ReportData): string {
+  const breakfastMenus = data.menus.filter((m) => m.mealType === "BREAKFAST");
+  const lunchMenus = data.menus.filter((m) => m.mealType === "LUNCH");
+  const dinnerMenus = data.menus.filter((m) => m.mealType === "DINNER");
+
+  // Calculate total plates for each meal type
+  const breakfastTotal = breakfastMenus.reduce((sum, menu) => sum + (menu.servings * menu.ghanFactor), 0);
+  const lunchTotal = lunchMenus.reduce((sum, menu) => sum + (menu.servings * menu.ghanFactor), 0);
+  const dinnerTotal = dinnerMenus.reduce((sum, menu) => sum + (menu.servings * menu.ghanFactor), 0);
+
+  const renderMealSection = (mealType: string, menus: any[], totalPlates: number, icon: string) => {
+    if (menus.length === 0) return "";
+    
+    return `
+      <div class="pdf-section">
+        <h2 class="pdf-section-title">${icon} ${mealType} <span style="float: right;">Total Plates: ${Math.round(totalPlates)}</span></h2>
+        <div class="pdf-meal-grid">
+          ${menus.map((menu, index) => `
+            <div class="pdf-meal-item">
+              <div class="pdf-meal-number">(${index + 1})</div>
+              <div class="pdf-meal-details">
+                <div class="pdf-meal-name">${encodeTextForPDF(menu.recipe.name)}</div>
+                <div class="pdf-meal-info">${menu.servings} ${menu.servings > 1 ? 'servings' : 'serving'}</div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  };
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Meal Plan Report</title>
+        <style>
+          ${basePdfStyles}
+          
+          .pdf-meal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+          }
+          
+          .pdf-meal-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px;
+            border: 1px dotted #ccc;
+            background-color: #fafafa;
+          }
+          
+          .pdf-meal-number {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #666;
+            min-width: 25px;
+          }
+          
+          .pdf-meal-details {
+            flex: 1;
+          }
+          
+          .pdf-meal-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 3px;
+          }
+          
+          .pdf-meal-info {
+            font-size: 12px;
+            color: #666;
+          }
+          
+          .pdf-section-title {
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- Header -->
+        <div class="pdf-header">
+          <h1 class="pdf-title">KESHAV Kitchen</h1>
+          <div class="pdf-subtitle">Daily Meal Plan</div>
+          <div class="pdf-meta">
+            <strong>${data.date.toLocaleDateString("en-GB", { 
+              weekday: "long",
+              year: "numeric", 
+              month: "long", 
+              day: "numeric" 
+            })}</strong>
+          </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="pdf-summary-section">
+          <h2 class="pdf-summary-title">Daily Summary</h2>
+          <div class="pdf-stats-grid">
+            <div class="pdf-stats-row">
+              <div class="pdf-stats-cell">Total Recipes</div>
+              <div class="pdf-stats-cell">${data.totalMeals}</div>
+            </div>
+            <div class="pdf-stats-row">
+              <div class="pdf-stats-cell">Breakfast Items</div>
+              <div class="pdf-stats-cell">${data.breakfastCount}</div>
+            </div>
+            <div class="pdf-stats-row">
+              <div class="pdf-stats-cell">Lunch Items</div>
+              <div class="pdf-stats-cell">${data.lunchCount}</div>
+            </div>
+            <div class="pdf-stats-row">
+              <div class="pdf-stats-cell">Dinner Items</div>
+              <div class="pdf-stats-cell">${data.dinnerCount}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meal Sections -->
+        ${renderMealSection("Breakfast", breakfastMenus, breakfastTotal, "🌅")}
+        ${renderMealSection("Lunch", lunchMenus, lunchTotal, "🍽️")}
+        ${renderMealSection("Dinner", dinnerMenus, dinnerTotal, "🌙")}
+
+        <!-- Footer -->
+        <div class="pdf-footer">
+          <p><strong>Keshav Kitchen Management System</strong></p>
+          <p>Meal Plan Report generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
 // Main function to generate HTML based on report type
 export function generateReportHTML(data: ReportData, type: string): string {
   switch (type.toLowerCase()) {
@@ -719,6 +858,8 @@ export function generateReportHTML(data: ReportData, type: string): string {
       return generateIngredientsReportHTML(data);
     case "combined-meals":
       return generateCombinedMealsReportHTML(data);
+    case "meal-plan":
+      return generateMealPlanReportHTML(data);
     case "summary":
       return generateSummaryReportHTML(data);
     case "breakfast":
