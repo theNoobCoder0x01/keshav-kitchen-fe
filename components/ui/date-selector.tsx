@@ -8,8 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { addTime, subtractTime, formatForStorage, getLocalTimezone } from "@/lib/utils/date";
-import { format } from "date-fns";
+import { addTime, formatForStorage, getLocalTimezone, subtractTime } from "@/lib/utils/date";
 import { formatInTimeZone } from "date-fns-tz";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -120,7 +119,7 @@ export function DateSelector({
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-linear-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-linear-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg">
               <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
             </div>
             <div>

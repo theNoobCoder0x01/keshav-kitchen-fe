@@ -37,7 +37,7 @@ import type { MealType } from "@/types/menus";
 import type {
   IngredientGroupApi,
   RecipeApiItem,
-  RecipeIngredientApi
+  RecipeIngredientApi,
 } from "@/types/recipes";
 
 // Use centralized unit options
@@ -87,7 +87,7 @@ interface MealFormProps {
 }
 
 // Update MealFormValues to include ingredient groups
-interface MealFormValuesWithGroups extends Omit<MealFormValues, 'ingredients'> {
+interface MealFormValuesWithGroups extends Omit<MealFormValues, "ingredients"> {
   ingredientGroups: IngredientGroupFormValue[];
 }
 
@@ -128,7 +128,11 @@ export function AddMealDialog({
           quantity: ing.quantity,
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
-          localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+          localId:
+            ing.localId ||
+            (typeof crypto !== "undefined"
+              ? crypto.randomUUID()
+              : `${Math.random()}`),
         }));
 
       // Always preserve the group, even if it has no ingredients
@@ -136,16 +140,22 @@ export function AddMealDialog({
         id: group.id,
         name: group.name,
         sortOrder: group.sortOrder,
-        ingredients: groupIngredients.length > 0 ? groupIngredients : [
-          {
-            id: undefined,
-            name: "",
-            quantity: 0,
-            unit: DEFAULT_UNIT,
-            costPerUnit: 0,
-            localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
-          }
-        ],
+        ingredients:
+          groupIngredients.length > 0
+            ? groupIngredients
+            : [
+                {
+                  id: undefined,
+                  name: "",
+                  quantity: 0,
+                  unit: DEFAULT_UNIT,
+                  costPerUnit: 0,
+                  localId:
+                    typeof crypto !== "undefined"
+                      ? crypto.randomUUID()
+                      : `${Math.random()}`,
+                },
+              ],
       });
     });
 
@@ -158,7 +168,11 @@ export function AddMealDialog({
         quantity: ing.quantity,
         unit: ing.unit,
         costPerUnit: ing.costPerUnit,
-        localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+        localId:
+          ing.localId ||
+          (typeof crypto !== "undefined"
+            ? crypto.randomUUID()
+            : `${Math.random()}`),
       }));
 
     if (ungroupedIngredients.length > 0) {
@@ -180,7 +194,11 @@ export function AddMealDialog({
           quantity: ing.quantity,
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
-          localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+          localId:
+            ing.localId ||
+            (typeof crypto !== "undefined"
+              ? crypto.randomUUID()
+              : `${Math.random()}`),
         })),
       });
     }
@@ -188,8 +206,6 @@ export function AddMealDialog({
     // Sort groups by sortOrder
     return groups.sort((a, b) => a.sortOrder - b.sortOrder);
   };
-
-  
 
   const validationSchema = Yup.object().shape({
     recipeId: Yup.string().trim().required(t("meals.recipeRequired")),
@@ -211,7 +227,9 @@ export function AddMealDialog({
           ingredients: Yup.array()
             .of(
               Yup.object().shape({
-                name: Yup.string().trim().required(t("meals.ingredientNameRequired")),
+                name: Yup.string()
+                  .trim()
+                  .required(t("meals.ingredientNameRequired")),
                 quantity: Yup.number()
                   .required(t("meals.quantityRequired"))
                   .positive(t("meals.quantityPositive")),
@@ -219,10 +237,10 @@ export function AddMealDialog({
                 costPerUnit: Yup.number()
                   .required(t("meals.costPerUnitRequired"))
                   .min(0, t("meals.costPerUnitMin")),
-              }),
+              })
             )
             .min(0), // Allow empty groups
-        }),
+        })
       )
       .min(1, t("meals.ingredientsRequired"))
       .test("has-ingredients", t("meals.ingredientsRequired"), (groups) => {
@@ -236,7 +254,7 @@ export function AddMealDialog({
   // This will be computed dynamically based on editMeal prop
   const getInitialValues = (
     editMeal?: AddMealDialogProps["editMeal"],
-    recipes?: Recipe[],
+    recipes?: Recipe[]
   ): MealFormValuesWithGroups => {
     if (editMeal) {
       // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
@@ -251,18 +269,26 @@ export function AddMealDialog({
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit,
-          localId: ingredient.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+          localId:
+            ingredient.localId ||
+            (typeof crypto !== "undefined"
+              ? crypto.randomUUID()
+              : `${Math.random()}`),
         }));
-        
+
         // For now, we'll create a default "Ungrouped" group for existing menus
         // In the future, this could be enhanced to load actual ingredient groups
         ingredientGroups = [
           {
             name: "Ungrouped",
             sortOrder: 999,
-            ingredients: ingredients.map(ing => ({
+            ingredients: ingredients.map((ing) => ({
               ...ing,
-              localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`)
+              localId:
+                ing.localId ||
+                (typeof crypto !== "undefined"
+                  ? crypto.randomUUID()
+                  : `${Math.random()}`),
             })),
           },
         ];
@@ -274,28 +300,39 @@ export function AddMealDialog({
 
         if (recipeGroups.length > 0) {
           // Use recipe ingredient groups
-          ingredientGroups = organizeIngredientsIntoGroups(recipeIngredients, recipeGroups);
+          ingredientGroups = organizeIngredientsIntoGroups(
+            recipeIngredients,
+            recipeGroups
+          );
         } else {
           // Create default "Ungrouped" group
-          ingredients = recipeIngredients.length > 0
-            ? recipeIngredients.map((ingredient) => ({
-                id: ingredient.id,
-                name: ingredient.name,
-                quantity: ingredient.quantity,
-                unit: ingredient.unit,
-                costPerUnit: ingredient.costPerUnit || 0,
-                localId: ingredient.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
-              }))
-            : [
-                {
-                  id: undefined,
-                  name: "",
-                  quantity: 0,
-                  unit: DEFAULT_UNIT,
-                  costPerUnit: 0,
-                  localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
-                },
-              ];
+          ingredients =
+            recipeIngredients.length > 0
+              ? recipeIngredients.map((ingredient) => ({
+                  id: ingredient.id,
+                  name: ingredient.name,
+                  quantity: ingredient.quantity,
+                  unit: ingredient.unit,
+                  costPerUnit: ingredient.costPerUnit || 0,
+                  localId:
+                    ingredient.localId ||
+                    (typeof crypto !== "undefined"
+                      ? crypto.randomUUID()
+                      : `${Math.random()}`),
+                }))
+              : [
+                  {
+                    id: undefined,
+                    name: "",
+                    quantity: 0,
+                    unit: DEFAULT_UNIT,
+                    costPerUnit: 0,
+                    localId:
+                      typeof crypto !== "undefined"
+                        ? crypto.randomUUID()
+                        : `${Math.random()}`,
+                  },
+                ];
 
           ingredientGroups = [
             {
@@ -323,22 +360,25 @@ export function AddMealDialog({
       ghan: 1.0,
       servingAmount: 100,
       servingUnit: "g",
-              ingredientGroups: [
-          {
-            name: "Ungrouped",
-            sortOrder: 999,
-            ingredients: [
-              {
-                id: undefined,
-                name: "",
-                quantity: 0,
-                unit: DEFAULT_UNIT,
-                costPerUnit: 0,
-                localId: typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`,
-              },
-            ],
-          },
-        ],
+      ingredientGroups: [
+        {
+          name: "Ungrouped",
+          sortOrder: 999,
+          ingredients: [
+            {
+              id: undefined,
+              name: "",
+              quantity: 0,
+              unit: DEFAULT_UNIT,
+              costPerUnit: 0,
+              localId:
+                typeof crypto !== "undefined"
+                  ? crypto.randomUUID()
+                  : `${Math.random()}`,
+            },
+          ],
+        },
+      ],
     };
   };
 
@@ -364,16 +404,19 @@ export function AddMealDialog({
 
   const handleRecipeSelect = (
     recipeId: string,
-    setFieldValue: (field: string, value: any) => void,
+    setFieldValue: (field: string, value: any) => void
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
       const recipeIngredients = selectedRecipe.ingredients || [];
       const recipeGroups = selectedRecipe.ingredientGroups || [];
-      
+
       if (recipeGroups.length > 0) {
         // Use recipe ingredient groups
-        const ingredientGroups = organizeIngredientsIntoGroups(recipeIngredients, recipeGroups);
+        const ingredientGroups = organizeIngredientsIntoGroups(
+          recipeIngredients,
+          recipeGroups
+        );
         setFieldValue("ingredientGroups", ingredientGroups);
       } else {
         // Create default "Ungrouped" group
@@ -383,9 +426,13 @@ export function AddMealDialog({
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit || 0,
-          localId: ingredient.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+          localId:
+            ingredient.localId ||
+            (typeof crypto !== "undefined"
+              ? crypto.randomUUID()
+              : `${Math.random()}`),
         }));
-        
+
         const ingredientGroups = [
           {
             name: "Ungrouped",
@@ -401,7 +448,7 @@ export function AddMealDialog({
 
   const handleSubmit = async (
     values: MealFormValuesWithGroups,
-    { resetForm }: { resetForm: () => void },
+    { resetForm }: { resetForm: () => void }
   ) => {
     try {
       setIsFormSubmitting(true);
@@ -434,7 +481,7 @@ export function AddMealDialog({
       if (editMeal) {
         // Update existing meal
         console.log(
-          `Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`,
+          `Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`
         );
 
         // Flatten all ingredients with their group assignments
@@ -468,12 +515,12 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealUpdatedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       } else {
         // Create new meal
         console.log(
-          `Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`,
+          `Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`
         );
 
         // Flatten all ingredients with their group assignments
@@ -517,7 +564,7 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealAddedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       }
       resetForm();
@@ -562,7 +609,6 @@ export function AddMealDialog({
       })}
       icon={<Utensils className="w-5 h-5 text-primary-foreground" />}
       size="6xl"
-
     >
       <Formik
         initialValues={getInitialValues(editMeal, recipes)}
@@ -584,12 +630,14 @@ export function AddMealDialog({
         }) => {
           // Generate stable ID function for the component
           const generateStableId = () => {
-            return typeof crypto !== "undefined" ? crypto.randomUUID() : `id_${Date.now()}_${Math.random()}`;
+            return typeof crypto !== "undefined"
+              ? crypto.randomUUID()
+              : `id_${Date.now()}_${Math.random()}`;
           };
 
           // Calculate meal metrics using our utility functions
-          const allIngredients = values.ingredientGroups.flatMap(group => 
-            group.ingredients.map(ing => ({
+          const allIngredients = values.ingredientGroups.flatMap((group) =>
+            group.ingredients.map((ing) => ({
               name: ing.name || "",
               quantity: ing.quantity || 0,
               unit: ing.unit || "g",
@@ -597,7 +645,7 @@ export function AddMealDialog({
               localId: ing.localId,
             }))
           );
-          
+
           const calculationInput: MealCalculationInput = {
             ghan: values.ghan || 1,
             servingAmount: values.servingAmount || 100,
@@ -609,7 +657,11 @@ export function AddMealDialog({
               costPerUnit: ing.costPerUnit,
               groupId: null,
               group: null,
-              localId: ing.localId || (typeof crypto !== "undefined" ? crypto.randomUUID() : `${Math.random()}`),
+              localId:
+                ing.localId ||
+                (typeof crypto !== "undefined"
+                  ? crypto.randomUUID()
+                  : `${Math.random()}`),
             })),
             mealType,
           };
@@ -823,7 +875,10 @@ export function AddMealDialog({
                               {t("meals.totalCost")}
                             </span>
                             <span className="text-foreground">
-                              ${calculateTotalCost(values.ingredientGroups).toFixed(2)}
+                              $
+                              {calculateTotalCost(
+                                values.ingredientGroups
+                              ).toFixed(2)}
                             </span>
                           </div>
                           <div className="col-span-6 flex justify-between">
@@ -855,7 +910,7 @@ export function AddMealDialog({
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Form Actions */}
                   <div className="col-span-12 flex justify-end space-x-3 pt-4 border-t border-border mt-6">
                     <Button
@@ -871,7 +926,9 @@ export function AddMealDialog({
                       disabled={isFormSubmitting}
                       className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
-                      {isFormSubmitting ? t("meals.saving") : t("meals.saveMeal")}
+                      {isFormSubmitting
+                        ? t("meals.saving")
+                        : t("meals.saveMeal")}
                     </Button>
                   </div>
                 </div>
