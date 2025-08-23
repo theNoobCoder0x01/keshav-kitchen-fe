@@ -3,16 +3,26 @@
 import { useComponentAccessibility } from "@/hooks/use-component-accessibility";
 import { cn } from "@/lib/utils";
 import {
+  addTime,
   dateToEpoch,
   epochToDate,
   getLocalTimezone,
-  addTime,
-  subtractTime,
   isSameDate,
-  formatForDisplay,
+  subtractTime
 } from "@/lib/utils/date";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isBefore, isSameDay, getYear, getMonth } from "date-fns";
-import { utcToZonedTime } from "date-fns-tz";
+import {
+  addDays,
+  endOfMonth,
+  endOfWeek,
+  format,
+  getMonth,
+  getYear,
+  isBefore,
+  isSameDay,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
+import { toZonedTime as utcToZonedTime } from "date-fns-tz";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import React, {
   useCallback,
@@ -166,7 +176,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         return isSameDate(date, disabledDateObj);
       });
     },
-    [minDate, maxDate, disabledDates],
+    [minDate, maxDate, disabledDates]
   );
 
   // Navigate to previous month
@@ -187,7 +197,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       const newMonth = new Date(currentYear, monthIndex, 1);
       setCurrentMonth(newMonth);
     },
-    [currentMonth],
+    [currentMonth]
   );
 
   // Handle year selection
@@ -198,7 +208,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       const newDate = new Date(year, currentMonthIndex, 1);
       setCurrentMonth(newDate);
     },
-    [currentMonth],
+    [currentMonth]
   );
 
   // Handle date selection
@@ -218,7 +228,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         onChangeDate(date);
       }
     },
-    [isDateDisabled, onChange, onChangeDate],
+    [isDateDisabled, onChange, onChangeDate]
   );
 
   return (
@@ -311,7 +321,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </div>
         ))}
         {calendarDays.map((day) => {
-          const isSelected = selectedDate ? isSameDate(selectedDate, day) : false;
+          const isSelected = selectedDate
+            ? isSameDate(selectedDate, day)
+            : false;
           const isDisabled = isDateDisabled(day);
           const isCurrentMonth = getMonth(day) === getMonth(currentMonth);
           const isToday = isSameDate(day, new Date());
@@ -337,7 +349,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                     "hover:bg-primary/20 hover:text-primary",
                   isDisabled && "cursor-not-allowed opacity-50",
                   !isCurrentMonth && "text-primary/50 hover:text-primary/70",
-                  isToday && !isSelected && "ring-secondary-300 ring-2",
+                  isToday && !isSelected && "ring-secondary-300 ring-2"
                 )}
                 aria-label={`Select ${format(day, "MMMM d, yyyy")}`}
                 aria-selected={isSelected}

@@ -37,7 +37,7 @@ export function Header() {
             </div>
             <div className="hidden sm:flex items-center space-x-1 h-15">
               <img
-                src="logo.svg"
+                src="/logo.svg"
                 alt={t("common.keshavKitchen")}
                 className="h-full"
               />

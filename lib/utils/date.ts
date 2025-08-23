@@ -1,27 +1,30 @@
 import {
-  format,
-  parseISO,
   addDays,
-  subDays,
   addHours,
+  addMilliseconds,
   addMinutes,
   addSeconds,
-  addMilliseconds,
-  differenceInSeconds,
-  differenceInMinutes,
-  differenceInHours,
   differenceInDays,
-  differenceInWeeks,
+  differenceInHours,
+  differenceInMinutes,
   differenceInMonths,
+  differenceInSeconds,
+  differenceInWeeks,
   differenceInYears,
-  isBefore,
-  isAfter,
-  isSameDay,
-  startOfDay,
   endOfDay,
+  isAfter,
+  isBefore,
+  isSameDay,
   isValid,
+  parseISO,
+  startOfDay,
+  subDays,
 } from "date-fns";
-import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
+import {
+  formatInTimeZone,
+  toZonedTime as utcToZonedTime,
+  fromZonedTime as zonedTimeToUtc,
+} from "date-fns-tz";
 
 /**
  * Default timezone configuration
@@ -85,7 +88,7 @@ export const dateToEpoch = (date: Date | string): number => {
 export const formatEpochToDate = (
   epoch: number,
   formatStr: string = "dd MMM yyyy",
-  timezone?: string,
+  timezone?: string
 ): string => {
   const date = epochToDate(epoch);
   const tz = timezone || getLocalTimezone();
@@ -100,7 +103,7 @@ export const formatEpochToTime = (
   epoch: number,
   formatStr: string = "HH:mm:ss",
   excludeSeconds: boolean = false,
-  timezone?: string,
+  timezone?: string
 ): string => {
   if (excludeSeconds) {
     formatStr = formatStr.replace(/:ss/, "");
@@ -118,7 +121,7 @@ export const formatEpochToTime = (
 export const formatDateWithTimezone = (
   epoch: number,
   formatStr: string = "dd MMM yyyy HH:mm:ss zzz",
-  timezone?: string,
+  timezone?: string
 ): string => {
   const date = epochToDate(epoch);
   const tz = timezone || getLocalTimezone();
@@ -257,7 +260,7 @@ export const formatForStorage = (date: Date): string => {
 export const formatForDisplay = (
   date: Date,
   formatStr: string = "PPP",
-  timezone?: string,
+  timezone?: string
 ): string => {
   const tz = timezone || getLocalTimezone();
   return formatInTimeZone(date, tz, formatStr);
@@ -290,7 +293,8 @@ export const addTime = {
   hours: (date: Date, amount: number): Date => addHours(date, amount),
   minutes: (date: Date, amount: number): Date => addMinutes(date, amount),
   seconds: (date: Date, amount: number): Date => addSeconds(date, amount),
-  milliseconds: (date: Date, amount: number): Date => addMilliseconds(date, amount),
+  milliseconds: (date: Date, amount: number): Date =>
+    addMilliseconds(date, amount),
 };
 
 /**
@@ -302,7 +306,8 @@ export const subtractTime = {
   hours: (date: Date, amount: number): Date => addHours(date, -amount),
   minutes: (date: Date, amount: number): Date => addMinutes(date, -amount),
   seconds: (date: Date, amount: number): Date => addSeconds(date, -amount),
-  milliseconds: (date: Date, amount: number): Date => addMilliseconds(date, -amount),
+  milliseconds: (date: Date, amount: number): Date =>
+    addMilliseconds(date, -amount),
 };
 
 /**
@@ -310,18 +315,18 @@ export const subtractTime = {
  * Use these instead of manual time calculations
  */
 export const dateDifference = {
-  inSeconds: (laterDate: Date, earlierDate: Date): number => 
+  inSeconds: (laterDate: Date, earlierDate: Date): number =>
     differenceInSeconds(laterDate, earlierDate),
-  inMinutes: (laterDate: Date, earlierDate: Date): number => 
+  inMinutes: (laterDate: Date, earlierDate: Date): number =>
     differenceInMinutes(laterDate, earlierDate),
-  inHours: (laterDate: Date, earlierDate: Date): number => 
+  inHours: (laterDate: Date, earlierDate: Date): number =>
     differenceInHours(laterDate, earlierDate),
-  inDays: (laterDate: Date, earlierDate: Date): number => 
+  inDays: (laterDate: Date, earlierDate: Date): number =>
     differenceInDays(laterDate, earlierDate),
-  inWeeks: (laterDate: Date, earlierDate: Date): number => 
+  inWeeks: (laterDate: Date, earlierDate: Date): number =>
     differenceInWeeks(laterDate, earlierDate),
-  inMonths: (laterDate: Date, earlierDate: Date): number => 
+  inMonths: (laterDate: Date, earlierDate: Date): number =>
     differenceInMonths(laterDate, earlierDate),
-  inYears: (laterDate: Date, earlierDate: Date): number => 
+  inYears: (laterDate: Date, earlierDate: Date): number =>
     differenceInYears(laterDate, earlierDate),
 };

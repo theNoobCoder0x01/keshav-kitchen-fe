@@ -3,6 +3,7 @@
 import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
 import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation-dialog";
 import { MenuGrid, MenuGridSkeleton } from "@/components/menu/menu-grid";
+import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CompactDateSelector } from "@/components/ui/compact-date-selector";
@@ -21,7 +22,13 @@ import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
 import type { MealType as UnifiedMealType } from "@/types/menus";
-import { AlertTriangle, FileText } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { AlertTriangle, ChevronDown, File } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -40,6 +47,7 @@ export default function MenuPage() {
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportsDialog, setReportsDialog] = useState(false);
+  const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] =
     useState<UnifiedMealType>("BREAKFAST");
   const [editMeal, setEditMeal] = useState<any>(null);
@@ -95,7 +103,7 @@ export default function MenuPage() {
       }
 
       console.log(
-        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`,
+        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`
       );
 
       // Load stats and menus in parallel
@@ -115,7 +123,7 @@ export default function MenuPage() {
 
       console.log(
         `Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`,
-        menusResponse,
+        menusResponse
       );
 
       // Transform menus data to match the expected format
@@ -198,6 +206,11 @@ export default function MenuPage() {
     }
   };
 
+  const handleDownloadReport = (type: string) => {
+    const url = `/api/reports/pdf?url=${window.origin}/reports/${type}?epochMs=${selectedDate.getTime()}`;
+    window.open(url, "_blank");
+  };
+
   const handleTabChange = (index: number) => {
     setActiveTab(index);
   };
@@ -212,6 +225,10 @@ export default function MenuPage() {
       setEditMeal(null);
       loadMenuData(); // Reload data when dialog closes
     }
+  };
+
+  const handleReportPdfPreviewClose = (open: boolean) => {
+    setReportPdfPreviewDialog(open);
   };
 
   // Show loading while checking authentication
@@ -252,15 +269,44 @@ export default function MenuPage() {
                 kitchenId={session?.user?.kitchenId ?? undefined}
               />
 
-              {/* Reports Button */}
-              <Button
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-xs"
-                onClick={() => setReportsDialog(true)}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">{t("reports.title")}</span>
-              </Button>
+              {/* Reports Dropdown Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-xs flex items-center"
+                  >
+                    <span className="hidden sm:inline">
+                      {t("reports.title")}
+                    </span>
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="bottom"
+                  align="end"
+                  className="z-10 bg-secondary drop-shadow-lg py-2 flex flex-col rounded-lg border"
+                >
+                  <DropdownMenuItem
+                    className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
+                    onClick={() => handleDownloadReport("cook")}
+                  >
+                    Cook Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
+                    onClick={() => handleDownloadReport("supplier")}
+                  >
+                    Supplier Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
+                    onClick={() => handleDownloadReport("recipes")}
+                  >
+                    Recipes Report
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           }
         />
@@ -329,6 +375,22 @@ export default function MenuPage() {
         open={reportsDialog}
         onOpenChange={setReportsDialog}
       />
+      <BaseDialog
+        open={reportPdfPreviewDialog}
+        onOpenChange={handleReportPdfPreviewClose}
+        title="Preview"
+        description="This is a preview of pdf report"
+        icon={<File className="w-5 h-5 text-primary-foreground" />}
+        size="6xl"
+      >
+        <div className="p-2 border border-primary">
+          <iframe
+            src={`/api/reports/pdf?url=${window.origin}/reports/recipes?epochMs=1755967928000`}
+            width="100%"
+            height="800"
+          />
+        </div>
+      </BaseDialog>
     </div>
   );
 }
