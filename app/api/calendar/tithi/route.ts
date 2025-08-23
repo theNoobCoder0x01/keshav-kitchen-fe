@@ -18,10 +18,14 @@ export const GET = apiHandler({
     }
 
     const dateParam = ctx.searchParams.get("date");
-    const kitchenId = ctx.searchParams.get("kitchenId");
+    const epochMsParam = ctx.searchParams.get("epochMs");
 
     // Use provided date or default to today
-    const targetDate = dateParam ? new Date(dateParam) : new Date();
+    const targetDate = dateParam
+      ? new Date(dateParam)
+      : epochMsParam
+        ? new Date(parseInt(epochMsParam))
+        : new Date();
 
     // Get user info
     const user = await prisma.user.findUnique({
@@ -33,25 +37,17 @@ export const GET = apiHandler({
       throw respondError("User not found", 404, { code: ERR.NOT_FOUND });
     }
 
-    // Use provided kitchenId or user's kitchenId
-    const targetKitchenId = kitchenId || user.kitchenId;
-
-    if (!targetKitchenId) {
-      throw respondError("No kitchen specified", 400, { code: ERR.VALIDATION });
-    }
-
     // Calculate date range for the day
     const startOfDay = new Date(
       targetDate.getFullYear(),
       targetDate.getMonth(),
-      targetDate.getDate(),
+      targetDate.getDate()
     );
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
     // Get events for the specified date
     const events = await prisma.calendarEvent.findMany({
       where: {
-        kitchenId: targetKitchenId,
         startDate: {
           gte: startOfDay,
           lt: endOfDay,
@@ -71,7 +67,7 @@ export const GET = apiHandler({
       for (const event of events) {
         const extractedTithi = extractTithi(
           event.summary,
-          event.description ?? undefined,
+          event.description ?? undefined
         );
         if (extractedTithi) {
           tithi = extractedTithi;

@@ -3,10 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { groupMenuIngredientsByGroup, getSortedMenuGroupNames } from "@/lib/utils/menu-utils";
+import { getSortedMenuGroupNames, groupMenuIngredientsByGroup } from "@/lib/utils/menu-utils";
 import { MenuIngredient, MenuIngredientGroup } from "@/types/menus";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 
 interface MenuItem {
@@ -194,7 +194,7 @@ export function MenuCard({
                           </p>
                         )}
                         {/* Render grouped ingredients if available */}
-                        {renderGroupedIngredients(item)}
+                        {/* {renderGroupedIngredients(item)} */}
                       </>
                     )}
                   </div>

@@ -180,9 +180,11 @@
     @apply bg-background text-foreground;
   }
 
-  html,
-  body {
-    @apply overflow-hidden h-full;
+  @media only screen {
+    html,
+    body {
+      @apply overflow-hidden h-full;
+    }
   }
 }
 

@@ -1,26 +1,20 @@
-import { Report } from "@prisma/client";
 import ExcelJS from "exceljs";
+import { cookies } from "next/headers";
+import puppeteer from "puppeteer";
 
 export async function createReportWorkbook(
-  data: Report[],
-  type: string,
-  date: string,
+  data: any[],
+  columns: { header: string; key: string }[]
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet(
-    `${type.charAt(0).toUpperCase() + type.slice(1)} Report`,
-  );
+  const sheet = workbook.addWorksheet(`Sheet 1`);
 
   // Header row
-  sheet.addRow(["Name", "Weight", "Quantity"]);
+  sheet.addRow(columns.map((c) => c.header));
 
   // Data rows
   data.forEach((item) => {
-    sheet.addRow([
-      (item as any).name || "",
-      (item as any).weight || "",
-      (item as any).quantity || "",
-    ]);
+    sheet.addRow(columns.map((c) => (item as any)[c.key] || ""));
   });
 
   // Format header
@@ -33,18 +27,13 @@ export async function createReportWorkbook(
 
 // CSV export using fast-csv
 export async function createReportCSV(
-  data: Report[],
-  type: string,
-  date: string,
+  data: any[],
+  columns: { header: string; key: string }[]
 ): Promise<Buffer> {
   const { writeToString } = await import("fast-csv");
   const rows = [
-    ["Name", "Weight", "Quantity"],
-    ...data.map((item) => [
-      (item as any).name || "",
-      (item as any).weight || "",
-      (item as any).quantity || "",
-    ]),
+    columns.map((c) => c.header),
+    ...data.map((item) => columns.map((c) => (item as any)[c.key] || "")),
   ];
   // RFC 4180 compliance and UTF-8 BOM for Excel compatibility
   let csv = await writeToString(rows, {
@@ -56,14 +45,47 @@ export async function createReportCSV(
   return Buffer.from(csv, "utf8");
 }
 
-// PDF export - disabled due to font loading issues in Next.js
-export async function createReportPDF(
-  data: Report[],
-  type: string,
-  date: string,
-): Promise<Buffer> {
-  // Return a simple error message as PDF is not supported in this API
-  throw new Error(
-    "PDF generation not supported for this report type. Please use Excel or CSV format.",
-  );
+// PDF export using react-pdf
+export async function createReportPDF(url: string): Promise<Buffer> {
+  // Launch Puppeteer
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  const cookiesRes = await cookies();
+
+  // Get NextAuth session token from cookies
+  let sessionToken =
+    cookiesRes.get("next-auth.session-token")?.value ||
+    cookiesRes.get("__Secure-next-auth.session-token")?.value;
+  if (sessionToken) {
+    // Set the session token cookie for the page (for localhost:3000)
+    await browser.setCookie({
+      name: cookiesRes.get("next-auth.session-token")?.value
+        ? "next-auth.session-token"
+        : "__Secure-next-auth.session-token",
+      value: sessionToken,
+      domain: "localhost",
+      path: "/",
+      httpOnly: true,
+      secure: false,
+    });
+  }
+
+  // Navigate and wait for network to be idle
+  await page.goto(url, { waitUntil: "networkidle0" });
+
+  // Generate PDF
+  const pdfBuffer = await page.pdf({
+    format: "A4",
+    printBackground: true,
+    preferCSSPageSize: true,
+    margin: {
+      top: "0mm",
+      right: "0mm",
+      bottom: "0mm",
+      left: "0mm",
+    },
+  });
+  await browser.close();
+  return Buffer.from(pdfBuffer);
 }
