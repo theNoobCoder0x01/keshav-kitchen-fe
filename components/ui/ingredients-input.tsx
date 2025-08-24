@@ -390,7 +390,7 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
                                     <SelectTrigger className="text-sm">
                                       <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent searchable>
                                       {UNIT_OPTIONS.map((option) => (
                                         <SelectItem key={option.value} value={option.value}>
                                           {option.label}

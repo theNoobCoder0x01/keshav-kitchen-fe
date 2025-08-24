@@ -17,6 +17,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
 import type { RecipeDetailData } from "@/types";
@@ -385,37 +392,35 @@ export default function RecipesPage() {
                 <label className="text-sm font-medium">
                   {t("recipes.category")}
                 </label>
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="w-full p-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category === "all"
-                        ? t("recipes.allCategories")
-                        : category}
-                    </option>
-                  ))}
-                </select>
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("recipes.category")} />
+                  </SelectTrigger>
+                  <SelectContent searchable>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category === "all" ? t("recipes.allCategories") : category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   {t("recipes.subcategory")}
                 </label>
-                <select
-                  value={filterSubcategory}
-                  onChange={(e) => setFilterSubcategory(e.target.value)}
-                  className="w-full p-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  {subcategories.map((subcategory) => (
-                    <option key={subcategory} value={subcategory}>
-                      {subcategory === "all"
-                        ? t("recipes.allSubcategories")
-                        : subcategory}
-                    </option>
-                  ))}
-                </select>
+                <Select value={filterSubcategory} onValueChange={setFilterSubcategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("recipes.subcategory")} />
+                  </SelectTrigger>
+                  <SelectContent searchable>
+                    {subcategories.map((subcategory) => (
+                      <SelectItem key={subcategory} value={subcategory}>
+                        {subcategory === "all" ? t("recipes.allSubcategories") : subcategory}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           )}
