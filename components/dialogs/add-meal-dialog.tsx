@@ -706,7 +706,7 @@ export function AddMealDialog({
                               placeholder={t("meals.selectRecipe")}
                             />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent searchable>
                             {recipes.map((recipe) => (
                               <SelectItem key={recipe.id} value={recipe.id}>
                                 {recipe.name}
@@ -798,7 +798,7 @@ export function AddMealDialog({
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder={t("meals.selectUnit")} />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent searchable>
                             {UNITS.map((unit) => (
                               <SelectItem key={unit.value} value={unit.value}>
                                 {unit.label}

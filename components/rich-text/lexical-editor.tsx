@@ -292,7 +292,7 @@ function TextFormattingToolbar() {
         <SelectTrigger className="w-32 h-8">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent searchable>
           <SelectItem value="paragraph">Paragraph</SelectItem>
           <SelectItem value="h1">Heading 1</SelectItem>
           <SelectItem value="h2">Heading 2</SelectItem>
