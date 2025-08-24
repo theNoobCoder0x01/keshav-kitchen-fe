@@ -75,6 +75,7 @@ export function MenuGrid({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-12 gap-2 md:gap-4">
         <MenuCard
+          id={MealType.BREAKFAST}
           title="Breakfast"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.breakfast}
@@ -92,6 +93,7 @@ export function MenuGrid({
           showActions
         />
         <MenuCard
+          id={MealType.LUNCH}
           title="Lunch"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.lunch}
@@ -107,6 +109,7 @@ export function MenuGrid({
           showActions
         />
         <MenuCard
+          id={MealType.DINNER}
           title="Dinner"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.dinner}
@@ -122,6 +125,7 @@ export function MenuGrid({
           showActions
         />
         <MenuCard
+          id={MealType.SNACK}
           title="Extra"
           className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
           items={menuData.snack || []}

@@ -22,6 +22,7 @@ interface MenuItem {
 }
 
 interface MenuCardProps {
+  id: string;
   title: string;
   items: MenuItem[];
   onAdd: () => void;
@@ -32,6 +33,7 @@ interface MenuCardProps {
 }
 
 export function MenuCard({
+  id,
   title,
   items,
   onAdd,
@@ -42,11 +44,6 @@ export function MenuCard({
 }: MenuCardProps) {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-
-  const handleEditStart = (item: MenuItem) => {
-    setEditingItem(item.id);
-    setEditValue(item.name);
-  };
 
   const handleEditSave = (item: MenuItem) => {
     if (editValue.trim()) {
@@ -59,66 +56,6 @@ export function MenuCard({
   const handleEditCancel = () => {
     setEditingItem(null);
     setEditValue("");
-  };
-
-  // Helper function to render grouped ingredients
-  const renderGroupedIngredients = (item: MenuItem) => {
-    if (!item.ingredients || item.ingredients.length === 0) return null;
-
-    const groupedIngredients = groupMenuIngredientsByGroup(
-      item.ingredients,
-      item.ingredientGroups,
-    );
-    const sortedGroupNames = getSortedMenuGroupNames(groupedIngredients);
-
-    return (
-      <div className="mt-2 space-y-2">
-        {sortedGroupNames.map((groupName) => {
-          const group = groupedIngredients[groupName];
-          const totalQuantity = group.ingredients.reduce(
-            (sum, ing) => sum + ing.quantity,
-            0,
-          );
-          const totalCost = group.ingredients.reduce(
-            (sum, ing) => sum + ing.costPerUnit * ing.quantity,
-            0,
-          );
-
-          return (
-            <div key={groupName} className="border-l-2 border-primary/20 pl-3">
-              <div className="flex items-center justify-between mb-1">
-                <h5 className="text-xs font-medium text-primary">
-                  {groupName}
-                  {groupName === "Ungrouped" && (
-                    <span className="text-muted-foreground ml-1">
-                      (Default)
-                    </span>
-                  )}
-                </h5>
-                <span className="text-xs text-muted-foreground">
-                  {group.ingredients.length} items • ${totalCost.toFixed(2)}
-                </span>
-              </div>
-              <div className="space-y-1">
-                {group.ingredients.map((ingredient) => (
-                  <div
-                    key={ingredient.id}
-                    className="flex items-center justify-between text-xs"
-                  >
-                    <span className="text-muted-foreground truncate flex-1">
-                      {ingredient.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      {ingredient.quantity} {ingredient.unit}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
   };
 
   return (
@@ -210,8 +147,6 @@ export function MenuCard({
                             {item.weight}
                           </p>
                         )}
-                        {/* Render grouped ingredients if available */}
-                        {/* {renderGroupedIngredients(item)} */}
                       </>
                     )}
                   </div>
