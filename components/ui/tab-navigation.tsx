@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "./button";
 import { Skeleton } from "./skeleton";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
 interface TabNavigationProps {
   tabs: string[];
@@ -34,17 +35,18 @@ export function TabNavigation({
     <div className={cn(className)}>
       {/* Mobile Dropdown */}
       <div className="sm:hidden">
-        <select
-          value={activeTab}
-          onChange={(e) => handleTabClick(Number(e.target.value))}
-          className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:border-primary focus:ring-primary/20"
-        >
-          {tabs.map((tab, index) => (
-            <option key={tab} value={index}>
-              {tab}
-            </option>
-          ))}
-        </select>
+        <Select value={String(activeTab)} onValueChange={(val) => handleTabClick(Number(val))}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select tab" />
+          </SelectTrigger>
+          <SelectContent>
+            {tabs.map((tab, index) => (
+              <SelectItem key={tab} value={String(index)}>
+                {tab}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Desktop Tabs */}

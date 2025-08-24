@@ -262,7 +262,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               <SelectTrigger className="border-[#dbdade]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable>
                 {monthOptions.map((option) => (
                   <SelectItem
                     key={option.value}
@@ -285,7 +285,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               <SelectTrigger className="border-[#dbdade]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable>
                 {yearOptions.map((option) => (
                   <SelectItem
                     key={option.value}

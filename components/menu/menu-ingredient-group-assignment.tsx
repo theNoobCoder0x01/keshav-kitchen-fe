@@ -7,6 +7,7 @@ import { MenuIngredientGroup, MenuIngredient } from "@/types/menus";
 import { Check, Move, Users } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
 interface MenuIngredientGroupAssignmentProps {
   menuId: string;
@@ -199,18 +200,19 @@ export function MenuIngredientGroupAssignment({
         <div className="flex flex-wrap gap-3 items-center p-3 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Assign to:</span>
-            <select
-              value={targetGroupId || ""}
-              onChange={(e) => setTargetGroupId(e.target.value || null)}
-              className="px-3 py-1 text-sm border rounded-md"
-            >
-              <option value="">Select a group</option>
-              {ingredientGroups.map(group => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
-                </option>
-              ))}
-            </select>
+            <Select value={targetGroupId || ""} onValueChange={(val) => setTargetGroupId(val || null)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a group" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Select a group</SelectItem>
+                {ingredientGroups.map(group => (
+                  <SelectItem key={group.id} value={group.id}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Button
