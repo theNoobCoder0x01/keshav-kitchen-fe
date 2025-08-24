@@ -148,7 +148,7 @@ export async function createRecipe(data: {
       // Create ingredients with proper group assignments
       const ingredientData = data.ingredients.map((ingredient) => {
         let finalGroupId = null;
-        
+
         if (ingredient.groupId) {
           // If groupId is a temp ID, map it to the real ID
           if (groupIdMap.has(ingredient.groupId)) {
@@ -185,10 +185,7 @@ export async function createRecipe(data: {
             include: {
               ingredients: true,
             },
-            orderBy: [
-              { sortOrder: 'asc' },
-              { name: 'asc' },
-            ],
+            orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           },
         },
       });
@@ -288,7 +285,7 @@ export async function updateRecipe(
         // Create new ingredients with proper group assignments
         const ingredientData = data.ingredients.map((ingredient) => {
           let finalGroupId = null;
-          
+
           if (ingredient.groupId) {
             // If groupId is a temp ID, map it to the real ID
             if (groupIdMap.has(ingredient.groupId)) {
@@ -326,10 +323,7 @@ export async function updateRecipe(
             include: {
               ingredients: true,
             },
-            orderBy: [
-              { sortOrder: 'asc' },
-              { name: 'asc' },
-            ],
+            orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           },
         },
       });

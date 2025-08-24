@@ -22,6 +22,7 @@ import { getKitchens } from "@/lib/actions/kitchens";
 import { getMenuStats } from "@/lib/actions/menu";
 import { fetchMenus } from "@/lib/api/menus";
 import type { MealType as UnifiedMealType } from "@/types/menus";
+import { MealType } from "@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,8 +49,9 @@ export default function MenuPage() {
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportsDialog, setReportsDialog] = useState(false);
   const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState(false);
-  const [selectedMealType, setSelectedMealType] =
-    useState<UnifiedMealType>("BREAKFAST");
+  const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
+    MealType.BREAKFAST,
+  );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -103,7 +105,7 @@ export default function MenuPage() {
       }
 
       console.log(
-        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`
+        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`,
       );
 
       // Load stats and menus in parallel
@@ -123,15 +125,19 @@ export default function MenuPage() {
 
       console.log(
         `Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`,
-        menusResponse
+        menusResponse,
       );
 
       // Transform menus data to match the expected format
       const groupedMenus = {
-        BREAKFAST: menusResponse.filter((m: any) => m.mealType === "BREAKFAST"),
-        LUNCH: menusResponse.filter((m: any) => m.mealType === "LUNCH"),
-        DINNER: menusResponse.filter((m: any) => m.mealType === "DINNER"),
-        SNACK: menusResponse.filter((m: any) => m.mealType === "SNACK"),
+        BREAKFAST: menusResponse.filter(
+          (m: any) => m.mealType === MealType.BREAKFAST,
+        ),
+        LUNCH: menusResponse.filter((m: any) => m.mealType === MealType.LUNCH),
+        DINNER: menusResponse.filter(
+          (m: any) => m.mealType === MealType.DINNER,
+        ),
+        SNACK: menusResponse.filter((m: any) => m.mealType === MealType.SNACK),
       };
 
       setMenuStats(statsData);

@@ -5,7 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const UpdateIngredientGroupSchema = z.object({
-  name: z.string().min(1, "Group name is required").max(100, "Group name too long").optional(),
+  name: z
+    .string()
+    .min(1, "Group name is required")
+    .max(100, "Group name too long")
+    .optional(),
   sortOrder: z.number().int().min(0).optional(),
 });
 
@@ -14,7 +18,7 @@ export const dynamic = "force-dynamic";
 // PUT /api/recipes/[id]/ingredient-groups/[groupId] - Update ingredient group
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; groupId: string } }
+  { params }: { params: { id: string; groupId: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -24,7 +28,7 @@ export async function PUT(
 
     const { id: recipeId, groupId } = params;
     const body = await request.json();
-    
+
     const validatedData = UpdateIngredientGroupSchema.parse(body);
 
     // Verify recipe exists and user has access
@@ -38,7 +42,7 @@ export async function PUT(
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -53,7 +57,7 @@ export async function PUT(
     if (!existingGroup) {
       return NextResponse.json(
         { error: "Ingredient group not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -70,7 +74,7 @@ export async function PUT(
       if (conflictingGroup) {
         return NextResponse.json(
           { error: "A group with this name already exists for this recipe" },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -99,14 +103,14 @@ export async function PUT(
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("Update ingredient group API error:", error);
     return NextResponse.json(
       { error: "Failed to update ingredient group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -114,7 +118,7 @@ export async function PUT(
 // DELETE /api/recipes/[id]/ingredient-groups/[groupId] - Delete ingredient group
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; groupId: string } }
+  { params }: { params: { id: string; groupId: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -135,7 +139,7 @@ export async function DELETE(
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -153,14 +157,14 @@ export async function DELETE(
     if (!existingGroup) {
       return NextResponse.json(
         { error: "Ingredient group not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Handle ingredients in the group being deleted
     // Option 1: Move them to an "Ungrouped" group (create if doesn't exist)
     // Option 2: Set their groupId to null (handled by onDelete: SetNull in schema)
-    
+
     // We'll use Option 1 for better UX - ensure there's always an "Ungrouped" group
     let ungroupedGroup = await prisma.ingredientGroup.findFirst({
       where: {
@@ -196,15 +200,15 @@ export async function DELETE(
       where: { id: groupId },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Ingredient group deleted successfully",
-      movedToUngrouped: existingGroup.ingredients.length > 0 
+      movedToUngrouped: existingGroup.ingredients.length > 0,
     });
   } catch (error) {
     console.error("Delete ingredient group API error:", error);
     return NextResponse.json(
       { error: "Failed to delete ingredient group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

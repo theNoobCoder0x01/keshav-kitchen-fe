@@ -81,8 +81,6 @@ export default function RecipeDetailPage() {
     router.push("/recipes");
   };
 
-
-
   if (loading) {
     return (
       <div className="w-full">

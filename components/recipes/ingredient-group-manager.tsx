@@ -28,15 +28,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { 
-  Plus, 
-  MoreVertical, 
-  Edit2, 
-  Trash2, 
+import {
+  Plus,
+  MoreVertical,
+  Edit2,
+  Trash2,
   Package,
   GripVertical,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -63,9 +63,16 @@ export function IngredientGroupManager({
   onIngredientsChange,
 }: IngredientGroupManagerProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<IngredientGroup | null>(null);
-  const [deletingGroup, setDeletingGroup] = useState<IngredientGroup | null>(null);
-  const [formData, setFormData] = useState<GroupFormData>({ name: "", sortOrder: 0 });
+  const [editingGroup, setEditingGroup] = useState<IngredientGroup | null>(
+    null,
+  );
+  const [deletingGroup, setDeletingGroup] = useState<IngredientGroup | null>(
+    null,
+  );
+  const [formData, setFormData] = useState<GroupFormData>({
+    name: "",
+    sortOrder: 0,
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   const sortedGroups = [...ingredientGroups].sort((a, b) => {
@@ -81,14 +88,17 @@ export function IngredientGroupManager({
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/recipes/${recipeId}/ingredient-groups`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          sortOrder: formData.sortOrder,
-        }),
-      });
+      const response = await fetch(
+        `/api/recipes/${recipeId}/ingredient-groups`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            sortOrder: formData.sortOrder,
+          }),
+        },
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -102,7 +112,11 @@ export function IngredientGroupManager({
       toast.success("Ingredient group created successfully");
     } catch (error) {
       console.error("Error creating ingredient group:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to create ingredient group");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to create ingredient group",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -122,7 +136,7 @@ export function IngredientGroupManager({
             name: formData.name.trim(),
             sortOrder: formData.sortOrder,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -132,13 +146,19 @@ export function IngredientGroupManager({
 
       const { ingredientGroup } = await response.json();
       onGroupsChange(
-        ingredientGroups.map(g => g.id === editingGroup.id ? ingredientGroup : g)
+        ingredientGroups.map((g) =>
+          g.id === editingGroup.id ? ingredientGroup : g,
+        ),
       );
       setEditingGroup(null);
       toast.success("Ingredient group updated successfully");
     } catch (error) {
       console.error("Error updating ingredient group:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to update ingredient group");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update ingredient group",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +171,7 @@ export function IngredientGroupManager({
     try {
       const response = await fetch(
         `/api/recipes/${recipeId}/ingredient-groups/${deletingGroup.id}`,
-        { method: "DELETE" }
+        { method: "DELETE" },
       );
 
       if (!response.ok) {
@@ -160,26 +180,32 @@ export function IngredientGroupManager({
       }
 
       const result = await response.json();
-      onGroupsChange(ingredientGroups.filter(g => g.id !== deletingGroup.id));
-      
+      onGroupsChange(ingredientGroups.filter((g) => g.id !== deletingGroup.id));
+
       // If ingredients were moved to ungrouped, we might need to refresh ingredients
       if (result.movedToUngrouped) {
-        toast.success("Ingredient group deleted. Ingredients moved to Ungrouped section.");
+        toast.success(
+          "Ingredient group deleted. Ingredients moved to Ungrouped section.",
+        );
       } else {
         toast.success("Ingredient group deleted successfully");
       }
-      
+
       setDeletingGroup(null);
     } catch (error) {
       console.error("Error deleting ingredient group:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete ingredient group");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete ingredient group",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleMoveGroup = async (groupId: string, direction: "up" | "down") => {
-    const currentIndex = sortedGroups.findIndex(g => g.id === groupId);
+    const currentIndex = sortedGroups.findIndex((g) => g.id === groupId);
     if (
       (direction === "up" && currentIndex === 0) ||
       (direction === "down" && currentIndex === sortedGroups.length - 1)
@@ -187,7 +213,8 @@ export function IngredientGroupManager({
       return;
     }
 
-    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    const targetIndex =
+      direction === "up" ? currentIndex - 1 : currentIndex + 1;
     const currentGroup = sortedGroups[currentIndex];
     const targetGroup = sortedGroups[targetIndex];
 
@@ -197,26 +224,34 @@ export function IngredientGroupManager({
 
     try {
       // Update current group
-      await fetch(`/api/recipes/${recipeId}/ingredient-groups/${currentGroup.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sortOrder: newSortOrder }),
-      });
+      await fetch(
+        `/api/recipes/${recipeId}/ingredient-groups/${currentGroup.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: newSortOrder }),
+        },
+      );
 
       // Update target group
-      await fetch(`/api/recipes/${recipeId}/ingredient-groups/${targetGroup.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sortOrder: targetNewSortOrder }),
-      });
+      await fetch(
+        `/api/recipes/${recipeId}/ingredient-groups/${targetGroup.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: targetNewSortOrder }),
+        },
+      );
 
       // Update local state
       onGroupsChange(
-        ingredientGroups.map(g => {
-          if (g.id === currentGroup.id) return { ...g, sortOrder: newSortOrder };
-          if (g.id === targetGroup.id) return { ...g, sortOrder: targetNewSortOrder };
+        ingredientGroups.map((g) => {
+          if (g.id === currentGroup.id)
+            return { ...g, sortOrder: newSortOrder };
+          if (g.id === targetGroup.id)
+            return { ...g, sortOrder: targetNewSortOrder };
           return g;
-        })
+        }),
       );
 
       toast.success("Group order updated");
@@ -232,7 +267,7 @@ export function IngredientGroupManager({
   };
 
   const getIngredientCountForGroup = (groupId: string) => {
-    return ingredients.filter(ing => ing.groupId === groupId).length;
+    return ingredients.filter((ing) => ing.groupId === groupId).length;
   };
 
   return (
@@ -242,7 +277,7 @@ export function IngredientGroupManager({
           <Package className="w-5 h-5" />
           Ingredient Groups
         </h3>
-        
+
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
@@ -260,7 +295,9 @@ export function IngredientGroupManager({
                 <Input
                   id="groupName"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="e.g., Dough, Filling, Sauce"
                 />
               </div>
@@ -270,7 +307,12 @@ export function IngredientGroupManager({
                   id="sortOrder"
                   type="number"
                   value={formData.sortOrder}
-                  onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      sortOrder: parseInt(e.target.value) || 0,
+                    })
+                  }
                   placeholder="0"
                 />
               </div>
@@ -299,7 +341,7 @@ export function IngredientGroupManager({
             className="flex items-center gap-3 p-3 border rounded-lg bg-card"
           >
             <GripVertical className="w-4 h-4 text-muted-foreground" />
-            
+
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{group.name}</span>
@@ -329,7 +371,7 @@ export function IngredientGroupManager({
               >
                 <ArrowDown className="w-4 h-4" />
               </Button>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">
@@ -359,7 +401,9 @@ export function IngredientGroupManager({
           <div className="text-center py-6 text-muted-foreground">
             <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p>No ingredient groups yet</p>
-            <p className="text-sm">Create groups to organize your ingredients</p>
+            <p className="text-sm">
+              Create groups to organize your ingredients
+            </p>
           </div>
         )}
       </div>
@@ -376,7 +420,9 @@ export function IngredientGroupManager({
               <Input
                 id="editGroupName"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
             </div>
             <div>
@@ -385,7 +431,12 @@ export function IngredientGroupManager({
                 id="editSortOrder"
                 type="number"
                 value={formData.sortOrder}
-                onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sortOrder: parseInt(e.target.value) || 0,
+                  })
+                }
               />
             </div>
             <div className="flex gap-2 justify-end">
@@ -405,14 +456,17 @@ export function IngredientGroupManager({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingGroup} onOpenChange={() => setDeletingGroup(null)}>
+      <AlertDialog
+        open={!!deletingGroup}
+        onOpenChange={() => setDeletingGroup(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Ingredient Group</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete the "{deletingGroup?.name}" group?
-              Any ingredients in this group will be moved to the "Ungrouped" section.
-              This action cannot be undone.
+              Any ingredients in this group will be moved to the "Ungrouped"
+              section. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

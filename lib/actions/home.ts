@@ -2,7 +2,12 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createStartOfDayUTC, createEndOfDayUTC, getCurrentDateUTC, subtractTime } from "@/lib/utils/date";
+import {
+  createStartOfDayUTC,
+  createEndOfDayUTC,
+  getCurrentDateUTC,
+  subtractTime,
+} from "@/lib/utils/date";
 
 export async function getHomeStats() {
   try {

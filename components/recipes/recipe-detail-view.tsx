@@ -39,7 +39,7 @@ export const RecipeDetailView = forwardRef<
   // Group ingredients by their groups
   const groupedIngredients = groupIngredientsByGroup(
     recipe.ingredients,
-    recipe.ingredientGroups
+    recipe.ingredientGroups,
   );
   const sortedGroupNames = getSortedGroupNames(groupedIngredients);
   const showGroupHeaders = hasCustomGroups(recipe.ingredientGroups);
@@ -184,7 +184,7 @@ export const RecipeDetailView = forwardRef<
             {sortedGroupNames.map((groupName) => {
               const group = groupedIngredients[groupName];
               const groupCost = calculateGroupCost(group.ingredients);
-              
+
               return (
                 <div key={groupName} className="space-y-3">
                   {/* Group Header - only show if there are custom groups */}
@@ -201,7 +201,7 @@ export const RecipeDetailView = forwardRef<
                       )}
                     </div>
                   )}
-                  
+
                   {/* Ingredients in this group */}
                   <div className="space-y-2">
                     {group.ingredients.map((ingredient, index) => (
@@ -222,7 +222,8 @@ export const RecipeDetailView = forwardRef<
                           </div>
                           {ingredient.costPerUnit && (
                             <div className="text-sm text-muted-foreground">
-                              ₹{ingredient.costPerUnit.toFixed(2)} per {ingredient.unit}
+                              ₹{ingredient.costPerUnit.toFixed(2)} per{" "}
+                              {ingredient.unit}
                               {ingredient.quantity > 1 && (
                                 <span className="ml-1">
                                   (₹

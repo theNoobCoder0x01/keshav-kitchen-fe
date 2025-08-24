@@ -10,14 +10,14 @@ import {
 
 // Register Anek Gujarati
 Font.register({
-  family: 'Anek Gujarati',
-  src: 'https://fonts.gstatic.com/s/anekgujarati/v16/l7gKbj5oysqknvkCo2T_8FuiIRBA7lncQUmbIBEtPIKPSfmrXJN2JT4.woff2',
+  family: "Anek Gujarati",
+  src: "https://fonts.gstatic.com/s/anekgujarati/v16/l7gKbj5oysqknvkCo2T_8FuiIRBA7lncQUmbIBEtPIKPSfmrXJN2JT4.woff2",
 });
 
 // Register Noto Sans
 Font.register({
-  family: 'Noto Sans',
-  src: 'http://fonts.gstatic.com/s/notosans/v6/LeFlHvsZjXu2c3ZRgBq9nKCWcynf_cDxXwCLxiixG1c.ttf',
+  family: "Noto Sans",
+  src: "http://fonts.gstatic.com/s/notosans/v6/LeFlHvsZjXu2c3ZRgBq9nKCWcynf_cDxXwCLxiixG1c.ttf",
 });
 
 export const CookPdf = ({ data, columns }: { data: any[]; columns: any[] }) => {

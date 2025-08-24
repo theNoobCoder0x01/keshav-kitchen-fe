@@ -98,7 +98,8 @@ export default function RecipesReport() {
                   {recipe.recipeName}
                 </h2>
                 <div className="font-medium text-xs text-accent-foreground">
-                  Total Ghan: <span className="font-bold text-sm">{recipe.ghanFactor}</span>
+                  Total Ghan:{" "}
+                  <span className="font-bold text-sm">{recipe.ghanFactor}</span>
                 </div>
               </div>
 

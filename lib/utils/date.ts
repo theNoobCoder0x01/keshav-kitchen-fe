@@ -88,7 +88,7 @@ export const dateToEpoch = (date: Date | string): number => {
 export const formatEpochToDate = (
   epoch: number,
   formatStr: string = "dd MMM yyyy",
-  timezone?: string
+  timezone?: string,
 ): string => {
   const date = epochToDate(epoch);
   const tz = timezone || getLocalTimezone();
@@ -103,7 +103,7 @@ export const formatEpochToTime = (
   epoch: number,
   formatStr: string = "HH:mm:ss",
   excludeSeconds: boolean = false,
-  timezone?: string
+  timezone?: string,
 ): string => {
   if (excludeSeconds) {
     formatStr = formatStr.replace(/:ss/, "");
@@ -121,7 +121,7 @@ export const formatEpochToTime = (
 export const formatDateWithTimezone = (
   epoch: number,
   formatStr: string = "dd MMM yyyy HH:mm:ss zzz",
-  timezone?: string
+  timezone?: string,
 ): string => {
   const date = epochToDate(epoch);
   const tz = timezone || getLocalTimezone();
@@ -260,7 +260,7 @@ export const formatForStorage = (date: Date): string => {
 export const formatForDisplay = (
   date: Date,
   formatStr: string = "PPP",
-  timezone?: string
+  timezone?: string,
 ): string => {
   const tz = timezone || getLocalTimezone();
   return formatInTimeZone(date, tz, formatStr);

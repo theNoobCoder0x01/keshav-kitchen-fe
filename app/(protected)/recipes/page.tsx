@@ -392,14 +392,19 @@ export default function RecipesPage() {
                 <label className="text-sm font-medium">
                   {t("recipes.category")}
                 </label>
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <Select
+                  value={filterCategory}
+                  onValueChange={setFilterCategory}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder={t("recipes.category")} />
                   </SelectTrigger>
                   <SelectContent searchable>
                     {categories.map((category) => (
                       <SelectItem key={category} value={category}>
-                        {category === "all" ? t("recipes.allCategories") : category}
+                        {category === "all"
+                          ? t("recipes.allCategories")
+                          : category}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -409,14 +414,19 @@ export default function RecipesPage() {
                 <label className="text-sm font-medium">
                   {t("recipes.subcategory")}
                 </label>
-                <Select value={filterSubcategory} onValueChange={setFilterSubcategory}>
+                <Select
+                  value={filterSubcategory}
+                  onValueChange={setFilterSubcategory}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder={t("recipes.subcategory")} />
                   </SelectTrigger>
                   <SelectContent searchable>
                     {subcategories.map((subcategory) => (
                       <SelectItem key={subcategory} value={subcategory}>
-                        {subcategory === "all" ? t("recipes.allSubcategories") : subcategory}
+                        {subcategory === "all"
+                          ? t("recipes.allSubcategories")
+                          : subcategory}
                       </SelectItem>
                     ))}
                   </SelectContent>

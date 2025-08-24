@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     if (!ingredient) {
       return NextResponse.json(
         { error: "Ingredient not found or doesn't belong to this recipe" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -70,8 +70,11 @@ export async function POST(request: NextRequest) {
 
       if (!group) {
         return NextResponse.json(
-          { error: "Ingredient group not found or doesn't belong to this recipe" },
-          { status: 404 }
+          {
+            error:
+              "Ingredient group not found or doesn't belong to this recipe",
+          },
+          { status: 404 },
         );
       }
     }
@@ -85,24 +88,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       ingredient: updatedIngredient,
-      message: validatedData.groupId 
+      message: validatedData.groupId
         ? `Ingredient assigned to group successfully`
-        : `Ingredient unassigned from group successfully`
+        : `Ingredient unassigned from group successfully`,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("Assign ingredient to group API error:", error);
     return NextResponse.json(
       { error: "Failed to assign ingredient to group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -129,7 +132,7 @@ export async function PUT(request: NextRequest) {
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -143,8 +146,11 @@ export async function PUT(request: NextRequest) {
 
     if (ingredients.length !== validatedData.ingredientIds.length) {
       return NextResponse.json(
-        { error: "One or more ingredients not found or don't belong to this recipe" },
-        { status: 404 }
+        {
+          error:
+            "One or more ingredients not found or don't belong to this recipe",
+        },
+        { status: 404 },
       );
     }
 
@@ -159,8 +165,11 @@ export async function PUT(request: NextRequest) {
 
       if (!group) {
         return NextResponse.json(
-          { error: "Ingredient group not found or doesn't belong to this recipe" },
-          { status: 404 }
+          {
+            error:
+              "Ingredient group not found or doesn't belong to this recipe",
+          },
+          { status: 404 },
         );
       }
     }
@@ -175,24 +184,24 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       updatedCount: updateResult.count,
-      message: validatedData.groupId 
+      message: validatedData.groupId
         ? `${updateResult.count} ingredients assigned to group successfully`
-        : `${updateResult.count} ingredients unassigned from groups successfully`
+        : `${updateResult.count} ingredients unassigned from groups successfully`,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("Bulk assign ingredients to group API error:", error);
     return NextResponse.json(
       { error: "Failed to assign ingredients to group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

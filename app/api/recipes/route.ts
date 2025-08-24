@@ -52,10 +52,7 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          orderBy: [
-            { sortOrder: "asc" },
-            { name: "asc" },
-          ],
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
         },
         user: {
           select: {

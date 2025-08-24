@@ -4,7 +4,7 @@ import puppeteer from "puppeteer";
 
 export async function createReportWorkbook(
   data: any[],
-  columns: { header: string; key: string }[]
+  columns: { header: string; key: string }[],
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet(`Sheet 1`);
@@ -28,7 +28,7 @@ export async function createReportWorkbook(
 // CSV export using fast-csv
 export async function createReportCSV(
   data: any[],
-  columns: { header: string; key: string }[]
+  columns: { header: string; key: string }[],
 ): Promise<Buffer> {
   const { writeToString } = await import("fast-csv");
   const rows = [
