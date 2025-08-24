@@ -2,8 +2,13 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  createEndOfDayUTC,
+  createStartOfDayUTC,
+  getCurrentDateUTC,
+} from "@/lib/utils/date";
+import { MealType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { createStartOfDayUTC, createEndOfDayUTC, getCurrentDateUTC } from "@/lib/utils/date";
 
 export async function getDailyMenus(date?: Date, kitchenId?: string) {
   try {
@@ -67,10 +72,10 @@ export async function getDailyMenus(date?: Date, kitchenId?: string) {
 
     // Group by meal type
     const groupedMenus = {
-      BREAKFAST: menus.filter((m) => m.mealType === "BREAKFAST"),
-      LUNCH: menus.filter((m) => m.mealType === "LUNCH"),
-      DINNER: menus.filter((m) => m.mealType === "DINNER"),
-      SNACK: menus.filter((m) => m.mealType === "SNACK"),
+      BREAKFAST: menus.filter((m) => m.mealType === MealType.BREAKFAST),
+      LUNCH: menus.filter((m) => m.mealType === MealType.LUNCH),
+      DINNER: menus.filter((m) => m.mealType === MealType.DINNER),
+      SNACK: menus.filter((m) => m.mealType === MealType.SNACK),
     };
 
     return groupedMenus;
@@ -158,8 +163,6 @@ export async function getMenuStats(date?: Date, kitchenId?: string) {
     };
   }
 }
-
-import type { MealType } from "@/types/menus";
 
 export async function createDailyMenu(data: {
   date: Date;

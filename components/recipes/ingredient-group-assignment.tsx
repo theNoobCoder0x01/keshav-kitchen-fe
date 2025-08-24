@@ -17,13 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  Package, 
-  MoreVertical, 
-  Move3D, 
-  ChefHat,
-  Users
-} from "lucide-react";
+import { Package, MoreVertical, Move3D, ChefHat, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -45,13 +39,21 @@ export function IngredientGroupAssignment({
   ingredientGroups,
   onIngredientsChange,
 }: IngredientGroupAssignmentProps) {
-  const [selectedIngredients, setSelectedIngredients] = useState<Set<string>>(new Set());
+  const [selectedIngredients, setSelectedIngredients] = useState<Set<string>>(
+    new Set(),
+  );
   const [isLoading, setIsLoading] = useState(false);
 
-  const groupedIngredients = groupIngredientsByGroup(ingredients, ingredientGroups);
+  const groupedIngredients = groupIngredientsByGroup(
+    ingredients,
+    ingredientGroups,
+  );
   const sortedGroupNames = getSortedGroupNames(groupedIngredients);
 
-  const handleIngredientSelection = (ingredientId: string, checked: boolean) => {
+  const handleIngredientSelection = (
+    ingredientId: string,
+    checked: boolean,
+  ) => {
     const newSelected = new Set(selectedIngredients);
     if (checked) {
       newSelected.add(ingredientId);
@@ -64,8 +66,8 @@ export function IngredientGroupAssignment({
   const handleSelectAllInGroup = (groupName: string, checked: boolean) => {
     const groupIngredients = groupedIngredients[groupName].ingredients;
     const newSelected = new Set(selectedIngredients);
-    
-    groupIngredients.forEach(ingredient => {
+
+    groupIngredients.forEach((ingredient) => {
       if (ingredient.id) {
         if (checked) {
           newSelected.add(ingredient.id);
@@ -74,7 +76,7 @@ export function IngredientGroupAssignment({
         }
       }
     });
-    
+
     setSelectedIngredients(newSelected);
   };
 
@@ -102,9 +104,9 @@ export function IngredientGroupAssignment({
       }
 
       const result = await response.json();
-      
+
       // Update local state
-      const updatedIngredients = ingredients.map(ingredient => {
+      const updatedIngredients = ingredients.map((ingredient) => {
         if (ingredient.id && selectedIngredients.has(ingredient.id)) {
           return { ...ingredient, groupId: targetGroupId };
         }
@@ -116,13 +118,18 @@ export function IngredientGroupAssignment({
       toast.success(result.message);
     } catch (error) {
       console.error("Error assigning ingredients:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to assign ingredients");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to assign ingredients",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleMoveIngredient = async (ingredientId: string, targetGroupId: string | null) => {
+  const handleMoveIngredient = async (
+    ingredientId: string,
+    targetGroupId: string | null,
+  ) => {
     setIsLoading(true);
     try {
       const response = await fetch("/api/ingredients/assign-group", {
@@ -141,9 +148,9 @@ export function IngredientGroupAssignment({
       }
 
       const result = await response.json();
-      
+
       // Update local state
-      const updatedIngredients = ingredients.map(ingredient => {
+      const updatedIngredients = ingredients.map((ingredient) => {
         if (ingredient.id === ingredientId) {
           return { ...ingredient, groupId: targetGroupId };
         }
@@ -154,7 +161,9 @@ export function IngredientGroupAssignment({
       toast.success(result.message);
     } catch (error) {
       console.error("Error moving ingredient:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to move ingredient");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to move ingredient",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -163,7 +172,7 @@ export function IngredientGroupAssignment({
   const getGroupOptions = () => {
     const options = [
       { value: "", label: "Ungrouped" },
-      ...ingredientGroups.map(group => ({
+      ...ingredientGroups.map((group) => ({
         value: group.id,
         label: group.name,
       })),
@@ -173,16 +182,18 @@ export function IngredientGroupAssignment({
 
   const isGroupSelected = (groupName: string) => {
     const groupIngredients = groupedIngredients[groupName].ingredients;
-    return groupIngredients.every(ingredient => 
-      ingredient.id && selectedIngredients.has(ingredient.id)
+    return groupIngredients.every(
+      (ingredient) => ingredient.id && selectedIngredients.has(ingredient.id),
     );
   };
 
   const isGroupPartiallySelected = (groupName: string) => {
     const groupIngredients = groupedIngredients[groupName].ingredients;
-    return groupIngredients.some(ingredient => 
-      ingredient.id && selectedIngredients.has(ingredient.id)
-    ) && !isGroupSelected(groupName);
+    return (
+      groupIngredients.some(
+        (ingredient) => ingredient.id && selectedIngredients.has(ingredient.id),
+      ) && !isGroupSelected(groupName)
+    );
   };
 
   if (ingredients.length === 0) {
@@ -210,21 +221,23 @@ export function IngredientGroupAssignment({
                 <Users className="w-3 h-3" />
                 {selectedIngredients.size} selected
               </Badge>
-              
-              <Select onValueChange={(value) => handleAssignToGroup(value || null)}>
+
+              <Select
+                onValueChange={(value) => handleAssignToGroup(value || null)}
+              >
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Assign to group..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Ungrouped</SelectItem>
-                  {ingredientGroups.map(group => (
+                  {ingredientGroups.map((group) => (
                     <SelectItem key={group.id} value={group.id}>
                       {group.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <Button
                 variant="outline"
                 onClick={() => setSelectedIngredients(new Set())}
@@ -239,28 +252,30 @@ export function IngredientGroupAssignment({
 
       {/* Grouped Ingredients */}
       <div className="space-y-4">
-        {sortedGroupNames.map(groupName => {
+        {sortedGroupNames.map((groupName) => {
           const group = groupedIngredients[groupName];
-          const groupObj = ingredientGroups.find(g => g.id === group.groupId);
-          
+          const groupObj = ingredientGroups.find((g) => g.id === group.groupId);
+
           return (
             <Card key={groupName}>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-3">
-                                     <Checkbox
-                     checked={isGroupSelected(groupName)}
-                     onCheckedChange={(checked) => 
-                       handleSelectAllInGroup(groupName, checked === true)
-                     }
-                     ref={(el) => {
-                       if (el && isGroupPartiallySelected(groupName)) {
-                         const checkbox = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
-                         if (checkbox) {
-                           checkbox.indeterminate = true;
-                         }
-                       }
-                     }}
-                   />
+                  <Checkbox
+                    checked={isGroupSelected(groupName)}
+                    onCheckedChange={(checked) =>
+                      handleSelectAllInGroup(groupName, checked === true)
+                    }
+                    ref={(el) => {
+                      if (el && isGroupPartiallySelected(groupName)) {
+                        const checkbox = el.querySelector(
+                          'input[type="checkbox"]',
+                        ) as HTMLInputElement;
+                        if (checkbox) {
+                          checkbox.indeterminate = true;
+                        }
+                      }
+                    }}
+                  />
                   <Package className="w-5 h-5" />
                   <span>{groupName}</span>
                   <Badge variant="outline" className="ml-auto">
@@ -276,22 +291,30 @@ export function IngredientGroupAssignment({
                       className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg"
                     >
                       <Checkbox
-                        checked={ingredient.id ? selectedIngredients.has(ingredient.id) : false}
+                        checked={
+                          ingredient.id
+                            ? selectedIngredients.has(ingredient.id)
+                            : false
+                        }
                         onCheckedChange={(checked) => {
                           if (ingredient.id) {
-                            handleIngredientSelection(ingredient.id, checked === true);
+                            handleIngredientSelection(
+                              ingredient.id,
+                              checked === true,
+                            );
                           }
                         }}
                         disabled={!ingredient.id}
                       />
-                      
+
                       <div className="flex-1">
                         <div className="font-medium">{ingredient.name}</div>
                         <div className="text-sm text-muted-foreground">
                           {ingredient.quantity} {ingredient.unit}
                           {ingredient.costPerUnit && (
                             <span className="ml-2">
-                              • ₹{ingredient.costPerUnit.toFixed(2)} per {ingredient.unit}
+                              • ₹{ingredient.costPerUnit.toFixed(2)} per{" "}
+                              {ingredient.unit}
                             </span>
                           )}
                         </div>
@@ -299,23 +322,39 @@ export function IngredientGroupAssignment({
 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" disabled={!ingredient.id}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={!ingredient.id}
+                          >
                             <MoreVertical className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => ingredient.id && handleMoveIngredient(ingredient.id, null)}
+                            onClick={() =>
+                              ingredient.id &&
+                              handleMoveIngredient(ingredient.id, null)
+                            }
                             disabled={!ingredient.id || group.groupId === null}
                           >
                             <Move3D className="w-4 h-4 mr-2" />
                             Move to Ungrouped
                           </DropdownMenuItem>
-                          {ingredientGroups.map(targetGroup => (
+                          {ingredientGroups.map((targetGroup) => (
                             <DropdownMenuItem
                               key={targetGroup.id}
-                              onClick={() => ingredient.id && handleMoveIngredient(ingredient.id, targetGroup.id)}
-                              disabled={!ingredient.id || group.groupId === targetGroup.id}
+                              onClick={() =>
+                                ingredient.id &&
+                                handleMoveIngredient(
+                                  ingredient.id,
+                                  targetGroup.id,
+                                )
+                              }
+                              disabled={
+                                !ingredient.id ||
+                                group.groupId === targetGroup.id
+                              }
                             >
                               <Move3D className="w-4 h-4 mr-2" />
                               Move to {targetGroup.name}
@@ -338,7 +377,9 @@ export function IngredientGroupAssignment({
             <div className="text-center py-8 text-muted-foreground">
               <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No ingredient groups yet</p>
-              <p className="text-sm">Create groups to organize your ingredients</p>
+              <p className="text-sm">
+                Create groups to organize your ingredients
+              </p>
             </div>
           </CardContent>
         </Card>

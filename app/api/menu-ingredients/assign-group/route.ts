@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     if (!data.ingredientId || !data.menuId) {
       return NextResponse.json(
         { error: "Missing required fields: ingredientId, menuId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -37,7 +37,10 @@ export async function POST(request: Request) {
     }
 
     // Check if user has access to this menu's kitchen
-    if (menu.user.id !== session.user.id && menu.kitchen.id !== session.user.kitchenId) {
+    if (
+      menu.user.id !== session.user.id &&
+      menu.kitchen.id !== session.user.kitchenId
+    ) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -47,7 +50,10 @@ export async function POST(request: Request) {
     });
 
     if (!ingredient || ingredient.menuId !== data.menuId) {
-      return NextResponse.json({ error: "Ingredient not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Ingredient not found" },
+        { status: 404 },
+      );
     }
 
     // If groupId is provided, verify it exists and belongs to this menu
@@ -57,7 +63,10 @@ export async function POST(request: Request) {
       });
 
       if (!group || group.menuId !== data.menuId) {
-        return NextResponse.json({ error: "Ingredient group not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Ingredient group not found" },
+          { status: 404 },
+        );
       }
     }
 
@@ -81,7 +90,7 @@ export async function POST(request: Request) {
     console.error("Failed to assign ingredient to group:", error);
     return NextResponse.json(
       { error: "Failed to assign ingredient to group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -97,10 +106,14 @@ export async function PUT(request: Request) {
     const data = await request.json();
 
     // Validate required fields
-    if (!data.ingredientIds || !Array.isArray(data.ingredientIds) || !data.menuId) {
+    if (
+      !data.ingredientIds ||
+      !Array.isArray(data.ingredientIds) ||
+      !data.menuId
+    ) {
       return NextResponse.json(
         { error: "Missing required fields: ingredientIds (array), menuId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -118,7 +131,10 @@ export async function PUT(request: Request) {
     }
 
     // Check if user has access to this menu's kitchen
-    if (menu.user.id !== session.user.id && menu.kitchen.id !== session.user.kitchenId) {
+    if (
+      menu.user.id !== session.user.id &&
+      menu.kitchen.id !== session.user.kitchenId
+    ) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -129,7 +145,10 @@ export async function PUT(request: Request) {
       });
 
       if (!group || group.menuId !== data.menuId) {
-        return NextResponse.json({ error: "Ingredient group not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Ingredient group not found" },
+          { status: 404 },
+        );
       }
     }
 
@@ -144,7 +163,7 @@ export async function PUT(request: Request) {
     if (ingredients.length !== data.ingredientIds.length) {
       return NextResponse.json(
         { error: "Some ingredients not found or don't belong to this menu" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -165,7 +184,7 @@ export async function PUT(request: Request) {
     console.error("Failed to bulk assign ingredients to group:", error);
     return NextResponse.json(
       { error: "Failed to bulk assign ingredients to group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

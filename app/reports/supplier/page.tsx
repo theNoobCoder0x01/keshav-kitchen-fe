@@ -38,7 +38,7 @@ export default function SupplierReport() {
     try {
       if (epochMs) {
         const kitchensData = await getSupplierReport(epochMs);
-        
+
         setData(kitchensData);
       } else {
         console.error("Timestamp is required.");

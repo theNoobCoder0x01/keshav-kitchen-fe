@@ -55,7 +55,7 @@ const TableFooter = React.forwardRef<
     ref={ref}
     className={cn(
       "border-t bg-muted/50 font-medium last:[&>tr]:border-b-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -70,7 +70,7 @@ const TableRow = React.forwardRef<
     ref={ref}
     className={cn(
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-      className
+      className,
     )}
     {...props}
   />
@@ -85,7 +85,7 @@ const TableHead = React.forwardRef<
     ref={ref}
     className={cn(
       "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -179,7 +179,7 @@ const TablePagination = ({
     <div
       className={cn(
         "flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t",
-        className
+        className,
       )}
     >
       <div className="text-sm text-muted-foreground">
@@ -209,7 +209,7 @@ const TablePagination = ({
             onClick={() => onPageChange(page)}
             className={cn(
               "h-8 w-8 p-0",
-              page === currentPage && "bg-primary text-primary-foreground"
+              page === currentPage && "bg-primary text-primary-foreground",
             )}
             aria-label={
               t("common.pagination.page") +
@@ -265,7 +265,7 @@ const TablePaginationSkeleton = ({ className }: { className?: string }) => {
     <div
       className={cn(
         "flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t",
-        className
+        className,
       )}
     >
       <Skeleton className="h-4 w-48 rounded" />
@@ -291,6 +291,5 @@ export {
   TableHeader,
   TablePagination,
   TablePaginationSkeleton,
-  TableRow
+  TableRow,
 };
-

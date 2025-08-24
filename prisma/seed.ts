@@ -420,7 +420,7 @@ async function main() {
   //   prisma.menu.create({
   //     data: {
   //       date: today,
-  //       mealType: "BREAKFAST",
+  //       mealType: MealType.BREAKFAST,
   //       recipeId: recipes[2].id, // ખીર
   //       kitchenId: kitchens[0].id, // Thakorji
   //       userId: users[0].id,
@@ -435,7 +435,7 @@ async function main() {
   //   prisma.menu.create({
   //     data: {
   //       date: today,
-  //       mealType: "LUNCH",
+  //       mealType: MealType.LUNCH,
   //       recipeId: recipes[0].id, // હરિભક્તો માટે દૂધ પાક
   //       kitchenId: kitchens[0].id, // Thakorji
   //       userId: users[0].id,
@@ -452,7 +452,7 @@ async function main() {
   //   prisma.menu.create({
   //     data: {
   //       date: today,
-  //       mealType: "BREAKFAST",
+  //       mealType: MealType.BREAKFAST,
   //       recipeId: recipes[1].id, // ઠાકોરજી માટે દૂધ પાક
   //       kitchenId: kitchens[1].id, // Premvati
   //       userId: users[1].id,
@@ -467,7 +467,7 @@ async function main() {
   //   prisma.menu.create({
   //     data: {
   //       date: today,
-  //       mealType: "DINNER",
+  //       mealType: MealType.DINNER,
   //       recipeId: recipes[4].id, // Sambar
   //       kitchenId: kitchens[1].id, // Premvati
   //       userId: users[1].id,
@@ -484,7 +484,7 @@ async function main() {
   //   prisma.menu.create({
   //     data: {
   //       date: today,
-  //       mealType: "LUNCH",
+  //       mealType: MealType.LUNCH,
   //       recipeId: recipes[3].id, // ફ્રુટ સલાડ
   //       kitchenId: kitchens[2].id, // Aarsh
   //       userId: users[2].id,
@@ -502,7 +502,7 @@ async function main() {
   //   prisma.menu.create({
   //     data: {
   //       date: tomorrow,
-  //       mealType: "BREAKFAST",
+  //       mealType: MealType.BREAKFAST,
   //       recipeId: recipes[2].id, // ખીર
   //       kitchenId: kitchens[0].id, // Thakorji
   //       userId: users[0].id,
@@ -517,7 +517,7 @@ async function main() {
   //   prisma.menu.create({
   //     data: {
   //       date: tomorrow,
-  //       mealType: "LUNCH",
+  //       mealType: MealType.LUNCH,
   //       recipeId: recipes[4].id, // Sambar
   //       kitchenId: kitchens[3].id, // Mandir
   //       userId: users[3].id,

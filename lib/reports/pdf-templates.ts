@@ -1,5 +1,6 @@
 import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
 import type { MenuReportData as ReportData } from "@/types/menus";
+import { MealType } from "@prisma/client";
 
 // Base CSS styles for all PDF reports - PDF-compatible only
 const basePdfStyles = `
@@ -349,7 +350,7 @@ export function generateCombinedMealsReportHTML(data: ReportData): string {
                   <td>${encodeTextForPDF(menu.kitchen.name)}</td>
                   <td>${encodeTextForPDF(menu.recipe.name)}</td>
                   <td class="text-center">
-                    <span class="${menu.mealType === "BREAKFAST" ? "text-warning" : menu.mealType === "LUNCH" ? "text-success" : "text-error"}">
+                    <span class="${menu.mealType === MealType.BREAKFAST ? "text-warning" : menu.mealType === MealType.LUNCH ? "text-success" : "text-error"}">
                       ${menu.mealType}
                     </span>
                   </td>
@@ -484,7 +485,7 @@ export function generateSummaryReportHTML(data: ReportData): string {
                   <td>${encodeTextForPDF(menu.kitchen.name)}</td>
                   <td>${encodeTextForPDF(menu.recipe.name)}</td>
                   <td class="text-center">
-                    <span class="${menu.mealType === "BREAKFAST" ? "text-warning" : menu.mealType === "LUNCH" ? "text-success" : "text-error"}">
+                    <span class="${menu.mealType === MealType.BREAKFAST ? "text-warning" : menu.mealType === MealType.LUNCH ? "text-success" : "text-error"}">
                       ${menu.mealType}
                     </span>
                   </td>
@@ -714,31 +715,51 @@ export function generateMealTypeReportHTML(
 
 // Generate meal plan report HTML (simplified view of all meals by type)
 export function generateMealPlanReportHTML(data: ReportData): string {
-  const breakfastMenus = data.menus.filter((m) => m.mealType === "BREAKFAST");
-  const lunchMenus = data.menus.filter((m) => m.mealType === "LUNCH");
-  const dinnerMenus = data.menus.filter((m) => m.mealType === "DINNER");
+  const breakfastMenus = data.menus.filter(
+    (m) => m.mealType === MealType.BREAKFAST,
+  );
+  const lunchMenus = data.menus.filter((m) => m.mealType === MealType.LUNCH);
+  const dinnerMenus = data.menus.filter((m) => m.mealType === MealType.DINNER);
 
   // Calculate total plates for each meal type
-  const breakfastTotal = breakfastMenus.reduce((sum, menu) => sum + (menu.servings * menu.ghanFactor), 0);
-  const lunchTotal = lunchMenus.reduce((sum, menu) => sum + (menu.servings * menu.ghanFactor), 0);
-  const dinnerTotal = dinnerMenus.reduce((sum, menu) => sum + (menu.servings * menu.ghanFactor), 0);
+  const breakfastTotal = breakfastMenus.reduce(
+    (sum, menu) => sum + menu.servings * menu.ghanFactor,
+    0,
+  );
+  const lunchTotal = lunchMenus.reduce(
+    (sum, menu) => sum + menu.servings * menu.ghanFactor,
+    0,
+  );
+  const dinnerTotal = dinnerMenus.reduce(
+    (sum, menu) => sum + menu.servings * menu.ghanFactor,
+    0,
+  );
 
-  const renderMealSection = (mealType: string, menus: any[], totalPlates: number, icon: string) => {
+  const renderMealSection = (
+    mealType: string,
+    menus: any[],
+    totalPlates: number,
+    icon: string,
+  ) => {
     if (menus.length === 0) return "";
-    
+
     return `
       <div class="pdf-section">
         <h2 class="pdf-section-title">${icon} ${mealType} <span style="float: right;">Total Plates: ${Math.round(totalPlates)}</span></h2>
         <div class="pdf-meal-grid">
-          ${menus.map((menu, index) => `
+          ${menus
+            .map(
+              (menu, index) => `
             <div class="pdf-meal-item">
               <div class="pdf-meal-number">(${index + 1})</div>
               <div class="pdf-meal-details">
                 <div class="pdf-meal-name">${encodeTextForPDF(menu.recipe.name)}</div>
-                <div class="pdf-meal-info">${menu.servings} ${menu.servings > 1 ? 'servings' : 'serving'}</div>
+                <div class="pdf-meal-info">${menu.servings} ${menu.servings > 1 ? "servings" : "serving"}</div>
               </div>
             </div>
-          `).join("")}
+          `,
+            )
+            .join("")}
         </div>
       </div>
     `;
@@ -804,11 +825,11 @@ export function generateMealPlanReportHTML(data: ReportData): string {
           <h1 class="pdf-title">KESHAV Kitchen</h1>
           <div class="pdf-subtitle">Daily Meal Plan</div>
           <div class="pdf-meta">
-            <strong>${data.date.toLocaleDateString("en-GB", { 
+            <strong>${data.date.toLocaleDateString("en-GB", {
               weekday: "long",
-              year: "numeric", 
-              month: "long", 
-              day: "numeric" 
+              year: "numeric",
+              month: "long",
+              day: "numeric",
             })}</strong>
           </div>
         </div>

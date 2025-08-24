@@ -2,7 +2,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -42,14 +48,18 @@ export interface GenericIngredient {
   localId?: string;
 }
 
-export interface IngredientGroup<T extends GenericIngredient = GenericIngredient> {
+export interface IngredientGroup<
+  T extends GenericIngredient = GenericIngredient,
+> {
   id?: string;
   name: string;
   sortOrder: number;
   ingredients: T[];
 }
 
-interface IngredientsInputProps<T extends GenericIngredient = GenericIngredient> {
+interface IngredientsInputProps<
+  T extends GenericIngredient = GenericIngredient,
+> {
   name: string; // Formik field name (e.g., "ingredientGroups")
   ingredientGroups: IngredientGroup<T>[];
   onFieldChange: (field: string, value: any, shouldValidate?: boolean) => void;
@@ -63,7 +73,9 @@ interface IngredientsInputProps<T extends GenericIngredient = GenericIngredient>
   onPasteIngredients?: (e: ClipboardEvent) => void;
 }
 
-export function IngredientsInput<T extends GenericIngredient = GenericIngredient>({
+export function IngredientsInput<
+  T extends GenericIngredient = GenericIngredient,
+>({
   name,
   ingredientGroups,
   onFieldChange,
@@ -87,7 +99,9 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
   };
 
   const setGroupSelection = (groupIndex: number, checked: boolean) => {
-    const ids = ingredientGroups[groupIndex].ingredients.map((ing: any) => ing.localId);
+    const ids = ingredientGroups[groupIndex].ingredients.map(
+      (ing: any) => ing.localId,
+    );
     const newSelection = new Set(selectedIds);
     if (checked) {
       ids.forEach((id: string) => newSelection.add(id));
@@ -101,15 +115,15 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
 
   const moveSelectedIngredients = (
     destinationGroupIndex: number,
-    position: "end" | "start" = "end"
+    position: "end" | "start" = "end",
   ) => {
     if (selectedIds.size === 0) return;
-    
+
     const nextGroups = ingredientGroups.map((g) => ({
       ...g,
       ingredients: [...g.ingredients],
     }));
-    
+
     const moved: any[] = [];
     nextGroups.forEach((group) => {
       const keep: any[] = [];
@@ -120,17 +134,15 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
           keep.push(ing);
         }
       }
-      group.ingredients = keep.length
-        ? keep
-        : [createEmptyIngredient()];
+      group.ingredients = keep.length ? keep : [createEmptyIngredient()];
     });
-    
+
     const dest = nextGroups[destinationGroupIndex];
     dest.ingredients =
       position === "start"
         ? [...moved, ...dest.ingredients]
         : [...dest.ingredients, ...moved];
-        
+
     onFieldChange(name, nextGroups, false);
     clearSelection();
   };
@@ -153,18 +165,22 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
         total +
         group.ingredients.reduce((groupTotal, ingredient) => {
           const quantity = parseFloat(String(ingredient.quantity)) || 0;
-          const costPerUnit = parseFloat(String(ingredient.costPerUnit || "0")) || 0;
+          const costPerUnit =
+            parseFloat(String(ingredient.costPerUnit || "0")) || 0;
           return groupTotal + quantity * costPerUnit;
         }, 0)
       );
     }, 0);
   };
 
-  const handlePasteIngredients = useCallback((e: ClipboardEvent) => {
-    if (onPasteIngredients) {
-      onPasteIngredients(e);
-    }
-  }, [onPasteIngredients]);
+  const handlePasteIngredients = useCallback(
+    (e: ClipboardEvent) => {
+      if (onPasteIngredients) {
+        onPasteIngredients(e);
+      }
+    },
+    [onPasteIngredients],
+  );
 
   return (
     <FieldArray name={name}>
@@ -183,7 +199,7 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
                 <Badge variant="outline" className="text-xs">
                   {ingredientGroups.reduce(
                     (total, group) => total + group.ingredients.length,
-                    0
+                    0,
                   )}{" "}
                   ingredients
                 </Badge>
@@ -259,7 +275,7 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
                       checked={
                         group.ingredients.length > 0 &&
                         group.ingredients.every((ing: any) =>
-                          selectedIds.has(ing.localId)
+                          selectedIds.has(ing.localId),
                         )
                       }
                       onCheckedChange={(checked) =>
@@ -304,129 +320,141 @@ export function IngredientsInput<T extends GenericIngredient = GenericIngredient
                 <FieldArray name={`${name}[${groupIndex}].ingredients`}>
                   {({ remove: removeIngredient, push: pushIngredient }) => (
                     <div className="space-y-3" onPaste={handlePasteIngredients}>
-                      {group.ingredients.map((ingredient: any, ingredientIndex) => (
-                        <div
-                          key={ingredient.localId}
-                          className="p-3 border border-border/50 rounded-lg bg-background/50"
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <Checkbox
-                                checked={Boolean(selectedIds.has(ingredient.localId))}
-                                onCheckedChange={(checked) =>
-                                  toggleRowSelected(ingredient.localId, Boolean(checked))
+                      {group.ingredients.map(
+                        (ingredient: any, ingredientIndex) => (
+                          <div
+                            key={ingredient.localId}
+                            className="p-3 border border-border/50 rounded-lg bg-background/50"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={Boolean(
+                                    selectedIds.has(ingredient.localId),
+                                  )}
+                                  onCheckedChange={(checked) =>
+                                    toggleRowSelected(
+                                      ingredient.localId,
+                                      Boolean(checked),
+                                    )
+                                  }
+                                />
+                                <h5 className="text-sm font-medium text-muted-foreground">
+                                  Ingredient #{ingredientIndex + 1}
+                                </h5>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  removeIngredient(ingredientIndex)
                                 }
-                              />
-                              <h5 className="text-sm font-medium text-muted-foreground">
-                                Ingredient #{ingredientIndex + 1}
-                              </h5>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeIngredient(ingredientIndex)}
-                              className="w-6 h-6 p-0 text-destructive hover:bg-destructive/10"
-                              disabled={group.ingredients.length === 1}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                            <div className="sm:col-span-5">
-                              <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                Name *
-                              </Label>
-                              <Field
-                                as={Input}
-                                name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].name`}
-                                placeholder="Ingredient name"
-                                className="text-sm"
-                              />
-                              <ErrorMessage
-                                name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].name`}
-                                component="p"
-                                className="text-destructive text-xs mt-1"
-                              />
-                            </div>
-
-                            <div className="sm:col-span-3">
-                              <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                Quantity *
-                              </Label>
-                              <Field
-                                as={Input}
-                                name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
-                                placeholder="Amount"
-                                type="number"
-                                step="0.000001"
-                                min="0"
-                                className="text-sm"
-                              />
-                              <ErrorMessage
-                                name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
-                                component="p"
-                                className="text-destructive text-xs mt-1"
-                              />
-                            </div>
-
-                            <div className="sm:col-span-2">
-                              <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                Unit *
-                              </Label>
-                              <Field
-                                name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].unit`}
+                                className="w-6 h-6 p-0 text-destructive hover:bg-destructive/10"
+                                disabled={group.ingredients.length === 1}
                               >
-                                {({ field }: { field: any }) => (
-                                  <Select
-                                    value={field.value}
-                                    onValueChange={(value) =>
-                                      field.onChange({
-                                        target: { name: field.name, value },
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger className="text-sm">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent searchable>
-                                      {UNIT_OPTIONS.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
-                                          {option.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                              </Field>
+                                <X className="w-3 h-3" />
+                              </Button>
                             </div>
 
-                            <div className="sm:col-span-2">
-                              <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                Cost/Unit
-                              </Label>
-                              <div className="relative">
-                                <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                              <div className="sm:col-span-5">
+                                <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                  Name *
+                                </Label>
                                 <Field
                                   as={Input}
-                                  name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
-                                  placeholder="0.00"
+                                  name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].name`}
+                                  placeholder="Ingredient name"
+                                  className="text-sm"
+                                />
+                                <ErrorMessage
+                                  name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].name`}
+                                  component="p"
+                                  className="text-destructive text-xs mt-1"
+                                />
+                              </div>
+
+                              <div className="sm:col-span-3">
+                                <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                  Quantity *
+                                </Label>
+                                <Field
+                                  as={Input}
+                                  name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+                                  placeholder="Amount"
                                   type="number"
                                   step="0.000001"
                                   min="0"
-                                  className="pl-6 text-sm"
+                                  className="text-sm"
+                                />
+                                <ErrorMessage
+                                  name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+                                  component="p"
+                                  className="text-destructive text-xs mt-1"
                                 />
                               </div>
-                              <ErrorMessage
-                                name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
-                                component="p"
-                                className="text-destructive text-xs mt-1"
-                              />
+
+                              <div className="sm:col-span-2">
+                                <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                  Unit *
+                                </Label>
+                                <Field
+                                  name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].unit`}
+                                >
+                                  {({ field }: { field: any }) => (
+                                    <Select
+                                      value={field.value}
+                                      onValueChange={(value) =>
+                                        field.onChange({
+                                          target: { name: field.name, value },
+                                        })
+                                      }
+                                    >
+                                      <SelectTrigger className="text-sm">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent searchable>
+                                        {UNIT_OPTIONS.map((option) => (
+                                          <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                          >
+                                            {option.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                </Field>
+                              </div>
+
+                              <div className="sm:col-span-2">
+                                <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                                  Cost/Unit
+                                </Label>
+                                <div className="relative">
+                                  <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                                  <Field
+                                    as={Input}
+                                    name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
+                                    placeholder="0.00"
+                                    type="number"
+                                    step="0.000001"
+                                    min="0"
+                                    className="pl-6 text-sm"
+                                  />
+                                </div>
+                                <ErrorMessage
+                                  name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].costPerUnit`}
+                                  component="p"
+                                  className="text-destructive text-xs mt-1"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ),
+                      )}
 
                       <Button
                         type="button"

@@ -1,8 +1,14 @@
+import { MealType } from "@prisma/client";
 import { z } from "zod";
 
 export const MenuSchema = z.object({
   date: z.date(),
-  mealType: z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]),
+  mealType: z.enum([
+    MealType.BREAKFAST,
+    MealType.LUNCH,
+    MealType.DINNER,
+    MealType.DINNER,
+  ]),
   recipeId: z.string().min(1, "Recipe is required"),
   kitchenId: z.string().min(1, "Kitchen is required"),
   servings: z.number().min(1, "Servings must be at least 1"),

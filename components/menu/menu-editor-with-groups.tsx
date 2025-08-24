@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MenuIngredientGroup, MenuIngredient } from "@/types/menus";
-import { groupMenuIngredientsByGroup, getSortedMenuGroupNames, hasCustomMenuGroups } from "@/lib/utils/menu-utils";
+import {
+  groupMenuIngredientsByGroup,
+  getSortedMenuGroupNames,
+  hasCustomMenuGroups,
+} from "@/lib/utils/menu-utils";
 import { BookOpen, GripVertical, Users, Info, HelpCircle } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { MenuIngredientGroupManager } from "./menu-ingredient-group-manager";
@@ -45,11 +49,11 @@ export function MenuEditorWithGroups({
   isEditing = false,
 }: MenuEditorWithGroupsProps) {
   const [activeTab, setActiveTab] = useState("overview");
-  const [ingredientGroups, setIngredientGroups] = useState<MenuIngredientGroup[]>(
-    menu.ingredientGroups || []
-  );
+  const [ingredientGroups, setIngredientGroups] = useState<
+    MenuIngredientGroup[]
+  >(menu.ingredientGroups || []);
   const [ingredients, setIngredients] = useState<MenuIngredient[]>(
-    menu.ingredients || []
+    menu.ingredients || [],
   );
 
   // Group ingredients for display
@@ -65,24 +69,33 @@ export function MenuEditorWithGroups({
     return hasCustomMenuGroups(ingredientGroups);
   }, [ingredientGroups]);
 
-  const handleGroupsChange = useCallback((groups: MenuIngredientGroup[]) => {
-    setIngredientGroups(groups);
-    onMenuChange({
-      ...menu,
-      ingredientGroups: groups,
-    });
-  }, [menu, onMenuChange]);
+  const handleGroupsChange = useCallback(
+    (groups: MenuIngredientGroup[]) => {
+      setIngredientGroups(groups);
+      onMenuChange({
+        ...menu,
+        ingredientGroups: groups,
+      });
+    },
+    [menu, onMenuChange],
+  );
 
-  const handleIngredientsChange = useCallback((ingredients: MenuIngredient[]) => {
-    setIngredients(ingredients);
-    onMenuChange({
-      ...menu,
-      ingredients,
-    });
-  }, [menu, onMenuChange]);
+  const handleIngredientsChange = useCallback(
+    (ingredients: MenuIngredient[]) => {
+      setIngredients(ingredients);
+      onMenuChange({
+        ...menu,
+        ingredients,
+      });
+    },
+    [menu, onMenuChange],
+  );
 
   const calculateTotalCost = useCallback(() => {
-    return ingredients.reduce((sum, ing) => sum + (ing.costPerUnit * ing.quantity), 0);
+    return ingredients.reduce(
+      (sum, ing) => sum + ing.costPerUnit * ing.quantity,
+      0,
+    );
   }, [ingredients]);
 
   const calculateTotalQuantity = useCallback(() => {
@@ -96,7 +109,8 @@ export function MenuEditorWithGroups({
         <div>
           <h2 className="text-2xl font-bold">{menu.recipe.name}</h2>
           <p className="text-muted-foreground">
-            {menu.mealType} • {menu.kitchen.name} • {menu.date.toLocaleDateString()}
+            {menu.mealType} • {menu.kitchen.name} •{" "}
+            {menu.date.toLocaleDateString()}
           </p>
         </div>
         {isEditing && (
@@ -151,9 +165,12 @@ export function MenuEditorWithGroups({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${calculateTotalCost().toFixed(2)}</div>
+                <div className="text-2xl font-bold">
+                  ${calculateTotalCost().toFixed(2)}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  ${(calculateTotalCost() / menu.servings).toFixed(2)} per serving
+                  ${(calculateTotalCost() / menu.servings).toFixed(2)} per
+                  serving
                 </p>
               </CardContent>
             </Card>
@@ -165,7 +182,9 @@ export function MenuEditorWithGroups({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{ingredientGroups.length}</div>
+                <div className="text-2xl font-bold">
+                  {ingredientGroups.length}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {hasGroups ? "Custom organization" : "Default grouping"}
                 </p>
@@ -179,10 +198,16 @@ export function MenuEditorWithGroups({
               <CardTitle>Ingredients by Group</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {sortedGroupNames.map(groupName => {
+              {sortedGroupNames.map((groupName) => {
                 const group = groupedIngredients[groupName];
-                const totalQuantity = group.ingredients.reduce((sum, ing) => sum + ing.quantity, 0);
-                const totalCost = group.ingredients.reduce((sum, ing) => sum + (ing.costPerUnit * ing.quantity), 0);
+                const totalQuantity = group.ingredients.reduce(
+                  (sum, ing) => sum + ing.quantity,
+                  0,
+                );
+                const totalCost = group.ingredients.reduce(
+                  (sum, ing) => sum + ing.costPerUnit * ing.quantity,
+                  0,
+                );
 
                 return (
                   <div key={groupName} className="border rounded-lg p-4">
@@ -190,28 +215,39 @@ export function MenuEditorWithGroups({
                       <h4 className="font-medium text-lg">
                         {groupName}
                         {groupName === "Ungrouped" && (
-                          <span className="text-muted-foreground ml-2 text-sm">(Default)</span>
+                          <span className="text-muted-foreground ml-2 text-sm">
+                            (Default)
+                          </span>
                         )}
                       </h4>
                       <div className="text-sm text-muted-foreground">
-                        {group.ingredients.length} ingredients • {totalQuantity.toFixed(1)} total • ${totalCost.toFixed(2)}
+                        {group.ingredients.length} ingredients •{" "}
+                        {totalQuantity.toFixed(1)} total • $
+                        {totalCost.toFixed(2)}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {group.ingredients.map(ingredient => (
+                      {group.ingredients.map((ingredient) => (
                         <div
                           key={ingredient.id}
                           className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{ingredient.name}</p>
+                            <p className="font-medium truncate">
+                              {ingredient.name}
+                            </p>
                             <p className="text-sm text-muted-foreground">
                               {ingredient.quantity} {ingredient.unit}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}</p>
+                            <p className="font-medium">
+                              $
+                              {(
+                                ingredient.costPerUnit * ingredient.quantity
+                              ).toFixed(2)}
+                            </p>
                             <p className="text-xs text-muted-foreground">
                               ${ingredient.costPerUnit}/unit
                             </p>
@@ -267,8 +303,9 @@ export function MenuEditorWithGroups({
               <div className="prose prose-sm max-w-none">
                 <h4>What are Ingredient Groups?</h4>
                 <p>
-                  Ingredient groups help you organize your menu ingredients into logical categories 
-                  like "Main Course", "Side Dish", "Dessert", etc. This makes it easier to:
+                  Ingredient groups help you organize your menu ingredients into
+                  logical categories like "Main Course", "Side Dish", "Dessert",
+                  etc. This makes it easier to:
                 </p>
                 <ul>
                   <li>Plan your meal preparation workflow</li>
@@ -280,28 +317,37 @@ export function MenuEditorWithGroups({
                 <h4>How to Get Started</h4>
                 <ol>
                   <li>
-                    <strong>Create Groups:</strong> Go to the "Groups" tab and create new ingredient groups 
-                    with descriptive names like "Protein", "Vegetables", "Grains", etc.
+                    <strong>Create Groups:</strong> Go to the "Groups" tab and
+                    create new ingredient groups with descriptive names like
+                    "Protein", "Vegetables", "Grains", etc.
                   </li>
                   <li>
-                    <strong>Assign Ingredients:</strong> Use the "Assignment" tab to select ingredients 
-                    and assign them to the appropriate groups.
+                    <strong>Assign Ingredients:</strong> Use the "Assignment"
+                    tab to select ingredients and assign them to the appropriate
+                    groups.
                   </li>
                   <li>
-                    <strong>Reorder Groups:</strong> Use the up/down arrows to arrange groups in the 
-                    order you prefer for display.
+                    <strong>Reorder Groups:</strong> Use the up/down arrows to
+                    arrange groups in the order you prefer for display.
                   </li>
                   <li>
-                    <strong>View Results:</strong> Check the "Overview" tab to see your organized 
-                    ingredients with costs and quantities per group.
+                    <strong>View Results:</strong> Check the "Overview" tab to
+                    see your organized ingredients with costs and quantities per
+                    group.
                   </li>
                 </ol>
 
                 <h4>Tips for Effective Grouping</h4>
                 <ul>
                   <li>Use consistent naming conventions across your menus</li>
-                  <li>Group by preparation method (e.g., "Raw", "Cooked", "Prepared")</li>
-                  <li>Consider grouping by dietary restrictions (e.g., "Vegan", "Gluten-Free")</li>
+                  <li>
+                    Group by preparation method (e.g., "Raw", "Cooked",
+                    "Prepared")
+                  </li>
+                  <li>
+                    Consider grouping by dietary restrictions (e.g., "Vegan",
+                    "Gluten-Free")
+                  </li>
                   <li>Keep group names short and descriptive</li>
                 </ul>
 

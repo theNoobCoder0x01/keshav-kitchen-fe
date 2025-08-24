@@ -147,7 +147,7 @@ export async function updateReport(
     visitorCount?: number;
     mealsCounted?: number;
     notes?: string;
-  }
+  },
 ) {
   try {
     const session = await auth();

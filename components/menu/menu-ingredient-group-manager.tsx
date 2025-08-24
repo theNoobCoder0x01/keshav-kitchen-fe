@@ -35,7 +35,11 @@ export function MenuIngredientGroupManager({
       return;
     }
 
-    if (ingredientGroups.some(g => g.name.toLowerCase() === newGroupName.trim().toLowerCase())) {
+    if (
+      ingredientGroups.some(
+        (g) => g.name.toLowerCase() === newGroupName.trim().toLowerCase(),
+      )
+    ) {
       toast.error("Group name already exists");
       return;
     }
@@ -67,112 +71,145 @@ export function MenuIngredientGroupManager({
     }
   }, [newGroupName, ingredientGroups, menuId, onGroupsChange]);
 
-  const handleUpdateGroup = useCallback(async (groupId: string, newName: string) => {
-    if (!newName.trim()) {
-      toast.error("Group name is required");
-      return;
-    }
-
-    if (ingredientGroups.some(g => g.id !== groupId && g.name.toLowerCase() === newName.trim().toLowerCase())) {
-      toast.error("Group name already exists");
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/menus/${menuId}/ingredient-groups/${groupId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newName.trim(),
-        }),
-      });
-
-      if (response.ok) {
-        const updatedGroup = await response.json();
-        onGroupsChange(
-          ingredientGroups.map(g => g.id === groupId ? updatedGroup : g)
-        );
-        setEditingGroup(null);
-        setEditValue("");
-        toast.success("Ingredient group updated successfully");
-      } else {
-        const error = await response.json();
-        toast.error(error.error || "Failed to update ingredient group");
+  const handleUpdateGroup = useCallback(
+    async (groupId: string, newName: string) => {
+      if (!newName.trim()) {
+        toast.error("Group name is required");
+        return;
       }
-    } catch (error) {
-      console.error("Error updating ingredient group:", error);
-      toast.error("Failed to update ingredient group");
-    }
-  }, [ingredientGroups, menuId, onGroupsChange]);
 
-  const handleDeleteGroup = useCallback(async (groupId: string) => {
-    if (!window.confirm("Are you sure you want to delete this group? All ingredients will be moved to 'Ungrouped'.")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/menus/${menuId}/ingredient-groups/${groupId}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        // Move ingredients to ungrouped
-        const updatedIngredients = ingredients.map(ing => 
-          ing.groupId === groupId ? { ...ing, groupId: null, group: null } : ing
-        );
-        onIngredientsChange(updatedIngredients);
-        
-        // Remove group from list
-        onGroupsChange(ingredientGroups.filter(g => g.id !== groupId));
-        toast.success("Ingredient group deleted successfully");
-      } else {
-        const error = await response.json();
-        toast.error(error.error || "Failed to delete ingredient group");
+      if (
+        ingredientGroups.some(
+          (g) =>
+            g.id !== groupId &&
+            g.name.toLowerCase() === newName.trim().toLowerCase(),
+        )
+      ) {
+        toast.error("Group name already exists");
+        return;
       }
-    } catch (error) {
-      console.error("Error deleting ingredient group:", error);
-      toast.error("Failed to delete ingredient group");
-    }
-  }, [ingredientGroups, ingredients, menuId, onGroupsChange, onIngredientsChange]);
 
-  const handleReorderGroups = useCallback(async (groupId: string, direction: "up" | "down") => {
-    const currentIndex = ingredientGroups.findIndex(g => g.id === groupId);
-    if (currentIndex === -1) return;
-
-    const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= ingredientGroups.length) return;
-
-    const newGroups = [...ingredientGroups];
-    const [movedGroup] = newGroups.splice(currentIndex, 1);
-    newGroups.splice(newIndex, 0, movedGroup);
-
-    // Update sort orders
-    const updatedGroups = newGroups.map((group, index) => ({
-      ...group,
-      sortOrder: index,
-    }));
-
-    onGroupsChange(updatedGroups);
-
-    // Update sort orders in database
-    try {
-      await Promise.all(
-        updatedGroups.map(group =>
-          fetch(`/api/menus/${menuId}/ingredient-groups/${group.id}`, {
+      try {
+        const response = await fetch(
+          `/api/menus/${menuId}/ingredient-groups/${groupId}`,
+          {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              name: group.name,
-              sortOrder: group.sortOrder,
+              name: newName.trim(),
             }),
-          })
+          },
+        );
+
+        if (response.ok) {
+          const updatedGroup = await response.json();
+          onGroupsChange(
+            ingredientGroups.map((g) => (g.id === groupId ? updatedGroup : g)),
+          );
+          setEditingGroup(null);
+          setEditValue("");
+          toast.success("Ingredient group updated successfully");
+        } else {
+          const error = await response.json();
+          toast.error(error.error || "Failed to update ingredient group");
+        }
+      } catch (error) {
+        console.error("Error updating ingredient group:", error);
+        toast.error("Failed to update ingredient group");
+      }
+    },
+    [ingredientGroups, menuId, onGroupsChange],
+  );
+
+  const handleDeleteGroup = useCallback(
+    async (groupId: string) => {
+      if (
+        !window.confirm(
+          "Are you sure you want to delete this group? All ingredients will be moved to 'Ungrouped'.",
         )
-      );
-    } catch (error) {
-      console.error("Error updating sort orders:", error);
-      toast.error("Failed to update group order");
-    }
-  }, [ingredientGroups, menuId, onGroupsChange]);
+      ) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/menus/${menuId}/ingredient-groups/${groupId}`,
+          {
+            method: "DELETE",
+          },
+        );
+
+        if (response.ok) {
+          // Move ingredients to ungrouped
+          const updatedIngredients = ingredients.map((ing) =>
+            ing.groupId === groupId
+              ? { ...ing, groupId: null, group: null }
+              : ing,
+          );
+          onIngredientsChange(updatedIngredients);
+
+          // Remove group from list
+          onGroupsChange(ingredientGroups.filter((g) => g.id !== groupId));
+          toast.success("Ingredient group deleted successfully");
+        } else {
+          const error = await response.json();
+          toast.error(error.error || "Failed to delete ingredient group");
+        }
+      } catch (error) {
+        console.error("Error deleting ingredient group:", error);
+        toast.error("Failed to delete ingredient group");
+      }
+    },
+    [
+      ingredientGroups,
+      ingredients,
+      menuId,
+      onGroupsChange,
+      onIngredientsChange,
+    ],
+  );
+
+  const handleReorderGroups = useCallback(
+    async (groupId: string, direction: "up" | "down") => {
+      const currentIndex = ingredientGroups.findIndex((g) => g.id === groupId);
+      if (currentIndex === -1) return;
+
+      const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (newIndex < 0 || newIndex >= ingredientGroups.length) return;
+
+      const newGroups = [...ingredientGroups];
+      const [movedGroup] = newGroups.splice(currentIndex, 1);
+      newGroups.splice(newIndex, 0, movedGroup);
+
+      // Update sort orders
+      const updatedGroups = newGroups.map((group, index) => ({
+        ...group,
+        sortOrder: index,
+      }));
+
+      onGroupsChange(updatedGroups);
+
+      // Update sort orders in database
+      try {
+        await Promise.all(
+          updatedGroups.map((group) =>
+            fetch(`/api/menus/${menuId}/ingredient-groups/${group.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: group.name,
+                sortOrder: group.sortOrder,
+              }),
+            }),
+          ),
+        );
+      } catch (error) {
+        console.error("Error updating sort orders:", error);
+        toast.error("Failed to update group order");
+      }
+    },
+    [ingredientGroups, menuId, onGroupsChange],
+  );
 
   const startEditing = useCallback((group: MenuIngredientGroup) => {
     setEditingGroup(group.id);
@@ -184,17 +221,28 @@ export function MenuIngredientGroupManager({
     setEditValue("");
   }, []);
 
-  const getGroupStats = useCallback((groupId: string) => {
-    const groupIngredients = ingredients.filter(ing => ing.groupId === groupId);
-    const totalQuantity = groupIngredients.reduce((sum, ing) => sum + ing.quantity, 0);
-    const totalCost = groupIngredients.reduce((sum, ing) => sum + (ing.costPerUnit * ing.quantity), 0);
-    
-    return {
-      count: groupIngredients.length,
-      totalQuantity,
-      totalCost,
-    };
-  }, [ingredients]);
+  const getGroupStats = useCallback(
+    (groupId: string) => {
+      const groupIngredients = ingredients.filter(
+        (ing) => ing.groupId === groupId,
+      );
+      const totalQuantity = groupIngredients.reduce(
+        (sum, ing) => sum + ing.quantity,
+        0,
+      );
+      const totalCost = groupIngredients.reduce(
+        (sum, ing) => sum + ing.costPerUnit * ing.quantity,
+        0,
+      );
+
+      return {
+        count: groupIngredients.length,
+        totalQuantity,
+        totalCost,
+      };
+    },
+    [ingredients],
+  );
 
   return (
     <Card className="w-full">
@@ -245,21 +293,24 @@ export function MenuIngredientGroupManager({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
                         <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
-                        
+
                         {isEditing ? (
                           <div className="flex items-center gap-2 flex-1">
                             <Input
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               onKeyDown={(e) => {
-                                if (e.key === "Enter") handleUpdateGroup(group.id, editValue);
+                                if (e.key === "Enter")
+                                  handleUpdateGroup(group.id, editValue);
                                 if (e.key === "Escape") cancelEditing();
                               }}
                               autoFocus
                             />
                             <Button
                               size="sm"
-                              onClick={() => handleUpdateGroup(group.id, editValue)}
+                              onClick={() =>
+                                handleUpdateGroup(group.id, editValue)
+                              }
                               className="h-8 px-2"
                             >
                               Save
@@ -277,7 +328,9 @@ export function MenuIngredientGroupManager({
                           <div className="flex-1">
                             <h4 className="font-medium">{group.name}</h4>
                             <p className="text-sm text-muted-foreground">
-                              {stats.count} ingredients • {stats.totalQuantity.toFixed(1)} total • ${stats.totalCost.toFixed(2)}
+                              {stats.count} ingredients •{" "}
+                              {stats.totalQuantity.toFixed(1)} total • $
+                              {stats.totalCost.toFixed(2)}
                             </p>
                           </div>
                         )}
@@ -297,8 +350,12 @@ export function MenuIngredientGroupManager({
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleReorderGroups(group.id, "down")}
-                            disabled={group.sortOrder === ingredientGroups.length - 1}
+                            onClick={() =>
+                              handleReorderGroups(group.id, "down")
+                            }
+                            disabled={
+                              group.sortOrder === ingredientGroups.length - 1
+                            }
                             className="h-8 w-8 p-0"
                           >
                             ↓
@@ -331,7 +388,9 @@ export function MenuIngredientGroupManager({
         {ingredientGroups.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
             <p>No ingredient groups created yet.</p>
-            <p className="text-sm">Create groups to organize your menu ingredients.</p>
+            <p className="text-sm">
+              Create groups to organize your menu ingredients.
+            </p>
           </div>
         )}
       </CardContent>

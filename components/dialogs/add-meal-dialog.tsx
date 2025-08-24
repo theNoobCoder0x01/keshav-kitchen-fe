@@ -111,7 +111,7 @@ export function AddMealDialog({
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = (
     ingredients: any[],
-    ingredientGroups: any[] = []
+    ingredientGroups: any[] = [],
   ): IngredientGroupFormValue[] => {
     const groups: IngredientGroupFormValue[] = [];
 
@@ -237,16 +237,16 @@ export function AddMealDialog({
                 costPerUnit: Yup.number()
                   .required(t("meals.costPerUnitRequired"))
                   .min(0, t("meals.costPerUnitMin")),
-              })
+              }),
             )
             .min(0), // Allow empty groups
-        })
+        }),
       )
       .min(1, t("meals.ingredientsRequired"))
       .test("has-ingredients", t("meals.ingredientsRequired"), (groups) => {
         if (!groups) return false;
         return groups.some(
-          (group) => group.ingredients && group.ingredients.length > 0
+          (group) => group.ingredients && group.ingredients.length > 0,
         );
       }),
   });
@@ -254,7 +254,7 @@ export function AddMealDialog({
   // This will be computed dynamically based on editMeal prop
   const getInitialValues = (
     editMeal?: AddMealDialogProps["editMeal"],
-    recipes?: Recipe[]
+    recipes?: Recipe[],
   ): MealFormValuesWithGroups => {
     if (editMeal) {
       // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
@@ -302,7 +302,7 @@ export function AddMealDialog({
           // Use recipe ingredient groups
           ingredientGroups = organizeIngredientsIntoGroups(
             recipeIngredients,
-            recipeGroups
+            recipeGroups,
           );
         } else {
           // Create default "Ungrouped" group
@@ -404,7 +404,7 @@ export function AddMealDialog({
 
   const handleRecipeSelect = (
     recipeId: string,
-    setFieldValue: (field: string, value: any) => void
+    setFieldValue: (field: string, value: any) => void,
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
@@ -415,7 +415,7 @@ export function AddMealDialog({
         // Use recipe ingredient groups
         const ingredientGroups = organizeIngredientsIntoGroups(
           recipeIngredients,
-          recipeGroups
+          recipeGroups,
         );
         setFieldValue("ingredientGroups", ingredientGroups);
       } else {
@@ -448,7 +448,7 @@ export function AddMealDialog({
 
   const handleSubmit = async (
     values: MealFormValuesWithGroups,
-    { resetForm }: { resetForm: () => void }
+    { resetForm }: { resetForm: () => void },
   ) => {
     try {
       setIsFormSubmitting(true);
@@ -481,7 +481,7 @@ export function AddMealDialog({
       if (editMeal) {
         // Update existing meal
         console.log(
-          `Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`
+          `Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`,
         );
 
         // Flatten all ingredients with their group assignments
@@ -515,12 +515,12 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealUpdatedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          })
+          }),
         );
       } else {
         // Create new meal
         console.log(
-          `Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`
+          `Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`,
         );
 
         // Flatten all ingredients with their group assignments
@@ -564,7 +564,7 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealAddedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          })
+          }),
         );
       }
       resetForm();
@@ -643,7 +643,7 @@ export function AddMealDialog({
               unit: ing.unit || "g",
               costPerUnit: ing.costPerUnit || 0,
               localId: ing.localId,
-            }))
+            })),
           );
 
           const calculationInput: MealCalculationInput = {
@@ -877,7 +877,7 @@ export function AddMealDialog({
                             <span className="text-foreground">
                               $
                               {calculateTotalCost(
-                                values.ingredientGroups
+                                values.ingredientGroups,
                               ).toFixed(2)}
                             </span>
                           </div>

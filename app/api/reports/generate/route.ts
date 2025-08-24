@@ -18,6 +18,7 @@ import {
   generateIngredientSummary,
 } from "@/lib/utils/ingredient-combiner";
 import type { MenuReportData } from "@/types";
+import { MealType } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -185,9 +186,10 @@ export async function POST(req: NextRequest) {
           0,
         ),
         totalMeals: menus.length,
-        breakfastCount: menus.filter((m) => m.mealType === "BREAKFAST").length,
-        lunchCount: menus.filter((m) => m.mealType === "LUNCH").length,
-        dinnerCount: menus.filter((m) => m.mealType === "DINNER").length,
+        breakfastCount: menus.filter((m) => m.mealType === MealType.BREAKFAST)
+          .length,
+        lunchCount: menus.filter((m) => m.mealType === MealType.LUNCH).length,
+        dinnerCount: menus.filter((m) => m.mealType === MealType.DINNER).length,
         menus: menus as any,
         combinedIngredients,
         selectedMealTypes,
@@ -199,9 +201,10 @@ export async function POST(req: NextRequest) {
         type: "meal-plan",
         date: targetDate,
         totalMeals: menus.length,
-        breakfastCount: menus.filter((m) => m.mealType === "BREAKFAST").length,
-        lunchCount: menus.filter((m) => m.mealType === "LUNCH").length,
-        dinnerCount: menus.filter((m) => m.mealType === "DINNER").length,
+        breakfastCount: menus.filter((m) => m.mealType === MealType.BREAKFAST)
+          .length,
+        lunchCount: menus.filter((m) => m.mealType === MealType.LUNCH).length,
+        dinnerCount: menus.filter((m) => m.mealType === MealType.DINNER).length,
         menus: menus as any,
       };
     } else if (type === "summary") {
@@ -210,9 +213,10 @@ export async function POST(req: NextRequest) {
         type: "summary",
         date: targetDate,
         totalMeals: menus.length,
-        breakfastCount: menus.filter((m) => m.mealType === "BREAKFAST").length,
-        lunchCount: menus.filter((m) => m.mealType === "LUNCH").length,
-        dinnerCount: menus.filter((m) => m.mealType === "DINNER").length,
+        breakfastCount: menus.filter((m) => m.mealType === MealType.BREAKFAST)
+          .length,
+        lunchCount: menus.filter((m) => m.mealType === MealType.LUNCH).length,
+        dinnerCount: menus.filter((m) => m.mealType === MealType.DINNER).length,
         menus: menus as any,
       };
     } else {

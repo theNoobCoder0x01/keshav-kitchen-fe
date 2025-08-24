@@ -2,7 +2,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { parseISOString, createStartOfDayUTC, createEndOfDayUTC, getCurrentDateUTC } from "@/lib/utils/date";
+import {
+  parseISOString,
+  createStartOfDayUTC,
+  createEndOfDayUTC,
+  getCurrentDateUTC,
+} from "@/lib/utils/date";
 
 export const dynamic = "force-dynamic";
 

@@ -30,7 +30,7 @@ const { theme, root } = extractCssVars(cssPath);
 
 function resolveTheme(
   vars: Record<string, string>,
-  base: Record<string, string>
+  base: Record<string, string>,
 ) {
   const resolved: Record<string, string> = {};
 
@@ -57,7 +57,7 @@ const themeConfig = {
     ...Object.fromEntries(
       Object.entries(resolvedTheme)
         .filter(([k]) => k.startsWith("color-"))
-        .map(([k, v]) => [k.replace(/^color-/, ""), v])
+        .map(([k, v]) => [k.replace(/^color-/, ""), v]),
     ),
   },
   borderRadius: {
@@ -65,7 +65,7 @@ const themeConfig = {
     ...Object.fromEntries(
       Object.entries(resolvedTheme)
         .filter(([k]) => k.startsWith("radius-"))
-        .map(([k, v]) => [k.replace(/^radius-/, ""), v])
+        .map(([k, v]) => [k.replace(/^radius-/, ""), v]),
     ),
   },
   spacing: {
@@ -73,7 +73,7 @@ const themeConfig = {
     ...Object.fromEntries(
       Object.entries(resolvedTheme)
         .filter(([k]) => k.startsWith("spacing-"))
-        .map(([k, v]) => [k.replace(/^spacing-/, ""), v])
+        .map(([k, v]) => [k.replace(/^spacing-/, ""), v]),
     ),
   },
   // add more categories if your @theme defines them

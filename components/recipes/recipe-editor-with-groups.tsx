@@ -6,22 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ChefHat, 
-  Package, 
-  Settings, 
+import {
+  ChefHat,
+  Package,
+  Settings,
   Save,
   Eye,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IngredientGroupManager } from "./ingredient-group-manager";
 import { IngredientGroupAssignment } from "./ingredient-group-assignment";
 import { RecipeDetailView } from "./recipe-detail-view";
-import type { 
-  RecipeDetailData, 
-  IngredientGroup, 
-  RecipeIngredientBase 
+import type {
+  RecipeDetailData,
+  IngredientGroup,
+  RecipeIngredientBase,
 } from "@/types/recipes";
 
 interface RecipeEditorWithGroupsProps {
@@ -41,12 +41,14 @@ export function RecipeEditorWithGroups({
 }: RecipeEditorWithGroupsProps) {
   const [recipe, setRecipe] = useState<RecipeDetailData>(initialRecipe);
   const [ingredientGroups, setIngredientGroups] = useState<IngredientGroup[]>(
-    initialRecipe.ingredientGroups || []
+    initialRecipe.ingredientGroups || [],
   );
   const [ingredients, setIngredients] = useState<RecipeIngredientBase[]>(
-    initialRecipe.ingredients || []
+    initialRecipe.ingredients || [],
   );
-  const [activeTab, setActiveTab] = useState(showPreview ? "preview" : "groups");
+  const [activeTab, setActiveTab] = useState(
+    showPreview ? "preview" : "groups",
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -71,7 +73,9 @@ export function RecipeEditorWithGroups({
     if (!recipe.id) return;
 
     try {
-      const response = await fetch(`/api/recipes/${recipe.id}/ingredient-groups`);
+      const response = await fetch(
+        `/api/recipes/${recipe.id}/ingredient-groups`,
+      );
       if (!response.ok) throw new Error("Failed to fetch ingredient groups");
 
       const { ingredientGroups: groups } = await response.json();
@@ -89,7 +93,7 @@ export function RecipeEditorWithGroups({
 
   const handleIngredientsChange = (newIngredients: RecipeIngredientBase[]) => {
     setIngredients(newIngredients);
-    setRecipe(prev => ({ ...prev, ingredients: newIngredients }));
+    setRecipe((prev) => ({ ...prev, ingredients: newIngredients }));
     setHasUnsavedChanges(true);
   };
 
@@ -103,8 +107,8 @@ export function RecipeEditorWithGroups({
     try {
       // Here you would typically save the recipe
       // This is a placeholder - implement according to your existing save logic
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
       setHasUnsavedChanges(false);
       onSave?.();
       toast.success("Recipe saved successfully");
@@ -119,7 +123,7 @@ export function RecipeEditorWithGroups({
   const getGroupStats = () => {
     const totalGroups = ingredientGroups.length;
     const totalIngredients = ingredients.length;
-    const groupedIngredients = ingredients.filter(ing => ing.groupId).length;
+    const groupedIngredients = ingredients.filter((ing) => ing.groupId).length;
     const ungroupedIngredients = totalIngredients - groupedIngredients;
 
     return {
@@ -139,7 +143,9 @@ export function RecipeEditorWithGroups({
           <div className="text-center py-8 text-muted-foreground">
             <AlertCircle className="w-12 h-12 mx-auto mb-4" />
             <p>Recipe must be saved before managing ingredient groups</p>
-            <p className="text-sm">Save your recipe first to enable grouping features</p>
+            <p className="text-sm">
+              Save your recipe first to enable grouping features
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -161,11 +167,11 @@ export function RecipeEditorWithGroups({
                 </Badge>
               )}
             </CardTitle>
-            
+
             <div className="flex items-center gap-2">
               {isEditing && (
-                <Button 
-                  onClick={handleSave} 
+                <Button
+                  onClick={handleSave}
                   disabled={isLoading || !hasUnsavedChanges}
                   size="sm"
                 >
@@ -179,19 +185,29 @@ export function RecipeEditorWithGroups({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{stats.totalGroups}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.totalGroups}
+              </div>
               <div className="text-sm text-muted-foreground">Total Groups</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.totalIngredients}</div>
-              <div className="text-sm text-muted-foreground">Total Ingredients</div>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.totalIngredients}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Total Ingredients
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{stats.groupedIngredients}</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {stats.groupedIngredients}
+              </div>
               <div className="text-sm text-muted-foreground">Grouped</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{stats.ungroupedIngredients}</div>
+              <div className="text-2xl font-bold text-orange-600">
+                {stats.ungroupedIngredients}
+              </div>
               <div className="text-sm text-muted-foreground">Ungrouped</div>
             </div>
           </div>
@@ -221,7 +237,8 @@ export function RecipeEditorWithGroups({
               <CardTitle>Group Management</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Create, edit, and organize ingredient groups for your recipe.
-                Groups help organize ingredients by purpose (e.g., "Dough", "Filling", "Sauce").
+                Groups help organize ingredients by purpose (e.g., "Dough",
+                "Filling", "Sauce").
               </p>
             </CardHeader>
             <CardContent>
@@ -241,8 +258,8 @@ export function RecipeEditorWithGroups({
             <CardHeader>
               <CardTitle>Ingredient Assignment</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Assign ingredients to groups or move them between groups. 
-                Select multiple ingredients for bulk operations.
+                Assign ingredients to groups or move them between groups. Select
+                multiple ingredients for bulk operations.
               </p>
             </CardHeader>
             <CardContent>
@@ -261,8 +278,8 @@ export function RecipeEditorWithGroups({
             <CardHeader>
               <CardTitle>Recipe Preview</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Preview how your recipe will look with ingredient groups.
-                This shows the same view users will see on the recipe detail page.
+                Preview how your recipe will look with ingredient groups. This
+                shows the same view users will see on the recipe detail page.
               </p>
             </CardHeader>
             <CardContent>
@@ -283,35 +300,38 @@ export function RecipeEditorWithGroups({
       {/* Help Section */}
       <Card className="bg-muted/30">
         <CardHeader>
-          <CardTitle className="text-base">How to Use Ingredient Groups</CardTitle>
+          <CardTitle className="text-base">
+            How to Use Ingredient Groups
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid md:grid-cols-2 gap-4 text-sm">
             <div>
               <h4 className="font-medium mb-2">1. Create Groups</h4>
               <p className="text-muted-foreground">
-                Start by creating logical groups like "Dough", "Filling", "Topping", etc. 
-                Set sort orders to control display order.
+                Start by creating logical groups like "Dough", "Filling",
+                "Topping", etc. Set sort orders to control display order.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">2. Assign Ingredients</h4>
               <p className="text-muted-foreground">
-                Move ingredients into appropriate groups using the assignment tab. 
-                You can select multiple ingredients for bulk operations.
+                Move ingredients into appropriate groups using the assignment
+                tab. You can select multiple ingredients for bulk operations.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">3. Preview Results</h4>
               <p className="text-muted-foreground">
-                Use the preview tab to see how your recipe will look with grouped ingredients. 
-                Groups are displayed in order with clear headers.
+                Use the preview tab to see how your recipe will look with
+                grouped ingredients. Groups are displayed in order with clear
+                headers.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">4. Ungrouped Items</h4>
               <p className="text-muted-foreground">
-                Ingredients without a group appear in an "Ungrouped" section. 
+                Ingredients without a group appear in an "Ungrouped" section.
                 This ensures backward compatibility with existing recipes.
               </p>
             </div>

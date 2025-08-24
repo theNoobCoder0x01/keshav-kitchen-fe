@@ -3,7 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { getSortedMenuGroupNames, groupMenuIngredientsByGroup } from "@/lib/utils/menu-utils";
+import {
+  getSortedMenuGroupNames,
+  groupMenuIngredientsByGroup,
+} from "@/lib/utils/menu-utils";
 import { MenuIngredient, MenuIngredientGroup } from "@/types/menus";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -62,15 +65,24 @@ export function MenuCard({
   const renderGroupedIngredients = (item: MenuItem) => {
     if (!item.ingredients || item.ingredients.length === 0) return null;
 
-    const groupedIngredients = groupMenuIngredientsByGroup(item.ingredients, item.ingredientGroups);
+    const groupedIngredients = groupMenuIngredientsByGroup(
+      item.ingredients,
+      item.ingredientGroups,
+    );
     const sortedGroupNames = getSortedMenuGroupNames(groupedIngredients);
 
     return (
       <div className="mt-2 space-y-2">
-        {sortedGroupNames.map(groupName => {
+        {sortedGroupNames.map((groupName) => {
           const group = groupedIngredients[groupName];
-          const totalQuantity = group.ingredients.reduce((sum, ing) => sum + ing.quantity, 0);
-          const totalCost = group.ingredients.reduce((sum, ing) => sum + (ing.costPerUnit * ing.quantity), 0);
+          const totalQuantity = group.ingredients.reduce(
+            (sum, ing) => sum + ing.quantity,
+            0,
+          );
+          const totalCost = group.ingredients.reduce(
+            (sum, ing) => sum + ing.costPerUnit * ing.quantity,
+            0,
+          );
 
           return (
             <div key={groupName} className="border-l-2 border-primary/20 pl-3">
@@ -78,7 +90,9 @@ export function MenuCard({
                 <h5 className="text-xs font-medium text-primary">
                   {groupName}
                   {groupName === "Ungrouped" && (
-                    <span className="text-muted-foreground ml-1">(Default)</span>
+                    <span className="text-muted-foreground ml-1">
+                      (Default)
+                    </span>
                   )}
                 </h5>
                 <span className="text-xs text-muted-foreground">
@@ -86,8 +100,11 @@ export function MenuCard({
                 </span>
               </div>
               <div className="space-y-1">
-                {group.ingredients.map(ingredient => (
-                  <div key={ingredient.id} className="flex items-center justify-between text-xs">
+                {group.ingredients.map((ingredient) => (
+                  <div
+                    key={ingredient.id}
+                    className="flex items-center justify-between text-xs"
+                  >
                     <span className="text-muted-foreground truncate flex-1">
                       {ingredient.name}
                     </span>
