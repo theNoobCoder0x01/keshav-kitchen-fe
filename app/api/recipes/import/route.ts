@@ -52,8 +52,6 @@ export const excelToJson = (fileBuffer: ArrayBuffer, userId: string) => {
       userId,
       ingredients: {
         create: ingredients.map((ingredient) => {
-          console.log("Ingredient:", ingredient);
-
           return {
             name: ingredient.name,
             quantity: parseFloat(ingredient.quantity?.toString() || "0"),

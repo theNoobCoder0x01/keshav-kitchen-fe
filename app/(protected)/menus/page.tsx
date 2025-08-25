@@ -35,13 +35,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-// Temporary interface for MenuGrid props to resolve lint errors
-interface MenuGridProps {
-  onAddMeal: (mealType: UnifiedMealType) => void;
-  dailyMenus: any;
-  selectedDate: Date;
-}
-
 export default function MenuPage() {
   const { t } = useTranslations();
   const { data: session, status } = useSession();
@@ -50,7 +43,7 @@ export default function MenuPage() {
   const [reportsDialog, setReportsDialog] = useState(false);
   const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
-    MealType.BREAKFAST,
+    MealType.BREAKFAST
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -104,10 +97,6 @@ export default function MenuPage() {
         return;
       }
 
-      console.log(
-        `Loading data for kitchen: ${currentKitchenId}, date: ${selectedDate.toISOString().split("T")[0]}, activeTab: ${activeTab}`,
-      );
-
       // Load stats and menus in parallel
       setLoadingStates((prev) => ({
         ...prev,
@@ -123,19 +112,14 @@ export default function MenuPage() {
         }),
       ]);
 
-      console.log(
-        `Fetched ${menusResponse.length} menus for kitchen ${currentKitchenId}:`,
-        menusResponse,
-      );
-
       // Transform menus data to match the expected format
       const groupedMenus = {
         BREAKFAST: menusResponse.filter(
-          (m: any) => m.mealType === MealType.BREAKFAST,
+          (m: any) => m.mealType === MealType.BREAKFAST
         ),
         LUNCH: menusResponse.filter((m: any) => m.mealType === MealType.LUNCH),
         DINNER: menusResponse.filter(
-          (m: any) => m.mealType === MealType.DINNER,
+          (m: any) => m.mealType === MealType.DINNER
         ),
         SNACK: menusResponse.filter((m: any) => m.mealType === MealType.SNACK),
       };
@@ -181,8 +165,14 @@ export default function MenuPage() {
     return loadingStates.kitchens || loadingStates.stats || loadingStates.menus;
   };
 
-  const handleAddMeal = (mealType: UnifiedMealType) => {
+  const handleAddMeal = (
+    mealType: UnifiedMealType,
+    menuComponentId?: string
+  ) => {
     setSelectedMealType(mealType);
+    setEditMeal({
+      menuComponentId,
+    });
     setAddMealDialog(true);
   };
 
@@ -344,7 +334,7 @@ export default function MenuPage() {
               onAddMeal={handleAddMeal}
               onEditMeal={handleEditMeal}
               onDeleteMeal={handleDeleteMeal}
-              dailyMenus={dailyMenus}
+              menus={dailyMenus}
               selectedDate={selectedDate}
             />
           )}

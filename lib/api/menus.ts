@@ -19,6 +19,7 @@ export async function createMenu(data: {
   status?: MenuStatus;
   notes?: string;
   ingredients?: IngredientFormValue[];
+  menuComponentId?: string;
 }) {
   const response = await api.post("/menus", data);
   return response.data;

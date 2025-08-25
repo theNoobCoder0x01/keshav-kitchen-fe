@@ -52,9 +52,6 @@ export async function GET(req: NextRequest) {
         costPerUnit: true,
       },
     });
-
-    console.log(startOfDay, endOfDay);
-    console.log(data);
   } catch (err) {
     return new NextResponse("Failed to fetch report data", { status: 500 });
   }

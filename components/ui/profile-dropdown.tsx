@@ -54,30 +54,6 @@ export function ProfileDropdown() {
       icon: Settings,
       onClick: handleSettingsClick,
     },
-    {
-      label: "Notifications",
-      icon: Bell,
-      onClick: () => {
-        // TODO: Navigate to notifications
-        console.log("Navigate to notifications");
-      },
-    },
-    {
-      label: "Security",
-      icon: Shield,
-      onClick: () => {
-        // TODO: Navigate to security settings
-        console.log("Navigate to security");
-      },
-    },
-    {
-      label: "Help & Support",
-      icon: HelpCircle,
-      onClick: () => {
-        // TODO: Navigate to help
-        console.log("Navigate to help");
-      },
-    },
   ];
 
   return (

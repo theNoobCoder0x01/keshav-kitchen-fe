@@ -2,14 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { fetchMenuComponents } from "@/lib/api/menu-components";
 import { cn } from "@/lib/utils";
-import {
-  getSortedMenuGroupNames,
-  groupMenuIngredientsByGroup,
-} from "@/lib/utils/menu-utils";
 import { MenuIngredient, MenuIngredientGroup } from "@/types/menus";
+import { MenuComponent } from "@prisma/client";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 
 interface MenuItem {
@@ -19,13 +17,14 @@ interface MenuItem {
   isAddItem?: boolean;
   ingredients?: MenuIngredient[];
   ingredientGroups?: MenuIngredientGroup[];
+  menuComponent?: MenuComponent;
 }
 
 interface MenuCardProps {
   id: string;
   title: string;
   items: MenuItem[];
-  onAdd: () => void;
+  onAdd: (menuComponentId?: string) => void;
   onEdit?: (item: MenuItem) => void;
   onDelete?: (itemId: string) => void;
   showActions?: boolean;
@@ -33,7 +32,6 @@ interface MenuCardProps {
 }
 
 export function MenuCard({
-  id,
   title,
   items,
   onAdd,
@@ -42,27 +40,48 @@ export function MenuCard({
   showActions = false,
   className,
 }: MenuCardProps) {
-  const [editingItem, setEditingItem] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
+  const [menuComponents, setMenuComponents] = useState<MenuComponent[]>([]);
 
-  const handleEditSave = (item: MenuItem) => {
-    if (editValue.trim()) {
-      onEdit?.({ ...item, name: editValue.trim() });
+  const loadMenuComponents = async () => {
+    try {
+      let menuComponents = await fetchMenuComponents({
+        mealType: title.toUpperCase(),
+      });
+
+      setMenuComponents(menuComponents);
+    } catch (error) {
+      console.error("Failed to fetch menu components:", error);
     }
-    setEditingItem(null);
-    setEditValue("");
   };
 
-  const handleEditCancel = () => {
-    setEditingItem(null);
-    setEditValue("");
-  };
+  useEffect(() => {
+    loadMenuComponents();
+  }, [title]);
+
+  // Create an array containing either a menuComponent or a menu item, connecting them by id
+  const menuComponentWithMenuItemList = useMemo(() => {
+    const itemsWithMenuComponent = items.filter(
+      (item) => item.menuComponent
+    );
+    let t = [
+      ...menuComponents.map((component) => {
+        const item = itemsWithMenuComponent.find(
+          (item) => item.menuComponent?.id === component.id
+        );
+        return { component, item };
+      }),
+      ...items
+        .filter((item) => !item.menuComponent)
+        .map((item) => ({ item, component: undefined })), // Include items without a linked menu component
+    ];
+    return t;
+  }, [menuComponents, items]);
 
   return (
     <Card
       className={cn(
         "bg-card/100 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
-        className,
+        className
       )}
     >
       <CardContent className="p-4 sm:p-6">
@@ -78,80 +97,47 @@ export function MenuCard({
           <Button
             size="sm"
             className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
-            onClick={onAdd}
+            onClick={() => onAdd()}
           >
             <Plus className="w-4 h-4 mr-1" />
             <span className="hidden sm:inline">Add</span>
           </Button>
         </div>
-
         <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
-          {items?.map((item) => (
+          {menuComponentWithMenuItemList?.map(({ item, component }) => (
             <div
-              key={item.id}
+              key={item?.id ?? component?.id}
               className={cn(
                 "group flex items-center p-3 hover:bg-muted rounded-xl transition-all duration-200",
                 showActions ? "justify-between" : "space-x-3",
+                !item && "cursor-pointer"
               )}
+              onClick={(e) => {
+                if (!item && component) {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onAdd(component.id);
+                }
+              }}
             >
-              {item.isAddItem ? (
-                <>
-                  <div className="w-10 h-10 bg-linear-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10">
-                    <Plus className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-foreground flex-1 font-medium">
-                    {item.name}
-                  </span>
-                </>
-              ) : (
+              {item ? (
                 <>
                   <div className="flex-1 min-w-0">
-                    {editingItem === item.id ? (
-                      <div className="space-y-3">
-                        <input
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-primary rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 bg-background"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleEditSave(item);
-                            if (e.key === "Escape") handleEditCancel();
-                          }}
-                          autoFocus
-                        />
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleEditSave(item)}
-                            className="h-7 px-3 text-xs bg-primary hover:bg-primary/90"
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleEditCancel}
-                            className="h-7 px-3 text-xs bg-transparent"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="text-foreground font-medium truncate">
-                          {item.name}
-                        </p>
-                        {item.weight && (
-                          <p className="text-sm text-muted-foreground mt-1">
+                    {component?.label && <p>{component.label}</p>}
+                    <p className="text-foreground font-medium truncate">
+                      {item.name}
+                      {item.weight && (
+                        <>
+                          -
+                          <span className="text-sm text-muted-foreground mt-1">
                             {item.weight}
-                          </p>
-                        )}
-                      </>
-                    )}
+                          </span>
+                        </>
+                      )}
+                    </p>
                   </div>
 
-                  {showActions && editingItem !== item.id && (
+                  {showActions && (
                     <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         size="sm"
@@ -172,6 +158,13 @@ export function MenuCard({
                     </div>
                   )}
                 </>
+              ) : (
+                <div className="flex gap-2 items-center text-primary">
+                  <div className="flex items-center justify-center p-1.5 bg-accent-foreground/10 rounded-full">
+                    <Plus className="size-4" />
+                  </div>
+                  <span className="text-sm">Add {component?.label}</span>
+                </div>
               )}
             </div>
           ))}

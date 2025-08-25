@@ -7,8 +7,6 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("Fetching all recipes...");
-
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -71,7 +69,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log(`Found ${recipes.length} recipes`);
     return NextResponse.json(recipes);
   } catch (error) {
     console.error("Get recipes API error:", error);

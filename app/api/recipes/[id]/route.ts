@@ -11,7 +11,6 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    console.log(`Fetching recipe with ID: ${id}`);
 
     const session = await getServerSession(authOptions);
 
@@ -82,9 +81,6 @@ export async function GET(
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    console.log(
-      `Found recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`,
-    );
     return NextResponse.json(recipe);
   } catch (error) {
     console.error("Get recipe by ID API error:", error);
@@ -101,7 +97,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    console.log(`Deleting recipe with ID: ${id}`);
 
     const session = await getServerSession(authOptions);
 
@@ -138,7 +133,6 @@ export async function DELETE(
       where: { id },
     });
 
-    console.log(`Successfully deleted recipe: ${existingRecipe.name}`);
     return NextResponse.json({ message: "Recipe deleted successfully" });
   } catch (error) {
     console.error("Delete recipe API error:", error);

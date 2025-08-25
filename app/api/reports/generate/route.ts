@@ -46,17 +46,6 @@ export async function POST(req: NextRequest) {
   const kitchenIds = kitchenIdsParam ? kitchenIdsParam.split(",") : [];
   const selectedMealTypes = mealTypesParam ? mealTypesParam.split(",") : [];
 
-  console.log("Generate report params:", {
-    type,
-    date,
-    format,
-    kitchenIds,
-    selectedMealTypes,
-    combineMealTypes,
-    combineKitchens,
-    attachRecipePrints,
-  });
-
   // Get kitchen data and menu data based on date, type, and filters
   let data: MenuReportData;
   try {
@@ -142,8 +131,6 @@ export async function POST(req: NextRequest) {
       },
       orderBy: { createdAt: "asc" },
     });
-
-    console.log(`Found ${menus.length} menus for the query`);
 
     if (type === "ingredients") {
       // Generate combined ingredients report
@@ -248,35 +235,16 @@ export async function POST(req: NextRequest) {
 
   let buffer, contentType, fileExt;
   try {
-    console.log(`Generating ${format} report for type: ${type}, date: ${date}`);
-    console.log(`Data structure:`, {
-      type: data.type,
-      menusCount: data.menus?.length || 0,
-      combinedIngredientsCount: data.combinedIngredients?.length || 0,
-      sampleMenu: data.menus?.[0]
-        ? {
-            kitchen: data.menus[0].kitchen?.name,
-            recipe: data.menus[0].recipe?.name,
-            mealType: data.menus[0].mealType,
-          }
-        : null,
-    });
-
     if (format === "csv") {
       buffer = await createMenuReportCSV(data, type, date);
       contentType = "text/csv";
       fileExt = "csv";
     } else if (format === "pdf") {
-      console.log("Attempting to generate PDF with Puppeteer...");
       buffer = await createReportPDFWithPuppeteer(
         data,
         type,
         date,
         attachRecipePrints,
-      );
-      console.log(
-        "PDF generation completed, buffer size:",
-        buffer?.length || 0,
       );
       contentType = "application/pdf";
       fileExt = "pdf";
@@ -286,22 +254,14 @@ export async function POST(req: NextRequest) {
 
       // If recipe attachments are requested, create a combined workbook
       if (attachRecipePrints && data.menus && data.menus.length > 0) {
-        console.log("Adding recipe attachments to Excel report...");
         const uniqueRecipes = extractUniqueRecipes(data.menus);
         if (uniqueRecipes.length > 0) {
-          console.log(
-            `Combining Excel report with ${uniqueRecipes.length} unique recipes`,
-          );
-
           // For now, we'll create the recipes workbook separately
           // TODO: Implement proper Excel workbook merging by combining worksheets
           const recipesBuffer = createRecipesExcelWorkbook(uniqueRecipes);
 
           // Use the recipes workbook as it includes both summary and individual recipes
           buffer = recipesBuffer;
-          console.log(
-            `Excel report with ${uniqueRecipes.length} unique recipes attached`,
-          );
         } else {
           buffer = mainBuffer;
         }
@@ -318,7 +278,6 @@ export async function POST(req: NextRequest) {
 
       // If recipe attachments are requested, append recipes to CSV
       if (attachRecipePrints && data.menus && data.menus.length > 0) {
-        console.log("Adding recipe attachments to CSV report...");
         const uniqueRecipes = extractUniqueRecipes(data.menus);
         if (uniqueRecipes.length > 0) {
           const mainCSV = buffer.toString();
@@ -336,9 +295,6 @@ export async function POST(req: NextRequest) {
             recipesCSV;
 
           buffer = Buffer.from(combinedCSV);
-          console.log(
-            `CSV report with ${uniqueRecipes.length} unique recipes attached`,
-          );
         }
       }
 
