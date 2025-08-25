@@ -76,7 +76,7 @@ export function MenuGrid({
       { type: MealType.DINNER, title: "Dinner", key: "dinner" },
       { type: MealType.SNACK, title: "Snack", key: "snack" },
     ],
-    []
+    [],
   );
 
   return (
