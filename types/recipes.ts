@@ -61,7 +61,7 @@ export interface RecipeApiItem {
   instructions: string | null;
   servings: number | null;
   category: string;
-  subcategory: string | null;
+  subcategory: string;
   ingredients: RecipeIngredientApi[];
   ingredientGroups?: IngredientGroupApi[];
   user: { name: string; email: string };

@@ -1,13 +1,12 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  createEndOfDayUTC,
+  createStartOfDayUTC,
+  parseISOString,
+} from "@/lib/utils/date";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import {
-  parseISOString,
-  createStartOfDayUTC,
-  createEndOfDayUTC,
-  getCurrentDateUTC,
-} from "@/lib/utils/date";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +96,15 @@ export async function GET(request: Request) {
     const menus = await prisma.menu.findMany({
       where,
       include: {
+        menuComponent: {
+          select: {
+            id: true,
+            name: true,
+            label: true,
+            mealType: true,
+            sequenceNumber: true,
+          },
+        },
         recipe: {
           select: {
             id: true,
@@ -150,7 +158,7 @@ export async function GET(request: Request) {
     console.error("Failed to fetch menus:", error);
     return NextResponse.json(
       { error: "Failed to fetch menus." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -158,8 +166,6 @@ export async function GET(request: Request) {
 // POST create menu
 export async function POST(request: Request) {
   try {
-    console.log("Creating new menu...");
-
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -175,7 +181,7 @@ export async function POST(request: Request) {
           error:
             "Missing required fields: recipeId, mealType, kitchenId, userId",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -232,14 +238,12 @@ export async function POST(request: Request) {
         },
       },
     });
-
-    console.log(`Menu created successfully: ${menu.id}`);
     return NextResponse.json(menu, { status: 201 });
   } catch (error) {
     console.error("Create menu API error:", error);
     return NextResponse.json(
       { error: "Failed to create menu." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -327,7 +331,7 @@ export async function PUT(request: Request) {
     console.error("Update menu API error:", error);
     return NextResponse.json(
       { error: "Failed to update menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }
@@ -344,7 +348,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }

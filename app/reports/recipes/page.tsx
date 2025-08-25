@@ -22,8 +22,6 @@ export default function RecipesReport() {
     try {
       if (epochMs) {
         const recipesData = await getRecipesReport(epochMs);
-        console.log(recipesData);
-
         setData(recipesData);
       } else {
         console.error("Timestamp is required.");

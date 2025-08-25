@@ -5,15 +5,11 @@ export async function GET() {
   try {
     // Adjust the query as per your schema
     // Example: aggregate stats from multiple tables
-    console.log("Fetching meals count...");
     // Commenting out problematic queries for now to prevent errors
     // const mealsServed = await prisma.meal.count();
     const mealsServed = 0; // Placeholder value
-    console.log("Fetching kitchens count...");
     const activeKitchens = await prisma.kitchen.count();
-    console.log("Fetching recipes count...");
     const recipes = await prisma.recipe.count();
-    console.log("Fetching volunteers count...");
     // const volunteers = await prisma.user.count({ where: { role: 'volunteer' } });
     const volunteers = 0; // Placeholder value until role type is fixed
     const stats = [

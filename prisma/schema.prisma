@@ -46,20 +46,20 @@ model Kitchen {
 }
 
 model Recipe {
-  id           String       @id @default(cuid())
-  name         String
-  description  String?
-  instructions String?
-  servings     Int?
-  category     String
-  subcategory  String
-  userId       String
-  user         User         @relation(fields: [userId], references: [id])
-  ingredients  Ingredient[]
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  instructions     String?
+  servings         Int?
+  category         String
+  subcategory      String
+  userId           String
+  user             User              @relation(fields: [userId], references: [id])
+  ingredients      Ingredient[]
   ingredientGroups IngredientGroup[]
-  menus        Menu[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  menus            Menu[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@index([userId])
 }
@@ -74,46 +74,48 @@ model IngredientGroup {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  @@index([recipeId])
   @@unique([recipeId, name])
+  @@index([recipeId])
 }
 
 model Ingredient {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
   name        String
   quantity    Float
   unit        String
   costPerUnit Float?
   recipeId    String
-  recipe      Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipe      Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   groupId     String?
   group       IngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@index([recipeId])
   @@index([groupId])
 }
 
 model Menu {
-  id          String           @id @default(cuid())
-  date        DateTime
-  mealType    MealType
-  recipeId    String
-  recipe      Recipe           @relation(fields: [recipeId], references: [id])
-  kitchenId   String
-  kitchen     Kitchen          @relation(fields: [kitchenId], references: [id])
-  userId      String
-  user        User             @relation(fields: [userId], references: [id])
-  servings    Int
-  ghanFactor  Float            @default(1.0)
-  status      Status           @default(PLANNED)
-  actualCount Int?
-  notes       String?
-  ingredients MenuIngredient[] // Store ingredients separately for each menu
+  id               String                @id @default(cuid())
+  date             DateTime
+  mealType         MealType
+  recipeId         String
+  recipe           Recipe                @relation(fields: [recipeId], references: [id])
+  kitchenId        String
+  kitchen          Kitchen               @relation(fields: [kitchenId], references: [id])
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id])
+  servings         Int
+  ghanFactor       Float                 @default(1.0)
+  status           Status                @default(PLANNED)
+  actualCount      Int?
+  notes            String?
+  ingredients      MenuIngredient[] // Store ingredients separately for each menu
   ingredientGroups MenuIngredientGroup[] // Add ingredient groups for menus
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  menuComponentId  String?
+  menuComponent    MenuComponent?        @relation(fields: [menuComponentId], references: [id])
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
 
   @@index([recipeId])
   @@index([kitchenId])
@@ -130,25 +132,34 @@ model MenuIngredientGroup {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  @@index([menuId])
   @@unique([menuId, name])
+  @@index([menuId])
 }
 
 model MenuIngredient {
-  id          String   @id @default(cuid())
+  id          String               @id @default(cuid())
   name        String
   quantity    Float
   unit        String
   costPerUnit Float
   menuId      String
-  menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  groupId     String?  // Add groupId to support grouping
+  menu        Menu                 @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  groupId     String? // Add groupId to support grouping
   group       MenuIngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
   @@index([menuId])
   @@index([groupId]) // Add index for groupId
+}
+
+model MenuComponent {
+  id             String   @id @default(cuid())
+  name           String
+  label          String
+  mealType       MealType
+  sequenceNumber Int
+  Menu           Menu[]
 }
 
 model Report {

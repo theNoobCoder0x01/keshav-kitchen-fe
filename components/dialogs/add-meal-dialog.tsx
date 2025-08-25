@@ -2,7 +2,7 @@
 
 import { ErrorMessage, Field, Formik } from "formik";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as Yup from "yup";
 
@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTranslations } from "@/hooks/use-translations";
-import { fetchIngredients } from "@/lib/api/ingredients";
 import { createMenu, updateMenu } from "@/lib/api/menus";
 import { fetchRecipes } from "@/lib/api/recipes";
 import {
@@ -43,7 +42,10 @@ import type {
 // Use centralized unit options
 const UNITS = UNIT_OPTIONS;
 
-type Recipe = Pick<RecipeApiItem, "id" | "name"> & {
+type Recipe = Pick<
+  RecipeApiItem,
+  "id" | "name" | "category" | "subcategory"
+> & {
   ingredients?: RecipeIngredientApi[];
   ingredientGroups?: IngredientGroupApi[];
 };
@@ -73,6 +75,7 @@ interface AddMealDialogProps {
     recipeId: string;
     servings: number;
     ghanFactor: number;
+    menuComponentId?: string;
     recipe?: {
       id: string;
       name: string;
@@ -89,6 +92,7 @@ interface MealFormProps {
 // Update MealFormValues to include ingredient groups
 interface MealFormValuesWithGroups extends Omit<MealFormValues, "ingredients"> {
   ingredientGroups: IngredientGroupFormValue[];
+  menuComponentId?: string;
 }
 
 export function AddMealDialog({
@@ -102,16 +106,17 @@ export function AddMealDialog({
   const { t } = useTranslations();
   const { data: session } = useSession();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [ingredientOptions, setIngredientOptions] = useState<
-    IngredientOption[]
-  >([]);
+  const [selectedRecipeCategory, setSelectedRecipeCategory] =
+    useState<string>("");
+  const [selectedRecipeSubcategory, setSelectedRecipeSubcategory] =
+    useState<string>("");
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = (
     ingredients: any[],
-    ingredientGroups: any[] = [],
+    ingredientGroups: any[] = []
   ): IngredientGroupFormValue[] => {
     const groups: IngredientGroupFormValue[] = [];
 
@@ -237,16 +242,16 @@ export function AddMealDialog({
                 costPerUnit: Yup.number()
                   .required(t("meals.costPerUnitRequired"))
                   .min(0, t("meals.costPerUnitMin")),
-              }),
+              })
             )
             .min(0), // Allow empty groups
-        }),
+        })
       )
       .min(1, t("meals.ingredientsRequired"))
       .test("has-ingredients", t("meals.ingredientsRequired"), (groups) => {
         if (!groups) return false;
         return groups.some(
-          (group) => group.ingredients && group.ingredients.length > 0,
+          (group) => group.ingredients && group.ingredients.length > 0
         );
       }),
   });
@@ -254,9 +259,9 @@ export function AddMealDialog({
   // This will be computed dynamically based on editMeal prop
   const getInitialValues = (
     editMeal?: AddMealDialogProps["editMeal"],
-    recipes?: Recipe[],
+    recipes?: Recipe[]
   ): MealFormValuesWithGroups => {
-    if (editMeal) {
+    if (editMeal?.id) {
       // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
       let ingredients;
       let ingredientGroups;
@@ -302,7 +307,7 @@ export function AddMealDialog({
           // Use recipe ingredient groups
           ingredientGroups = organizeIngredientsIntoGroups(
             recipeIngredients,
-            recipeGroups,
+            recipeGroups
           );
         } else {
           // Create default "Ungrouped" group
@@ -349,6 +354,7 @@ export function AddMealDialog({
         followRecipe: true,
         ghan: editMeal.ghanFactor || 1.0,
         servingAmount: editMeal.servings,
+        menuComponentId: editMeal?.menuComponentId,
         servingUnit: "g", // Default unit, could be enhanced to store this in the database
         ingredientGroups,
       };
@@ -360,6 +366,7 @@ export function AddMealDialog({
       ghan: 1.0,
       servingAmount: 100,
       servingUnit: "g",
+      menuComponentId: editMeal?.menuComponentId,
       ingredientGroups: [
         {
           name: "Ungrouped",
@@ -385,12 +392,8 @@ export function AddMealDialog({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [recipesData, ingredientsData] = await Promise.all([
-          fetchRecipes(),
-          fetchIngredients(),
-        ]);
+        const [recipesData] = await Promise.all([fetchRecipes()]);
         setRecipes(recipesData);
-        setIngredientOptions(ingredientsData);
       } catch (error) {
         console.error("Error loading data:", error);
         toast.error("Failed to load recipes and ingredients");
@@ -404,7 +407,7 @@ export function AddMealDialog({
 
   const handleRecipeSelect = (
     recipeId: string,
-    setFieldValue: (field: string, value: any) => void,
+    setFieldValue: (field: string, value: any) => void
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
@@ -415,7 +418,7 @@ export function AddMealDialog({
         // Use recipe ingredient groups
         const ingredientGroups = organizeIngredientsIntoGroups(
           recipeIngredients,
-          recipeGroups,
+          recipeGroups
         );
         setFieldValue("ingredientGroups", ingredientGroups);
       } else {
@@ -448,7 +451,7 @@ export function AddMealDialog({
 
   const handleSubmit = async (
     values: MealFormValuesWithGroups,
-    { resetForm }: { resetForm: () => void },
+    { resetForm }: { resetForm: () => void }
   ) => {
     try {
       setIsFormSubmitting(true);
@@ -478,12 +481,7 @@ export function AddMealDialog({
         throw new Error("Ghan factor must be greater than zero.");
       }
 
-      if (editMeal) {
-        // Update existing meal
-        console.log(
-          `Updating meal ${editMeal.id} for kitchen: ${targetKitchenId}, mealType: ${mealType}`,
-        );
-
+      if (editMeal?.id) {
         // Flatten all ingredients with their group assignments
         const allIngredients: any[] = [];
         values.ingredientGroups.forEach((group: any, groupIndex: number) => {
@@ -509,20 +507,16 @@ export function AddMealDialog({
           ghanFactor: values.ghan,
           notes: `Meal updated for ${mealType.toLowerCase()} with ${values.servingAmount} ${values.servingUnit} servings and ${values.ghan} ghan factor.`,
           ingredients: trimIngredients(allIngredients),
+          menuComponentId: values.menuComponentId,
         };
 
         const result = await updateMenu(editMeal.id, updateData);
         toast.success(
           t("meals.mealUpdatedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       } else {
-        // Create new meal
-        console.log(
-          `Creating meal for kitchen: ${targetKitchenId}, mealType: ${mealType}, date: ${selectedDate.toISOString()}`,
-        );
-
         // Flatten all ingredients with their group assignments
         const allIngredients: any[] = [];
         values.ingredientGroups.forEach((group: any, groupIndex: number) => {
@@ -558,13 +552,14 @@ export function AddMealDialog({
             ghan: values.ghan,
           }),
           ingredients: trimIngredients(allIngredients),
+          menuComponentId: values.menuComponentId,
         };
 
         const result = await createMenu(menuData);
         toast.success(
           t("meals.mealAddedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       }
       resetForm();
@@ -595,12 +590,59 @@ export function AddMealDialog({
     }, 0);
   };
 
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      if (
+        recipe.category !== "all" &&
+        recipe.category !== selectedRecipeCategory
+      ) {
+        return false;
+      }
+      if (
+        recipe.subcategory !== "all" &&
+        recipe.subcategory !== selectedRecipeSubcategory
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [recipes, selectedRecipeCategory, selectedRecipeSubcategory]);
+
+  const recipeCategories = useMemo(() => {
+    const categories = [
+      "all",
+      ...Array.from(
+        new Set(recipes.map((recipe) => recipe.category).filter(Boolean))
+      ),
+    ];
+    return categories;
+  }, [recipes]);
+
+  const recipeSubcategories = useMemo(() => {
+    const subcategories = [
+      "all",
+      ...(Array.from(
+        new Set(
+          recipes
+            .filter((recipe) =>
+              selectedRecipeCategory
+                ? recipe.category === selectedRecipeCategory
+                : true
+            )
+            .map((recipe) => recipe.subcategory)
+            .filter(Boolean)
+        )
+      ) ?? []),
+    ];
+    return subcategories;
+  }, [recipes, selectedRecipeCategory]);
+
   return (
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
       title={
-        editMeal
+        editMeal?.id
           ? t("meals.editMeal", { mealType: mealType.toLowerCase() })
           : t("meals.addMeal", { mealType: mealType.toLowerCase() })
       }
@@ -643,7 +685,7 @@ export function AddMealDialog({
               unit: ing.unit || "g",
               costPerUnit: ing.costPerUnit || 0,
               localId: ing.localId,
-            })),
+            }))
           );
 
           const calculationInput: MealCalculationInput = {
@@ -683,7 +725,88 @@ export function AddMealDialog({
             <div className="overflow-y-auto">
               <form onSubmit={formikHandleSubmit}>
                 <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-12 sm:col-span-9">
+                  <div className="col-span-12 sm:col-span-3 md:col-span-3">
+                    <Label
+                      htmlFor="recipeCategory"
+                      className="text-base font-medium text-foreground mb-2"
+                    >
+                      {t("recipes.category")}
+                    </Label>
+                    <Field name={`recipeCategory`}>
+                      {({ field }: { field: any }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange({
+                              target: { name: field.name, value },
+                            });
+                            setSelectedRecipeCategory(value);
+                          }}
+                        >
+                          <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                            <SelectValue
+                              placeholder={t("recipes.allCategories")}
+                            />
+                          </SelectTrigger>
+                          <SelectContent searchable>
+                            {recipeCategories.map((recipeCategory) => (
+                              <SelectItem
+                                key={recipeCategory}
+                                value={recipeCategory}
+                              >
+                                {recipeCategory}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </Field>
+                    <ErrorMessage
+                      name={`recipeCategory`}
+                      component="p"
+                      className="text-destructive text-xs mt-1 flex items-center gap-1"
+                    />
+                  </div>
+                  <div className="col-span-12 sm:col-span-3 md:col-span-3">
+                    <Label
+                      htmlFor="recipeSubcategory"
+                      className="text-base font-medium text-foreground mb-2"
+                    >
+                      {t("recipes.subcategory")}
+                    </Label>
+                    <Field name={`recipeSubcategory`}>
+                      {({ field }: { field: any }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange({
+                              target: { name: field.name, value },
+                            });
+                            setSelectedRecipeSubcategory(value);
+                          }}
+                        >
+                          <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                            <SelectValue
+                              placeholder={t("recipes.allSubcategories")}
+                            />
+                          </SelectTrigger>
+                          <SelectContent searchable>
+                            {recipeSubcategories.map((subcategory) => (
+                              <SelectItem key={subcategory} value={subcategory}>
+                                {subcategory}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </Field>
+                    <ErrorMessage
+                      name={`recipeSubcategory`}
+                      component="p"
+                      className="text-destructive text-xs mt-1 flex items-center gap-1"
+                    />
+                  </div>
+                  <div className="col-span-12 sm:col-span-3 md:col-span-4">
                     <Label
                       htmlFor="recipe"
                       className="text-base font-medium text-foreground mb-2"
@@ -707,7 +830,7 @@ export function AddMealDialog({
                             />
                           </SelectTrigger>
                           <SelectContent searchable>
-                            {recipes.map((recipe) => (
+                            {filteredRecipes.map((recipe) => (
                               <SelectItem key={recipe.id} value={recipe.id}>
                                 {recipe.name}
                               </SelectItem>
@@ -722,7 +845,7 @@ export function AddMealDialog({
                       className="text-destructive text-xs mt-1 flex items-center gap-1"
                     />
                   </div>
-                  <div className="col-span-12 sm:col-span-3">
+                  <div className="col-span-12 sm:col-span-3 md:col-span-2">
                     <Label className="text-base font-medium text-foreground">
                       {t("meals.followRecipe")}
                     </Label>
@@ -816,7 +939,9 @@ export function AddMealDialog({
                   </div>
 
                   {/* Ingredient Groups Section */}
-                  <div className="col-span-12">
+                  <div
+                    className={`col-span-12 ${values.followRecipe ? "pointer-events-none" : ""}`}
+                  >
                     <IngredientsInput
                       name="ingredientGroups"
                       ingredientGroups={values.ingredientGroups}
@@ -877,7 +1002,7 @@ export function AddMealDialog({
                             <span className="text-foreground">
                               $
                               {calculateTotalCost(
-                                values.ingredientGroups,
+                                values.ingredientGroups
                               ).toFixed(2)}
                             </span>
                           </div>

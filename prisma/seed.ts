@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { MealType, PrismaClient } from "@prisma/client";
 import crypto from "crypto"; // Use webcrypto for browser compatibility
 
 // Import the crypto utilities for password hashing
@@ -26,7 +26,7 @@ async function hashPasswordForSeed(password: string) {
     passwordBuffer,
     { name: "PBKDF2" },
     false,
-    ["deriveBits"],
+    ["deriveBits"]
   );
 
   // Derive hash
@@ -38,7 +38,7 @@ async function hashPasswordForSeed(password: string) {
       hash: "SHA-256",
     },
     key,
-    hashLength * 8,
+    hashLength * 8
   );
 
   // Convert to base64
@@ -592,6 +592,119 @@ async function main() {
   //     },
   //   }),
   // ]);
+
+  const menuComponentsData = [
+    // Breakfast components
+    {
+      name: "nashto1",
+      label: "નાસ્તા - 01",
+      mealType: MealType.BREAKFAST,
+      sequenceNumber: 1,
+    },
+    {
+      name: "nashto2",
+      label: "નાસ્તા - 02",
+      mealType: MealType.BREAKFAST,
+      sequenceNumber: 2,
+    },
+    {
+      name: "nashto3",
+      label: "નાસ્તા - 03",
+      mealType: MealType.BREAKFAST,
+      sequenceNumber: 3,
+    },
+    {
+      name: "farsan1",
+      label: "ફરસાણ - 01",
+      mealType: MealType.BREAKFAST,
+      sequenceNumber: 4,
+    },
+    {
+      name: "farsan2",
+      label: "ફરસાણ - 02",
+      mealType: MealType.BREAKFAST,
+      sequenceNumber: 5,
+    },
+    // Lunch components
+    {
+      name: "mishtan",
+      label: "મિષ્ટાન્ન",
+      mealType: MealType.LUNCH,
+      sequenceNumber: 1,
+    },
+    {
+      name: "farsan",
+      label: "ફરસાણ",
+      mealType: MealType.LUNCH,
+      sequenceNumber: 2,
+    },
+    {
+      name: "shak1",
+      label: "શાક - 01",
+      mealType: MealType.LUNCH,
+      sequenceNumber: 3,
+    },
+    {
+      name: "shak2",
+      label: "શાક - 02",
+      mealType: MealType.LUNCH,
+      sequenceNumber: 4,
+    },
+    {
+      name: "kathod",
+      label: "કઠોળ",
+      mealType: MealType.LUNCH,
+      sequenceNumber: 5,
+    },
+    // Dinner components
+    {
+      name: "vishesh",
+      label: "વિશેષ",
+      mealType: MealType.DINNER,
+      sequenceNumber: 1,
+    },
+    {
+      name: "shak1",
+      label: "શાક - 01",
+      mealType: MealType.DINNER,
+      sequenceNumber: 2,
+    },
+    {
+      name: "shak2",
+      label: "શાક - 02",
+      mealType: MealType.DINNER,
+      sequenceNumber: 3,
+    },
+    {
+      name: "khichdi",
+      label: "ખીચડી",
+      mealType: MealType.DINNER,
+      sequenceNumber: 4,
+    },
+    {
+      name: "kadhi",
+      label: "કઢી",
+      mealType: MealType.DINNER,
+      sequenceNumber: 5,
+    },
+  ];
+
+  console.log("Upserting MenuComponents...");
+  await Promise.all(
+    menuComponentsData.map(async (component) => {
+      const existing = await prisma.menuComponent.findFirst({
+        where: { name: component.name },
+      });
+      if (!existing) {
+        await prisma.menuComponent.create({
+          data: {
+            ...component,
+          },
+        });
+      }
+    })
+  );
+
 
   console.log("✅ Database seeded successfully!");
   console.log("🔑 Login credentials:");

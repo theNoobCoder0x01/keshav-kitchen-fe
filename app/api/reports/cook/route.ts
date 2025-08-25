@@ -53,12 +53,9 @@ export async function GET(req: NextRequest) {
       ghanFactor: m.ghanFactor,
     }));
 
-    console.log(startOfDay, endOfDay);
-    console.log(data);
-
     return NextResponse.json(data);
   } catch (err) {
-    console.log(err);
+    console.error("Error: ", err);
 
     return new NextResponse("Failed to fetch report data", { status: 500 });
   }

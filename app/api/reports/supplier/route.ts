@@ -62,11 +62,8 @@ export async function GET(req: NextRequest) {
       recipeName: m.recipe.name,
       ghanFactor: m.ghanFactor,
     }));
-
-    console.log(startOfDay, endOfDay);
-    console.log(data);
   } catch (err) {
-    console.log(err);
+    console.error("Error: ", err);
 
     return new NextResponse("Failed to fetch report data", { status: 500 });
   }
