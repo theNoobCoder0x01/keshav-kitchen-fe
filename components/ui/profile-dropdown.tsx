@@ -13,15 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "@/hooks/use-translations";
-import {
-  Bell,
-  HelpCircle,
-  LogOut,
-  Palette,
-  Settings,
-  Shield,
-  User,
-} from "lucide-react";
+import { LogOut, Palette, Settings, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 

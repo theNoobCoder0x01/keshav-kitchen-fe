@@ -1,0 +1,21 @@
+services:
+  frontend_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile  # match the Dockerfile name
+      target: dev              # use dev stage
+    container_name: keshav_frontend_dev
+    restart: always
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  nginx:
+    depends_on:
+      - frontend_dev

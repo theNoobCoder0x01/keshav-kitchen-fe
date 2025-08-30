@@ -1,6 +1,13 @@
 export type MealType = "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
 export type MenuStatus = "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
+export enum MealTypeEnum {
+  BREAKFAST = "BREAKFAST",
+  LUNCH = "LUNCH",
+  DINNER = "DINNER",
+  SNACK = "SNACK",
+}
+
 import type { RecipeIngredientBase } from "./recipes";
 
 // Menu Ingredient Group types

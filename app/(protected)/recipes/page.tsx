@@ -31,6 +31,7 @@ import { Filter, Plus, RefreshCw, Search, Upload } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { createRecipe, updateRecipe } from "@/lib/api/recipes";
 
 export default function RecipesPage() {
   // Define interfaces for type safety
@@ -234,13 +235,11 @@ export default function RecipesPage() {
       let result;
       try {
         if (editRecipe) {
-          const { updateRecipe } = await import("@/lib/actions/recipes");
           result = await updateRecipe(editRecipe.selectedRecipe, {
             ...payload,
             instructions: data.instructions ?? null,
           });
         } else {
-          const { createRecipe } = await import("@/lib/actions/recipes");
           result = await createRecipe(payload);
         }
 

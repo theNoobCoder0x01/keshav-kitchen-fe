@@ -9,7 +9,7 @@ export async function GET() {
     console.error("Error fetching home stats:", error);
     return NextResponse.json(
       { error: "Failed to fetch home stats" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

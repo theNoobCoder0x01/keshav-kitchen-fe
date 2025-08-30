@@ -214,7 +214,7 @@ export async function updateRecipe(
       name: string;
       sortOrder: number;
     }>;
-  },
+  }
 ) {
   try {
     const session = await auth();
@@ -230,13 +230,6 @@ export async function updateRecipe(
 
     if (!existingRecipe) {
       throw new Error("Recipe not found");
-    }
-
-    if (
-      existingRecipe.userId !== session.user.id &&
-      session.user.role !== "ADMIN"
-    ) {
-      throw new Error("Unauthorized to update this recipe");
     }
 
     const updatedRecipe = await prisma.$transaction(async (tx) => {
@@ -358,13 +351,6 @@ export async function deleteRecipe(id: string) {
       throw new Error("Recipe not found");
     }
 
-    if (
-      existingRecipe.userId !== session.user.id &&
-      session.user.role !== "ADMIN"
-    ) {
-      throw new Error("Unauthorized");
-    }
-
     if (existingRecipe._count.menus > 0) {
       throw new Error("Cannot delete recipe with existing menus");
     }
@@ -381,8 +367,14 @@ export async function deleteRecipe(id: string) {
   }
 }
 
-export async function getRecipeById(id: string) {
+export async function getRecipeById(request: Request, id: string) {
   try {
+    const session = await auth();
+
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+
     const recipe = await prisma.recipe.findUnique({
       where: { id },
       include: {

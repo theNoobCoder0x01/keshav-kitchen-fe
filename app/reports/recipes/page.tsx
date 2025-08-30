@@ -1,7 +1,6 @@
 "use client";
 
 import RecipeIcon from "@/components/icons/recipe-icon";
-import { getRecipesReport } from "@/lib/actions/reports";
 import { formatEpochToDate } from "@/lib/utils/date";
 import { Calendar } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -21,7 +20,7 @@ export default function RecipesReport() {
   const loadData = useCallback(async () => {
     try {
       if (epochMs) {
-        const recipesData = await getRecipesReport(epochMs);
+        const recipesData = [] as any;
         setData(recipesData);
       } else {
         console.error("Timestamp is required.");

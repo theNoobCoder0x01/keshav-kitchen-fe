@@ -1,12 +1,22 @@
 import api from "./axios";
 
+import type { IngredientFormValue } from "@/types/forms";
+import type { MealType, MenuStatus } from "@/types/menus";
+
 export async function fetchMenus(params = {}) {
   const response = await api.get("/menus", { params });
   return response.data;
 }
 
-import type { IngredientFormValue } from "@/types/forms";
-import type { MealType, MenuStatus } from "@/types/menus";
+export async function fetchMenuStats(date?: Date, kitchenId?: string) {
+  const response = await api.get("/menus/stats", {
+    params: {
+      date,
+      kitchenId,
+    },
+  });
+  return response.data;
+}
 
 export async function createMenu(data: {
   date: Date;

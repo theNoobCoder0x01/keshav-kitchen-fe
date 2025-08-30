@@ -1,18 +1,17 @@
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -86,19 +85,19 @@ export async function GET(
     console.error("Get recipe by ID API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -117,17 +116,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    // Check if user owns this recipe or is admin
-    if (
-      existingRecipe.userId !== session.user.id &&
-      session.user.role !== "ADMIN"
-    ) {
-      return NextResponse.json(
-        { error: "Unauthorized to delete this recipe" },
-        { status: 403 },
-      );
-    }
-
     // Delete the recipe (ingredients will be deleted automatically due to cascade)
     await prisma.recipe.delete({
       where: { id },
@@ -138,18 +126,18 @@ export async function DELETE(
     console.error("Delete recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to delete recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -171,15 +159,6 @@ export async function PATCH(
     });
     if (!existingRecipe) {
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
-    }
-    if (
-      existingRecipe.userId !== session.user.id &&
-      session.user.role !== "ADMIN"
-    ) {
-      return NextResponse.json(
-        { error: "Unauthorized to update this recipe" },
-        { status: 403 },
-      );
     }
 
     // Update core fields
@@ -220,7 +199,7 @@ export async function PATCH(
     console.error("Patch recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to update recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

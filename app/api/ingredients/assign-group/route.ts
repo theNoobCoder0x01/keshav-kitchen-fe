@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     if (!ingredient) {
       return NextResponse.json(
         { error: "Ingredient not found or doesn't belong to this recipe" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
             error:
               "Ingredient group not found or doesn't belong to this recipe",
           },
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -98,14 +98,14 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     console.error("Assign ingredient to group API error:", error);
     return NextResponse.json(
       { error: "Failed to assign ingredient to group" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -132,7 +132,7 @@ export async function PUT(request: NextRequest) {
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -150,7 +150,7 @@ export async function PUT(request: NextRequest) {
           error:
             "One or more ingredients not found or don't belong to this recipe",
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -169,7 +169,7 @@ export async function PUT(request: NextRequest) {
             error:
               "Ingredient group not found or doesn't belong to this recipe",
           },
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
@@ -194,14 +194,14 @@ export async function PUT(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     console.error("Bulk assign ingredients to group API error:", error);
     return NextResponse.json(
       { error: "Failed to assign ingredients to group" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -13,6 +13,12 @@ export const dynamic = "force-dynamic";
 // GET all menus or by id (via ?id=)
 export async function GET(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const kitchenId = searchParams.get("kitchenId");
@@ -158,7 +164,7 @@ export async function GET(request: Request) {
     console.error("Failed to fetch menus:", error);
     return NextResponse.json(
       { error: "Failed to fetch menus." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -181,7 +187,7 @@ export async function POST(request: Request) {
           error:
             "Missing required fields: recipeId, mealType, kitchenId, userId",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -243,7 +249,7 @@ export async function POST(request: Request) {
     console.error("Create menu API error:", error);
     return NextResponse.json(
       { error: "Failed to create menu." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -251,6 +257,12 @@ export async function POST(request: Request) {
 // PUT update menu by id (via ?id=)
 export async function PUT(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id)
@@ -331,7 +343,7 @@ export async function PUT(request: Request) {
     console.error("Update menu API error:", error);
     return NextResponse.json(
       { error: "Failed to update menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }
@@ -339,6 +351,12 @@ export async function PUT(request: Request) {
 // DELETE menu by id (via ?id=)
 export async function DELETE(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id)
@@ -348,7 +366,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }

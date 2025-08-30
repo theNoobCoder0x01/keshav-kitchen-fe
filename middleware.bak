@@ -1,0 +1,33 @@
+// middleware.ts
+import { authOptions } from "@/lib/auth"; // our server-side auth helper
+import { Auth } from "@auth/core";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Get the session using Auth.js
+  const authResponse = await Auth(request, authOptions);
+  const session = await authResponse.json();
+  const isLoggedIn = !!session;
+
+  // Public routes
+  const publicRoutes = ["/auth/signin", "/auth/signup", "/auth/error"];
+  const isPublicRoute = publicRoutes.includes(pathname);
+
+  // Redirect logged-in users away from auth pages
+  if (isLoggedIn && isPublicRoute) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Redirect non-logged-in users to signin
+  if (!isLoggedIn && !isPublicRoute) {
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+};

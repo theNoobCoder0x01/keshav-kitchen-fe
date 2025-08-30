@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CompactDateSelector } from "@/components/ui/compact-date-selector";
 import {
+  createMenuStats,
   EnhancedStatsGrid,
   EnhancedStatsGridSkeleton,
-  createMenuStats,
 } from "@/components/ui/enhanced-stats-grid";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -18,11 +18,10 @@ import {
   TabNavigationSkeleton,
 } from "@/components/ui/tab-navigation";
 import { useTranslations } from "@/hooks/use-translations";
-import { getKitchens } from "@/lib/actions/kitchens";
-import { getMenuStats } from "@/lib/actions/menu";
-import { fetchMenus } from "@/lib/api/menus";
+import { fetchKitchens } from "@/lib/api/kitchens";
+import { deleteMenu, fetchMenus, fetchMenuStats } from "@/lib/api/menus";
 import type { MealType as UnifiedMealType } from "@/types/menus";
-import { MealType } from "@prisma/client";
+import { MealTypeEnum as MealType } from "@/types/menus";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +42,7 @@ export default function MenuPage() {
   const [reportsDialog, setReportsDialog] = useState(false);
   const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
-    MealType.BREAKFAST,
+    MealType.BREAKFAST
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -65,7 +64,7 @@ export default function MenuPage() {
         stats: prev.stats + 1,
         menus: prev.menus + 1,
       }));
-      const kitchensData = await getKitchens();
+      const kitchensData = await fetchKitchens();
       setKitchens(kitchensData);
     } catch (error) {
       console.error("Failed to load kitchens:", error);
@@ -85,8 +84,7 @@ export default function MenuPage() {
 
     try {
       // Get current kitchen ID
-      const currentKitchenId =
-        kitchens[activeTab]?.id || session?.user?.kitchenId;
+      const currentKitchenId = kitchens[activeTab]?.id;
 
       if (!currentKitchenId) {
         setMenuStats({
@@ -105,7 +103,7 @@ export default function MenuPage() {
       }));
 
       const [statsData, menusResponse] = await Promise.all([
-        getMenuStats(selectedDate, currentKitchenId),
+        fetchMenuStats(selectedDate, currentKitchenId),
         fetchMenus({
           kitchenId: currentKitchenId,
           date: selectedDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
@@ -115,11 +113,11 @@ export default function MenuPage() {
       // Transform menus data to match the expected format
       const groupedMenus = {
         BREAKFAST: menusResponse.filter(
-          (m: any) => m.mealType === MealType.BREAKFAST,
+          (m: any) => m.mealType === MealType.BREAKFAST
         ),
         LUNCH: menusResponse.filter((m: any) => m.mealType === MealType.LUNCH),
         DINNER: menusResponse.filter(
-          (m: any) => m.mealType === MealType.DINNER,
+          (m: any) => m.mealType === MealType.DINNER
         ),
         SNACK: menusResponse.filter((m: any) => m.mealType === MealType.SNACK),
       };
@@ -136,7 +134,7 @@ export default function MenuPage() {
         menus: prev.menus - 1,
       }));
     }
-  }, [selectedDate, activeTab, session?.user?.kitchenId, kitchens]);
+  }, [selectedDate, activeTab, kitchens]);
 
   // Load kitchens once on mount
   useEffect(() => {
@@ -167,7 +165,7 @@ export default function MenuPage() {
 
   const handleAddMeal = (
     mealType: UnifiedMealType,
-    menuComponentId?: string,
+    menuComponentId?: string
   ) => {
     setSelectedMealType(mealType);
     setEditMeal({
@@ -185,9 +183,7 @@ export default function MenuPage() {
   const handleDeleteMeal = async (mealId: string) => {
     if (window.confirm(t("messages.confirmDeleteMeal"))) {
       try {
-        const response = await fetch(`/api/menus/${mealId}`, {
-          method: "DELETE",
-        });
+        const response = await deleteMenu(mealId);
 
         if (response.ok) {
           toast.success(t("messages.mealDeletedSuccess"));
@@ -262,7 +258,6 @@ export default function MenuPage() {
                 date={selectedDate}
                 onDateChange={handleDateChange}
                 className="w-auto"
-                kitchenId={session?.user?.kitchenId ?? undefined}
               />
 
               {/* Reports Dropdown Menu */}
@@ -364,7 +359,7 @@ export default function MenuPage() {
         onOpenChange={handleMealDialogClose}
         mealType={selectedMealType}
         selectedDate={selectedDate}
-        kitchenId={kitchens[activeTab]?.id || session?.user?.kitchenId}
+        kitchenId={kitchens[activeTab]?.id}
         editMeal={editMeal}
       />
       <ReportsGenerationDialog

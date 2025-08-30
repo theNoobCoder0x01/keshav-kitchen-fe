@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16
+    container_name: keshav_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-keshav}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-keshav123}
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: keshav_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./public:/usr/share/nginx/html:ro
+
+volumes:
+  db_data:

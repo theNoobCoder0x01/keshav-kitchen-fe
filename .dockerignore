@@ -1,0 +1,51 @@
+# Node dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Build output
+.next/cache
+.next/trace
+.next/static/cache
+out
+dist
+
+# Local env files (only pass needed vars at runtime)
+.env
+.env.development
+.env.local
+.env.test
+.env.*.local
+
+# Prisma
+.prisma
+
+# Logs
+logs
+*.log
+*.log.*
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE settings
+.vscode
+.idea
+*.swp
+*.swo
+
+# Tests & coverage
+coverage
+*.spec.ts
+*.test.ts
+*.spec.js
+*.test.js
+__tests__
+
+# Puppeteer cache (browsers installed locally)
+.puppeteer
+
+# Misc
+*.tgz

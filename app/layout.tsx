@@ -1,12 +1,12 @@
 import { SessionProviderWrapper } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/lib/contexts/language-context";
-import { Mulish } from "next/font/google";
+import { Noto_Serif_Gujarati } from "next/font/google";
 import type React from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Mulish({ subsets: ["latin"] });
+const inter = Noto_Serif_Gujarati({ subsets: ["gujarati"] });
 
 export default function RootLayout({
   children,

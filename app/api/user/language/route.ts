@@ -1,15 +1,15 @@
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -19,7 +19,7 @@ export async function PATCH(request: NextRequest) {
     if (!language || !["en", "gu"].includes(language)) {
       return NextResponse.json(
         { success: false, message: 'Invalid language. Must be "en" or "gu"' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -48,19 +48,19 @@ export async function PATCH(request: NextRequest) {
     console.error("Error updating user language:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching user language:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

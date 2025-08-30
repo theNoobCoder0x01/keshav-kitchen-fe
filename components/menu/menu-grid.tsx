@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { MealType } from "@prisma/client";
+import { MealTypeEnum as MealType } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import { MenuCard, MenuCardSkeleton } from "./menu-card";
 
@@ -76,7 +76,7 @@ export function MenuGrid({
       { type: MealType.DINNER, title: "Dinner", key: "dinner" },
       { type: MealType.SNACK, title: "Snack", key: "snack" },
     ],
-    [],
+    []
   );
 
   return (

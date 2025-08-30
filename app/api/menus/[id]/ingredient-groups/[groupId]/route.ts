@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // PUT update ingredient group
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string; groupId: string } },
+  { params }: { params: { id: string; groupId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +23,7 @@ export async function PUT(
     if (!data.name || typeof data.name !== "string") {
       return NextResponse.json(
         { error: "Group name is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -40,14 +40,6 @@ export async function PUT(
       return NextResponse.json({ error: "Menu not found" }, { status: 404 });
     }
 
-    // Check if user has access to this menu's kitchen
-    if (
-      menu.user.id !== session.user.id &&
-      menu.kitchen.id !== session.user.kitchenId
-    ) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
     // Check if group exists
     const existingGroup = await prisma.menuIngredientGroup.findUnique({
       where: { id: groupId },
@@ -56,7 +48,7 @@ export async function PUT(
     if (!existingGroup) {
       return NextResponse.json(
         { error: "Ingredient group not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -72,7 +64,7 @@ export async function PUT(
     if (conflictingGroup) {
       return NextResponse.json(
         { error: "Group name already exists for this menu" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -104,7 +96,7 @@ export async function PUT(
     console.error("Failed to update menu ingredient group:", error);
     return NextResponse.json(
       { error: "Failed to update ingredient group" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -112,7 +104,7 @@ export async function PUT(
 // DELETE ingredient group
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; groupId: string } },
+  { params }: { params: { id: string; groupId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -135,14 +127,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Menu not found" }, { status: 404 });
     }
 
-    // Check if user has access to this menu's kitchen
-    if (
-      menu.user.id !== session.user.id &&
-      menu.kitchen.id !== session.user.kitchenId
-    ) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
-
     // Check if group exists
     const existingGroup = await prisma.menuIngredientGroup.findUnique({
       where: { id: groupId },
@@ -152,7 +136,7 @@ export async function DELETE(
     if (!existingGroup) {
       return NextResponse.json(
         { error: "Ingredient group not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -176,7 +160,7 @@ export async function DELETE(
     console.error("Failed to delete menu ingredient group:", error);
     return NextResponse.json(
       { error: "Failed to delete ingredient group" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

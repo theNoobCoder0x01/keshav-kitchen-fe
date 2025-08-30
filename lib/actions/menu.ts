@@ -19,7 +19,7 @@ export async function getDailyMenus(date?: Date, kitchenId?: string) {
     }
 
     const targetDate = date || getCurrentDateUTC(); // Use UTC for consistency
-    const targetKitchenId = kitchenId || session.user.kitchenId;
+    const targetKitchenId = kitchenId;
 
     if (!targetKitchenId) {
       return {};
@@ -97,7 +97,7 @@ export async function getMenuStats(date?: Date, kitchenId?: string) {
     }
 
     const targetDate = date || new Date();
-    const targetKitchenId = kitchenId || session.user.kitchenId;
+    const targetKitchenId = kitchenId;
 
     if (!targetKitchenId) {
       return {
@@ -180,14 +180,6 @@ export async function createDailyMenu(data: {
       return { success: false, error: "Unauthorized" };
     }
 
-    // Check permissions
-    if (
-      session.user.role === "STAFF" &&
-      data.kitchenId !== session.user.kitchenId
-    ) {
-      return { success: false, error: "Access denied for this kitchen" };
-    }
-
     const menu = await prisma.menu.create({
       data: {
         date: data.date,
@@ -231,7 +223,7 @@ export async function updateDailyMenu(
     status?: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
     actualCount?: number;
     notes?: string;
-  },
+  }
 ) {
   try {
     const session = await auth();
@@ -243,19 +235,11 @@ export async function updateDailyMenu(
     // Check if menu exists and user has permission
     const existingMenu = await prisma.menu.findUnique({
       where: { id },
-      select: { kitchenId: true, userId: true },
+      select: { kitchenId: true },
     });
 
     if (!existingMenu) {
       return { success: false, error: "Menu item not found" };
-    }
-
-    // Check permissions
-    if (
-      session.user.role === "STAFF" &&
-      existingMenu.userId !== session.user.id
-    ) {
-      return { success: false, error: "Access denied" };
     }
 
     const menu = await prisma.menu.update({
@@ -295,19 +279,11 @@ export async function deleteDailyMenu(id: string) {
     // Check if menu exists and user has permission
     const existingMenu = await prisma.menu.findUnique({
       where: { id },
-      select: { kitchenId: true, userId: true },
+      select: { kitchenId: true },
     });
 
     if (!existingMenu) {
       return { success: false, error: "Menu item not found" };
-    }
-
-    // Check permissions
-    if (
-      session.user.role === "STAFF" &&
-      existingMenu.userId !== session.user.id
-    ) {
-      return { success: false, error: "Access denied" };
     }
 
     await prisma.menu.delete({

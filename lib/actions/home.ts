@@ -3,8 +3,8 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-  createStartOfDayUTC,
   createEndOfDayUTC,
+  createStartOfDayUTC,
   getCurrentDateUTC,
   subtractTime,
 } from "@/lib/utils/date";
@@ -36,11 +36,6 @@ export async function getHomeStats() {
     const endOfYesterday = createEndOfDayUTC(yesterday);
 
     const whereClause: any = {};
-
-    // If user is not admin, filter by their kitchen
-    if (session.user.role !== "ADMIN" && session.user.kitchenId) {
-      whereClause.kitchenId = session.user.kitchenId;
-    }
 
     // Get today's data
     const [todayMenus, todayIngredients] = await Promise.all([
@@ -175,11 +170,6 @@ export async function getRecentActivity() {
 
     const whereClause: any = {};
 
-    // If user is not admin, filter by their kitchen
-    if (session.user.role !== "ADMIN" && session.user.kitchenId) {
-      whereClause.kitchenId = session.user.kitchenId;
-    }
-
     // Get recent menus, recipes, and reports
     const [recentMenus, recentRecipes, recentReports] = await Promise.all([
       prisma.menu.findMany({
@@ -280,11 +270,6 @@ export async function getQuickActionsData() {
 
     const whereClause: any = {};
 
-    // If user is not admin, filter by their kitchen
-    if (session.user.role !== "ADMIN" && session.user.kitchenId) {
-      whereClause.kitchenId = session.user.kitchenId;
-    }
-
     const [menusCount, recipesCount, kitchensCount, ingredientsCount] =
       await Promise.all([
         prisma.menu.count({
@@ -298,14 +283,7 @@ export async function getQuickActionsData() {
         prisma.recipe.count({
           where: whereClause,
         }),
-        prisma.kitchen.count({
-          where:
-            session.user.role === "ADMIN"
-              ? {}
-              : {
-                  id: session.user.kitchenId,
-                },
-        }),
+        prisma.kitchen.count(),
         prisma.ingredient.count({
           where: {
             recipe: whereClause,

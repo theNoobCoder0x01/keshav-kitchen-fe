@@ -3,9 +3,8 @@
 import BreakfastIcon from "@/components/icons/breakfast-icon";
 import DinnerIcon from "@/components/icons/dinner-icon";
 import LunchIcon from "@/components/icons/lunch-icon";
-import { getSupplierReport } from "@/lib/actions/reports";
 import { formatEpochToDate } from "@/lib/utils/date";
-import { MealType } from "@prisma/client";
+import { MealTypeEnum as MealType } from "@/types";
 import { Calendar } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -37,7 +36,7 @@ export default function SupplierReport() {
   const loadData = useCallback(async () => {
     try {
       if (epochMs) {
-        const kitchensData = await getSupplierReport(epochMs);
+        const kitchensData = [] as any;
 
         setData(kitchensData);
       } else {

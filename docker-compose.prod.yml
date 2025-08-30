@@ -1,0 +1,18 @@
+services:
+  frontend_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile # match Dockerfile name
+      target: production # use production stage
+    container_name: keshav_frontend
+    restart: always
+    env_file:
+      - .env.production
+    expose:
+      - "3000"
+    depends_on:
+      - db
+
+  nginx:
+    depends_on:
+      - frontend_prod

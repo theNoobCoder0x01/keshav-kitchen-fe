@@ -12,45 +12,21 @@ export async function getKitchens() {
       return [];
     }
 
-    // If user is admin, return all kitchens
-    if (session.user.role === "ADMIN") {
-      const kitchens = await prisma.kitchen.findMany({
-        orderBy: {
-          name: "asc",
-        },
-        include: {
-          _count: {
-            select: {
-              users: true,
-              menus: true,
-              reports: true,
-            },
+    const kitchens = await prisma.kitchen.findMany({
+      orderBy: {
+        name: "asc",
+      },
+      include: {
+        _count: {
+          select: {
+            users: true,
+            menus: true,
+            reports: true,
           },
         },
-      });
-      return kitchens;
-    }
-
-    // If user has a kitchen, return only their kitchen
-    if (session.user.kitchenId) {
-      const kitchen = await prisma.kitchen.findUnique({
-        where: {
-          id: session.user.kitchenId,
-        },
-        include: {
-          _count: {
-            select: {
-              users: true,
-              menus: true,
-              reports: true,
-            },
-          },
-        },
-      });
-      return kitchen ? [kitchen] : [];
-    }
-
-    return [];
+      },
+    });
+    return kitchens;
   } catch (error) {
     console.error("Get kitchens error:", error);
     return [];
@@ -63,11 +39,6 @@ export async function getKitchen(id: string) {
 
     if (!session?.user) {
       throw new Error("Unauthorized");
-    }
-
-    // Check if user has access to this kitchen
-    if (session.user.role !== "ADMIN" && session.user.kitchenId !== id) {
-      throw new Error("Access denied");
     }
 
     const kitchen = await prisma.kitchen.findUnique({
@@ -105,7 +76,7 @@ export async function createKitchen(data: {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== "ADMIN") {
+    if (!session?.user) {
       throw new Error("Unauthorized");
     }
 
@@ -131,12 +102,12 @@ export async function updateKitchen(
     name?: string;
     location?: string;
     description?: string;
-  },
+  }
 ) {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== "ADMIN") {
+    if (!session?.user) {
       throw new Error("Unauthorized");
     }
 
@@ -157,7 +128,7 @@ export async function deleteKitchen(id: string) {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.role !== "ADMIN") {
+    if (!session?.user) {
       throw new Error("Unauthorized");
     }
 
@@ -185,7 +156,7 @@ export async function deleteKitchen(id: string) {
       kitchen._count.reports > 0
     ) {
       throw new Error(
-        "Cannot delete kitchen with existing users, menus, or reports",
+        "Cannot delete kitchen with existing users, menus, or reports"
       );
     }
 

@@ -1,4 +1,4 @@
-import api from "./axios";
+import api from "@/lib/api/axios";
 
 export async function fetchKitchens() {
   const response = await api.get("/kitchens");
@@ -12,7 +12,7 @@ export async function createKitchen(data: { name: string; location: string }) {
 
 export async function updateKitchen(
   id: string,
-  data: { name: string; location: string },
+  data: { name: string; location: string }
 ) {
   const response = await api.put(`/kitchens?id=${id}`, data);
   return response.data;

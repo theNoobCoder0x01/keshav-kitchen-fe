@@ -23,7 +23,6 @@ interface CompactDateSelectorProps {
   date?: Date; // UTC Date for storage
   onDateChange?: (date: Date) => void; // Returns UTC Date for storage
   className?: string;
-  kitchenId?: string;
   timezone?: string; // IANA timezone for display (defaults to user's local)
 }
 
@@ -31,12 +30,11 @@ export function CompactDateSelector({
   date: initialDate,
   onDateChange,
   className,
-  kitchenId,
   timezone,
 }: CompactDateSelectorProps) {
   const userTimezone = timezone || getLocalTimezone();
   const [selectedDate, setSelectedDate] = useState<Date>(
-    initialDate || new Date(), // Store in UTC
+    initialDate || new Date() // Store in UTC
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [currentEventInfo, setCurrentEventInfo] = useState<{
@@ -51,7 +49,6 @@ export function CompactDateSelector({
         const dateStr = formatForStorage(selectedDate).split("T")[0];
         const params = new URLSearchParams({
           date: dateStr,
-          ...(kitchenId && { kitchenId }),
         });
 
         const response = await fetch(`/api/calendar/tithi?${params}`);
@@ -72,7 +69,7 @@ export function CompactDateSelector({
     };
 
     fetchTithiInfo();
-  }, [selectedDate, kitchenId]);
+  }, [selectedDate]);
 
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate);
@@ -120,7 +117,7 @@ export function CompactDateSelector({
     <Card
       className={cn(
         "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
-        className,
+        className
       )}
     >
       <CardContent className="p-4">

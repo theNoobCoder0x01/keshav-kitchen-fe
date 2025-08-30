@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // GET /api/reports/pdf?url=http://localhost:3000/reports/cook
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session || !session.user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
