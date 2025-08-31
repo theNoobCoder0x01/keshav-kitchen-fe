@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
+import api from "@/lib/api/axios";
 import { formatTimeAgo } from "@/lib/utils/date";
 import {
   ArrowRight,
@@ -74,10 +75,10 @@ export default function HomePage() {
       });
 
       // Load all data in one API call
-      const response = await fetch("/api/home");
+      const response = await api.get("/home");
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200 || response.status === 201) {
+        const data = await response.data;
         setHomeStats(data.stats);
         setRecentActivity(data.activity);
         setQuickActionsData(data.quickActions);

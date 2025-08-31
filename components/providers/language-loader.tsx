@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/lib/api/axios";
 import { useLanguage } from "@/lib/contexts/language-context";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -17,9 +18,9 @@ export function LanguageLoader() {
 
   const fetchUserLanguagePreference = async () => {
     try {
-      const response = await fetch("/api/user/language");
-      if (response.ok) {
-        const data = await response.json();
+      const response = await api.get("/user/language");
+      if (response.status.toString().startsWith("2")) {
+        const data = await response.data;
         if (
           data.success &&
           data.data.language &&

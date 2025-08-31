@@ -1,7 +1,6 @@
 "use client";
 
 import { AddRecipeDialog } from "@/components/dialogs/add-recipe-dialog";
-import { ImportRecipesDialog } from "@/components/dialogs/import-recipes-dialog";
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import {
   RecipesTable,
@@ -17,21 +16,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
+import api from "@/lib/api/axios";
+import { createRecipe, updateRecipe } from "@/lib/api/recipes";
 import type { RecipeDetailData } from "@/types";
-import { Filter, Plus, RefreshCw, Search, Upload } from "lucide-react";
+import { Filter, Plus, RefreshCw, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createRecipe, updateRecipe } from "@/lib/api/recipes";
 
 export default function RecipesPage() {
   // Define interfaces for type safety
@@ -43,7 +43,6 @@ export default function RecipesPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [selectedRecipeForPrint, setSelectedRecipeForPrint] =
     useState<RecipeDetailData | null>(null);
   const [editRecipe, setEditRecipe] = useState<{
@@ -98,12 +97,15 @@ export default function RecipesPage() {
   const handlePrintRecipe = async (recipe: Recipe) => {
     try {
       // Fetch detailed recipe data from API
-      const response = await fetch(`/api/recipes/${recipe.id}`);
-      if (!response.ok) {
+      const response = await api.get(`/recipes/${recipe.id}`);
+      if (
+        !response.status ||
+        (response.status !== 200 && response.status !== 201)
+      ) {
         throw new Error("Failed to fetch recipe details");
       }
 
-      const detailedRecipe = await response.json();
+      const detailedRecipe = await response.data;
 
       // Transform the data to match RecipeDetailData interface
       const recipeData: RecipeDetailData = {
@@ -142,11 +144,14 @@ export default function RecipesPage() {
   const handleDeleteRecipe = async (id: string) => {
     setDeletingId(id);
     try {
-      const response = await fetch(`/api/recipes/${id}`, {
-        method: "DELETE",
-      });
+      const response = await api.delete(`/recipes/${id}`);
 
-      if (!response.ok) {
+      if (
+        !response.status ||
+        (response.status !== 200 &&
+          response.status !== 204 &&
+          response.status !== 201)
+      ) {
         throw new Error(`Error: ${response.status}`);
       }
 
@@ -319,14 +324,6 @@ export default function RecipesPage() {
           subtitle={t("recipes.managementSubtitle")}
           actions={
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setIsImportDialogOpen(true)}
-                className="flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                <span className="hidden sm:inline">{t("recipes.import")}</span>
-              </Button>
               <Button
                 className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => setIsAddDialogOpen(true)}
@@ -513,11 +510,6 @@ export default function RecipesPage() {
         isOpen={isPrintDialogOpen}
         onOpenChange={setIsPrintDialogOpen}
         recipe={selectedRecipeForPrint}
-      />
-      <ImportRecipesDialog
-        isOpen={isImportDialogOpen}
-        onOpenChange={setIsImportDialogOpen}
-        onImportSuccess={getRecipes}
       />
     </div>
   );

@@ -1,28 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import {
-  ChefHat,
-  Package,
-  Settings,
-  Save,
-  Eye,
-  AlertCircle,
-} from "lucide-react";
-import { toast } from "sonner";
-import { IngredientGroupManager } from "./ingredient-group-manager";
-import { IngredientGroupAssignment } from "./ingredient-group-assignment";
-import { RecipeDetailView } from "./recipe-detail-view";
+import api from "@/lib/api/axios";
 import type {
-  RecipeDetailData,
   IngredientGroup,
+  RecipeDetailData,
   RecipeIngredientBase,
 } from "@/types/recipes";
+import { AlertCircle, Eye, Package, Save, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { IngredientGroupAssignment } from "./ingredient-group-assignment";
+import { IngredientGroupManager } from "./ingredient-group-manager";
+import { RecipeDetailView } from "./recipe-detail-view";
 
 interface RecipeEditorWithGroupsProps {
   recipe: RecipeDetailData;
@@ -41,13 +34,13 @@ export function RecipeEditorWithGroups({
 }: RecipeEditorWithGroupsProps) {
   const [recipe, setRecipe] = useState<RecipeDetailData>(initialRecipe);
   const [ingredientGroups, setIngredientGroups] = useState<IngredientGroup[]>(
-    initialRecipe.ingredientGroups || [],
+    initialRecipe.ingredientGroups || []
   );
   const [ingredients, setIngredients] = useState<RecipeIngredientBase[]>(
-    initialRecipe.ingredients || [],
+    initialRecipe.ingredients || []
   );
   const [activeTab, setActiveTab] = useState(
-    showPreview ? "preview" : "groups",
+    showPreview ? "preview" : "groups"
   );
   const [isLoading, setIsLoading] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -73,12 +66,13 @@ export function RecipeEditorWithGroups({
     if (!recipe.id) return;
 
     try {
-      const response = await fetch(
-        `/api/recipes/${recipe.id}/ingredient-groups`,
+      const response = await api.get(
+        `/recipes/${recipe.id}/ingredient-groups`
       );
-      if (!response.ok) throw new Error("Failed to fetch ingredient groups");
+      if (!response.status.toString().startsWith("2"))
+        throw new Error("Failed to fetch ingredient groups");
 
-      const { ingredientGroups: groups } = await response.json();
+      const { ingredientGroups: groups } = await response.data;
       setIngredientGroups(groups);
     } catch (error) {
       console.error("Error fetching ingredient groups:", error);

@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MenuIngredientGroup, MenuIngredient } from "@/types/menus";
-import { GripVertical, Plus, Trash2, Edit, X } from "lucide-react";
-import { useState, useCallback } from "react";
+import api from "@/lib/api/axios";
+import { MenuIngredient, MenuIngredientGroup } from "@/types/menus";
+import { Edit, GripVertical, Plus, Trash2, X } from "lucide-react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 interface MenuIngredientGroupManagerProps {
@@ -37,7 +38,7 @@ export function MenuIngredientGroupManager({
 
     if (
       ingredientGroups.some(
-        (g) => g.name.toLowerCase() === newGroupName.trim().toLowerCase(),
+        (g) => g.name.toLowerCase() === newGroupName.trim().toLowerCase()
       )
     ) {
       toast.error("Group name already exists");
@@ -46,21 +47,17 @@ export function MenuIngredientGroupManager({
 
     setIsCreating(true);
     try {
-      const response = await fetch(`/api/menus/${menuId}/ingredient-groups`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newGroupName.trim(),
-        }),
+      const response = await api.post(`/menus/${menuId}/ingredient-groups`, {
+        name: newGroupName.trim(),
       });
 
-      if (response.ok) {
-        const newGroup = await response.json();
+      if (response.status.toString().startsWith("2")) {
+        const newGroup = await response.data;
         onGroupsChange([...ingredientGroups, newGroup]);
         setNewGroupName("");
         toast.success("Ingredient group created successfully");
       } else {
-        const error = await response.json();
+        const error = await response.data;
         toast.error(error.error || "Failed to create ingredient group");
       }
     } catch (error) {
@@ -82,7 +79,7 @@ export function MenuIngredientGroupManager({
         ingredientGroups.some(
           (g) =>
             g.id !== groupId &&
-            g.name.toLowerCase() === newName.trim().toLowerCase(),
+            g.name.toLowerCase() === newName.trim().toLowerCase()
         )
       ) {
         toast.error("Group name already exists");
@@ -90,27 +87,23 @@ export function MenuIngredientGroupManager({
       }
 
       try {
-        const response = await fetch(
-          `/api/menus/${menuId}/ingredient-groups/${groupId}`,
+        const response = await api.put(
+          `/menus/${menuId}/ingredient-groups/${groupId}`,
           {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: newName.trim(),
-            }),
-          },
+            name: newName.trim(),
+          }
         );
 
-        if (response.ok) {
-          const updatedGroup = await response.json();
+        if (response.status.toString().startsWith("2")) {
+          const updatedGroup = await response.data;
           onGroupsChange(
-            ingredientGroups.map((g) => (g.id === groupId ? updatedGroup : g)),
+            ingredientGroups.map((g) => (g.id === groupId ? updatedGroup : g))
           );
           setEditingGroup(null);
           setEditValue("");
           toast.success("Ingredient group updated successfully");
         } else {
-          const error = await response.json();
+          const error = await response.data;
           toast.error(error.error || "Failed to update ingredient group");
         }
       } catch (error) {
@@ -118,33 +111,30 @@ export function MenuIngredientGroupManager({
         toast.error("Failed to update ingredient group");
       }
     },
-    [ingredientGroups, menuId, onGroupsChange],
+    [ingredientGroups, menuId, onGroupsChange]
   );
 
   const handleDeleteGroup = useCallback(
     async (groupId: string) => {
       if (
         !window.confirm(
-          "Are you sure you want to delete this group? All ingredients will be moved to 'Ungrouped'.",
+          "Are you sure you want to delete this group? All ingredients will be moved to 'Ungrouped'."
         )
       ) {
         return;
       }
 
       try {
-        const response = await fetch(
-          `/api/menus/${menuId}/ingredient-groups/${groupId}`,
-          {
-            method: "DELETE",
-          },
+        const response = await api.delete(
+          `/menus/${menuId}/ingredient-groups/${groupId}`
         );
 
-        if (response.ok) {
+        if (response.status.toString().startsWith("2")) {
           // Move ingredients to ungrouped
           const updatedIngredients = ingredients.map((ing) =>
             ing.groupId === groupId
               ? { ...ing, groupId: null, group: null }
-              : ing,
+              : ing
           );
           onIngredientsChange(updatedIngredients);
 
@@ -152,7 +142,7 @@ export function MenuIngredientGroupManager({
           onGroupsChange(ingredientGroups.filter((g) => g.id !== groupId));
           toast.success("Ingredient group deleted successfully");
         } else {
-          const error = await response.json();
+          const error = await response.data;
           toast.error(error.error || "Failed to delete ingredient group");
         }
       } catch (error) {
@@ -160,13 +150,7 @@ export function MenuIngredientGroupManager({
         toast.error("Failed to delete ingredient group");
       }
     },
-    [
-      ingredientGroups,
-      ingredients,
-      menuId,
-      onGroupsChange,
-      onIngredientsChange,
-    ],
+    [ingredientGroups, ingredients, menuId, onGroupsChange, onIngredientsChange]
   );
 
   const handleReorderGroups = useCallback(
@@ -193,22 +177,18 @@ export function MenuIngredientGroupManager({
       try {
         await Promise.all(
           updatedGroups.map((group) =>
-            fetch(`/api/menus/${menuId}/ingredient-groups/${group.id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                name: group.name,
-                sortOrder: group.sortOrder,
-              }),
-            }),
-          ),
+            api.put(`/menus/${menuId}/ingredient-groups/${group.id}`, {
+              name: group.name,
+              sortOrder: group.sortOrder,
+            })
+          )
         );
       } catch (error) {
         console.error("Error updating sort orders:", error);
         toast.error("Failed to update group order");
       }
     },
-    [ingredientGroups, menuId, onGroupsChange],
+    [ingredientGroups, menuId, onGroupsChange]
   );
 
   const startEditing = useCallback((group: MenuIngredientGroup) => {
@@ -224,15 +204,15 @@ export function MenuIngredientGroupManager({
   const getGroupStats = useCallback(
     (groupId: string) => {
       const groupIngredients = ingredients.filter(
-        (ing) => ing.groupId === groupId,
+        (ing) => ing.groupId === groupId
       );
       const totalQuantity = groupIngredients.reduce(
         (sum, ing) => sum + ing.quantity,
-        0,
+        0
       );
       const totalCost = groupIngredients.reduce(
         (sum, ing) => sum + ing.costPerUnit * ing.quantity,
-        0,
+        0
       );
 
       return {
@@ -241,7 +221,7 @@ export function MenuIngredientGroupManager({
         totalCost,
       };
     },
-    [ingredients],
+    [ingredients]
   );
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import RecipeIcon from "@/components/icons/recipe-icon";
+import api from "@/lib/api/axios";
 import { formatEpochToDate } from "@/lib/utils/date";
 import { Calendar } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -42,10 +43,13 @@ export default function RecipesReport() {
           epochMs: epochMs.toString(),
         });
 
-        const response = await fetch(`/api/calendar/tithi?${params}`);
-        const data = await response.json();
+        const response = await api.get(`/calendar/tithi?${params}`);
+        const data = await response.data;
 
-        if (response.ok && data.success) {
+        if (
+          (response.status === 200 || response.status === 201) &&
+          data.success
+        ) {
           setCurrentEventInfo({
             tithi: data.data.tithi,
             eventSummary: data.data.eventSummary,

@@ -3,6 +3,7 @@
 import BreakfastIcon from "@/components/icons/breakfast-icon";
 import DinnerIcon from "@/components/icons/dinner-icon";
 import LunchIcon from "@/components/icons/lunch-icon";
+import api from "@/lib/api/axios";
 import { formatEpochToDate } from "@/lib/utils/date";
 import { MealTypeEnum as MealType } from "@/types";
 import { Calendar } from "lucide-react";
@@ -58,10 +59,13 @@ export default function CookReport() {
           epochMs: epochMs.toString(),
         });
 
-        const response = await fetch(`/api/calendar/tithi?${params}`);
-        const data = await response.json();
+        const response = await api.get(`/calendar/tithi?${params}`);
+        const data = await response.data;
 
-        if (response.ok && data.success) {
+        if (
+          (response.status === 200 || response.status === 201) &&
+          data.success
+        ) {
           setCurrentEventInfo({
             tithi: data.data.tithi,
             eventSummary: data.data.eventSummary,

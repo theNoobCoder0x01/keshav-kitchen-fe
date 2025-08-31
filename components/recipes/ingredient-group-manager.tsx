@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,30 +28,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import api from "@/lib/api/axios";
+import type { IngredientGroup, RecipeIngredientBase } from "@/types/recipes";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Plus,
-  MoreVertical,
-  Edit2,
-  Trash2,
-  Package,
-  GripVertical,
-  ArrowUp,
   ArrowDown,
+  ArrowUp,
+  Edit2,
+  GripVertical,
+  MoreVertical,
+  Package,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { IngredientGroup, RecipeIngredientBase } from "@/types/recipes";
 
 interface IngredientGroupManagerProps {
   recipeId: string;
@@ -64,10 +65,10 @@ export function IngredientGroupManager({
 }: IngredientGroupManagerProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<IngredientGroup | null>(
-    null,
+    null
   );
   const [deletingGroup, setDeletingGroup] = useState<IngredientGroup | null>(
-    null,
+    null
   );
   const [formData, setFormData] = useState<GroupFormData>({
     name: "",
@@ -88,24 +89,20 @@ export function IngredientGroupManager({
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/recipes/${recipeId}/ingredient-groups`,
+      const response = await api.post(
+        `/recipes/${recipeId}/ingredient-groups`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name.trim(),
-            sortOrder: formData.sortOrder,
-          }),
-        },
+          name: formData.name.trim(),
+          sortOrder: formData.sortOrder,
+        }
       );
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!response.status.toString().startsWith("2")) {
+        const error = await response.data;
         throw new Error(error.error || "Failed to create ingredient group");
       }
 
-      const { ingredientGroup } = await response.json();
+      const { ingredientGroup } = await response.data;
       onGroupsChange([...ingredientGroups, ingredientGroup]);
       setFormData({ name: "", sortOrder: 0 });
       setIsCreateDialogOpen(false);
@@ -115,7 +112,7 @@ export function IngredientGroupManager({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create ingredient group",
+          : "Failed to create ingredient group"
       );
     } finally {
       setIsLoading(false);
@@ -127,28 +124,24 @@ export function IngredientGroupManager({
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/recipes/${recipeId}/ingredient-groups/${editingGroup.id}`,
+      const response = await api.put(
+        `/recipes/${recipeId}/ingredient-groups/${editingGroup.id}`,
         {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name.trim(),
-            sortOrder: formData.sortOrder,
-          }),
-        },
+          name: formData.name.trim(),
+          sortOrder: formData.sortOrder,
+        }
       );
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!response.status.toString().startsWith("2")) {
+        const error = await response.data;
         throw new Error(error.error || "Failed to update ingredient group");
       }
 
-      const { ingredientGroup } = await response.json();
+      const { ingredientGroup } = await response.data;
       onGroupsChange(
         ingredientGroups.map((g) =>
-          g.id === editingGroup.id ? ingredientGroup : g,
-        ),
+          g.id === editingGroup.id ? ingredientGroup : g
+        )
       );
       setEditingGroup(null);
       toast.success("Ingredient group updated successfully");
@@ -157,7 +150,7 @@ export function IngredientGroupManager({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to update ingredient group",
+          : "Failed to update ingredient group"
       );
     } finally {
       setIsLoading(false);
@@ -169,23 +162,22 @@ export function IngredientGroupManager({
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/recipes/${recipeId}/ingredient-groups/${deletingGroup.id}`,
-        { method: "DELETE" },
+      const response = await api.delete(
+        `/recipes/${recipeId}/ingredient-groups/${deletingGroup.id}`
       );
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!response.status.toString().startsWith("2")) {
+        const error = await response.data;
         throw new Error(error.error || "Failed to delete ingredient group");
       }
 
-      const result = await response.json();
+      const result = await response.data;
       onGroupsChange(ingredientGroups.filter((g) => g.id !== deletingGroup.id));
 
       // If ingredients were moved to ungrouped, we might need to refresh ingredients
       if (result.movedToUngrouped) {
         toast.success(
-          "Ingredient group deleted. Ingredients moved to Ungrouped section.",
+          "Ingredient group deleted. Ingredients moved to Ungrouped section."
         );
       } else {
         toast.success("Ingredient group deleted successfully");
@@ -197,7 +189,7 @@ export function IngredientGroupManager({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to delete ingredient group",
+          : "Failed to delete ingredient group"
       );
     } finally {
       setIsLoading(false);
@@ -224,23 +216,15 @@ export function IngredientGroupManager({
 
     try {
       // Update current group
-      await fetch(
-        `/api/recipes/${recipeId}/ingredient-groups/${currentGroup.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: newSortOrder }),
-        },
+      await api.put(
+        `/recipes/${recipeId}/ingredient-groups/${currentGroup.id}`,
+        { sortOrder: newSortOrder }
       );
 
       // Update target group
-      await fetch(
-        `/api/recipes/${recipeId}/ingredient-groups/${targetGroup.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: targetNewSortOrder }),
-        },
+      await api.put(
+        `/recipes/${recipeId}/ingredient-groups/${targetGroup.id}`,
+        { sortOrder: targetNewSortOrder }
       );
 
       // Update local state
@@ -251,7 +235,7 @@ export function IngredientGroupManager({
           if (g.id === targetGroup.id)
             return { ...g, sortOrder: targetNewSortOrder };
           return g;
-        }),
+        })
       );
 
       toast.success("Group order updated");

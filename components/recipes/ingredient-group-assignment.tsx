@@ -1,14 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -17,14 +10,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Package, MoreVertical, Move3D, ChefHat, Users } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import {
-  groupIngredientsByGroup,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import api from "@/lib/api/axios";
+import {
   getSortedGroupNames,
+  groupIngredientsByGroup,
 } from "@/lib/utils/recipe-utils";
 import type { IngredientGroup, RecipeIngredientBase } from "@/types/recipes";
+import { ChefHat, MoreVertical, Move3D, Package, Users } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface IngredientGroupAssignmentProps {
   recipeId: string;
@@ -40,19 +41,19 @@ export function IngredientGroupAssignment({
   onIngredientsChange,
 }: IngredientGroupAssignmentProps) {
   const [selectedIngredients, setSelectedIngredients] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [isLoading, setIsLoading] = useState(false);
 
   const groupedIngredients = groupIngredientsByGroup(
     ingredients,
-    ingredientGroups,
+    ingredientGroups
   );
   const sortedGroupNames = getSortedGroupNames(groupedIngredients);
 
   const handleIngredientSelection = (
     ingredientId: string,
-    checked: boolean,
+    checked: boolean
   ) => {
     const newSelected = new Set(selectedIngredients);
     if (checked) {
@@ -88,22 +89,18 @@ export function IngredientGroupAssignment({
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/ingredients/assign-group", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ingredientIds: Array.from(selectedIngredients),
-          groupId: targetGroupId,
-          recipeId,
-        }),
+      const response = await api.put("/ingredients/assign-group", {
+        ingredientIds: Array.from(selectedIngredients),
+        groupId: targetGroupId,
+        recipeId,
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!response.status.toString().startsWith("2")) {
+        const error = await response.data;
         throw new Error(error.error || "Failed to assign ingredients");
       }
 
-      const result = await response.json();
+      const result = await response.data;
 
       // Update local state
       const updatedIngredients = ingredients.map((ingredient) => {
@@ -119,7 +116,7 @@ export function IngredientGroupAssignment({
     } catch (error) {
       console.error("Error assigning ingredients:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to assign ingredients",
+        error instanceof Error ? error.message : "Failed to assign ingredients"
       );
     } finally {
       setIsLoading(false);
@@ -128,26 +125,22 @@ export function IngredientGroupAssignment({
 
   const handleMoveIngredient = async (
     ingredientId: string,
-    targetGroupId: string | null,
+    targetGroupId: string | null
   ) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/ingredients/assign-group", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ingredientId,
-          groupId: targetGroupId,
-          recipeId,
-        }),
+      const response = await api.post("/ingredients/assign-group", {
+        ingredientId,
+        groupId: targetGroupId,
+        recipeId,
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!response.status.toString().startsWith("2")) {
+        const error = await response.data;
         throw new Error(error.error || "Failed to move ingredient");
       }
 
-      const result = await response.json();
+      const result = await response.data;
 
       // Update local state
       const updatedIngredients = ingredients.map((ingredient) => {
@@ -162,28 +155,17 @@ export function IngredientGroupAssignment({
     } catch (error) {
       console.error("Error moving ingredient:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to move ingredient",
+        error instanceof Error ? error.message : "Failed to move ingredient"
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getGroupOptions = () => {
-    const options = [
-      { value: "", label: "Ungrouped" },
-      ...ingredientGroups.map((group) => ({
-        value: group.id,
-        label: group.name,
-      })),
-    ];
-    return options;
-  };
-
   const isGroupSelected = (groupName: string) => {
     const groupIngredients = groupedIngredients[groupName].ingredients;
     return groupIngredients.every(
-      (ingredient) => ingredient.id && selectedIngredients.has(ingredient.id),
+      (ingredient) => ingredient.id && selectedIngredients.has(ingredient.id)
     );
   };
 
@@ -191,7 +173,7 @@ export function IngredientGroupAssignment({
     const groupIngredients = groupedIngredients[groupName].ingredients;
     return (
       groupIngredients.some(
-        (ingredient) => ingredient.id && selectedIngredients.has(ingredient.id),
+        (ingredient) => ingredient.id && selectedIngredients.has(ingredient.id)
       ) && !isGroupSelected(groupName)
     );
   };
@@ -268,7 +250,7 @@ export function IngredientGroupAssignment({
                     ref={(el) => {
                       if (el && isGroupPartiallySelected(groupName)) {
                         const checkbox = el.querySelector(
-                          'input[type="checkbox"]',
+                          'input[type="checkbox"]'
                         ) as HTMLInputElement;
                         if (checkbox) {
                           checkbox.indeterminate = true;
@@ -300,7 +282,7 @@ export function IngredientGroupAssignment({
                           if (ingredient.id) {
                             handleIngredientSelection(
                               ingredient.id,
-                              checked === true,
+                              checked === true
                             );
                           }
                         }}
@@ -348,7 +330,7 @@ export function IngredientGroupAssignment({
                                 ingredient.id &&
                                 handleMoveIngredient(
                                   ingredient.id,
-                                  targetGroup.id,
+                                  targetGroup.id
                                 )
                               }
                               disabled={

@@ -12,6 +12,7 @@ import { IntlProvider } from "react-intl";
 // Import translation files
 import enMessages from "@/locales/en/common.json";
 import guMessages from "@/locales/gu/common.json";
+import api from "../api/axios";
 
 export type Language = "en" | "gu";
 
@@ -23,7 +24,7 @@ interface LanguageContextType {
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined,
+  undefined
 );
 
 // Utility function to flatten nested JSON objects for react-intl
@@ -85,15 +86,11 @@ export function LanguageProvider({
   // Update user language preference in database
   const updateUserLanguage = async (lang: Language) => {
     try {
-      const response = await fetch("/api/user/language", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ language: lang }),
+      const response = await api.patch("/user/language", {
+        language: lang,
       });
 
-      if (!response.ok) {
+      if (!response.status.toString().startsWith("2")) {
         throw new Error("Failed to update language preference");
       }
 

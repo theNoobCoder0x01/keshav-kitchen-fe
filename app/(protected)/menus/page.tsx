@@ -1,7 +1,6 @@
 "use client";
 
 import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
-import { ReportsGenerationDialog } from "@/components/dialogs/reports-generation-dialog";
 import { MenuGrid, MenuGridSkeleton } from "@/components/menu/menu-grid";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,6 @@ export default function MenuPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
-  const [reportsDialog, setReportsDialog] = useState(false);
   const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
     MealType.BREAKFAST
@@ -361,10 +359,6 @@ export default function MenuPage() {
         selectedDate={selectedDate}
         kitchenId={kitchens[activeTab]?.id}
         editMeal={editMeal}
-      />
-      <ReportsGenerationDialog
-        open={reportsDialog}
-        onOpenChange={setReportsDialog}
       />
       <BaseDialog
         open={reportPdfPreviewDialog}

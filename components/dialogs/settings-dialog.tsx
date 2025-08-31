@@ -38,6 +38,7 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+import api from "@/lib/api/axios";
 import type { CalendarEventBase as CalendarEvent } from "@/types/calendar";
 
 interface CalendarData {
@@ -67,11 +68,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const loadCalendarData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "/api/calendar/events?date=" + new Date().toISOString().split("T")[0],
+      const response = await api.get(
+        "/calendar/events?date=" + new Date().toISOString().split("T")[0]
       );
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status.toString().startsWith("2")) {
+        const data = await response.data;
         if (data.success && data.events.length > 0) {
           setCalendarData({
             events: data.events,
@@ -93,7 +94,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -116,19 +117,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/calendar/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await api.postForm("/calendar/upload", formData);
 
-      const result = await response.json();
+      const result = await response.data;
 
-      if (!response.ok || !result.success) {
+      if (!response.status.toString().startsWith("2") || !result.success) {
         throw new Error(result.message || messages("uploadFailed"));
       }
 
       toast.success(
-        common("calendarEventsUploaded", { count: result.data.eventsCount }),
+        common("calendarEventsUploaded", { count: result.data.eventsCount })
       );
 
       // Reload calendar data
@@ -152,18 +150,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setIsClearing(true);
 
     try {
-      const response = await fetch("/api/calendar/clear", {
-        method: "DELETE",
-      });
+      const response = await api.delete("/calendar/clear");
 
-      const result = await response.json();
+      const result = await response.data;
 
-      if (!response.ok || !result.success) {
+      if (!response.status.toString().startsWith("2") || !result.success) {
         throw new Error(result.message || messages("clearFailed"));
       }
 
       toast.success(
-        common("calendarEventsCleared", { count: result.data.deletedCount }),
+        common("calendarEventsCleared", { count: result.data.deletedCount })
       );
       setCalendarData(null);
     } catch (error: any) {

@@ -8,8 +8,8 @@ services:
     restart: always
     env_file:
       - .env.production
-    expose:
-      - "3000"
+    ports:
+      - "3002:3002"
     depends_on:
       - db
 

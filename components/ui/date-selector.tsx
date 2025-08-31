@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import api from "@/lib/api/axios";
 import { cn } from "@/lib/utils";
 import {
   addTime,
@@ -38,7 +39,7 @@ export function DateSelector({
 }: DateSelectorProps) {
   const userTimezone = timezone || getLocalTimezone();
   const [selectedDate, setSelectedDate] = useState<Date>(
-    initialDate || new Date(), // Store in UTC
+    initialDate || new Date() // Store in UTC
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [currentEventInfo, setCurrentEventInfo] = useState<{
@@ -56,10 +57,10 @@ export function DateSelector({
           ...(kitchenId && { kitchenId }),
         });
 
-        const response = await fetch(`/api/calendar/tithi?${params}`);
-        const data = await response.json();
+        const response = await api.get(`/calendar/tithi?${params}`);
+        const data = await response.data;
 
-        if (response.ok && data.success) {
+        if (response.status.toString().startsWith("2") && data.success) {
           setCurrentEventInfo({
             tithi: data.data.tithi,
             eventSummary: data.data.eventSummary,
@@ -118,7 +119,7 @@ export function DateSelector({
     <Card
       className={cn(
         "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
-        className,
+        className
       )}
     >
       <CardContent className="p-4 sm:p-6">

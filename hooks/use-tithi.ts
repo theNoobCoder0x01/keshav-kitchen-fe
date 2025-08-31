@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import api from "@/lib/api/axios";
 import { formatForStorage, getCurrentDateUTC } from "@/lib/utils/date";
+import { useEffect, useState } from "react";
 
 interface TithiInfo {
   tithi?: string;
@@ -28,10 +29,10 @@ export function useTithi(date?: Date, kitchenId?: string): TithiInfo {
           ...(kitchenId && { kitchenId }),
         });
 
-        const response = await fetch(`/api/calendar/tithi?${params}`);
-        const data = await response.json();
+        const response = await api.get(`/calendar/tithi?${params}`);
+        const data = await response.data;
 
-        if (!response.ok || !data.success) {
+        if (!response.status.toString().startsWith("2") || !data.success) {
           throw new Error(data.message || "Failed to fetch tithi information");
         }
 

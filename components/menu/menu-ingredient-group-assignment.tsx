@@ -3,17 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MenuIngredientGroup, MenuIngredient } from "@/types/menus";
-import { Check, Move, Users } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
-import { toast } from "sonner";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import api from "@/lib/api/axios";
+import { MenuIngredient, MenuIngredientGroup } from "@/types/menus";
+import { Check, Move, Users } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface MenuIngredientGroupAssignmentProps {
   menuId: string;
@@ -29,7 +30,7 @@ export function MenuIngredientGroupAssignment({
   onIngredientsChange,
 }: MenuIngredientGroupAssignmentProps) {
   const [selectedIngredients, setSelectedIngredients] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [targetGroupId, setTargetGroupId] = useState<string | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
@@ -41,7 +42,7 @@ export function MenuIngredientGroupAssignment({
     // Add custom groups
     ingredientGroups.forEach((group) => {
       grouped[group.name] = ingredients.filter(
-        (ing) => ing.groupId === group.id,
+        (ing) => ing.groupId === group.id
       );
     });
 
@@ -64,7 +65,7 @@ export function MenuIngredientGroupAssignment({
       }
       setSelectedIngredients(newSelected);
     },
-    [selectedIngredients],
+    [selectedIngredients]
   );
 
   const handleSelectAllInGroup = useCallback(
@@ -80,7 +81,7 @@ export function MenuIngredientGroupAssignment({
 
       setSelectedIngredients(newSelected);
     },
-    [groupedIngredients, selectedIngredients],
+    [groupedIngredients, selectedIngredients]
   );
 
   const handleAssignToGroup = useCallback(async () => {
@@ -96,22 +97,18 @@ export function MenuIngredientGroupAssignment({
 
     setIsAssigning(true);
     try {
-      const response = await fetch("/api/menu-ingredients/assign-group", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ingredientIds: Array.from(selectedIngredients),
-          groupId: targetGroupId,
-          menuId,
-        }),
+      const response = await api.put("/menu-ingredients/assign-group", {
+        ingredientIds: Array.from(selectedIngredients),
+        groupId: targetGroupId,
+        menuId,
       });
 
-      if (response.ok) {
+      if (response.status.toString().startsWith("2")) {
         // Update local state
         const updatedIngredients = ingredients.map((ing) => {
           if (selectedIngredients.has(ing.id!)) {
             const targetGroup = ingredientGroups.find(
-              (g) => g.id === targetGroupId,
+              (g) => g.id === targetGroupId
             );
             return {
               ...ing,
@@ -126,10 +123,10 @@ export function MenuIngredientGroupAssignment({
         setSelectedIngredients(new Set());
         setTargetGroupId(null);
         toast.success(
-          `Assigned ${selectedIngredients.size} ingredients to group`,
+          `Assigned ${selectedIngredients.size} ingredients to group`
         );
       } else {
-        const error = await response.json();
+        const error = await response.data;
         toast.error(error.error || "Failed to assign ingredients to group");
       }
     } catch (error) {
@@ -155,17 +152,13 @@ export function MenuIngredientGroupAssignment({
 
     setIsAssigning(true);
     try {
-      const response = await fetch("/api/menu-ingredients/assign-group", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ingredientIds: Array.from(selectedIngredients),
-          groupId: null,
-          menuId,
-        }),
+      const response = await api.put("/menu-ingredients/assign-group", {
+        ingredientIds: Array.from(selectedIngredients),
+        groupId: null,
+        menuId,
       });
 
-      if (response.ok) {
+      if (response.status.toString().startsWith("2")) {
         // Update local state
         const updatedIngredients = ingredients.map((ing) => {
           if (selectedIngredients.has(ing.id!)) {
@@ -181,10 +174,10 @@ export function MenuIngredientGroupAssignment({
         onIngredientsChange(updatedIngredients);
         setSelectedIngredients(new Set());
         toast.success(
-          `Moved ${selectedIngredients.size} ingredients to ungrouped`,
+          `Moved ${selectedIngredients.size} ingredients to ungrouped`
         );
       } else {
-        const error = await response.json();
+        const error = await response.data;
         toast.error(error.error || "Failed to move ingredients");
       }
     } catch (error) {
@@ -200,11 +193,11 @@ export function MenuIngredientGroupAssignment({
       const groupIngredients = groupedIngredients[groupName] || [];
       const totalQuantity = groupIngredients.reduce(
         (sum, ing) => sum + ing.quantity,
-        0,
+        0
       );
       const totalCost = groupIngredients.reduce(
         (sum, ing) => sum + ing.costPerUnit * ing.quantity,
-        0,
+        0
       );
 
       return {
@@ -213,7 +206,7 @@ export function MenuIngredientGroupAssignment({
         totalCost,
       };
     },
-    [groupedIngredients],
+    [groupedIngredients]
   );
 
   const sortedGroupNames = useMemo(() => {
@@ -303,7 +296,7 @@ export function MenuIngredientGroupAssignment({
 
             // Check if some ingredients in this group are selected
             const someSelected = groupIngredients.some((ing) =>
-              selectedIngredients.has(ing.id!),
+              selectedIngredients.has(ing.id!)
             );
 
             return (
@@ -356,7 +349,7 @@ export function MenuIngredientGroupAssignment({
                             onCheckedChange={(checked) =>
                               handleIngredientSelect(
                                 ingredient.id!,
-                                checked as boolean,
+                                checked as boolean
                               )
                             }
                           />

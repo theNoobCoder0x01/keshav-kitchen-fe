@@ -5,6 +5,7 @@ import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "@/hooks/use-translations";
+import api from "@/lib/api/axios";
 import { type RecipeDetailData } from "@/types";
 import { Download, Eye, FileText, Loader2, Printer } from "lucide-react";
 import { useRef, useState } from "react";
@@ -74,19 +75,21 @@ export function RecipePrintDialog({
 
     setIsGenerating(true);
     try {
-      const response = await fetch("/api/recipes/print", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await api.post(
+        "/api/recipes/print",
+        {
+          recipeId: recipe.id,
         },
-        body: JSON.stringify({ recipeId: recipe.id }),
-      });
+        {
+          responseType: "blob",
+        }
+      );
 
-      if (!response.ok) {
+      if (!response.status.toString().startsWith("2")) {
         throw new Error("Failed to generate PDF");
       }
 
-      const blob = await response.blob();
+      const blob = await response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;

@@ -1,10 +1,13 @@
 // lib/auth.ts
 import { verifyPassword } from "@/lib/crypto-utils";
 import { prisma } from "@/lib/prisma";
-import NextAuth, { getServerSession, NextAuthOptions } from "next-auth";
+import NextAuth, {
+  AuthOptions,
+  getServerSession
+} from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     Credentials({
       name: "credentials",

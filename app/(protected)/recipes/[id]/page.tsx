@@ -3,6 +3,7 @@
 import { RecipePrintDialog } from "@/components/dialogs/recipe-print-dialog";
 import { RecipeDetailView } from "@/components/recipes/recipe-detail-view";
 import { Button } from "@/components/ui/button";
+import api from "@/lib/api/axios";
 import type { RecipeDetailData } from "@/types";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -24,13 +25,16 @@ export default function RecipeDetailPage() {
 
       try {
         setLoading(true);
-        const response = await fetch(`/api/recipes/${recipeId}`);
+        const response = await api.get(`/recipes/${recipeId}`);
 
-        if (!response.ok) {
+        if (
+          !response.status ||
+          (response.status !== 200 && response.status !== 201)
+        ) {
           throw new Error("Failed to fetch recipe");
         }
 
-        const detailedRecipe = await response.json();
+        const detailedRecipe = await response.data;
 
         // Transform the data to match RecipeDetailData interface
         const recipeData: RecipeDetailData = {
