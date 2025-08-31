@@ -93,18 +93,3 @@ export function hasCustomGroups(ingredientGroups?: IngredientGroup[]): boolean {
     return false;
   return true;
 }
-
-/**
- * Creates a default "Ungrouped" group structure
- */
-export function createUngroupedGroup(
-  ingredients: RecipeIngredientBase[],
-): GroupedIngredients {
-  return {
-    Ungrouped: {
-      groupId: null,
-      sortOrder: 999,
-      ingredients,
-    },
-  };
-}
