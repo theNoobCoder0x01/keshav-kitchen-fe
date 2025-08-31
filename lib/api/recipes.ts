@@ -29,7 +29,8 @@ export async function createRecipe(data: {
   name: string;
   description?: string;
   instructions?: string;
-  servings?: number;
+  preparedQuantity?: number;
+  preparedQuantityUnit?: string;
   category: string;
   subcategory: string;
   ingredients: (RecipeIngredientInput & { groupId?: string | null })[];
@@ -54,7 +55,8 @@ export async function updateRecipe(
     name?: string;
     description?: string;
     instructions?: string;
-    servings?: number;
+    preparedQuantity?: number;
+    preparedQuantityUnit?: string;
     category?: string;
     subcategory?: string;
     ingredients?: (RecipeIngredientBase & { groupId?: string | null })[];

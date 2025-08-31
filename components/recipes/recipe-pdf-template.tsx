@@ -15,7 +15,7 @@ export const RecipePdfTemplate = forwardRef<
   const totalCost = recipe.ingredients.reduce(
     (sum, ingredient) =>
       sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0,
+    0
   );
 
   return (
@@ -213,21 +213,14 @@ export const RecipePdfTemplate = forwardRef<
         <h2 className="pdf-stats-title">Recipe Information</h2>
         <table className="pdf-stats-table">
           <tbody>
-            {recipe.servings && (
+            {recipe.preparedQuantity && (
               <tr>
-                <td>Servings</td>
-                <td>{recipe.servings}</td>
+                <td>Prepared Quantity</td>
+                <td>
+                  {recipe.preparedQuantity} ${recipe.preparedQuantityUnit}
+                </td>
               </tr>
             )}
-            <tr>
-              <td>Cost per Serving</td>
-              <td>
-                ₹
-                {recipe.servings
-                  ? (totalCost / recipe.servings).toFixed(2)
-                  : totalCost.toFixed(2)}
-              </td>
-            </tr>
             <tr>
               <td>Total Cost</td>
               <td>₹{totalCost.toFixed(2)}</td>

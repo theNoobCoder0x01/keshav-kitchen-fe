@@ -42,7 +42,8 @@ export default function RecipeDetailPage() {
           name: detailedRecipe.name,
           description: detailedRecipe.description,
           instructions: detailedRecipe.instructions,
-          servings: detailedRecipe.servings,
+          preparedQuantity: detailedRecipe.preparedQuantity,
+          preparedQuantityUnit: detailedRecipe.preparedQuantityUnit,
           category: detailedRecipe.category,
           subcategory: detailedRecipe.subcategory,
           ingredients:

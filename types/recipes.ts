@@ -59,7 +59,8 @@ export interface RecipeApiItem {
   name: string;
   description: string | null;
   instructions: string | null;
-  servings: number | null;
+  preparedQuantity: number | null;
+  preparedQuantityUnit: string | null;
   category: string;
   subcategory: string;
   ingredients: RecipeIngredientApi[];
@@ -73,7 +74,8 @@ export interface RecipeDetailData {
   name: string;
   description?: string | null;
   instructions?: string | null;
-  servings?: number | null;
+  preparedQuantity?: number | null;
+  preparedQuantityUnit?: string | null;
   category: string;
   subcategory?: string | null;
   cost?: number;

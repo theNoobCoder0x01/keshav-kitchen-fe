@@ -5,16 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  calculateGroupCost,
+  getSortedGroupNames,
+  groupIngredientsByGroup,
+  hasCustomGroups,
+} from "@/lib/utils/recipe-utils";
+import {
   extractStepsFromInstructions,
   isLexicalSerialized,
 } from "@/lib/utils/rich-text";
-import {
-  groupIngredientsByGroup,
-  getSortedGroupNames,
-  calculateGroupCost,
-  hasCustomGroups,
-} from "@/lib/utils/recipe-utils";
-import { ChefHat, Clock, DollarSign, Tag, Users, Package } from "lucide-react";
+import { ChefHat, Clock, Package, Tag, Users } from "lucide-react";
 import { forwardRef } from "react";
 
 import type { RecipeDetailData } from "@/types";
@@ -31,7 +31,7 @@ export const RecipeDetailView = forwardRef<
   const totalCost = recipe.ingredients.reduce(
     (sum, ingredient) =>
       sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0,
+    0
   );
 
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
@@ -39,7 +39,7 @@ export const RecipeDetailView = forwardRef<
   // Group ingredients by their groups
   const groupedIngredients = groupIngredientsByGroup(
     recipe.ingredients,
-    recipe.ingredientGroups,
+    recipe.ingredientGroups
   );
   const sortedGroupNames = getSortedGroupNames(groupedIngredients);
   const showGroupHeaders = hasCustomGroups(recipe.ingredientGroups);
@@ -85,14 +85,16 @@ export const RecipeDetailView = forwardRef<
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {recipe.servings && (
+            {recipe.preparedQuantity && (
               <div className="text-center">
                 <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full mx-auto mb-2">
                   <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <p className="text-sm text-muted-foreground">Servings</p>
+                <p className="text-sm text-muted-foreground">
+                  Prepared Quantity
+                </p>
                 <p className="text-xl font-semibold text-foreground">
-                  {recipe.servings}
+                  {recipe.preparedQuantity} {recipe.preparedQuantityUnit}
                 </p>
               </div>
             )}
@@ -108,19 +110,6 @@ export const RecipeDetailView = forwardRef<
                 </p>
               </div>
             )}
-
-            <div className="text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full mx-auto mb-2">
-                <DollarSign className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <p className="text-sm text-muted-foreground">Cost per Serving</p>
-              <p className="text-xl font-semibold text-foreground">
-                ₹
-                {recipe.servings
-                  ? (totalCost / recipe.servings).toFixed(2)
-                  : totalCost.toFixed(2)}
-              </p>
-            </div>
 
             <div className="text-center">
               <div className="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full mx-auto mb-2">
@@ -276,7 +265,7 @@ export const RecipeDetailView = forwardRef<
                         {step}
                       </p>
                     </div>
-                  ),
+                  )
                 )
               )}
             </div>

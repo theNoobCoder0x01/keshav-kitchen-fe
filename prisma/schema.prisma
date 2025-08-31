@@ -46,20 +46,21 @@ model Kitchen {
 }
 
 model Recipe {
-  id               String            @id @default(cuid())
-  name             String
-  description      String?
-  instructions     String?
-  servings         Int?
-  category         String
-  subcategory      String
-  userId           String
-  user             User              @relation(fields: [userId], references: [id])
-  ingredients      Ingredient[]
-  ingredientGroups IngredientGroup[]
-  menus            Menu[]
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  id                   String            @id @default(cuid())
+  name                 String
+  description          String?
+  instructions         String?
+  preparedQuantity     Int?
+  preparedQuantityUnit String?
+  category             String
+  subcategory          String
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id])
+  ingredients          Ingredient[]
+  ingredientGroups     IngredientGroup[]
+  menus                Menu[]
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   @@index([userId])
 }

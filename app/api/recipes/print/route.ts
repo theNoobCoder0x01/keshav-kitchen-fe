@@ -1,14 +1,15 @@
 import { encodeTextForPDF } from "@/lib/fonts/gujarati-font";
 import { prisma } from "@/lib/prisma";
+import { RecipeDetailData } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer from "puppeteer";
 
 // Simplified HTML template for PDF generation that avoids complex CSS
-function generateRecipeHTML(recipe: any) {
+function generateRecipeHTML(recipe: RecipeDetailData) {
   const totalCost = recipe.ingredients.reduce(
     (sum: number, ingredient: any) =>
       sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0,
+    0
   );
 
   return `
@@ -195,19 +196,15 @@ function generateRecipeHTML(recipe: any) {
           <h2 class="stats-title">Recipe Information</h2>
           <table class="stats-table">
             ${
-              recipe.servings
+              recipe.preparedQuantity
                 ? `
               <tr>
-                <td>Servings</td>
-                <td>${recipe.servings}</td>
+                <td>Prepared quantity</td>
+                <td>${recipe.preparedQuantity} ${recipe.preparedQuantityUnit}</td>
               </tr>
             `
                 : ""
             }
-            <tr>
-              <td>Cost per Serving</td>
-              <td>₹${recipe.servings ? (totalCost / recipe.servings).toFixed(2) : totalCost.toFixed(2)}</td>
-            </tr>
             <tr>
               <td>Total Cost</td>
               <td>₹${totalCost.toFixed(2)}</td>
@@ -239,7 +236,7 @@ function generateRecipeHTML(recipe: any) {
                   <td>${ingredient.costPerUnit ? `₹${ingredient.costPerUnit.toFixed(2)}` : "N/A"}</td>
                   <td>${ingredient.costPerUnit ? `₹${(ingredient.costPerUnit * ingredient.quantity).toFixed(2)}` : "N/A"}</td>
                 </tr>
-              `,
+              `
                 )
                 .join("")}
               <tr class="total-cost-row">
@@ -265,7 +262,7 @@ function generateRecipeHTML(recipe: any) {
                   return extractStepsFromInstructions(recipe.instructions)
                     .map(
                       (step: string) =>
-                        `<li class="instruction-item">${encodeTextForPDF(step)}</li>`,
+                        `<li class="instruction-item">${encodeTextForPDF(step)}</li>`
                     )
                     .join("");
                 } catch {
@@ -296,7 +293,7 @@ export async function POST(request: NextRequest) {
     if (!recipeId) {
       return NextResponse.json(
         { error: "Recipe ID is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -371,7 +368,7 @@ export async function POST(request: NextRequest) {
     console.error("Error generating recipe PDF:", error);
     return NextResponse.json(
       { error: "Failed to generate PDF" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

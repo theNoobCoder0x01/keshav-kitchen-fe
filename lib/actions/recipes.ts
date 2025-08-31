@@ -97,7 +97,8 @@ export async function createRecipe(data: {
   name: string;
   description?: string;
   instructions?: string;
-  servings?: number;
+  preparedQuantity?: number;
+  preparedQuantityUnit?: string;
   category: string;
   subcategory: string;
   ingredients: (RecipeIngredientInput & { groupId?: string | null })[];
@@ -121,7 +122,8 @@ export async function createRecipe(data: {
           name: data.name,
           description: data.description,
           instructions: data.instructions,
-          servings: data.servings,
+          preparedQuantity: data.preparedQuantity,
+          preparedQuantityUnit: data.preparedQuantityUnit,
           category: data.category,
           subcategory: data.subcategory,
           userId: session.user.id,
@@ -205,7 +207,8 @@ export async function updateRecipe(
     name?: string;
     description?: string;
     instructions?: string;
-    servings?: number;
+    preparedQuantity?: number;
+    preparedQuantityUnit?: string;
     category?: string;
     subcategory?: string;
     ingredients?: (RecipeIngredientBase & { groupId?: string | null })[];
@@ -238,7 +241,8 @@ export async function updateRecipe(
         name: data.name,
         description: data.description,
         instructions: data.instructions,
-        servings: data.servings,
+        preparedQuantity: data.preparedQuantity,
+        preparedQuantityUnit: data.preparedQuantityUnit,
         category: data.category,
         subcategory: data.subcategory,
       };
