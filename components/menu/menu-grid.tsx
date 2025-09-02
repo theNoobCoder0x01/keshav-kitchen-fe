@@ -16,6 +16,7 @@ interface MenuGridProps {
   onEditMeal: (mealType: MealType, meal: any) => void;
   onDeleteMeal: (mealId: string) => void;
   menus: any;
+  kitchenId: string;
   selectedDate: Date;
 }
 
@@ -24,7 +25,7 @@ export function MenuGrid({
   onEditMeal,
   onDeleteMeal,
   menus = {},
-  selectedDate,
+  kitchenId,
 }: MenuGridProps) {
   const [menuData, setMenuData] = useState<Record<string, MenuItem[]>>({});
 
@@ -35,7 +36,7 @@ export function MenuGrid({
         breakfast: (menus.BREAKFAST || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
@@ -43,7 +44,7 @@ export function MenuGrid({
         lunch: (menus.LUNCH || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
@@ -51,7 +52,7 @@ export function MenuGrid({
         dinner: (menus.DINNER || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
@@ -59,7 +60,7 @@ export function MenuGrid({
         snack: (menus.SNACK || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servings} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
@@ -86,6 +87,7 @@ export function MenuGrid({
           <MenuCard
             key={type}
             id={type}
+            kitchenId={kitchenId}
             title={title}
             className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
             items={menuData[key] || []}

@@ -90,9 +90,11 @@ export async function PUT(
             unit: true,
             costPerUnit: true,
           },
-          orderBy: {
-            name: "asc",
-          },
+          orderBy: [
+            {
+              name: "asc",
+            },
+          ],
         },
       },
     });

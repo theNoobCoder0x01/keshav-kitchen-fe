@@ -221,6 +221,20 @@ export const RecipePdfTemplate = forwardRef<
                 </td>
               </tr>
             )}
+            {recipe.servingQuantity && (
+              <tr>
+                <td>Serving Quantity</td>
+                <td>
+                  {recipe.servingQuantity} {recipe.servingQuantityUnit}
+                </td>
+              </tr>
+            )}
+            {recipe.quantityPerPiece && (
+              <tr>
+                <td>Quantity per Piece</td>
+                <td>{recipe.quantityPerPiece}</td>
+              </tr>
+            )}
             <tr>
               <td>Total Cost</td>
               <td>₹{totalCost.toFixed(2)}</td>

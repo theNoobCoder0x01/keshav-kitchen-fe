@@ -31,6 +31,9 @@ export async function createRecipe(data: {
   instructions?: string;
   preparedQuantity?: number;
   preparedQuantityUnit?: string;
+  servingQuantity?: number;
+  servingQuantityUnit?: string;
+  quantityPerPiece?: number;
   category: string;
   subcategory: string;
   ingredients: (RecipeIngredientInput & { groupId?: string | null })[];
@@ -57,6 +60,9 @@ export async function updateRecipe(
     instructions?: string;
     preparedQuantity?: number;
     preparedQuantityUnit?: string;
+    servingQuantity?: number;
+    servingQuantityUnit?: string;
+    quantityPerPiece?: number;
     category?: string;
     subcategory?: string;
     ingredients?: (RecipeIngredientBase & { groupId?: string | null })[];
@@ -68,7 +74,7 @@ export async function updateRecipe(
   }
 ) {
   try {
-    const response = await api.put(`/recipes/${id}`, data);
+    const response = await api.patch(`/recipes/${id}`, data);
     return response.data;
   } catch (error) {
     console.error(`Error updating recipe with id ${id}:`, error);

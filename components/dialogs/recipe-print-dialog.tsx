@@ -76,7 +76,7 @@ export function RecipePrintDialog({
     setIsGenerating(true);
     try {
       const response = await api.post(
-        "/api/recipes/print",
+        "/recipes/print",
         {
           recipeId: recipe.id,
         },

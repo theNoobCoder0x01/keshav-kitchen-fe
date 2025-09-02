@@ -10,49 +10,47 @@ export const UNIT_OPTIONS: UnitOption[] = [
     value: "kg",
     label: "Kilograms (kg)",
     category: "weight",
-    conversionToGrams: 1000,
     isDefault: true,
   },
-  { value: "g", label: "Grams (g)", category: "weight", conversionToGrams: 1 },
+  // { value: "g", label: "Grams (g)", category: "weight", conversionToGrams: 1 },
 
-  // Volume units
-  {
-    value: "L",
-    label: "Liters (L)",
-    category: "volume",
-    conversionToGrams: 1000,
-  },
-  {
-    value: "ml",
-    label: "Milliliters (ml)",
-    category: "volume",
-    conversionToGrams: 1,
-  },
-  {
-    value: "cup",
-    label: "Cups (cup)",
-    category: "volume",
-    conversionToGrams: 240,
-  },
-  {
-    value: "tbsp",
-    label: "Tablespoons (tbsp)",
-    category: "volume",
-    conversionToGrams: 15,
-  },
-  {
-    value: "tsp",
-    label: "Teaspoons (tsp)",
-    category: "volume",
-    conversionToGrams: 5,
-  },
+  // // Volume units
+  // {
+  //   value: "L",
+  //   label: "Liters (L)",
+  //   category: "volume",
+  //   conversionToGrams: 1000,
+  // },
+  // {
+  //   value: "ml",
+  //   label: "Milliliters (ml)",
+  //   category: "volume",
+  //   conversionToGrams: 1,
+  // },
+  // {
+  //   value: "cup",
+  //   label: "Cups (cup)",
+  //   category: "volume",
+  //   conversionToGrams: 240,
+  // },
+  // {
+  //   value: "tbsp",
+  //   label: "Tablespoons (tbsp)",
+  //   category: "volume",
+  //   conversionToGrams: 15,
+  // },
+  // {
+  //   value: "tsp",
+  //   label: "Teaspoons (tsp)",
+  //   category: "volume",
+  //   conversionToGrams: 5,
+  // },
 
   // Count units
   {
     value: "pcs",
     label: "Pieces (pcs)",
     category: "count",
-    conversionToGrams: 50,
   },
 ];
 
@@ -81,14 +79,14 @@ export const isValidUnit = (value: string): boolean => {
 // Get conversion factor to grams
 export const getConversionToGrams = (unit: string): number => {
   const unitOption = getUnitByValue(unit);
-  return unitOption?.conversionToGrams || 1;
+  return 1;
 };
 
 // Convert between units
 export const convertUnits = (
   quantity: number,
   fromUnit: string,
-  toUnit: string,
+  toUnit: string
 ): number => {
   if (fromUnit === toUnit) return quantity;
 

@@ -38,9 +38,14 @@ export async function GET(
               },
             },
           },
-          orderBy: {
-            name: "asc",
-          },
+          orderBy: [
+            {
+              quantity: "desc",
+            },
+            {
+              name: "asc",
+            },
+          ],
         },
         ingredientGroups: {
           select: {
@@ -55,9 +60,11 @@ export async function GET(
                 unit: true,
                 costPerUnit: true,
               },
-              orderBy: {
-                name: "asc",
-              },
+              orderBy: [
+                {
+                  name: "asc",
+                },
+              ],
             },
           },
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -149,6 +156,9 @@ export async function PATCH(
       instructions,
       preparedQuantity,
       preparedQuantityUnit,
+      servingQuantity,
+      servingQuantityUnit,
+      quantityPerPiece,
       category,
       subcategory,
       ingredients,
@@ -186,8 +196,14 @@ export async function PATCH(
           name,
           description,
           instructions,
-          preparedQuantity: preparedQuantity != null ? Number(preparedQuantity) : undefined,
+          preparedQuantity:
+            preparedQuantity != null ? Number(preparedQuantity) : undefined,
           preparedQuantityUnit,
+          servingQuantity:
+            servingQuantity != null ? Number(servingQuantity) : undefined,
+          servingQuantityUnit,
+          quantityPerPiece:
+            quantityPerPiece != null ? Number(quantityPerPiece) : undefined,
           category,
           subcategory,
         },

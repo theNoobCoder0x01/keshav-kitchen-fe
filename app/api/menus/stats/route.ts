@@ -38,7 +38,7 @@ export async function GET(request: Request) {
           kitchenId: targetKitchenId,
         },
         _sum: {
-          servings: true,
+          servingQuantity: true,
         },
       }),
       prisma.menu.groupBy({
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
           kitchenId: targetKitchenId,
         },
         _sum: {
-          servings: true,
+          servingQuantity: true,
         },
       }),
     ]);
@@ -64,11 +64,11 @@ export async function GET(request: Request) {
     };
 
     mealTypeStats.forEach((stat) => {
-      byMealType[stat.mealType] = stat._sum.servings || 0;
+      byMealType[stat.mealType] = stat._sum.servingQuantity || 0;
     });
 
     return NextResponse.json({
-      total: { planned: totalPlanned._sum.servings || 0 },
+      total: { planned: totalPlanned._sum.servingQuantity || 0 },
       byMealType,
     });
   } catch (error) {

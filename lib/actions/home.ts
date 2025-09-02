@@ -48,7 +48,7 @@ export async function getHomeStats() {
           },
         },
         _sum: {
-          servings: true,
+          servingQuantity: true,
         },
       }),
       prisma.menuIngredient.aggregate({
@@ -78,7 +78,7 @@ export async function getHomeStats() {
           },
         },
         _sum: {
-          servings: true,
+          servingQuantity: true,
         },
       }),
       prisma.menuIngredient.aggregate({
@@ -117,8 +117,8 @@ export async function getHomeStats() {
       },
     });
 
-    const totalMealsPlanned = todayMenus._sum.servings || 0;
-    const totalMealsYesterday = yesterdayMenus._sum.servings || 0;
+    const totalMealsPlanned = todayMenus._sum.servingQuantity || 0;
+    const totalMealsYesterday = yesterdayMenus._sum.servingQuantity || 0;
     const totalCostToday = todayIngredients._sum.costPerUnit || 0;
     const totalCostYesterday = yesterdayIngredients._sum.costPerUnit || 0;
 
@@ -186,23 +186,29 @@ export async function getRecentActivity() {
             },
           },
         },
-        orderBy: {
-          updatedAt: "desc",
-        },
+        orderBy: [
+          {
+            updatedAt: "desc",
+          },
+        ],
         take: 5,
       }),
       prisma.recipe.findMany({
         where: whereClause,
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: [
+          {
+            createdAt: "desc",
+          },
+        ],
         take: 5,
       }),
       prisma.report.findMany({
         where: whereClause,
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: [
+          {
+            createdAt: "desc",
+          },
+        ],
         take: 5,
       }),
     ]);

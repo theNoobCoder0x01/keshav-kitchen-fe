@@ -86,7 +86,7 @@ export function BaseDialog({
             </div>
           </DialogHeader>
 
-          <div className="py-6">{children}</div>
+          <div className="py-6 px-2">{children}</div>
 
           {footer && (
             <>

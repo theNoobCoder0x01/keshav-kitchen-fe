@@ -132,7 +132,7 @@ const TablePagination = ({
   itemsPerPage,
   onPageChange,
   onItemsPerPageChange,
-  itemsPerPageOptions = [5, 10, 20, 50],
+  itemsPerPageOptions = [10, 20, 50],
   className,
 }: PaginationProps) => {
   const { t } = useTranslations();

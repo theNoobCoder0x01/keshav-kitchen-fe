@@ -4,6 +4,7 @@ import RecipeIcon from "@/components/icons/recipe-icon";
 import api from "@/lib/api/axios";
 import { formatEpochToDate } from "@/lib/utils/date";
 import { Calendar } from "lucide-react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 
@@ -71,7 +72,13 @@ export default function RecipesReport() {
       <div className="bg-transparent p-6 flex flex-col gap-5 w-full overflow-x-hidden min-h-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-1 h-15">
-            <img src="/logo.svg" className="h-full" />
+            <Image
+              src="/prod/logo.svg"
+              alt="Keshav Kitchen"
+              width="20"
+              height="10"
+              className="w-auto h-full"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">

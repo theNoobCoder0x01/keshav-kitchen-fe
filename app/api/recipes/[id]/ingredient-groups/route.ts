@@ -54,9 +54,11 @@ export async function GET(
             unit: true,
             costPerUnit: true,
           },
-          orderBy: {
-            name: "asc",
-          },
+          orderBy: [
+            {
+              name: "asc",
+            },
+          ],
         },
       },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],

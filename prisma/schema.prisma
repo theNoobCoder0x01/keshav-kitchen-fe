@@ -43,6 +43,7 @@ model Kitchen {
   menus          Menu[]
   reports        Report[]
   calendarEvents CalendarEvent[]
+  MenuComponent  MenuComponent[]
 }
 
 model Recipe {
@@ -50,8 +51,11 @@ model Recipe {
   name                 String
   description          String?
   instructions         String?
-  preparedQuantity     Int?
+  preparedQuantity     Float?
   preparedQuantityUnit String?
+  servingQuantity      Float?
+  servingQuantityUnit  String?
+  quantityPerPiece     Float?
   category             String
   subcategory          String
   userId               String
@@ -97,26 +101,28 @@ model Ingredient {
 }
 
 model Menu {
-  id               String                @id @default(cuid())
-  date             DateTime
-  mealType         MealType
-  recipeId         String
-  recipe           Recipe                @relation(fields: [recipeId], references: [id])
-  kitchenId        String
-  kitchen          Kitchen               @relation(fields: [kitchenId], references: [id])
-  userId           String
-  user             User                  @relation(fields: [userId], references: [id])
-  servings         Int
-  ghanFactor       Float                 @default(1.0)
-  status           Status                @default(PLANNED)
-  actualCount      Int?
-  notes            String?
-  ingredients      MenuIngredient[] // Store ingredients separately for each menu
-  ingredientGroups MenuIngredientGroup[] // Add ingredient groups for menus
-  menuComponentId  String?
-  menuComponent    MenuComponent?        @relation(fields: [menuComponentId], references: [id])
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
+  id                   String                @id @default(cuid())
+  date                 DateTime
+  mealType             MealType
+  recipeId             String
+  recipe               Recipe                @relation(fields: [recipeId], references: [id])
+  kitchenId            String
+  kitchen              Kitchen               @relation(fields: [kitchenId], references: [id])
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id])
+  preparedQuantity     Float?
+  preparedQuantityUnit String?
+  servingQuantity      Float?
+  servingQuantityUnit  String?
+  quantityPerPiece     Float?
+  ghanFactor           Float                 @default(1.0)
+  notes                String?
+  ingredients          MenuIngredient[] // Store ingredients separately for each menu
+  ingredientGroups     MenuIngredientGroup[] // Add ingredient groups for menus
+  menuComponentId      String?
+  menuComponent        MenuComponent?        @relation(fields: [menuComponentId], references: [id])
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 
   @@index([recipeId])
   @@index([kitchenId])
@@ -160,6 +166,10 @@ model MenuComponent {
   label          String
   mealType       MealType
   sequenceNumber Int
+  kitchenId      String
+  kitchen        Kitchen  @relation(fields: [kitchenId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   Menu           Menu[]
 }
 
@@ -214,11 +224,4 @@ enum MealType {
   LUNCH
   DINNER
   SNACK
-}
-
-enum Status {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
 }

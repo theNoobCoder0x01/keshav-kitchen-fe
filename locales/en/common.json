@@ -33,7 +33,6 @@
     "actions": "Actions",
     "date": "Date",
     "time": "Time",
-    "status": "Status",
     "notes": "Notes",
     "language": "Language",
     "english": "English",
@@ -147,7 +146,7 @@
     "mealUpdatedSuccessfully": "Meal updated successfully for {mealType}!",
     "mealAddedSuccessfully": "Meal added successfully for {mealType}!",
     "failedToAddMeal": "Failed to add meal. Please check your inputs and try again.",
-    "mealPlannedNotes": "Meal planned for {mealType} with {servings} {unit} servings and {ghan} ghan factor.",
+    "mealPlannedNotes": "Meal planned for {mealType} with {servings} {unit} servings and {ghanFactor} ghan factor.",
     "recipeRequired": "Recipe is required",
     "ghanRequired": "Ghan is required",
     "ghanPositive": "Ghan must be a positive number",
@@ -383,7 +382,16 @@
       "unitsDesc": "Comma-separated units (required)",
       "costPerUnit": "Cost Per Unit (comma-separated, optional)",
       "costPerUnitDesc": "Comma-separated costs (optional)"
-    }
+    },
+    "quantityInformation": "Quantity Information",
+    "quantityInformationDescription": "Specify the prepared quantity, serving quantity, and other details for accurate calculations.",
+    "preparedQuantity": "Prepared Quantity",
+    "preparedQuantityUnit": "Prepared Quantity Unit",
+    "servingQuantity": "Serving Quantity",
+    "servingQuantityUnit": "Serving Quantity Unit",
+    "quantityPerPiece": "Quantity Per Piece",
+    "numberOfServings": "Number of Servings",
+    "extraQuantity": "Extra Quantity"
   },
   "ingredients": {
     "title": "Ingredients",
@@ -413,8 +421,6 @@
     "dinner": "Dinner",
     "snack": "Snack",
     "ghanFactor": "Ghan Factor",
-    "actualCount": "Actual Count",
-    "plannedCount": "Planned Count",
     "menuDate": "Menu Date",
     "kitchen": "Kitchen",
     "recipe": "Recipe",
@@ -547,6 +553,13 @@
     "templateDownloaded": "Template downloaded",
     "templateDownloadedDescription": "Recipe import template has been downloaded.",
     "fileSizeTooLarge": "File size must be less than 1MB",
-    "clearFailed": "Failed to clear data"
+    "clearFailed": "Failed to clear data",
+    "failedToLoadKitchenDetails": "Failed to load kitchen details",
+    "menuComponentUpdated": "Menu component updated successfully",
+    "menuComponentAdded": "Menu component added successfully",
+    "failedToSaveMenuComponent": "Failed to save menu component",
+    "confirmDeleteMenuComponent": "Are you sure you want to delete this menu component?",
+    "menuComponentDeleted": "Menu component deleted successfully",
+    "failedToDeleteMenuComponent": "Failed to delete menu component"
   }
 }

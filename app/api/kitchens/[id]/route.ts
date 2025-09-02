@@ -33,7 +33,7 @@ export async function GET(
       },
     });
 
-    return kitchen;
+    return NextResponse.json(kitchen);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch kitchen." },

@@ -115,6 +115,9 @@ export default function RecipesPage() {
         instructions: detailedRecipe.instructions,
         preparedQuantity: detailedRecipe.preparedQuantity,
         preparedQuantityUnit: detailedRecipe.preparedQuantityUnit,
+        servingQuantity: detailedRecipe.servingQuantity,
+        servingQuantityUnit: detailedRecipe.servingQuantityUnit,
+        quantityPerPiece: detailedRecipe.quantityPerPiece,
         category: detailedRecipe.category,
         subcategory: detailedRecipe.subcategory,
         ingredients:
@@ -233,18 +236,26 @@ export default function RecipesPage() {
         name: data.name,
         category: data.category,
         subcategory: data.subcategory,
+        preparedQuantity: data.preparedQuantity
+          ? parseFloat(data.preparedQuantity) || undefined
+          : undefined,
+        preparedQuantityUnit: data.preparedQuantityUnit || undefined,
+        servingQuantity: data.servingQuantity
+          ? parseFloat(data.servingQuantity) || undefined
+          : undefined,
+        servingQuantityUnit: data.servingQuantityUnit || undefined,
+        quantityPerPiece: data.quantityPerPiece
+          ? parseFloat(data.quantityPerPiece) || undefined
+          : undefined,
         ingredients: parsedIngredients,
         ingredientGroups: data.ingredientGroups || [],
-        instructions: data.instructions ?? null,
+        instructions: data.instructions ?? undefined,
         user: { connect: { id: userId } },
       };
       let result;
       try {
         if (editRecipe) {
-          result = await updateRecipe(editRecipe.selectedRecipe, {
-            ...payload,
-            instructions: data.instructions ?? null,
-          });
+          result = await updateRecipe(editRecipe.selectedRecipe, payload);
         } else {
           result = await createRecipe(payload);
         }
@@ -488,7 +499,7 @@ export default function RecipesPage() {
             onDelete={handleDeleteRecipe}
             onPrint={handlePrintRecipe}
             deletingId={deletingId}
-            itemsPerPageOptions={[5, 10, 20, 50]}
+            itemsPerPageOptions={[10, 20, 50]}
           />
         )}
       </div>

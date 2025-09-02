@@ -56,7 +56,6 @@ ENV NODE_ENV=production
 COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-ENV DATABASE_URL="postgresql://user:password@locadhost:5432/devdb"
 RUN npx prisma generate
 
 # Build Next.js
@@ -72,11 +71,28 @@ FROM base AS dev
 
 WORKDIR /app
 
+# Copy package manifests first (for caching)
 COPY package*.json ./
+
+# Skip Chromium download (we use system Chrome)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Install dependencies (dev included for build)
 RUN npm install
 
+# Copy app source
 COPY . .
 
 ENV NODE_ENV=development
-CMD ["npm", "run", "dev"]
+
+# Entrypoint handles DB setup + app start
+COPY ./docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+RUN npx prisma generate
+
+# Build Next.js
+RUN npm run build
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["npm", "run", "start"]

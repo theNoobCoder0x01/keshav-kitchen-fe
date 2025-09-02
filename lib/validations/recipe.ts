@@ -14,6 +14,15 @@ export const RecipeSchema = z.object({
   instructions: z.string().optional(),
   preparedQuantity: z.number().min(1).optional(),
   preparedQuantityUnit: z.string().optional(),
+  servingQuantity: z
+    .number()
+    .min(0, "Serving quantity must be at least 0")
+    .optional(),
+  servingQuantityUnit: z.string().optional(),
+  quantityPerPiece: z
+    .number()
+    .min(0, "Serving quantity must be at least 0")
+    .optional(),
   category: z.string().optional(),
   subcategory: z.string().optional(),
   ingredients: z

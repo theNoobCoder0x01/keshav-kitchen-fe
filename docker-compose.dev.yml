@@ -8,13 +8,12 @@ services:
     restart: always
     env_file:
       - .env.development
-    volumes:
-      - .:/app
-      - /app/node_modules
     ports:
       - "3000:3000"
     depends_on:
       - db
+    networks:
+      - app-net
 
   nginx:
     depends_on:

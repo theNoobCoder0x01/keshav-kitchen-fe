@@ -99,6 +99,32 @@ export const RecipeDetailView = forwardRef<
               </div>
             )}
 
+            {recipe.servingQuantity && (
+              <div className="text-center">
+                <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full mx-auto mb-2">
+                  <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <p className="text-sm text-muted-foreground">Serving Size</p>
+                <p className="text-xl font-semibold text-foreground">
+                  {recipe.servingQuantity} {recipe.servingQuantityUnit}
+                </p>
+              </div>
+            )}
+
+            {recipe.quantityPerPiece && (
+              <div className="text-center">
+                <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full mx-auto mb-2">
+                  <Users className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Quantity Per Piece
+                </p>
+                <p className="text-xl font-semibold text-foreground">
+                  {recipe.quantityPerPiece} {recipe.preparedQuantityUnit}
+                </p>
+              </div>
+            )}
+
             {totalTime > 0 && (
               <div className="text-center">
                 <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full mx-auto mb-2">

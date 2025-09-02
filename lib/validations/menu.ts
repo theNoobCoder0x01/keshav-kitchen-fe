@@ -19,10 +19,6 @@ export const MenuSchema = z.object({
 export const MenuUpdateSchema = z.object({
   servings: z.number().min(1).optional(),
   ghanFactor: z.number().min(0.1).max(5.0).optional(),
-  status: z
-    .enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"])
-    .optional(),
-  actualCount: z.number().min(0).optional(),
   notes: z.string().optional(),
 });
 

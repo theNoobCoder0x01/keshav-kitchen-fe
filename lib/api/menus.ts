@@ -1,7 +1,7 @@
 import api from "./axios";
 
 import type { IngredientFormValue } from "@/types/forms";
-import type { MealType, MenuStatus } from "@/types/menus";
+import type { MealType } from "@/types/menus";
 
 export async function fetchMenus(params = {}) {
   const response = await api.get("/menus", { params });
@@ -24,9 +24,12 @@ export async function createMenu(data: {
   recipeId: string;
   kitchenId: string;
   userId: string;
-  servings: number;
+  preparedQuantity: number;
+  preparedQuantityUnit: string;
+  servingQuantity: number;
+  servingQuantityUnit: string;
+  quantityPerPiece?: number;
   ghanFactor?: number;
-  status?: MenuStatus;
   notes?: string;
   ingredients?: IngredientFormValue[];
   menuComponentId?: string;

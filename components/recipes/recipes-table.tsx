@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { RecipeListItem as Recipe } from "@/types";
-import { ChevronDown, ChevronUp, Edit, Printer, Trash2 } from "lucide-react";
+import { Edit, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -30,65 +30,14 @@ export function RecipesTable({
   onDelete,
   onPrint,
   deletingId,
-  itemsPerPageOptions = [5, 10, 20],
+  itemsPerPageOptions = [10, 20, 50],
 }: RecipesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 5);
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Recipe;
-    direction: "ascending" | "descending" | null;
-  }>({
-    key: "name",
-    direction: "ascending",
-  });
+  const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 10);
 
-  const handleSort = (key: keyof Recipe) => {
-    setSortConfig((prevConfig) => ({
-      key,
-      direction:
-        prevConfig.key === key && prevConfig.direction === "ascending"
-          ? "descending"
-          : "ascending",
-    }));
-  };
-
-  const getSortIcon = (key: keyof Recipe) => {
-    if (sortConfig.key !== key || sortConfig.direction === null) {
-      return <ChevronDown className="w-4 h-4 opacity-50" />;
-    }
-    return sortConfig.direction === "ascending" ? (
-      <ChevronUp className="w-4 h-4" />
-    ) : (
-      <ChevronDown className="w-4 h-4" />
-    );
-  };
-
-  const sortedRecipes = [...recipes].sort((a, b) => {
-    if (sortConfig.direction === null) return 0;
-    const multiplier = sortConfig.direction === "ascending" ? 1 : -1;
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
-
-    // Handle undefined/null values
-    if (aValue == null && bValue == null) return 0;
-    if (aValue == null) return -1 * multiplier;
-    if (bValue == null) return 1 * multiplier;
-
-    if (typeof aValue === "string" && typeof bValue === "string") {
-      return aValue.localeCompare(bValue) * multiplier;
-    }
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return (aValue - bValue) * multiplier;
-    }
-    // fallback to default comparison
-    if (aValue > bValue) return 1 * multiplier;
-    if (aValue < bValue) return -1 * multiplier;
-    return 0;
-  });
-
-  const paginatedRecipes = sortedRecipes.slice(
+  const paginatedRecipes = recipes.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -96,31 +45,19 @@ export function RecipesTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead
-              className="text-foreground font-semibold py-4 px-6 cursor-pointer"
-              onClick={() => handleSort("name")}
-            >
+            <TableHead className="text-foreground font-semibold py-4 px-6 cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span>NAME</span>
-                {getSortIcon("name")}
               </div>
             </TableHead>
-            <TableHead
-              className="text-foreground font-semibold py-4 px-6 cursor-pointer"
-              onClick={() => handleSort("category")}
-            >
+            <TableHead className="text-foreground font-semibold py-4 px-6 cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span>CATEGORY</span>
-                {getSortIcon("category")}
               </div>
             </TableHead>
-            <TableHead
-              className="text-foreground font-semibold py-4 px-6 cursor-pointer"
-              onClick={() => handleSort("subcategory")}
-            >
+            <TableHead className="text-foreground font-semibold py-4 px-6 cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span>SUBCATEGORY</span>
-                {getSortIcon("subcategory")}
               </div>
             </TableHead>
             <TableHead className="text-foreground font-semibold py-4 px-6">
@@ -196,7 +133,7 @@ export function RecipesTable({
       </Table>
       <TablePagination
         currentPage={currentPage}
-        totalItems={sortedRecipes.length}
+        totalItems={recipes.length}
         itemsPerPage={itemsPerPage}
         onPageChange={setCurrentPage}
         onItemsPerPageChange={setItemsPerPage}
@@ -207,7 +144,7 @@ export function RecipesTable({
 }
 
 // Skeleton loader for RecipesTable
-export function RecipesTableSkeleton({ rowCount = 5 }: { rowCount?: number }) {
+export function RecipesTableSkeleton({ rowCount = 10 }: { rowCount?: number }) {
   return (
     <div className="bg-card rounded-lg border shadow-xs">
       <Table>

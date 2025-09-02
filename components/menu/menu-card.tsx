@@ -21,6 +21,7 @@ interface MenuItem {
 
 interface MenuCardProps {
   id: string;
+  kitchenId: string;
   title: string;
   items: MenuItem[];
   onAdd: (menuComponentId?: string) => void;
@@ -31,6 +32,7 @@ interface MenuCardProps {
 }
 
 export function MenuCard({
+  kitchenId,
   title,
   items,
   onAdd,
@@ -43,7 +45,7 @@ export function MenuCard({
 
   const loadMenuComponents = async () => {
     try {
-      let menuComponents = await fetchMenuComponents({
+      let menuComponents = await fetchMenuComponents(kitchenId, {
         mealType: title.toUpperCase(),
       });
 
@@ -55,7 +57,7 @@ export function MenuCard({
 
   useEffect(() => {
     loadMenuComponents();
-  }, [title]);
+  }, [title, kitchenId]);
 
   // Create an array containing either a menuComponent or a menu item, connecting them by id
   const menuComponentWithMenuItemList = useMemo(() => {

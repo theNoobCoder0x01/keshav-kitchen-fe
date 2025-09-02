@@ -1,188 +1,11 @@
-import {
-  calculateIngredientCost,
-  convertToGrams,
-  formatQuantity,
-} from "./unit-conversions";
-
-import type {
-  IngredientCalculation,
-  MealCalculationInput,
-  MealCalculationResult,
-} from "@/types/calculations";
-
-import type { MealType } from "@/types/menus";
-
-/**
- * Calculate comprehensive meal metrics with proper unit conversions
- */
-export function calculateMealMetrics(
-  input: MealCalculationInput,
-): MealCalculationResult {
-  const { ghan, servingAmount, servingUnit, ingredients } = input;
-
-  // Convert serving amount to grams for standardized calculations
-  const servingAmountInGrams = convertToGrams(servingAmount, servingUnit);
-
-  // Calculate ingredient details
-  const ingredientCalculations: IngredientCalculation[] = ingredients.map(
-    (ingredient) => {
-      const weightInGrams = convertToGrams(
-        ingredient.quantity,
-        ingredient.unit,
-      );
-      const totalCost = calculateIngredientCost(
-        ingredient.quantity,
-        ingredient.unit,
-        ingredient.costPerUnit,
-        ghan,
-      );
-
-      return {
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        costPerUnit: ingredient.costPerUnit,
-        weightInGrams,
-        totalCost,
-      };
-    },
-  );
-
-  // Calculate total weight and cost
-  const totalWeightGrams = ingredientCalculations.reduce(
-    (sum, ing) => sum + ing.weightInGrams,
-    0,
-  );
-  const totalCost = ingredientCalculations.reduce(
-    (sum, ing) => sum + ing.totalCost,
-    0,
-  );
-
-  // Ghan calculations
-  // 1 Ghan = total recipe weight (all ingredients combined)
-  const ghanWeightGrams = totalWeightGrams;
-  const totalGhanWeight = ghanWeightGrams * ghan;
-
-  // Person calculations
-  const personsPerGhan =
-    servingAmountInGrams > 0 ? ghanWeightGrams / servingAmountInGrams : 0;
-  const totalPersons = personsPerGhan * ghan;
-  const costPerPerson = totalPersons > 0 ? totalCost / totalPersons : 0;
-
-  // Create display values
-  const display = {
-    perPersonServing: `${formatQuantity(servingAmount, servingUnit)} ${servingUnit}`,
-    costPerPerson: `₹${costPerPerson.toFixed(2)}`,
-    personsPerGhan: formatQuantity(personsPerGhan, "persons"),
-    totalPersons: formatQuantity(totalPersons, "persons"),
-    totalCost: `₹${totalCost.toFixed(2)}`,
-    totalWeight: `${formatQuantity(totalWeightGrams / 1000, "kg")} kg`,
-  };
-
-  return {
-    totalWeightGrams,
-    totalCost,
-    servingAmountInGrams,
-    personsPerGhan,
-    totalPersons,
-    costPerPerson,
-    ghanWeightGrams,
-    totalGhanWeight,
-    ingredients: ingredientCalculations,
-    display,
-  };
-}
-
-/**
- * Calculate scaling factor for recipe adjustments
- */
-export function calculateScalingFactor(
-  originalServings: number,
-  targetServings: number,
-): number {
-  if (originalServings <= 0) return 1;
-  return targetServings / originalServings;
-}
-
-/**
- * Scale recipe ingredients
- */
-export function scaleRecipeIngredients(
-  ingredients: import("@/types/calculations").CalculationIngredient[],
-  scalingFactor: number,
-): import("@/types/calculations").CalculationIngredient[] {
-  return ingredients.map((ingredient) => ({
-    ...ingredient,
-    quantity: ingredient.quantity * scalingFactor,
-  }));
-}
-
-/**
- * Validate meal calculation inputs
- */
-export function validateMealInputs(input: MealCalculationInput): {
-  isValid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
-
-  if (input.ghan <= 0) {
-    errors.push("Ghan must be greater than 0");
-  }
-
-  if (input.ghan > 100) {
-    errors.push("Ghan cannot exceed 100");
-  }
-
-  if (input.servingAmount <= 0) {
-    errors.push("Serving amount must be greater than 0");
-  }
-
-  if (!input.servingUnit) {
-    errors.push("Serving unit is required");
-  }
-
-  if (!input.ingredients || input.ingredients.length === 0) {
-    errors.push("At least one ingredient is required");
-  }
-
-  return { isValid: errors.length === 0, errors };
-}
-
-/**
- * Get recommended serving sizes by meal type
- */
-export function getRecommendedServingSize(mealType: MealType): {
-  amount: number;
-  unit: string;
-} {
-  const recommendations = {
-    BREAKFAST: { amount: 150, unit: "g" },
-    LUNCH: { amount: 250, unit: "g" },
-    DINNER: { amount: 300, unit: "g" },
-    SNACK: { amount: 75, unit: "g" },
-  };
-
-  return recommendations[mealType];
-}
-
-/**
- * Calculate nutritional density (cost per 100g)
- */
-export function calculateNutritionalDensity(
-  totalCost: number,
-  totalWeightGrams: number,
-): number {
-  if (totalWeightGrams <= 0) return 0;
-  return (totalCost / totalWeightGrams) * 100; // Cost per 100g
-}
+import type { MealCalculationResult } from "@/types/calculations";
 
 /**
  * Generate meal calculation summary
  */
 export function generateMealSummary(
   calculation: MealCalculationResult,
-  mealType: string,
+  mealType: string
 ): string {
   const { display } = calculation;
 
@@ -193,3 +16,64 @@ export function generateMealSummary(
 - Total cost: ${display.totalCost}
 - Total weight: ${display.totalWeight}`;
 }
+
+/**
+ *
+ */
+export const getCalculatedQuantities = ({
+  preparedQuantity,
+  preparedQuantityUnit,
+  servingQuantity,
+  servingQuantityUnit,
+  quantityPerPiece,
+}: {
+  preparedQuantity: number | null;
+  preparedQuantityUnit: string | null;
+  servingQuantity: number | null;
+  servingQuantityUnit: string | null;
+  quantityPerPiece: number | null;
+}) => {
+  const preparedQty = preparedQuantity || 0;
+  const servingQty = servingQuantity || 1;
+  const qtyPerPiece = quantityPerPiece || 1;
+
+  let numberOfServings = 0;
+  let extraQuantity = 0;
+
+  // If either preparedQuantityUnit or servingQuantityUnit is 'pcs', use piece logic
+  const isPreparedPcs = preparedQuantityUnit === "pcs";
+  const isServingPcs = servingQuantityUnit === "pcs";
+
+  if ((isPreparedPcs || isServingPcs) && qtyPerPiece > 0) {
+    // Both units are 'pcs' or one of them is 'pcs'
+    // preparedQty is total pieces, servingQty is pieces per serving, quantityPerPiece is pieces per item
+    // If both are 'pcs', treat preparedQty as total pieces, servingQty as pieces per serving
+    // If only one is 'pcs', treat accordingly
+    if (isPreparedPcs && isServingPcs) {
+      numberOfServings = Math.floor(preparedQty / servingQty);
+      extraQuantity = preparedQty - numberOfServings * servingQty;
+    } else if (isServingPcs) {
+      // preparedQty is weight/volume, servingQty is pieces, quantityPerPiece is weight/volume per piece
+      numberOfServings = Math.floor(preparedQty / (servingQty * qtyPerPiece));
+      extraQuantity = preparedQty - numberOfServings * servingQty * qtyPerPiece;
+    } else if (isPreparedPcs) {
+      // preparedQty is pieces, servingQty is weight/volume, quantityPerPiece is weight/volume per piece
+      // Total available weight = preparedQty * quantityPerPiece
+      numberOfServings = Math.floor((preparedQty * qtyPerPiece) / servingQty);
+      extraQuantity = preparedQty * qtyPerPiece - numberOfServings * servingQty;
+    }
+  } else {
+    // Neither unit is 'pcs', use normal logic
+    numberOfServings = Math.floor(preparedQty / servingQty);
+    extraQuantity = preparedQty - numberOfServings * servingQty;
+  }
+
+  return {
+    preparedQuantity: preparedQty,
+    preparedUnit: preparedQuantityUnit || "units",
+    servingQuantity: servingQty,
+    servingUnit: servingQuantityUnit || "units",
+    numberOfServings,
+    extraQuantity,
+  };
+};

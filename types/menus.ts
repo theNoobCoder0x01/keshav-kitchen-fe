@@ -1,5 +1,4 @@
 export type MealType = "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
-export type MenuStatus = "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
 export enum MealTypeEnum {
   BREAKFAST = "BREAKFAST",
@@ -66,8 +65,6 @@ export interface MenuWithIngredients {
   mealType: string;
   servings: number;
   ghanFactor: number;
-  status: string;
-  actualCount?: number;
   notes?: string;
   kitchen: {
     id: string;
@@ -129,8 +126,6 @@ export interface MenuReportData {
     mealType: string;
     servings: number;
     ghanFactor: number;
-    status: string;
-    actualCount?: number;
     notes?: string;
     kitchen: { name: string };
     recipe: {

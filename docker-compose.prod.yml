@@ -12,6 +12,8 @@ services:
       - "3002:3002"
     depends_on:
       - db
+    networks:
+      - app-net
 
   nginx:
     depends_on:

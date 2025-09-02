@@ -2,7 +2,6 @@ export interface UnitOption {
   value: string;
   label: string;
   category: "weight" | "volume" | "count";
-  conversionToGrams: number;
   isDefault?: boolean;
 }
 

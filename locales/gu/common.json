@@ -33,7 +33,6 @@
     "actions": "ક્રિયાઓ",
     "date": "તારીખ",
     "time": "સમય",
-    "status": "સ્થિતિ",
     "notes": "નોંધો",
     "language": "ભાષા",
     "english": "અંગ્રેજી",
@@ -147,7 +146,7 @@
     "mealUpdatedSuccessfully": "{mealType} માટે ભોજન સફળતાપૂર્વક અપડેટ થયું!",
     "mealAddedSuccessfully": "{mealType} માટે ભોજન સફળતાપૂર્વક ઉમેરવામાં આવ્યું!",
     "failedToAddMeal": "ભોજન ઉમેરવામાં નિષ્ફળ. કૃપા કરી તમારી ઇનપુટ તપાસો અને ફરી પ્રયાસ કરો.",
-    "mealPlannedNotes": "{mealType} માટે {servings} {unit} સેવા અને {ghan} ઘન ફેક્ટર સાથે ભોજન આયોજિત.",
+    "mealPlannedNotes": "{mealType} માટે {servings} {unit} સેવા અને {ghanFactor} ઘન ફેક્ટર સાથે ભોજન આયોજિત.",
     "recipeRequired": "વાનગી જરૂરી છે",
     "ghanRequired": "ઘન જરૂરી છે",
     "ghanPositive": "ઘન એક સકારાત્મક સંખ્યા હોવો જોઈએ",
@@ -383,7 +382,16 @@
       "unitsDesc": "કોમા-અલગ એકમો (જરૂરી)",
       "costPerUnit": "એકમ દીઠ કિંમત (કોમા-અલગ, વૈકલ્પિક)",
       "costPerUnitDesc": "કોમા-અલગ કિંમતો (વૈકલ્પિક)"
-    }
+    },
+    "quantityInformation": "જથ્થાની માહિતી",
+    "quantityInformationDescription": "ખરી ગણતરી માટે તૈયાર જથ્થો, સેવા જથ્થો અને અન્ય વિગતો સ્પષ્ટ કરો.",
+    "preparedQuantity": "તૈયાર કરેલ જથ્થો",
+    "preparedQuantityUnit": "તૈયાર કરેલ જથ્થો એકમ",
+    "servingQuantity": "સેવાની માત્રા",
+    "servingQuantityUnit": "સેવાની માત્રા એકમ",
+    "quantityPerPiece": "પ્રતિ પીસે જથ્થો",
+    "numberOfServings": "સેવાની સંખ્યા",
+    "extraQuantity": "વધારાની માત્રા"
   },
   "ingredients": {
     "title": "સામગ્રી",
@@ -413,8 +421,6 @@
     "dinner": "રાત્રિભોજન",
     "snack": "સ્નેક",
     "ghanFactor": "ઘન ફેક્ટર",
-    "actualCount": "વાસ્તવિક સંખ્યા",
-    "plannedCount": "આયોજિત સંખ્યા",
     "menuDate": "મેન્યુ તારીખ",
     "kitchen": "રસોડું",
     "recipe": "વાનગી",
@@ -547,6 +553,13 @@
     "templateDownloaded": "ટેમ્પલેટ ડાઉનલોડ થયું",
     "templateDownloadedDescription": "વાનગી આયાત ટેમ્પલેટ ડાઉનલોડ થયું છે.",
     "fileSizeTooLarge": "ફાઇલનું કદ 1MB કરતાં ઓછું હોવું જોઈએ",
-    "clearFailed": "ડેટા સાફ કરવામાં નિષ્ફળ"
+    "clearFailed": "ડેટા સાફ કરવામાં નિષ્ફળ",
+    "failedToLoadKitchenDetails": "રસોડાની વિગતો લોડ કરવામાં નિષ્ફળ",
+    "menuComponentUpdated": "મેન્યુ ઘટક સફળતાપૂર્વક અપડેટ થયો",
+    "menuComponentAdded": "મેન્યુ ઘટક સફળતાપૂર્વક ઉમેરાયો",
+    "failedToSaveMenuComponent": "મેન્યુ ઘટક સાચવવામાં નિષ્ફળ",
+    "confirmDeleteMenuComponent": "શું તમે ખરેખર આ મેન્યુ ઘટક કાઢી નાખવા માંગો છો?",
+    "menuComponentDeleted": "મેન્યુ ઘટક સફળતાપૂર્વક કાઢી નાખવામાં આવ્યો",
+    "failedToDeleteMenuComponent": "મેન્યુ ઘટક કાઢી નાખવામાં નિષ્ફળ"
   }
 }

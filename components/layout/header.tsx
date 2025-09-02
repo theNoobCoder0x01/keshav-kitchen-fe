@@ -6,6 +6,7 @@ import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslations } from "@/hooks/use-translations";
 import { Menu, Search } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 export function Header() {
@@ -36,10 +37,12 @@ export function Header() {
               </span>
             </div>
             <div className="hidden sm:flex items-center space-x-1 h-15">
-              <img
-                src="/logo.svg"
-                alt={t("common.keshavKitchen")}
-                className="h-full"
+              <Image
+                src="/prod/logo.svg"
+                alt="Keshav Kitchen"
+                width="20"
+                height="10"
+                className="w-auto h-full"
               />
             </div>
           </div>

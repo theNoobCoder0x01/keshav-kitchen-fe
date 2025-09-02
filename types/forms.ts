@@ -10,9 +10,12 @@ export interface IngredientFormValue {
 export interface MealFormValues {
   recipeId: string;
   followRecipe: boolean;
-  ghan: number;
-  servingAmount: number;
-  servingUnit: string;
+  ghanFactor: number;
+  preparedQuantity: number;
+  preparedQuantityUnit: string;
+  servingQuantity: number;
+  servingQuantityUnit: string;
+  quantityPerPiece?: number;
   ingredients: IngredientFormValue[];
 }
 

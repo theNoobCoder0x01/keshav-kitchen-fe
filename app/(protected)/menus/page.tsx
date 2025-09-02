@@ -156,11 +156,6 @@ export default function MenuPage() {
     return createMenuStats(menuStats);
   };
 
-  // Helper to check if any loading state is active
-  const isAnyLoading = () => {
-    return loadingStates.kitchens || loadingStates.stats || loadingStates.menus;
-  };
-
   const handleAddMeal = (
     mealType: UnifiedMealType,
     menuComponentId?: string
@@ -328,6 +323,7 @@ export default function MenuPage() {
               onEditMeal={handleEditMeal}
               onDeleteMeal={handleDeleteMeal}
               menus={dailyMenus}
+              kitchenId={kitchens[activeTab]?.id}
               selectedDate={selectedDate}
             />
           )}

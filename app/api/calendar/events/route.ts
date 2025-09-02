@@ -51,7 +51,7 @@ export const GET = apiHandler({
     const startOfDay = new Date(
       targetDate.getFullYear(),
       targetDate.getMonth(),
-      targetDate.getDate(),
+      targetDate.getDate()
     );
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
@@ -64,9 +64,11 @@ export const GET = apiHandler({
           lt: endOfDay,
         },
       },
-      orderBy: {
-        startDate: "asc",
-      },
+      orderBy: [
+        {
+          startDate: "asc",
+        },
+      ],
     });
 
     return {

@@ -47,9 +47,12 @@ export interface MealCalculationResult {
 }
 
 export interface MealCalculationInput {
-  ghan: number;
-  servingAmount: number;
-  servingUnit: string;
+  ghanFactor: number;
+  preparedQuantity: number;
+  preparedQuantityUnit: string;
+  servingQuantity: number;
+  servingQuantityUnit: string;
+  quantityPerPiece?: number;
   ingredients: CalculationIngredient[];
   mealType?: MealType;
 }

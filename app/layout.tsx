@@ -2,6 +2,7 @@ import { SessionProviderWrapper } from "@/components/providers/session-provider"
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/lib/contexts/language-context";
 import { Noto_Serif_Gujarati } from "next/font/google";
+import Head from "next/head";
 import type React from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -15,6 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Head>
+        <link rel="icon" href="/local/favicon.ico" />
+      </Head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"

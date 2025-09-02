@@ -23,7 +23,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import api from "@/lib/api/axios";
+import { getCalculatedQuantities } from "@/lib/utils/meal-calculations";
 import type { RecipeDialogIngredientValue } from "@/types/forms";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface IngredientGroupFormValue {
   id?: string;
@@ -52,6 +60,11 @@ interface AddRecipeDialogProps {
       sortOrder: number;
     }>;
     instructions?: string | null;
+    preparedQuantity?: number | null;
+    preparedQuantityUnit?: string | null;
+    servingQuantity?: number | null;
+    servingQuantityUnit?: string | null;
+    quantityPerPiece?: number | null;
   }) => void;
   initialRecipe?: {
     recipeName: string;
@@ -61,6 +74,11 @@ interface AddRecipeDialogProps {
     ingredients: RecipeDialogIngredientValue[];
     ingredientGroups?: IngredientGroupFormValue[];
     instructions?: string | null;
+    preparedQuantity?: number | null;
+    preparedQuantityUnit?: string | null;
+    servingQuantity?: number | null;
+    servingQuantityUnit?: string | null;
+    quantityPerPiece?: number | null;
   } | null;
   isEditMode?: boolean;
   recipeId?: string;
@@ -233,6 +251,11 @@ export function AddRecipeDialog({
     category: Yup.string().trim().required(t("recipes.categoryRequired")),
     subcategory: Yup.string().trim().required(t("recipes.subcategoryRequired")),
     selectedRecipe: Yup.string(),
+    preparedQuantity: Yup.number().nullable(),
+    preparedQuantityUnit: Yup.string().nullable(),
+    servingQuantity: Yup.number().nullable(),
+    servingQuantityUnit: Yup.string().nullable(),
+    quantityPerPiece: Yup.number().nullable(),
     ingredientGroups: Yup.array()
       .of(
         Yup.object({
@@ -307,8 +330,27 @@ export function AddRecipeDialog({
             ],
       instructions:
         fetchedRecipe?.instructions || initialRecipe?.instructions || "",
+      preparedQuantity:
+        fetchedRecipe?.preparedQuantity ??
+        initialRecipe?.preparedQuantity ??
+        null,
+      preparedQuantityUnit:
+        fetchedRecipe?.preparedQuantityUnit ??
+        initialRecipe?.preparedQuantityUnit ??
+        DEFAULT_UNIT,
+      servingQuantity:
+        fetchedRecipe?.servingQuantity ??
+        initialRecipe?.servingQuantity ??
+        null,
+      servingQuantityUnit:
+        fetchedRecipe?.servingQuantityUnit ??
+        initialRecipe?.servingQuantityUnit ??
+        DEFAULT_UNIT,
+      quantityPerPiece:
+        fetchedRecipe?.quantityPerPiece ??
+        initialRecipe?.quantityPerPiece ??
+        null,
     };
-
     return values;
   }, [fetchedRecipe, initialRecipe, organizeIngredientsIntoGroups]);
 
@@ -353,6 +395,14 @@ export function AddRecipeDialog({
       ingredients: allIngredients,
       ingredientGroups: processedGroups.filter((g) => g.name !== "Ungrouped"),
       instructions: trimmedValues.instructions,
+      preparedQuantity: trimmedValues.preparedQuantity,
+      preparedQuantityUnit: trimmedValues.preparedQuantityUnit,
+      servingQuantity: trimmedValues.servingQuantity,
+      servingQuantityUnit: trimmedValues.servingQuantityUnit,
+      quantityPerPiece:
+        trimmedValues.servingQuantityUnit === "pcs"
+          ? trimmedValues.quantityPerPiece
+          : null,
     };
 
     if (onSave) {
@@ -595,6 +645,207 @@ export function AddRecipeDialog({
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    {t("recipes.quantityInformation")}
+                  </CardTitle>
+                  <CardDescription>
+                    {t("recipes.quantityInformationDescription")}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Prepared Quantity */}
+                  <div className="@container grid grid-cols-12 gap-4">
+                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3 @3xl:col-span-2">
+                      <Label
+                        htmlFor="preparedQuantity"
+                        className="text-sm font-medium text-foreground mb-2 block"
+                      >
+                        {t("recipes.preparedQuantity")}
+                      </Label>
+                      <Field
+                        as={Input}
+                        id="preparedQuantity"
+                        name="preparedQuantity"
+                        type="number"
+                        step="0.000001"
+                        min="0"
+                        placeholder={t("recipes.preparedQuantity")}
+                        className="border-border focus:border-primary focus:ring-primary/20"
+                      />
+                      <ErrorMessage
+                        name="preparedQuantity"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3">
+                      <Label
+                        htmlFor="preparedQuantityUnit"
+                        className="text-sm font-medium text-foreground mb-2 block"
+                      >
+                        {t("recipes.preparedQuantityUnit")}
+                      </Label>
+                      <Field name="preparedQuantityUnit">
+                        {({ field }: { field: any }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) =>
+                              field.onChange({
+                                target: { name: field.name, value },
+                              })
+                            }
+                          >
+                            <SelectTrigger className="text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {UNIT_OPTIONS.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <ErrorMessage
+                        name="preparedQuantityUnit"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3 @3xl:col-span-2">
+                      <Label
+                        htmlFor="servingQuantity"
+                        className="text-sm font-medium text-foreground mb-2 block"
+                      >
+                        {t("recipes.servingQuantity")}
+                      </Label>
+                      <Field
+                        as={Input}
+                        id="servingQuantity"
+                        name="servingQuantity"
+                        type="number"
+                        step="0.000001"
+                        min="0"
+                        placeholder="Serving quantity"
+                        className="border-border focus:border-primary focus:ring-primary/20"
+                      />
+                      <ErrorMessage
+                        name="servingQuantity"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3">
+                      <Label
+                        htmlFor="servingQuantityUnit"
+                        className="text-sm font-medium text-foreground mb-2 block"
+                      >
+                        {t("recipes.servingQuantityUnit")}
+                      </Label>
+                      <Field name="servingQuantityUnit">
+                        {({ field }: { field: any }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) =>
+                              field.onChange({
+                                target: { name: field.name, value },
+                              })
+                            }
+                          >
+                            <SelectTrigger className="text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {UNIT_OPTIONS.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <ErrorMessage
+                        name="servingQuantityUnit"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+                    {/* Quantity Per Piece (only if servingQuantityUnit is 'pcs') */}
+                    {values.servingQuantityUnit === "pcs" && (
+                      <div className="col-span-12 @sm:col-span-6 @xl:col-span-3 @3xl:col-span-2">
+                        <Label
+                          htmlFor="quantityPerPiece"
+                          className="text-sm font-medium text-foreground mb-2 block"
+                        >
+                          {t("recipes.quantityPerPiece")}
+                        </Label>
+                        <Field
+                          as={Input}
+                          id="quantityPerPiece"
+                          name="quantityPerPiece"
+                          type="number"
+                          step="0.000001"
+                          min="0"
+                          placeholder="Quantity per piece"
+                          className="border-border focus:border-primary focus:ring-primary/20"
+                        />
+                        <ErrorMessage
+                          name="quantityPerPiece"
+                          component="p"
+                          className="text-destructive text-xs mt-1 flex items-center gap-1"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quantity calculations */}
+                  <div className="p-2 border border-border rounded-lg bg-accent">
+                    <p className="text-sm text-foreground/70">
+                      {((
+                        calculatedQuantities = getCalculatedQuantities({
+                          preparedQuantity: values.preparedQuantity,
+                          preparedQuantityUnit: values.preparedQuantityUnit,
+                          servingQuantity: values.servingQuantity,
+                          servingQuantityUnit: values.servingQuantityUnit,
+                          quantityPerPiece: values.quantityPerPiece ?? null,
+                        })
+                      ) => (
+                        <div className="space-y-1">
+                          <div>
+                            <span className="font-medium">
+                              {t("recipes.numberOfServings")}:
+                            </span>{" "}
+                            {calculatedQuantities.numberOfServings}{" "}
+                            {calculatedQuantities.numberOfServings === 1
+                              ? "person"
+                              : "people"}
+                          </div>
+                          <div>
+                            <span className="font-medium">
+                              {t("recipes.extraQuantity")}:
+                            </span>{" "}
+                            {calculatedQuantities.extraQuantity}{" "}
+                            {calculatedQuantities.preparedUnit}
+                          </div>
+                        </div>
+                      ))()}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Ingredient Groups Section */}
               <IngredientsInput
                 name="ingredientGroups"
@@ -621,7 +872,7 @@ export function AddRecipeDialog({
                     {t("recipes.instructionsDescription")}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <Field name="instructions" id="instructions">
                     {({ field: { onChange, name, value } }: { field: any }) => (
                       <>

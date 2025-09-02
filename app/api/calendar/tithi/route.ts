@@ -41,7 +41,7 @@ export const GET = apiHandler({
     const startOfDay = new Date(
       targetDate.getFullYear(),
       targetDate.getMonth(),
-      targetDate.getDate(),
+      targetDate.getDate()
     );
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
@@ -53,9 +53,11 @@ export const GET = apiHandler({
           lt: endOfDay,
         },
       },
-      orderBy: {
-        startDate: "asc",
-      },
+      orderBy: [
+        {
+          startDate: "asc",
+        },
+      ],
     });
 
     // Extract tithi and event information
@@ -67,7 +69,7 @@ export const GET = apiHandler({
       for (const event of events) {
         const extractedTithi = extractTithi(
           event.summary,
-          event.description ?? undefined,
+          event.description ?? undefined
         );
         if (extractedTithi) {
           tithi = extractedTithi;

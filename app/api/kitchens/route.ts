@@ -11,9 +11,11 @@ export async function GET(request: Request) {
     }
 
     const kitchens = await prisma.kitchen.findMany({
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: [
+        {
+          name: "asc",
+        },
+      ],
     });
 
     return NextResponse.json(kitchens);
