@@ -1,0 +1,133 @@
+﻿name,label,mealType,kitchenId
+નાસ્તો 01,નાસ્તો 01,BREAKFAST,cmeuabih60000l504f8ne848l
+નાસ્તો 02,નાસ્તો 02,BREAKFAST,cmeuabih60000l504f8ne848l
+ચટણી,ચટણી,BREAKFAST,cmeuabih60000l504f8ne848l
+ફરસાણ 01,ફરસાણ 01,BREAKFAST,cmeuabih60000l504f8ne848l
+ફરસાણ 02,ફરસાણ 02,BREAKFAST,cmeuabih60000l504f8ne848l
+બેકરી 01,બેકરી 01,BREAKFAST,cmeuabih60000l504f8ne848l
+બેકરી 02,બેકરી 02,BREAKFAST,cmeuabih60000l504f8ne848l
+"ફ્રુટ (મોસંબી,પપૈયું,કેળા)","ફ્રુટ (મોસંબી,પપૈયું,કેળા)",BREAKFAST,cmeuabih60000l504f8ne848l
+ઠાકોરજી દૂધ,ઠાકોરજી દૂધ,BREAKFAST,cmeuabih60000l504f8ne848l
+છાશ,છાશ,BREAKFAST,cmeuabih60000l504f8ne848l
+મગ પાણી,મગ પાણી,BREAKFAST,cmeuabih60000l504f8ne848l
+શરબત 01,શરબત 01,BREAKFAST,cmeuabih60000l504f8ne848l
+શરબત 02,શરબત 02,BREAKFAST,cmeuabih60000l504f8ne848l
+અન્ય,અન્ય,BREAKFAST,cmeuabih60000l504f8ne848l
+મિષ્ટાન્ન 01,મિષ્ટાન્ન 01,LUNCH,cmeuabih60000l504f8ne848l
+મિષ્ટાન્ન 02,મિષ્ટાન્ન 02,LUNCH,cmeuabih60000l504f8ne848l
+ફરસાણ 01,ફરસાણ 01,LUNCH,cmeuabih60000l504f8ne848l
+ફરસાણ 02,ફરસાણ 02,LUNCH,cmeuabih60000l504f8ne848l
+ચટણી,ચટણી,LUNCH,cmeuabih60000l504f8ne848l
+શાક 01,શાક 01,LUNCH,cmeuabih60000l504f8ne848l
+શાક 02,શાક 02,LUNCH,cmeuabih60000l504f8ne848l
+શાક 03,શાક 03,LUNCH,cmeuabih60000l504f8ne848l
+શાક 04,શાક 04,LUNCH,cmeuabih60000l504f8ne848l
+વિશેષ,વિશેષ,LUNCH,cmeuabih60000l504f8ne848l
+રોટલી + અન્ય,રોટલી + અન્ય,LUNCH,cmeuabih60000l504f8ne848l
+ભાત / ખીચડી,ભાત / ખીચડી,LUNCH,cmeuabih60000l504f8ne848l
+દાળ / કઢી,દાળ / કઢી,LUNCH,cmeuabih60000l504f8ne848l
+સલાડ,સલાડ,LUNCH,cmeuabih60000l504f8ne848l
+દહીં / રાઈતા,દહીં / રાઈતા,LUNCH,cmeuabih60000l504f8ne848l
+છાશ,છાશ,LUNCH,cmeuabih60000l504f8ne848l
+પાપડ,પાપડ,LUNCH,cmeuabih60000l504f8ne848l
+અન્ય,અન્ય,LUNCH,cmeuabih60000l504f8ne848l
+વિશેષ 01,વિશેષ 01,DINNER,cmeuabih60000l504f8ne848l
+વિશેષ 02,વિશેષ 02,DINNER,cmeuabih60000l504f8ne848l
+ચટણી,ચટણી,DINNER,cmeuabih60000l504f8ne848l
+શાક 01,શાક 01,DINNER,cmeuabih60000l504f8ne848l
+શાક 02,શાક 02,DINNER,cmeuabih60000l504f8ne848l
+શાક 03,શાક 03,DINNER,cmeuabih60000l504f8ne848l
+પરોઠા / થેપલા + અન્ય,પરોઠા / થેપલા + અન્ય,DINNER,cmeuabih60000l504f8ne848l
+ભાત / ખીચડી,ભાત / ખીચડી,DINNER,cmeuabih60000l504f8ne848l
+દાળ / કઢી,દાળ / કઢી,DINNER,cmeuabih60000l504f8ne848l
+અથાણાં,અથાણાં,DINNER,cmeuabih60000l504f8ne848l
+દહીં / રાઈતા,દહીં / રાઈતા,DINNER,cmeuabih60000l504f8ne848l
+ઠાકોરજી દૂધ,ઠાકોરજી દૂધ,DINNER,cmeuabih60000l504f8ne848l
+છાશ,છાશ,DINNER,cmeuabih60000l504f8ne848l
+પાપડી,પાપડી,DINNER,cmeuabih60000l504f8ne848l
+અન્ય,અન્ય,DINNER,cmeuabih60000l504f8ne848l
+પાઉંભાજી,પાઉંભાજી,SNACK,cmeuadkl80002l504mu8klj2w
+ખીચડી,ખીચડી,SNACK,cmeuadkl80002l504mu8klj2w
+ખીરું,ખીરું,SNACK,cmeuadkl80002l504mu8klj2w
+સંભાર,સંભાર,SNACK,cmeuadkl80002l504mu8klj2w
+કોપરા ચટણી,કોપરા ચટણી,SNACK,cmeuadkl80002l504mu8klj2w
+દાબેલી,દાબેલી,SNACK,cmeuadkl80002l504mu8klj2w
+પફ,પફ,SNACK,cmeuadkl80002l504mu8klj2w
+વડાપાઉં,વડાપાઉં,SNACK,cmeuadkl80002l504mu8klj2w
+સમોસા,સમોસા,SNACK,cmeuadkl80002l504mu8klj2w
+સેન્ડવીચ,સેન્ડવીચ,SNACK,cmeuadkl80002l504mu8klj2w
+ભેળ મમરા,ભેળ મમરા,SNACK,cmeuadkl80002l504mu8klj2w
+બટાકા પૌંઆ,બટાકા પૌંઆ,BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+ભીનો નાસ્તો,ભીનો નાસ્તો,BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+ખાખરા,ખાખરા,BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+સાદા મમરા,સાદા મમરા,BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+બ્રેડ (બટર / જામ / નટેલા),બ્રેડ (બટર / જામ / નટેલા),BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+"ફ્રુટ (મોસંબી,પપૈયું,કેળા)","ફ્રુટ (મોસંબી,પપૈયું,કેળા)",BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+કોર્ન ફ્લેક્સ,કોર્ન ફ્લેક્સ,BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+ચા,ચા,BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+દૂધ (કોફી પાઉડર),દૂધ (કોફી પાઉડર),BREAKFAST,cmeuae4mq0003l5041ikc3m8x
+મિષ્ટાન્,મિષ્ટાન્,LUNCH,cmeuae4mq0003l5041ikc3m8x
+ફ્રાય ફરસાણ,ફ્રાય ફરસાણ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+સ્ટીમ ફરસાણ,સ્ટીમ ફરસાણ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+ચટણી / સોસ,ચટણી / સોસ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+શાક 01 લીલોતરી,શાક 01 લીલોતરી,LUNCH,cmeuae4mq0003l5041ikc3m8x
+શાક 02 પંજાબી,શાક 02 પંજાબી,LUNCH,cmeuae4mq0003l5041ikc3m8x
+શાક 03 સુકીભાજી,શાક 03 સુકીભાજી,LUNCH,cmeuae4mq0003l5041ikc3m8x
+શાક 04 કઠોળ,શાક 04 કઠોળ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+રોટી,રોટી,LUNCH,cmeuae4mq0003l5041ikc3m8x
+દાળ,દાળ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+ભાત,ભાત,LUNCH,cmeuae4mq0003l5041ikc3m8x
+સલાડ,સલાડ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+પાપડ,પાપડ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+છાશ,છાશ,LUNCH,cmeuae4mq0003l5041ikc3m8x
+ચેન્જ,ચેન્જ,DINNER,cmeuae4mq0003l5041ikc3m8x
+ચટણી / સોસ,ચટણી / સોસ,DINNER,cmeuae4mq0003l5041ikc3m8x
+શાક 01 લીલોતરી,શાક 01 લીલોતરી,DINNER,cmeuae4mq0003l5041ikc3m8x
+શાક 02 પંજાબી,શાક 02 પંજાબી,DINNER,cmeuae4mq0003l5041ikc3m8x
+શાક 03 કાઠીયાવાડી,શાક 03 કાઠીયાવાડી,DINNER,cmeuae4mq0003l5041ikc3m8x
+શાક 04 બટાકા,શાક 04 બટાકા,DINNER,cmeuae4mq0003l5041ikc3m8x
+રોટી,રોટી,DINNER,cmeuae4mq0003l5041ikc3m8x
+થેપલાં / પરોઠા,થેપલાં / પરોઠા,DINNER,cmeuae4mq0003l5041ikc3m8x
+દાળ,દાળ,DINNER,cmeuae4mq0003l5041ikc3m8x
+ભાત,ભાત,DINNER,cmeuae4mq0003l5041ikc3m8x
+કઢી,કઢી,DINNER,cmeuae4mq0003l5041ikc3m8x
+ખીચડી,ખીચડી,DINNER,cmeuae4mq0003l5041ikc3m8x
+સલાડ,સલાડ,DINNER,cmeuae4mq0003l5041ikc3m8x
+પાપડ,પાપડ,DINNER,cmeuae4mq0003l5041ikc3m8x
+છાશ,છાશ,DINNER,cmeuae4mq0003l5041ikc3m8x
+નાસ્તો 01,નાસ્તો 01,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+ચટણી,ચટણી,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+ફરસાણ 01,ફરસાણ 01,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+ફરસાણ 02,ફરસાણ 02,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+બેકરી 01,બેકરી 01,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+ચા,ચા,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+દૂધ,દૂધ,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+શરબત 01 / દહીં,શરબત 01 / દહીં,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+અન્ય,અન્ય,BREAKFAST,cmeuaciyy0001l504n0ts6uyu
+મિષ્ટાન્ન 01,મિષ્ટાન્ન 01,LUNCH,cmeuaciyy0001l504n0ts6uyu
+ફરસાણ 01,ફરસાણ 01,LUNCH,cmeuaciyy0001l504n0ts6uyu
+ચટણી,ચટણી,LUNCH,cmeuaciyy0001l504n0ts6uyu
+શાક 01,શાક 01,LUNCH,cmeuaciyy0001l504n0ts6uyu
+શાક 02,શાક 02,LUNCH,cmeuaciyy0001l504n0ts6uyu
+શાક 03,શાક 03,LUNCH,cmeuaciyy0001l504n0ts6uyu
+રોટલી + અન્ય,રોટલી + અન્ય,LUNCH,cmeuaciyy0001l504n0ts6uyu
+ભાત / ખીચડી,ભાત / ખીચડી,LUNCH,cmeuaciyy0001l504n0ts6uyu
+દાળ / કઢી,દાળ / કઢી,LUNCH,cmeuaciyy0001l504n0ts6uyu
+સલાડ,સલાડ,LUNCH,cmeuaciyy0001l504n0ts6uyu
+દહીં / રાઈતા,દહીં / રાઈતા,LUNCH,cmeuaciyy0001l504n0ts6uyu
+છાશ,છાશ,LUNCH,cmeuaciyy0001l504n0ts6uyu
+પાપડ,પાપડ,LUNCH,cmeuaciyy0001l504n0ts6uyu
+અન્ય,અન્ય,LUNCH,cmeuaciyy0001l504n0ts6uyu
+વિશેષ 01,વિશેષ 01,DINNER,cmeuaciyy0001l504n0ts6uyu
+ચટણી,ચટણી,DINNER,cmeuaciyy0001l504n0ts6uyu
+શાક 01,શાક 01,DINNER,cmeuaciyy0001l504n0ts6uyu
+શાક 02,શાક 02,DINNER,cmeuaciyy0001l504n0ts6uyu
+પરોઠા / થેપલા + અન્ય,પરોઠા / થેપલા + અન્ય,DINNER,cmeuaciyy0001l504n0ts6uyu
+ભાત / ખીચડી,ભાત / ખીચડી,DINNER,cmeuaciyy0001l504n0ts6uyu
+દાળ / કઢી,દાળ / કઢી,DINNER,cmeuaciyy0001l504n0ts6uyu
+અથાણાં,અથાણાં,DINNER,cmeuaciyy0001l504n0ts6uyu
+દહીં / રાઈતા,દહીં / રાઈતા,DINNER,cmeuaciyy0001l504n0ts6uyu
+દૂધ,દૂધ,DINNER,cmeuaciyy0001l504n0ts6uyu
+છાશ,છાશ,DINNER,cmeuaciyy0001l504n0ts6uyu
+પાપડી,પાપડી,DINNER,cmeuaciyy0001l504n0ts6uyu
+અન્ય,અન્ય,DINNER,cmeuaciyy0001l504n0ts6uyu
