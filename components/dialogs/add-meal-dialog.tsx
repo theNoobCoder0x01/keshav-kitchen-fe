@@ -30,6 +30,7 @@ import { getCalculatedQuantities } from "@/lib/utils/meal-calculations";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
 import type { MealType } from "@/types/menus";
 import type { RecipeApiItem } from "@/types/recipes";
+import { uuidv4 } from "zod";
 import {
   Card,
   CardContent,
@@ -127,7 +128,7 @@ export function AddMealDialog({
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = (
     ingredients: any[],
-    ingredientGroups: any[] = [],
+    ingredientGroups: any[] = []
   ): IngredientGroupFormValue[] => {
     const groups: IngredientGroupFormValue[] = [];
 
@@ -147,7 +148,7 @@ export function AddMealDialog({
           localId:
             ing.localId ||
             (typeof crypto !== "undefined"
-              ? crypto.randomUUID()
+              ? String(uuidv4())
               : `${Math.random()}`),
         }));
 
@@ -168,7 +169,7 @@ export function AddMealDialog({
                   costPerUnit: 0,
                   localId:
                     typeof crypto !== "undefined"
-                      ? crypto.randomUUID()
+                      ? String(uuidv4())
                       : `${Math.random()}`,
                 },
               ],
@@ -187,7 +188,7 @@ export function AddMealDialog({
         localId:
           ing.localId ||
           (typeof crypto !== "undefined"
-            ? crypto.randomUUID()
+            ? String(uuidv4())
             : `${Math.random()}`),
       }));
 
@@ -213,7 +214,7 @@ export function AddMealDialog({
           localId:
             ing.localId ||
             (typeof crypto !== "undefined"
-              ? crypto.randomUUID()
+              ? String(uuidv4())
               : `${Math.random()}`),
         })),
       });
@@ -243,7 +244,7 @@ export function AddMealDialog({
       .trim()
       .required(t("meals.servingQuantityUnitRequired")),
     quantityPerPiece: Yup.number().positive(
-      t("meals.quantityPerPiecePositive"),
+      t("meals.quantityPerPiecePositive")
     ),
     ingredientGroups: Yup.array()
       .of(
@@ -263,16 +264,16 @@ export function AddMealDialog({
                 costPerUnit: Yup.number()
                   .required(t("meals.costPerUnitRequired"))
                   .min(0, t("meals.costPerUnitMin")),
-              }),
+              })
             )
             .min(0), // Allow empty groups
-        }),
+        })
       )
       .min(1, t("meals.ingredientsRequired"))
       .test("has-ingredients", t("meals.ingredientsRequired"), (groups) => {
         if (!groups) return false;
         return groups.some(
-          (group) => group.ingredients && group.ingredients.length > 0,
+          (group) => group.ingredients && group.ingredients.length > 0
         );
       }),
   });
@@ -280,7 +281,7 @@ export function AddMealDialog({
   // This will be computed dynamically based on editMeal prop
   const getInitialValues = (
     editMeal?: AddMealDialogProps["editMeal"],
-    recipes?: Recipe[],
+    recipes?: Recipe[]
   ): MealFormValuesWithGroups => {
     if (editMeal?.id) {
       // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
@@ -298,7 +299,7 @@ export function AddMealDialog({
           localId:
             ingredient.localId ||
             (typeof crypto !== "undefined"
-              ? crypto.randomUUID()
+              ? String(uuidv4())
               : `${Math.random()}`),
         }));
 
@@ -313,7 +314,7 @@ export function AddMealDialog({
               localId:
                 ing.localId ||
                 (typeof crypto !== "undefined"
-                  ? crypto.randomUUID()
+                  ? String(uuidv4())
                   : `${Math.random()}`),
             })),
           },
@@ -328,7 +329,7 @@ export function AddMealDialog({
           // Use recipe ingredient groups
           ingredientGroups = organizeIngredientsIntoGroups(
             recipeIngredients,
-            recipeGroups,
+            recipeGroups
           );
         } else {
           // Create default "Ungrouped" group
@@ -343,7 +344,7 @@ export function AddMealDialog({
                   localId:
                     ingredient.localId ||
                     (typeof crypto !== "undefined"
-                      ? crypto.randomUUID()
+                      ? String(uuidv4())
                       : `${Math.random()}`),
                 }))
               : [
@@ -355,7 +356,7 @@ export function AddMealDialog({
                     costPerUnit: 0,
                     localId:
                       typeof crypto !== "undefined"
-                        ? crypto.randomUUID()
+                        ? String(uuidv4())
                         : `${Math.random()}`,
                   },
                 ];
@@ -406,7 +407,7 @@ export function AddMealDialog({
               costPerUnit: 0,
               localId:
                 typeof crypto !== "undefined"
-                  ? crypto.randomUUID()
+                  ? String(uuidv4())
                   : `${Math.random()}`,
             },
           ],
@@ -434,7 +435,7 @@ export function AddMealDialog({
   const handleRecipeSelect = (
     recipeId: string,
     setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
+    values: MealFormValuesWithGroups
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
@@ -447,7 +448,7 @@ export function AddMealDialog({
             values.preparedQuantity / selectedRecipe.preparedQuantity;
           setFieldValue(
             "preparedQuantity",
-            newGhanFactor * selectedRecipe.preparedQuantity,
+            newGhanFactor * selectedRecipe.preparedQuantity
           );
           setFieldValue("ghanFactor", newGhanFactor);
         }
@@ -461,7 +462,7 @@ export function AddMealDialog({
       if (selectedRecipe.preparedQuantityUnit) {
         setFieldValue(
           "preparedQuantityUnit",
-          selectedRecipe.preparedQuantityUnit,
+          selectedRecipe.preparedQuantityUnit
         );
       }
       if (selectedRecipe.servingQuantity) {
@@ -470,7 +471,7 @@ export function AddMealDialog({
       if (selectedRecipe.servingQuantityUnit) {
         setFieldValue(
           "servingQuantityUnit",
-          selectedRecipe.servingQuantityUnit,
+          selectedRecipe.servingQuantityUnit
         );
       }
       if (selectedRecipe.quantityPerPiece) {
@@ -481,7 +482,7 @@ export function AddMealDialog({
         // Use recipe ingredient groups
         const ingredientGroups = organizeIngredientsIntoGroups(
           recipeIngredients,
-          recipeGroups,
+          recipeGroups
         );
         setFieldValue("ingredientGroups", ingredientGroups);
       } else {
@@ -495,7 +496,7 @@ export function AddMealDialog({
           localId:
             ingredient.localId ||
             (typeof crypto !== "undefined"
-              ? crypto.randomUUID()
+              ? String(uuidv4())
               : `${Math.random()}`),
         }));
 
@@ -515,7 +516,7 @@ export function AddMealDialog({
   const handleGhanFactorChange = (
     ghanFactor: number,
     setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
+    values: MealFormValuesWithGroups
   ) => {
     if (!ghanFactor) return;
     const recipePreparedQuantity =
@@ -529,7 +530,7 @@ export function AddMealDialog({
   const handlePreparedQuantityChange = (
     preparedQuantity: number,
     setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
+    values: MealFormValuesWithGroups
   ) => {
     const recipePreparedQuantity =
       (values.preparedQuantity ?? 0) / (values.ghanFactor || 1);
@@ -543,7 +544,7 @@ export function AddMealDialog({
   const handleFollowRecipeChange = (
     followRecipe: boolean,
     setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
+    values: MealFormValuesWithGroups
   ) => {
     setFieldValue("followRecipe", followRecipe);
     if (followRecipe && values.recipeId) {
@@ -555,7 +556,7 @@ export function AddMealDialog({
 
   const handleSubmit = async (
     values: MealFormValuesWithGroups,
-    { resetForm }: { resetForm: () => void },
+    { resetForm }: { resetForm: () => void }
   ) => {
     try {
       setIsFormSubmitting(true);
@@ -622,7 +623,7 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealUpdatedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       } else {
         // Flatten all ingredients with their group assignments
@@ -670,7 +671,7 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealAddedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       }
       resetForm();
@@ -693,7 +694,7 @@ export function AddMealDialog({
         (selectedRecipeCategory === "all" ||
           selectedRecipeCategory === recipe.category) &&
         (selectedRecipeSubcategory === "all" ||
-          selectedRecipeSubcategory === recipe.subcategory),
+          selectedRecipeSubcategory === recipe.subcategory)
     );
   }, [recipes, selectedRecipeCategory, selectedRecipeSubcategory]);
 
@@ -701,7 +702,7 @@ export function AddMealDialog({
     const categories = [
       "all",
       ...Array.from(
-        new Set(recipes.map((recipe) => recipe.category).filter(Boolean)),
+        new Set(recipes.map((recipe) => recipe.category).filter(Boolean))
       ),
     ];
     return categories;
@@ -717,11 +718,11 @@ export function AddMealDialog({
               selectedRecipeCategory
                 ? selectedRecipeCategory === "all" ||
                   recipe.category === selectedRecipeCategory
-                : true,
+                : true
             )
             .map((recipe) => recipe.subcategory)
-            .filter(Boolean),
-        ),
+            .filter(Boolean)
+        )
       ) ?? []),
     ];
     return subcategories;
@@ -753,7 +754,7 @@ export function AddMealDialog({
           // Generate stable ID function for the component
           const generateStableId = () => {
             return typeof crypto !== "undefined"
-              ? crypto.randomUUID()
+              ? String(uuidv4())
               : `id_${Date.now()}_${Math.random()}`;
           };
 
@@ -903,7 +904,7 @@ export function AddMealDialog({
                               handleFollowRecipeChange(
                                 checked,
                                 setFieldValue,
-                                values,
+                                values
                               );
                               return field.onChange({
                                 target: { name: field.name, value: checked },
@@ -938,13 +939,13 @@ export function AddMealDialog({
                               name={`ghanFactor`}
                               type="number"
                               onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>,
+                                e: React.ChangeEvent<HTMLInputElement>
                               ) => {
                                 const ghanValue = parseFloat(e.target.value);
                                 handleGhanFactorChange(
                                   isNaN(ghanValue) ? 0 : ghanValue,
                                   setFieldValue,
-                                  values,
+                                  values
                                 );
                               }}
                               min="0"
@@ -973,13 +974,13 @@ export function AddMealDialog({
                             name="preparedQuantity"
                             type="number"
                             onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>,
+                              e: React.ChangeEvent<HTMLInputElement>
                             ) => {
                               const preparedQty = parseFloat(e.target.value);
                               handlePreparedQuantityChange(
                                 isNaN(preparedQty) ? 0 : preparedQty,
                                 setFieldValue,
-                                values,
+                                values
                               );
                             }}
                             min="0"
@@ -1131,7 +1132,7 @@ export function AddMealDialog({
                               servingQuantity: values.servingQuantity,
                               servingQuantityUnit: values.servingQuantityUnit,
                               quantityPerPiece: values.quantityPerPiece ?? null,
-                            }),
+                            })
                           ) => (
                             <div className="space-y-1">
                               <div>
