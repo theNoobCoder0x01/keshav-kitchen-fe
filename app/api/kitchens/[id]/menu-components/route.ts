@@ -12,14 +12,20 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const mealType = searchParams.get("mealType");
 
-  if (!mealType || !Object.values(MealType).includes(mealType as MealType))
-    return NextResponse.json(
-      { error: "Failed to fetch menu components" },
-      { status: 500 }
-    );
+  const whereClause: {
+    kitchenId: string;
+    mealType?: MealType;
+  } = {
+    kitchenId,
+  };
+
+  if (mealType && Object.values(MealType).includes(mealType as MealType)) {
+    whereClause["mealType"] = mealType as MealType;
+  }
+
   try {
     const menuComponents = await prisma.menuComponent.findMany({
-      where: { kitchenId, mealType: mealType as MealType },
+      where: whereClause,
       orderBy: { sequenceNumber: "asc" },
     });
     return NextResponse.json(menuComponents);
