@@ -19,7 +19,7 @@ export const GET = apiHandler({
     }
 
     const dateParam = ctx.searchParams.get("date");
-    const epochMsParam = ctx.searchParams.get("epochMs");
+    const epochMsParam = parseInt(ctx.searchParams.get("epochMs") ?? "");
 
     // Use provided date or default to today
     const targetDate = epochMsParam
@@ -59,7 +59,7 @@ export const GET = apiHandler({
 
     // Extract tithi and event information
     let tithi: string | undefined;
-    let eventSummary: string | undefined;
+    let eventSummary: string[] = [];
 
     if (events.length > 0) {
       // Try to extract tithi from the first event that contains tithi information
@@ -74,12 +74,7 @@ export const GET = apiHandler({
         }
       }
 
-      // Create event summary
-      if (events.length === 1) {
-        eventSummary = events[0].summary;
-      } else {
-        eventSummary = events.map((event) => event.summary).join(", ");
-      }
+      eventSummary = events.map((e) => e.summary);
     }
 
     // If no tithi found in events, provide a default or fallback

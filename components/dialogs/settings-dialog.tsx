@@ -56,7 +56,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { language, updateUserLanguage } = useLanguage();
-  const { settings, common, messages } = useTranslations();
+  const { settings, messages } = useTranslations();
 
   // Load calendar data on component mount
   useEffect(() => {
@@ -69,11 +69,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setIsLoading(true);
     try {
       const response = await api.get(
-        "/calendar/events?date=" + new Date().toISOString().split("T")[0]
+        "/calendar/events?epochMs=" + new Date().getTime()
       );
       if (response.status.toString().startsWith("2")) {
-        const data = await response.data;
-        if (data.success && data.events.length > 0) {
+        const { data, success } = await response.data;
+        if (success && data.events.length > 0) {
           setCalendarData({
             events: data.events,
             totalCount: data.events.length,
@@ -126,7 +126,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       }
 
       toast.success(
-        common("calendarEventsUploaded", { count: result.data.eventsCount })
+        settings("calendarEventsUploaded", { count: result.data.eventsCount })
       );
 
       // Reload calendar data
@@ -159,7 +159,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       }
 
       toast.success(
-        common("calendarEventsCleared", { count: result.data.deletedCount })
+        settings("calendarEventsCleared", { count: result.data.deletedCount })
       );
       setCalendarData(null);
     } catch (error: any) {
@@ -319,7 +319,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           {settings("calendarEventsLoaded")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {common("eventsAvailable", {
+                          {settings("eventsAvailable", {
                             count: calendarData.totalCount,
                           })}
                         </p>
@@ -356,7 +356,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   {calendarData.events.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-border">
                       <p className="text-xs text-muted-foreground mb-2">
-                        {common("sampleEvents", {
+                        {settings("sampleEvents", {
                           count: calendarData.events.length,
                         })}
                       </p>

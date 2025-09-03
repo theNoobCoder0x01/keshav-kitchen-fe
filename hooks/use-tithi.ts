@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 
 interface TithiInfo {
   tithi?: string;
-  eventSummary?: string;
+  eventSummary?: string[];
   eventsCount: number;
   isLoading: boolean;
   error?: string;
 }
 
-export function useTithi(date?: Date, kitchenId?: string): TithiInfo {
+export function useTithi(date?: Date): TithiInfo {
   const [tithiInfo, setTithiInfo] = useState<TithiInfo>({
     eventsCount: 0,
     isLoading: true,
@@ -59,11 +59,11 @@ export function useTithi(date?: Date, kitchenId?: string): TithiInfo {
     };
 
     fetchTithi();
-  }, [date, kitchenId]);
+  }, [date]);
 
   return tithiInfo;
 }
 
-export function useTodayTithi(kitchenId?: string): TithiInfo {
-  return useTithi(getCurrentDateUTC(), kitchenId); // Use UTC current date
+export function useTodayTithi(): TithiInfo {
+  return useTithi(getCurrentDateUTC()); // Use UTC current date
 }

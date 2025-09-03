@@ -3,30 +3,20 @@
 import BreakfastIcon from "@/components/icons/breakfast-icon";
 import DinnerIcon from "@/components/icons/dinner-icon";
 import LunchIcon from "@/components/icons/lunch-icon";
-import api from "@/lib/api/axios";
-import { formatEpochToDate } from "@/lib/utils/date";
+import { useTithi } from "@/hooks/use-tithi";
+import { epochToDate, formatEpochToDate } from "@/lib/utils/date";
 import { MealTypeEnum as MealType } from "@/types";
 import { Calendar } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 
 export default function CookReport() {
   const [data, setData] = useState<any[]>([]);
-  const [currentEventInfo, setCurrentEventInfo] = useState<{
-    tithi?: string;
-    eventSummary?: string;
-  }>({});
-
   const searchParams = useSearchParams();
 
   const epochMs = parseInt(searchParams.get("epochMs") ?? "");
+  const currentEventInfo = useTithi(epochToDate(epochMs));
 
   const mealTypeIconMap = {
     [MealType.BREAKFAST]: BreakfastIcon,
@@ -51,37 +41,6 @@ export default function CookReport() {
   useLayoutEffect(() => {
     loadData();
   }, []);
-
-  // Fetch tithi information for the selected date
-  useEffect(() => {
-    const fetchTithiInfo = async () => {
-      try {
-        const params = new URLSearchParams({
-          epochMs: epochMs.toString(),
-        });
-
-        const response = await api.get(`/calendar/tithi?${params}`);
-        const data = await response.data;
-
-        if (
-          (response.status === 200 || response.status === 201) &&
-          data.success
-        ) {
-          setCurrentEventInfo({
-            tithi: data.data.tithi,
-            eventSummary: data.data.eventSummary,
-          });
-        } else {
-          setCurrentEventInfo({});
-        }
-      } catch (error) {
-        console.error("Error fetching tithi information:", error);
-        setCurrentEventInfo({});
-      }
-    };
-
-    fetchTithiInfo();
-  }, [epochMs]);
 
   const structuredData = useMemo(() => {
     let modifiedData: any = {};
@@ -143,8 +102,10 @@ export default function CookReport() {
                 <div className="font-extrabold text-sm">
                   {formatEpochToDate(epochMs, "EEEE, d, LLL yyyy")}
                 </div>
-                <div className="font-bold text-xs text-muted-foreground">
-                  {currentEventInfo?.eventSummary ?? "Fagan Sud Punam"}
+                <div className="flex flex-col max-w-[400px] gap-1 font-bold text-xs text-muted-foreground">
+                  {currentEventInfo?.eventSummary?.map((summary, index) => (
+                    <span key={index}>{summary}</span>
+                  ))}
                 </div>
               </div>
             </div>

@@ -3,6 +3,8 @@ import { apiHandler } from "@/lib/api/handler";
 import { respondError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { epochToDate } from "@/lib/utils/date";
+import { endOfDay, startOfDay } from "date-fns";
 import { getServerSession } from "next-auth";
 
 export const dynamic = "force-dynamic";
@@ -13,13 +15,16 @@ export const GET = apiHandler({
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
+      console.log("qwerty1");
+
       throw respondError("Authentication required", 401, { code: ERR.AUTH });
     }
 
-    const date = ctx.searchParams.get("date");
+    const epochMs = ctx.searchParams.get("epochMs");
     const kitchenId = ctx.searchParams.get("kitchenId");
 
-    if (!date) {
+    if (!epochMs) {
+      console.log("qwerty2");
       throw respondError("Date parameter is required", 400, {
         code: ERR.VALIDATION,
       });
@@ -32,36 +37,26 @@ export const GET = apiHandler({
     });
 
     if (!user) {
+      console.log("qwerty3");
       throw respondError("User not found", 404, { code: ERR.NOT_FOUND });
     }
 
-    // Use provided kitchenId or user's kitchenId
-    const targetKitchenId = kitchenId || user.kitchenId;
-
-    if (!targetKitchenId) {
-      throw respondError("No kitchen specified", 400, { code: ERR.VALIDATION });
-    }
-
     // Parse the date
-    const targetDate = new Date(date);
+    const targetDate = epochToDate(parseInt(epochMs));
     if (isNaN(targetDate.getTime())) {
+      console.log("qwerty5");
       throw respondError("Invalid date format", 400, { code: ERR.VALIDATION });
     }
 
-    const startOfDay = new Date(
-      targetDate.getFullYear(),
-      targetDate.getMonth(),
-      targetDate.getDate()
-    );
-    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+    const startOfTargetDay = startOfDay(targetDate);
+    const endOfTargetDay = endOfDay(targetDate);
 
     // Get events for the specified date
     const events = await prisma.calendarEvent.findMany({
       where: {
-        kitchenId: targetKitchenId,
         startDate: {
-          gte: startOfDay,
-          lt: endOfDay,
+          gte: startOfTargetDay,
+          lt: endOfTargetDay,
         },
       },
       orderBy: [
@@ -71,10 +66,11 @@ export const GET = apiHandler({
       ],
     });
 
+    console.log("qwerty6");
+
     return {
       events,
       date: targetDate.toISOString().split("T")[0],
-      kitchenId: targetKitchenId,
     };
   },
 });

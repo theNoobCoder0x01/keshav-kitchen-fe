@@ -41,9 +41,17 @@ export function apiHandler<TBody = unknown, TResult = unknown>(opts: {
             headers: req.headers,
           },
           req,
-        }),
+        })
       );
     } catch (e: any) {
+      console.error();
+      console.error();
+      console.error(e);
+      console.error(await e.body);
+      console.error();
+      console.error();
+      console.trace();
+
       return respondError("Something went wrong", 500, {
         code: ERR.INTERNAL,
         details:

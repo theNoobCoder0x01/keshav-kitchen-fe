@@ -7,12 +7,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import api from "@/lib/api/axios";
+import { useTithi } from "@/hooks/use-tithi";
 import { cn } from "@/lib/utils";
 import { addTime, getLocalTimezone, subtractTime } from "@/lib/utils/date";
 import { formatInTimeZone } from "date-fns-tz";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DatePicker } from "./date-picker";
 
 interface CompactDateSelectorProps {
@@ -33,38 +33,7 @@ export function CompactDateSelector({
     initialDate || new Date() // Store in UTC
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [currentEventInfo, setCurrentEventInfo] = useState<{
-    tithi?: string;
-    eventSummary?: string;
-  }>({});
-
-  // Fetch tithi information for the selected date
-  useEffect(() => {
-    const fetchTithiInfo = async () => {
-      try {
-        const params = new URLSearchParams({
-          epochMs: selectedDate.getTime().toString(),
-        });
-
-        const response = await api.get(`/calendar/tithi?${params}`);
-        const data = await response.data;
-
-        if (response.status.toString().startsWith("2") && data.success) {
-          setCurrentEventInfo({
-            tithi: data.data.tithi,
-            eventSummary: data.data.eventSummary,
-          });
-        } else {
-          setCurrentEventInfo({});
-        }
-      } catch (error) {
-        console.error("Error fetching tithi information:", error);
-        setCurrentEventInfo({});
-      }
-    };
-
-    fetchTithiInfo();
-  }, [selectedDate]);
+  const currentEventInfo = useTithi(selectedDate);
 
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate);
@@ -100,14 +69,6 @@ export function CompactDateSelector({
     return formatInTimeZone(date, userTimezone, "EEEE");
   };
 
-  // Determine what to show as subtitle
-  const getSubtitle = () => {
-    if (currentEventInfo.eventSummary) {
-      return currentEventInfo.eventSummary;
-    }
-    return formatDay(selectedDate);
-  };
-
   return (
     <Card
       className={cn(
@@ -132,8 +93,14 @@ export function CompactDateSelector({
                       <h3 className="text-sm font-bold text-primary mb-0.5 hover:text-primary/80 transition-colors">
                         {formatShortDate(selectedDate)}
                       </h3>
-                      <p className="text-xs text-muted-foreground font-medium">
-                        {getSubtitle()}
+                      <p className="flex flex-col max-w-[400px] gap-1 font-medium text-xs text-muted-foreground">
+                        {currentEventInfo?.eventSummary
+                          ? currentEventInfo?.eventSummary?.map(
+                              (summary, index) => (
+                                <span key={index}>{summary}</span>
+                              )
+                            )
+                          : formatDay(selectedDate)}
                       </p>
                     </div>
                   </Button>
