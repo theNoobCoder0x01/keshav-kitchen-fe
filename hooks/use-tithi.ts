@@ -1,5 +1,5 @@
 import api from "@/lib/api/axios";
-import { formatForStorage, getCurrentDateUTC } from "@/lib/utils/date";
+import { getCurrentDateUTC } from "@/lib/utils/date";
 import { useEffect, useState } from "react";
 
 interface TithiInfo {
@@ -22,11 +22,9 @@ export function useTithi(date?: Date, kitchenId?: string): TithiInfo {
 
       try {
         const targetDate = date || getCurrentDateUTC(); // Use UTC for consistency
-        const dateStr = formatForStorage(targetDate).split("T")[0];
 
         const params = new URLSearchParams({
-          date: dateStr,
-          ...(kitchenId && { kitchenId }),
+          epochMs: targetDate.getTime().toString(),
         });
 
         const response = await api.get(`/calendar/tithi?${params}`);

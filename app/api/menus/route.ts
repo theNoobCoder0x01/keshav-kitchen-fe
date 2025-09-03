@@ -22,7 +22,13 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const kitchenId = searchParams.get("kitchenId");
-    const date = searchParams.get("date");
+    const epochMs = searchParams.get("epochMs");
+    const dateISOString = searchParams.get("date");
+    const date = epochMs
+      ? new Date(parseInt(epochMs))
+      : dateISOString
+        ? parseISOString(dateISOString)
+        : new Date();
 
     if (id) {
       const menu = await prisma.menu.findUnique({
@@ -89,7 +95,7 @@ export async function GET(request: Request) {
 
     if (date) {
       // Parse date string and create UTC day boundaries for database queries
-      const targetDate = parseISOString(date);
+      const targetDate = date;
       const startOfDay = createStartOfDayUTC(targetDate);
       const endOfDay = createEndOfDayUTC(targetDate);
 
@@ -192,8 +198,8 @@ export async function POST(request: Request) {
     }
 
     // Ensure date is properly formatted (parse to UTC Date for storage)
-    if (data.date) {
-      data.date = parseISOString(data.date.toString());
+    if (data.epochMs) {
+      data.date = new Date(data.epochMs);
     }
 
     // Extract ingredients from data

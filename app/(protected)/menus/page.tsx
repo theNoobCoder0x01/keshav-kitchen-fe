@@ -101,10 +101,10 @@ export default function MenuPage() {
       }));
 
       const [statsData, menusResponse] = await Promise.all([
-        fetchMenuStats(selectedDate, currentKitchenId),
+        fetchMenuStats(selectedDate.getTime(), currentKitchenId),
         fetchMenus({
           kitchenId: currentKitchenId,
-          date: selectedDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+          epochMs: selectedDate.getTime(),
         }),
       ]);
 

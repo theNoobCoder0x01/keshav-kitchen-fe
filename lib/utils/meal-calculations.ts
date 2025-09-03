@@ -1,6 +1,39 @@
 import type { MealCalculationResult } from "@/types/calculations";
 
 /**
+ * Generate recipe calculation summary object
+ */
+export function generateRecipeSummaryObject(
+  calculation: any,
+  recipeName: string
+): {
+  recipeName: string;
+  preparedQuantity: number;
+  preparedUnit: string;
+  servingQuantity: number;
+  servingUnit: string;
+  numberOfServings: number;
+  extraQuantity: number;
+} {
+  const { display } = calculation;
+
+  // Use getCalculatedQuantities for serving logic
+  const quantities = getCalculatedQuantities({
+    preparedQuantity: display.preparedQuantity ?? 0,
+    preparedQuantityUnit: display.preparedQuantityUnit ?? "units",
+    servingQuantity: display.servingQuantity ?? 1,
+    servingQuantityUnit: display.servingQuantityUnit ?? "units",
+    quantityPerPiece: display.quantityPerPiece ?? null,
+  });
+
+  return {
+    recipeName,
+    ...quantities,
+    // Add more fields as needed from display
+  };
+}
+
+/**
  * Generate meal calculation summary
  */
 export function generateMealSummary(

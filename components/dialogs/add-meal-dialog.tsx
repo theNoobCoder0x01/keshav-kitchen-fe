@@ -645,7 +645,7 @@ export function AddMealDialog({
         });
 
         const menuData = {
-          date: selectedDate,
+          epochMs: selectedDate.getTime(),
           mealType: mealType,
           recipeId: values.recipeId,
           kitchenId: targetKitchenId,
@@ -688,21 +688,13 @@ export function AddMealDialog({
   };
 
   const filteredRecipes = useMemo(() => {
-    return recipes.filter((recipe) => {
-      if (
-        recipe.category !== "all" &&
-        recipe.category !== selectedRecipeCategory
-      ) {
-        return false;
-      }
-      if (
-        recipe.subcategory !== "all" &&
-        recipe.subcategory !== selectedRecipeSubcategory
-      ) {
-        return false;
-      }
-      return true;
-    });
+    return recipes.filter(
+      (recipe) =>
+        (selectedRecipeCategory === "all" ||
+          selectedRecipeCategory === recipe.category) &&
+        (selectedRecipeSubcategory === "all" ||
+          selectedRecipeSubcategory === recipe.subcategory)
+    );
   }, [recipes, selectedRecipeCategory, selectedRecipeSubcategory]);
 
   const recipeCategories = useMemo(() => {
@@ -723,7 +715,8 @@ export function AddMealDialog({
           recipes
             .filter((recipe) =>
               selectedRecipeCategory
-                ? recipe.category === selectedRecipeCategory
+                ? selectedRecipeCategory === "all" ||
+                  recipe.category === selectedRecipeCategory
                 : true
             )
             .map((recipe) => recipe.subcategory)
@@ -798,7 +791,9 @@ export function AddMealDialog({
                                 key={recipeCategory}
                                 value={recipeCategory}
                               >
-                                {recipeCategory}
+                                {recipeCategory === "all"
+                                  ? t("recipes.allCategories")
+                                  : recipeCategory}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -836,8 +831,14 @@ export function AddMealDialog({
                           </SelectTrigger>
                           <SelectContent searchable>
                             {recipeSubcategories.map((subcategory) => (
-                              <SelectItem key={subcategory} value={subcategory}>
-                                {subcategory}
+                              <SelectItem
+                                key={subcategory}
+                                value={subcategory}
+                                className="break-all"
+                              >
+                                {subcategory === "all"
+                                  ? t("recipes.allSubcategories")
+                                  : subcategory}
                               </SelectItem>
                             ))}
                           </SelectContent>

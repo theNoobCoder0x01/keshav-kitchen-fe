@@ -1,5 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { MealType } from "@prisma/client";
+import { endOfDay, startOfDay } from "date-fns";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -12,7 +14,8 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
 
-    const targetDate = searchParams.get("date") || new Date();
+    const epochMs = searchParams.get("epochMs");
+    const targetDate = epochMs ? new Date(parseInt(epochMs)) : new Date();
     const targetKitchenId = searchParams.get("kitchenId");
 
     if (!targetKitchenId) {
@@ -22,18 +25,16 @@ export async function GET(request: Request) {
       );
     }
 
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    const startOfTargetDay = startOfDay(targetDate);
 
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const endOfTargetDay = endOfDay(targetDate);
 
     const [totalPlanned, mealTypeStats] = await Promise.all([
       prisma.menu.aggregate({
         where: {
           date: {
-            gte: startOfDay,
-            lte: endOfDay,
+            gte: startOfTargetDay,
+            lte: endOfTargetDay,
           },
           kitchenId: targetKitchenId,
         },
@@ -45,8 +46,8 @@ export async function GET(request: Request) {
         by: ["mealType"],
         where: {
           date: {
-            gte: startOfDay,
-            lte: endOfDay,
+            gte: startOfTargetDay,
+            lte: endOfTargetDay,
           },
           kitchenId: targetKitchenId,
         },
@@ -57,14 +58,14 @@ export async function GET(request: Request) {
     ]);
 
     const byMealType = {
-      BREAKFAST: 0,
-      LUNCH: 0,
-      DINNER: 0,
-      SNACK: 0,
+      [MealType.BREAKFAST]: 0,
+      [MealType.LUNCH]: 0,
+      [MealType.DINNER]: 0,
+      [MealType.SNACK]: 0,
     };
 
     mealTypeStats.forEach((stat) => {
-      byMealType[stat.mealType] = stat._sum.servingQuantity || 0;
+      byMealType[stat.mealType as MealType] = stat._sum.servingQuantity || 0;
     });
 
     return NextResponse.json({
@@ -72,6 +73,8 @@ export async function GET(request: Request) {
       byMealType,
     });
   } catch (error) {
+    console.error(error);
+
     return NextResponse.json(
       { error: "Failed to fetch stats." },
       { status: 500 }

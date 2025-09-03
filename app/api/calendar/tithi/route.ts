@@ -4,6 +4,7 @@ import { respondError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { extractTithi } from "@/lib/utils/ics-parser";
+import { endOfDay, startOfDay } from "date-fns";
 import { getServerSession } from "next-auth";
 
 export const dynamic = "force-dynamic";
@@ -21,10 +22,10 @@ export const GET = apiHandler({
     const epochMsParam = ctx.searchParams.get("epochMs");
 
     // Use provided date or default to today
-    const targetDate = dateParam
-      ? new Date(dateParam)
-      : epochMsParam
-        ? new Date(parseInt(epochMsParam))
+    const targetDate = epochMsParam
+      ? new Date(epochMsParam)
+      : dateParam
+        ? new Date(dateParam)
         : new Date();
 
     // Get user info
@@ -38,19 +39,15 @@ export const GET = apiHandler({
     }
 
     // Calculate date range for the day
-    const startOfDay = new Date(
-      targetDate.getFullYear(),
-      targetDate.getMonth(),
-      targetDate.getDate()
-    );
-    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+    const startOfTargetDay = startOfDay(targetDate);
+    const endOfTargetDay = endOfDay(targetDate);
 
     // Get events for the specified date
     const events = await prisma.calendarEvent.findMany({
       where: {
         startDate: {
-          gte: startOfDay,
-          lt: endOfDay,
+          gte: startOfTargetDay,
+          lt: endOfTargetDay,
         },
       },
       orderBy: [

@@ -161,7 +161,14 @@
     "unitRequired": "Unit is required",
     "costPerUnitRequired": "Cost per unit is required",
     "costPerUnitMin": "Cost cannot be negative",
-    "ingredientsRequired": "At least one ingredient is required"
+    "ingredientsRequired": "At least one ingredient is required",
+    "preparedQuantityRequired": "Prepared quantity is required",
+    "preparedQuantityPositive": "Prepared quantity must be a positive number",
+    "preparedQuantityUnitRequired": "Prepared quantity unit is required",
+    "servingQuantityRequired": "Serving quantity is required",
+    "servingQuantityPositive": "Serving quantity must be a positive number",
+    "servingQuantityUnitRequired": "Serving quantity unit is required",
+    "quantityPerPiecePositive": "Quantity per piece must be a positive number"
   },
   "reports": {
     "title": "Reports",

@@ -67,14 +67,25 @@ export default function RecipesPage() {
   const [filterSubcategory, setFilterSubcategory] = useState("all");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(true); // Filters open by default
 
-  // Get unique categories and subcategories for filters
+  // Get unique categories for filters
   const categories = [
     "all",
     ...new Set(recipes.map((recipe) => recipe.category)),
   ];
+  // Get subcategories related to selected category
   const subcategories = [
     "all",
-    ...new Set(recipes.map((recipe) => recipe.subcategory || "")),
+    ...Array.from(
+      new Set(
+        recipes
+          .filter(
+            (recipe) =>
+              filterCategory === "all" ||
+              recipe.category.toLowerCase() === filterCategory.toLowerCase()
+          )
+          .map((recipe) => recipe.subcategory || "")
+      )
+    ),
   ];
 
   // Filter recipes based on search and filters

@@ -8,10 +8,10 @@ export async function fetchMenus(params = {}) {
   return response.data;
 }
 
-export async function fetchMenuStats(date?: Date, kitchenId?: string) {
+export async function fetchMenuStats(epochMs: number, kitchenId?: string) {
   const response = await api.get("/menus/stats", {
     params: {
-      date,
+      epochMs,
       kitchenId,
     },
   });
@@ -19,7 +19,7 @@ export async function fetchMenuStats(date?: Date, kitchenId?: string) {
 }
 
 export async function createMenu(data: {
-  date: Date;
+  epochMs: number;
   mealType: MealType;
   recipeId: string;
   kitchenId: string;

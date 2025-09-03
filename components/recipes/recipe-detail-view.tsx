@@ -4,6 +4,7 @@ import { LexicalViewer } from "@/components/rich-text/lexical-viewer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { generateRecipeSummaryObject } from "@/lib/utils/meal-calculations";
 import {
   calculateGroupCost,
   getSortedGroupNames,
@@ -14,7 +15,7 @@ import {
   extractStepsFromInstructions,
   isLexicalSerialized,
 } from "@/lib/utils/rich-text";
-import { ChefHat, Clock, Package, Tag, Users } from "lucide-react";
+import { ChefHat, Package, Tag, Users } from "lucide-react";
 import { forwardRef } from "react";
 
 import type { RecipeDetailData } from "@/types";
@@ -43,6 +44,20 @@ export const RecipeDetailView = forwardRef<
   );
   const sortedGroupNames = getSortedGroupNames(groupedIngredients);
   const showGroupHeaders = hasCustomGroups(recipe.ingredientGroups);
+
+  // Get calculated summary
+  const recipeSummary = generateRecipeSummaryObject(
+    {
+      display: {
+        preparedQuantity: recipe.preparedQuantity,
+        preparedQuantityUnit: recipe.preparedQuantityUnit,
+        servingQuantity: recipe.servingQuantity,
+        servingQuantityUnit: recipe.servingQuantityUnit,
+        quantityPerPiece: recipe.quantityPerPiece,
+      },
+    },
+    recipe.name
+  );
 
   return (
     <div
@@ -81,40 +96,53 @@ export const RecipeDetailView = forwardRef<
         </div>
       </div>
 
-      {/* Recipe Stats */}
+      {/* Calculation Section */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {recipe.preparedQuantity && (
-              <div className="text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full mx-auto mb-2">
-                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Prepared Quantity
-                </p>
-                <p className="text-xl font-semibold text-foreground">
-                  {recipe.preparedQuantity} {recipe.preparedQuantityUnit}
-                </p>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full mx-auto mb-2">
+                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-            )}
-
-            {recipe.servingQuantity && (
-              <div className="text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full mx-auto mb-2">
-                  <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <p className="text-sm text-muted-foreground">Serving Size</p>
-                <p className="text-xl font-semibold text-foreground">
-                  {recipe.servingQuantity} {recipe.servingQuantityUnit}
-                </p>
+              <p className="text-sm text-muted-foreground">Prepared Quantity</p>
+              <p className="text-xl font-semibold text-foreground">
+                {recipeSummary.preparedQuantity} {recipeSummary.preparedUnit}
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full mx-auto mb-2">
+                <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-            )}
+              <p className="text-sm text-muted-foreground">Serving Quantity</p>
+              <p className="text-xl font-semibold text-foreground">
+                {recipeSummary.servingQuantity} {recipeSummary.servingUnit}
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full mx-auto mb-2">
+                <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Number of Servings
+              </p>
+              <p className="text-xl font-semibold text-foreground">
+                {recipeSummary.numberOfServings}
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full mx-auto mb-2">
+                <Users className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <p className="text-sm text-muted-foreground">Extra Quantity</p>
+              <p className="text-xl font-semibold text-foreground">
+                {recipeSummary.extraQuantity} {recipeSummary.preparedUnit}
+              </p>
+            </div>
 
             {recipe.quantityPerPiece && (
               <div className="text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full mx-auto mb-2">
-                  <Users className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                <div className="flex items-center justify-center w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-full mx-auto mb-2">
+                  <Users className="w-6 h-6 text-pink-600 dark:text-pink-400" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Quantity Per Piece
@@ -124,67 +152,18 @@ export const RecipeDetailView = forwardRef<
                 </p>
               </div>
             )}
+          </div>
 
-            {totalTime > 0 && (
-              <div className="text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full mx-auto mb-2">
-                  <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <p className="text-sm text-muted-foreground">Total Time</p>
-                <p className="text-xl font-semibold text-foreground">
-                  {totalTime} min
-                </p>
-              </div>
-            )}
-
-            <div className="text-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full mx-auto mb-2">
-                <ChefHat className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-              </div>
-              <p className="text-sm text-muted-foreground">Total Cost</p>
-              <p className="text-xl font-semibold text-foreground">
-                ₹{totalCost.toFixed(2)}
-              </p>
-            </div>
+          {/* Ingredients Summary */}
+          <Separator className="my-4" />
+          <div className="flex justify-between items-center text-lg font-semibold">
+            <span className="text-foreground">Total Ingredients Cost:</span>
+            <span className="text-green-600 dark:text-green-400">
+              ₹{totalCost.toFixed(2)}
+            </span>
           </div>
         </CardContent>
       </Card>
-
-      {/* Time Breakdown */}
-      {(recipe.prepTime || recipe.cookTime) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Timing
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {recipe.prepTime && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Prep Time
-                  </p>
-                  <p className="text-lg font-medium text-foreground">
-                    {recipe.prepTime} minutes
-                  </p>
-                </div>
-              )}
-              {recipe.cookTime && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Cook Time
-                  </p>
-                  <p className="text-lg font-medium text-foreground">
-                    {recipe.cookTime} minutes
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Ingredients Section */}
       <Card>

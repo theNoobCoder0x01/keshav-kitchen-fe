@@ -161,7 +161,14 @@
     "unitRequired": "એકમ જરૂરી છે",
     "costPerUnitRequired": "એકમ દીઠ કિંમત જરૂરી છે",
     "costPerUnitMin": "કિંમત નકારાત્મક હોઈ શકે નહીં",
-    "ingredientsRequired": "ઓછામાં ઓછી એક સામગ્રી જરૂરી છે"
+    "ingredientsRequired": "ઓછામાં ઓછી એક સામગ્રી જરૂરી છે",
+    "preparedQuantityRequired": "તૈયાર કરેલ જથ્થો જરૂરી છે",
+    "preparedQuantityPositive": "તૈયાર કરેલ જથ્થો સકારાત્મક સંખ્યા હોવો જોઈએ",
+    "preparedQuantityUnitRequired": "તૈયાર કરેલ જથ્થો એકમ જરૂરી છે",
+    "servingQuantityRequired": "સેવાની માત્રા જરૂરી છે",
+    "servingQuantityPositive": "સેવાની માત્રા સકારાત્મક સંખ્યા હોવી જોઈએ",
+    "servingQuantityUnitRequired": "સેવાની માત્રા એકમ જરૂરી છે",
+    "quantityPerPiecePositive": "પ્રતિ પીસે જથ્થો સકારાત્મક સંખ્યા હોવો જોઈએ"
   },
   "reports": {
     "title": "અહેવાલો",

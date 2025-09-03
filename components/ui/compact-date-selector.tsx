@@ -9,12 +9,7 @@ import {
 } from "@/components/ui/popover";
 import api from "@/lib/api/axios";
 import { cn } from "@/lib/utils";
-import {
-  addTime,
-  formatForStorage,
-  getLocalTimezone,
-  subtractTime,
-} from "@/lib/utils/date";
+import { addTime, getLocalTimezone, subtractTime } from "@/lib/utils/date";
 import { formatInTimeZone } from "date-fns-tz";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -47,9 +42,8 @@ export function CompactDateSelector({
   useEffect(() => {
     const fetchTithiInfo = async () => {
       try {
-        const dateStr = formatForStorage(selectedDate).split("T")[0];
         const params = new URLSearchParams({
-          date: dateStr,
+          epochMs: selectedDate.getTime().toString(),
         });
 
         const response = await api.get(`/calendar/tithi?${params}`);
