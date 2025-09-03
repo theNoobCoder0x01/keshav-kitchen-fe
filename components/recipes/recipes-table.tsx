@@ -33,11 +33,13 @@ export function RecipesTable({
   itemsPerPageOptions = [10, 20, 50],
 }: RecipesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 10);
+  const [itemsPerPage, setItemsPerPage] = useState(
+    itemsPerPageOptions[0] || 10,
+  );
 
   const paginatedRecipes = recipes.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   return (

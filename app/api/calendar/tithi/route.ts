@@ -66,7 +66,7 @@ export const GET = apiHandler({
       for (const event of events) {
         const extractedTithi = extractTithi(
           event.summary,
-          event.description ?? undefined
+          event.description ?? undefined,
         );
         if (extractedTithi) {
           tithi = extractedTithi;

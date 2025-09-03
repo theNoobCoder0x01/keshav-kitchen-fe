@@ -86,7 +86,7 @@ export const getConversionToGrams = (unit: string): number => {
 export const convertUnits = (
   quantity: number,
   fromUnit: string,
-  toUnit: string
+  toUnit: string,
 ): number => {
   if (fromUnit === toUnit) return quantity;
 

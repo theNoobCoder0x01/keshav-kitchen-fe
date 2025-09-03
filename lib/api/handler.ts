@@ -41,7 +41,7 @@ export function apiHandler<TBody = unknown, TResult = unknown>(opts: {
             headers: req.headers,
           },
           req,
-        })
+        }),
       );
     } catch (e: any) {
       console.error();

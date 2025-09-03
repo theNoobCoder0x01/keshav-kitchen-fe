@@ -32,7 +32,7 @@ export const RecipeDetailView = forwardRef<
   const totalCost = recipe.ingredients.reduce(
     (sum, ingredient) =>
       sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0
+    0,
   );
 
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
@@ -40,7 +40,7 @@ export const RecipeDetailView = forwardRef<
   // Group ingredients by their groups
   const groupedIngredients = groupIngredientsByGroup(
     recipe.ingredients,
-    recipe.ingredientGroups
+    recipe.ingredientGroups,
   );
   const sortedGroupNames = getSortedGroupNames(groupedIngredients);
   const showGroupHeaders = hasCustomGroups(recipe.ingredientGroups);
@@ -56,7 +56,7 @@ export const RecipeDetailView = forwardRef<
         quantityPerPiece: recipe.quantityPerPiece,
       },
     },
-    recipe.name
+    recipe.name,
   );
 
   return (
@@ -270,7 +270,7 @@ export const RecipeDetailView = forwardRef<
                         {step}
                       </p>
                     </div>
-                  )
+                  ),
                 )
               )}
             </div>

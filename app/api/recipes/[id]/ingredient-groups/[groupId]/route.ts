@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 // PUT /api/recipes/[id]/ingredient-groups/[groupId] - Update ingredient group
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; groupId: string } }
+  { params }: { params: { id: string; groupId: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -41,7 +41,7 @@ export async function PUT(
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -56,7 +56,7 @@ export async function PUT(
     if (!existingGroup) {
       return NextResponse.json(
         { error: "Ingredient group not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -73,7 +73,7 @@ export async function PUT(
       if (conflictingGroup) {
         return NextResponse.json(
           { error: "A group with this name already exists for this recipe" },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -104,14 +104,14 @@ export async function PUT(
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("Update ingredient group API error:", error);
     return NextResponse.json(
       { error: "Failed to update ingredient group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -119,7 +119,7 @@ export async function PUT(
 // DELETE /api/recipes/[id]/ingredient-groups/[groupId] - Delete ingredient group
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; groupId: string } }
+  { params }: { params: { id: string; groupId: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -139,7 +139,7 @@ export async function DELETE(
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -157,7 +157,7 @@ export async function DELETE(
     if (!existingGroup) {
       return NextResponse.json(
         { error: "Ingredient group not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -208,7 +208,7 @@ export async function DELETE(
     console.error("Delete ingredient group API error:", error);
     return NextResponse.json(
       { error: "Failed to delete ingredient group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

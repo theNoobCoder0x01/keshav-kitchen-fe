@@ -23,7 +23,7 @@ export async function GET() {
     console.error("Error fetching home data:", error);
     return NextResponse.json(
       { error: "Failed to fetch home data" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

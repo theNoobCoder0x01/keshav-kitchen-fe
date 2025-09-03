@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -18,7 +18,7 @@ export async function GET(
     if (!id)
       return NextResponse.json(
         { error: "Kitchen id required." },
-        { status: 400 }
+        { status: 400 },
       );
 
     const kitchen = await prisma.kitchen.findUnique({
@@ -37,7 +37,7 @@ export async function GET(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch kitchen." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -45,7 +45,7 @@ export async function GET(
 // PUT update kitchen by id (via ?id=)
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -59,7 +59,7 @@ export async function PUT(
     if (!id)
       return NextResponse.json(
         { error: "Kitchen id required." },
-        { status: 400 }
+        { status: 400 },
       );
 
     const data = await request.json();
@@ -73,7 +73,7 @@ export async function PUT(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update kitchen." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -81,7 +81,7 @@ export async function PUT(
 // DELETE kitchen by id (via ?id=)
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -95,7 +95,7 @@ export async function DELETE(
     if (!id)
       return NextResponse.json(
         { error: "Kitchen id required." },
-        { status: 400 }
+        { status: 400 },
       );
 
     await prisma.kitchen.delete({ where: { id } });
@@ -104,7 +104,7 @@ export async function DELETE(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete kitchen." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }

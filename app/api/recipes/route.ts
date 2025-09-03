@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     console.error("Get recipes API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

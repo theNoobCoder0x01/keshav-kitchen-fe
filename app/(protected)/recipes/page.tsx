@@ -81,10 +81,10 @@ export default function RecipesPage() {
           .filter(
             (recipe) =>
               filterCategory === "all" ||
-              recipe.category.toLowerCase() === filterCategory.toLowerCase()
+              recipe.category.toLowerCase() === filterCategory.toLowerCase(),
           )
-          .map((recipe) => recipe.subcategory || "")
-      )
+          .map((recipe) => recipe.subcategory || ""),
+      ),
     ),
   ];
 

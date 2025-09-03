@@ -71,7 +71,7 @@ export async function updateRecipe(
       name: string;
       sortOrder: number;
     }>;
-  }
+  },
 ) {
   try {
     const response = await api.patch(`/recipes/${id}`, data);

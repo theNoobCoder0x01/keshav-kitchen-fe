@@ -82,7 +82,7 @@ export function RecipePrintDialog({
         },
         {
           responseType: "blob",
-        }
+        },
       );
 
       if (!response.status.toString().startsWith("2")) {

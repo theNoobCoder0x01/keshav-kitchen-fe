@@ -30,7 +30,7 @@ export function CompactDateSelector({
 }: CompactDateSelectorProps) {
   const userTimezone = timezone || getLocalTimezone();
   const [selectedDate, setSelectedDate] = useState<Date>(
-    initialDate || new Date() // Store in UTC
+    initialDate || new Date(), // Store in UTC
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const currentEventInfo = useTithi(selectedDate);
@@ -73,7 +73,7 @@ export function CompactDateSelector({
     <Card
       className={cn(
         "bg-card/80 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
-        className
+        className,
       )}
     >
       <CardContent className="p-4">
@@ -98,7 +98,7 @@ export function CompactDateSelector({
                           ? currentEventInfo?.eventSummary?.map(
                               (summary, index) => (
                                 <span key={index}>{summary}</span>
-                              )
+                              ),
                             )
                           : formatDay(selectedDate)}
                       </p>

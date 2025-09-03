@@ -40,7 +40,7 @@ export default function MenuPage() {
   const [addMealDialog, setAddMealDialog] = useState(false);
   const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
-    MealType.BREAKFAST
+    MealType.BREAKFAST,
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -111,11 +111,11 @@ export default function MenuPage() {
       // Transform menus data to match the expected format
       const groupedMenus = {
         BREAKFAST: menusResponse.filter(
-          (m: any) => m.mealType === MealType.BREAKFAST
+          (m: any) => m.mealType === MealType.BREAKFAST,
         ),
         LUNCH: menusResponse.filter((m: any) => m.mealType === MealType.LUNCH),
         DINNER: menusResponse.filter(
-          (m: any) => m.mealType === MealType.DINNER
+          (m: any) => m.mealType === MealType.DINNER,
         ),
         SNACK: menusResponse.filter((m: any) => m.mealType === MealType.SNACK),
       };
@@ -158,7 +158,7 @@ export default function MenuPage() {
 
   const handleAddMeal = (
     mealType: UnifiedMealType,
-    menuComponentId?: string
+    menuComponentId?: string,
   ) => {
     setSelectedMealType(mealType);
     setEditMeal({

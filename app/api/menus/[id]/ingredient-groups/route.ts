@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // GET all ingredient groups for a menu
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -52,7 +52,7 @@ export async function GET(
     console.error("Failed to fetch menu ingredient groups:", error);
     return NextResponse.json(
       { error: "Failed to fetch ingredient groups" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -60,7 +60,7 @@ export async function GET(
 // POST create new ingredient group
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -75,7 +75,7 @@ export async function POST(
     if (!data.name || typeof data.name !== "string") {
       return NextResponse.json(
         { error: "Group name is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -103,7 +103,7 @@ export async function POST(
     if (existingGroup) {
       return NextResponse.json(
         { error: "Group name already exists for this menu" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -137,7 +137,7 @@ export async function POST(
     console.error("Failed to create menu ingredient group:", error);
     return NextResponse.json(
       { error: "Failed to create ingredient group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

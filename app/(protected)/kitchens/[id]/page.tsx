@@ -22,7 +22,7 @@ export default function KitchenDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMenuComponent, setEditingMenuComponent] = useState<any | null>(
-    null
+    null,
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -55,7 +55,7 @@ export default function KitchenDetailsPage() {
         // Edit
         await api.put(
           `/kitchens/${id}/menu-components/${menuComponent.id}`,
-          menuComponent
+          menuComponent,
         );
         toast.success(t("messages.menuComponentUpdated"));
       } else {

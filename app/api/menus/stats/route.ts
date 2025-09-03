@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     if (!targetKitchenId) {
       return NextResponse.json(
         { error: "Kitchen Id is required." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(
       { error: "Failed to fetch stats." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

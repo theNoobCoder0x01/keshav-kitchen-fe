@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 // PUT: Update a menu component
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string; componentId: string }> }
+  { params }: { params: Promise<{ id: string; componentId: string }> },
 ) {
   const { id: kitchenId, componentId } = await params;
   try {
@@ -24,7 +24,7 @@ export async function PUT(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update menu component" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -32,7 +32,7 @@ export async function PUT(
 // DELETE: Delete a menu component
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string; componentId: string }> }
+  { params }: { params: Promise<{ id: string; componentId: string }> },
 ) {
   const { componentId } = await params;
   try {
@@ -43,7 +43,7 @@ export async function DELETE(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete menu component" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

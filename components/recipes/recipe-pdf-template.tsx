@@ -15,7 +15,7 @@ export const RecipePdfTemplate = forwardRef<
   const totalCost = recipe.ingredients.reduce(
     (sum, ingredient) =>
       sum + (ingredient.costPerUnit || 0) * ingredient.quantity,
-    0
+    0,
   );
 
   return (

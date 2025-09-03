@@ -1,7 +1,7 @@
 import {
-  RecipeIngredientBase,
   GroupedIngredients,
   IngredientGroup,
+  RecipeIngredientBase,
 } from "@/types/recipes";
 
 /**

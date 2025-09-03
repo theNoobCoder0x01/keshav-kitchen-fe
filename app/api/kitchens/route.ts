@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch kitchens." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create kitchen." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

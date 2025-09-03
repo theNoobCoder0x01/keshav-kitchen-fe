@@ -24,7 +24,7 @@ interface LanguageContextType {
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined
+  undefined,
 );
 
 // Utility function to flatten nested JSON objects for react-intl

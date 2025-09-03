@@ -5,7 +5,7 @@ import type { MealCalculationResult } from "@/types/calculations";
  */
 export function generateRecipeSummaryObject(
   calculation: any,
-  recipeName: string
+  recipeName: string,
 ): {
   recipeName: string;
   preparedQuantity: number;
@@ -38,7 +38,7 @@ export function generateRecipeSummaryObject(
  */
 export function generateMealSummary(
   calculation: MealCalculationResult,
-  mealType: string
+  mealType: string,
 ): string {
   const { display } = calculation;
 

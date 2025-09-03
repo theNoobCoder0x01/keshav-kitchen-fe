@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch menu components" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

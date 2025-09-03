@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -42,7 +42,7 @@ export async function PATCH(
     console.error("PATCH /api/recipes/[id]/subcategory error:", error);
     return NextResponse.json(
       { error: "Failed to update recipe subcategory" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

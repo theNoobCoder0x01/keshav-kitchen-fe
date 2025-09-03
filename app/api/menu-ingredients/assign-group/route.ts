@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     if (!data.ingredientId || !data.menuId) {
       return NextResponse.json(
         { error: "Missing required fields: ingredientId, menuId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     if (!ingredient || ingredient.menuId !== data.menuId) {
       return NextResponse.json(
         { error: "Ingredient not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       if (!group || group.menuId !== data.menuId) {
         return NextResponse.json(
           { error: "Ingredient group not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     console.error("Failed to assign ingredient to group:", error);
     return NextResponse.json(
       { error: "Failed to assign ingredient to group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -105,7 +105,7 @@ export async function PUT(request: Request) {
     ) {
       return NextResponse.json(
         { error: "Missing required fields: ingredientIds (array), menuId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -131,7 +131,7 @@ export async function PUT(request: Request) {
       if (!group || group.menuId !== data.menuId) {
         return NextResponse.json(
           { error: "Ingredient group not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -147,7 +147,7 @@ export async function PUT(request: Request) {
     if (ingredients.length !== data.ingredientIds.length) {
       return NextResponse.json(
         { error: "Some ingredients not found or don't belong to this menu" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -168,7 +168,7 @@ export async function PUT(request: Request) {
     console.error("Failed to bulk assign ingredients to group:", error);
     return NextResponse.json(
       { error: "Failed to bulk assign ingredients to group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -69,7 +69,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setIsLoading(true);
     try {
       const response = await api.get(
-        "/calendar/events?epochMs=" + new Date().getTime()
+        "/calendar/events?epochMs=" + new Date().getTime(),
       );
       if (response.status.toString().startsWith("2")) {
         const { data, success } = await response.data;
@@ -94,7 +94,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -126,7 +126,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       }
 
       toast.success(
-        settings("calendarEventsUploaded", { count: result.data.eventsCount })
+        settings("calendarEventsUploaded", { count: result.data.eventsCount }),
       );
 
       // Reload calendar data
@@ -159,7 +159,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       }
 
       toast.success(
-        settings("calendarEventsCleared", { count: result.data.deletedCount })
+        settings("calendarEventsCleared", { count: result.data.deletedCount }),
       );
       setCalendarData(null);
     } catch (error: any) {

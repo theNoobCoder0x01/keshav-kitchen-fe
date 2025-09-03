@@ -65,7 +65,7 @@ export function MenuCard({
     let t = [
       ...menuComponents.map((component) => {
         const item = itemsWithMenuComponent.find(
-          (item) => item.menuComponent?.id === component.id
+          (item) => item.menuComponent?.id === component.id,
         );
         return { component, item };
       }),
@@ -80,7 +80,7 @@ export function MenuCard({
     <Card
       className={cn(
         "bg-card/100 backdrop-blur-xs border-border/50 hover:shadow-lg transition-all duration-300",
-        className
+        className,
       )}
     >
       <CardContent className="p-4 sm:p-6">
@@ -109,7 +109,7 @@ export function MenuCard({
               className={cn(
                 "group flex items-center p-3 hover:bg-muted rounded-xl transition-all duration-200",
                 showActions ? "justify-between" : "space-x-3",
-                !item && "cursor-pointer"
+                !item && "cursor-pointer",
               )}
               onClick={(e) => {
                 if (!item && component) {

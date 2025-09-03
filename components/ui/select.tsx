@@ -214,8 +214,8 @@ export {
   SelectLabel,
   SelectScrollDownButton,
   SelectScrollUpButton,
+  SelectSearchInput,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-  SelectSearchInput,
 };

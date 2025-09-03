@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -12,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import type { Kitchen } from "@/types";
@@ -32,7 +32,9 @@ export function KitchensTable({
   itemsPerPageOptions = [10, 20],
 }: KitchensTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0] || 10);
+  const [itemsPerPage, setItemsPerPage] = useState(
+    itemsPerPageOptions[0] || 10,
+  );
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Kitchen;
     direction: "ascending" | "descending" | null;
@@ -108,7 +110,10 @@ export function KitchensTable({
             paginatedKitchens.map((kitchen: Kitchen) => (
               <TableRow key={kitchen.id}>
                 <TableCell className="py-4 px-6 font-medium text-foreground">
-                  <Link href={`/kitchens/${kitchen.id}`} className="text-primary underline hover:text-primary/80">
+                  <Link
+                    href={`/kitchens/${kitchen.id}`}
+                    className="text-primary underline hover:text-primary/80"
+                  >
                     {kitchen.name}
                   </Link>
                 </TableCell>
@@ -165,7 +170,11 @@ export function KitchensTable({
 }
 
 // Skeleton loader for KitchensTable
-export function KitchensTableSkeleton({ rowCount = 10 }: { rowCount?: number }) {
+export function KitchensTableSkeleton({
+  rowCount = 10,
+}: {
+  rowCount?: number;
+}) {
   return (
     <div className="rounded-lg border shadow-xs">
       <Table>
