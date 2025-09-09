@@ -66,43 +66,17 @@ export default function RecipesPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterSubcategory, setFilterSubcategory] = useState("all");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(true); // Filters open by default
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableSubcategories, setAvailableSubcategories] = useState<string[]>([]);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   // Get unique categories for filters
-  const categories = [
-    "all",
-    ...new Set(recipes.map((recipe) => recipe.category)),
-  ];
-  // Get subcategories related to selected category
-  const subcategories = [
-    "all",
-    ...Array.from(
-      new Set(
-        recipes
-          .filter(
-            (recipe) =>
-              filterCategory === "all" ||
-              recipe.category.toLowerCase() === filterCategory.toLowerCase(),
-          )
-          .map((recipe) => recipe.subcategory || ""),
-      ),
-    ),
-  ];
-
-  // Filter recipes based on search and filters
-  const filteredRecipes = recipes.filter((recipe) => {
-    const matchesSearch = recipe.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      filterCategory === "all" ||
-      recipe.category.toLowerCase() === filterCategory.toLowerCase();
-    const matchesSubcategory =
-      filterSubcategory === "all" ||
-      (recipe.subcategory || "").toLowerCase() ===
-        filterSubcategory.toLowerCase();
-
-    return matchesSearch && matchesCategory && matchesSubcategory;
-  });
+  const categories = ["all", ...availableCategories];
+  const subcategories = ["all", ...availableSubcategories];
 
   // Print handler
   const handlePrintRecipe = async (recipe: Recipe) => {
@@ -300,15 +274,30 @@ export default function RecipesPage() {
     }
   };
 
-  const getRecipes = async () => {
+  const getRecipes = async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    subcategory?: string;
+  }) => {
+    // Cancel previous request if it exists
+    if (abortController) {
+      abortController.abort();
+    }
+
+    // Create new abort controller for this request
+    const newAbortController = new AbortController();
+    setAbortController(newAbortController);
+
     setLoading(true);
     setError(null);
     try {
-      const [recipesRes] = await Promise.all([
-        import("@/lib/api/recipes").then((m) => m.fetchRecipes()),
-      ]);
+      const { fetchRecipes } = await import("@/lib/api/recipes");
+      const response = await fetchRecipes(params, newAbortController.signal);
+
       // Transform the API recipes to match local Recipe interface
-      const transformedRecipes: Recipe[] = recipesRes.map((recipe: any) => ({
+      const transformedRecipes: Recipe[] = response.recipes.map((recipe: any) => ({
         id: recipe.id,
         name: recipe.name,
         category: recipe.category,
@@ -318,12 +307,26 @@ export default function RecipesPage() {
         createdAt: new Date(recipe.createdAt || Date.now()),
         updatedAt: new Date(recipe.updatedAt || Date.now()),
       }));
+
       setRecipes(transformedRecipes);
+      setTotalCount(response.pagination.totalCount);
+      setTotalPages(response.pagination.totalPages);
+      setCurrentPage(response.pagination.page);
+      setItemsPerPage(response.pagination.limit);
     } catch (err: any) {
+      // Don't show error for aborted requests
+      if (err.name === 'AbortError') {
+        console.log('Recipes fetch request was cancelled');
+        return;
+      }
       console.error("Error fetching data:", err);
       toast.error(t("messages.failedToLoadRecipes"));
     } finally {
       setLoading(false);
+      // Clear abort controller if this is the current one
+      if (abortController === newAbortController) {
+        setAbortController(null);
+      }
     }
   };
 
@@ -334,9 +337,48 @@ export default function RecipesPage() {
     setFilterSubcategory("all");
   };
 
+  // Fetch filter options on component mount
   useEffect(() => {
-    getRecipes();
+    const loadFilters = async () => {
+      try {
+        const { fetchRecipeFilters } = await import("@/lib/api/recipes");
+        const filters = await fetchRecipeFilters();
+        setAvailableCategories(filters.categories);
+        setAvailableSubcategories(filters.subcategories);
+      } catch (error: any) {
+        // Don't show error for aborted requests
+        if (error.name === 'AbortError') {
+          console.log('Filter loading request was cancelled');
+          return;
+        }
+        console.error("Error loading filters:", error);
+        // Fallback to default values if API fails
+        setAvailableCategories(["Breakfast", "Lunch", "Dinner", "Snacks"]);
+        setAvailableSubcategories(["Veg", "Non-Veg", "Sweet", "Savory"]);
+      }
+    };
+
+    loadFilters();
   }, []);
+
+  useEffect(() => {
+    getRecipes({
+      page: currentPage,
+      limit: itemsPerPage,
+      search: searchTerm,
+      category: filterCategory,
+      subcategory: filterSubcategory,
+    });
+  }, [currentPage, itemsPerPage, searchTerm, filterCategory, filterSubcategory]);
+
+  // Cleanup effect to cancel any pending requests on unmount
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
 
   return (
     <div className="w-full flex flex-col gap-2 md:gap-4">
@@ -484,7 +526,7 @@ export default function RecipesPage() {
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold">{t("recipes.title")}</h3>
           <Badge variant="outline" className="bg-card">
-            {filteredRecipes.length} {t("common.of")} {recipes.length}
+            {recipes.length} {t("common.of")} {totalCount}
           </Badge>
         </div>
       </div>
@@ -495,7 +537,7 @@ export default function RecipesPage() {
           <RecipesTableSkeleton />
         ) : (
           <RecipesTable
-            recipes={filteredRecipes}
+            recipes={recipes}
             onEdit={(recipe) => {
               setEditRecipe({
                 recipeName: recipe.name,
@@ -511,6 +553,29 @@ export default function RecipesPage() {
             onPrint={handlePrintRecipe}
             deletingId={deletingId}
             itemsPerPageOptions={[10, 20, 50]}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              getRecipes({
+                page,
+                limit: itemsPerPage,
+                search: searchTerm,
+                category: filterCategory,
+                subcategory: filterSubcategory,
+              });
+            }}
+            onItemsPerPageChange={(limit) => {
+              setItemsPerPage(limit);
+              setCurrentPage(1);
+              getRecipes({
+                page: 1,
+                limit,
+                search: searchTerm,
+                category: filterCategory,
+                subcategory: filterSubcategory,
+              });
+            }}
           />
         )}
       </div>

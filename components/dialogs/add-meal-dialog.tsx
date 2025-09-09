@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useTranslations } from "@/hooks/use-translations";
 import { createMenu, updateMenu } from "@/lib/api/menus";
-import { fetchRecipes } from "@/lib/api/recipes";
+import { fetchAllRecipesForDropdown } from "@/lib/api/recipes";
 import { BookOpen, Utensils } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
@@ -419,9 +419,14 @@ export function AddMealDialog({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [recipesData] = await Promise.all([fetchRecipes()]);
+        const recipesData = await fetchAllRecipesForDropdown();
         setRecipes(recipesData);
-      } catch (error) {
+      } catch (error: any) {
+        // Don't show error for aborted requests
+        if (error.name === 'AbortError') {
+          console.log('Add meal dialog recipes fetch was cancelled');
+          return;
+        }
         console.error("Error loading data:", error);
         toast.error("Failed to load recipes and ingredients");
       }

@@ -12,7 +12,41 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "";
+    const subcategory = searchParams.get("subcategory") || "";
+
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { category: { contains: search, mode: "insensitive" } },
+        { subcategory: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (category && category !== "all") {
+      where.category = { equals: category, mode: "insensitive" };
+    }
+
+    if (subcategory && subcategory !== "all") {
+      where.subcategory = { equals: subcategory, mode: "insensitive" };
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.recipe.count({ where });
+
     const recipes = await prisma.recipe.findMany({
+      where,
+      skip,
+      take: limit,
       include: {
         ingredients: {
           select: {
@@ -81,7 +115,15 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    return NextResponse.json(recipes);
+    return NextResponse.json({
+      recipes,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
   } catch (error) {
     console.error("Get recipes API error:", error);
     return NextResponse.json(

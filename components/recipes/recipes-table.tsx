@@ -22,6 +22,10 @@ interface RecipesTableProps {
   onPrint: (recipe: Recipe) => void;
   deletingId: string | null;
   itemsPerPageOptions?: number[];
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  onItemsPerPageChange?: (limit: number) => void;
 }
 
 export function RecipesTable({
@@ -31,16 +35,13 @@ export function RecipesTable({
   onPrint,
   deletingId,
   itemsPerPageOptions = [10, 20, 50],
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange,
+  onItemsPerPageChange,
 }: RecipesTableProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(
-    itemsPerPageOptions[0] || 10,
-  );
-
-  const paginatedRecipes = recipes.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  // Use server-side pagination - no local slicing needed
+  const displayRecipes = recipes;
 
   return (
     <div className="bg-card rounded-lg border shadow-xs">
@@ -68,8 +69,8 @@ export function RecipesTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedRecipes.length > 0 ? (
-            paginatedRecipes.map((recipe: Recipe) => (
+          {displayRecipes.length > 0 ? (
+            displayRecipes.map((recipe: Recipe) => (
               <TableRow key={recipe.id}>
                 <TableCell className="py-4 px-6 font-medium text-foreground">
                   <Link
@@ -135,10 +136,10 @@ export function RecipesTable({
       </Table>
       <TablePagination
         currentPage={currentPage}
-        totalItems={recipes.length}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-        onItemsPerPageChange={setItemsPerPage}
+        totalItems={totalPages * (recipes.length > 0 ? recipes.length : itemsPerPageOptions[0] || 10)} // Approximate for display
+        itemsPerPage={itemsPerPageOptions[0] || 10}
+        onPageChange={onPageChange || (() => {})}
+        onItemsPerPageChange={onItemsPerPageChange || (() => {})}
         itemsPerPageOptions={itemsPerPageOptions}
       />
     </div>
