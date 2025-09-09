@@ -31,7 +31,7 @@ export async function fetchRecipes(
     if (params?.category) queryParams.append("category", params.category);
     if (params?.subcategory) queryParams.append("subcategory", params.subcategory);
 
-    const response = await api.get(`/recipes?${queryParams.toString()}/`, {
+    const response = await api.get(`/recipes/?${queryParams.toString()}`, {
       signal,
     });
     return response.data;
@@ -136,7 +136,7 @@ export async function fetchAllRecipesForDropdown(signal?: AbortSignal): Promise<
     queryParams.append("page", "1");
     queryParams.append("limit", "10000"); // Large limit to get all recipes
 
-    const response = await api.get(`/recipes?${queryParams.toString()}/`, {
+    const response = await api.get(`/recipes/?${queryParams.toString()}`, {
       signal,
     });
     return response.data.recipes;
