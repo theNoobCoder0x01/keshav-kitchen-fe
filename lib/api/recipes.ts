@@ -13,7 +13,7 @@ export async function fetchRecipes(
     category?: string;
     subcategory?: string;
   },
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<{
   recipes: Recipe[];
   pagination: {
@@ -102,7 +102,7 @@ export async function updateRecipe(
       name: string;
       sortOrder: number;
     }>;
-  }
+  },
 ) {
   try {
     const response = await api.patch(`/recipes/${id}/`, data);
@@ -131,7 +131,7 @@ export async function fetchRecipeFilters(signal?: AbortSignal): Promise<{
 }
 
 export async function fetchAllRecipesForDropdown(
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<Recipe[]> {
   try {
     // Fetch all recipes without pagination for dropdowns

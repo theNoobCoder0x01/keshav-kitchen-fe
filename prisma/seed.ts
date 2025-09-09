@@ -1,4 +1,4 @@
-import { MealType, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import crypto from "crypto"; // Use webcrypto for browser compatibility
 
 // Import the crypto utilities for password hashing

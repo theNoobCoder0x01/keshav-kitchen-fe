@@ -192,8 +192,12 @@ export async function PATCH(
             })),
           });
           // Calculate preparedQuantity as sum of ingredient quantities
-          totalQuantity = ingredients.reduce((sum: number, ing: any) => sum + (Number(ing.quantity) || 0), 0);
-          preparedQuantityUnitToSet = ingredients.length > 0 ? ingredients[0].unit : preparedQuantityUnit;
+          totalQuantity = ingredients.reduce(
+            (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
+            0,
+          );
+          preparedQuantityUnitToSet =
+            ingredients.length > 0 ? ingredients[0].unit : preparedQuantityUnit;
         }
       } else {
         // If ingredients not provided, recalculate from existing
@@ -201,8 +205,14 @@ export async function PATCH(
           where: { recipeId: id },
           select: { quantity: true, unit: true },
         });
-        totalQuantity = existingIngredients.reduce((sum: number, ing: any) => sum + (Number(ing.quantity) || 0), 0);
-        preparedQuantityUnitToSet = existingIngredients.length > 0 ? existingIngredients[0].unit : preparedQuantityUnit;
+        totalQuantity = existingIngredients.reduce(
+          (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
+          0,
+        );
+        preparedQuantityUnitToSet =
+          existingIngredients.length > 0
+            ? existingIngredients[0].unit
+            : preparedQuantityUnit;
       }
 
       const recipe = await tx.recipe.update({

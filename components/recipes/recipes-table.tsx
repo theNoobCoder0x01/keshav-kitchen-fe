@@ -13,7 +13,6 @@ import {
 import type { RecipeListItem as Recipe } from "@/types";
 import { Edit, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 interface RecipesTableProps {
   recipes: Recipe[];
@@ -136,7 +135,10 @@ export function RecipesTable({
       </Table>
       <TablePagination
         currentPage={currentPage}
-        totalItems={totalPages * (recipes.length > 0 ? recipes.length : itemsPerPageOptions[0] || 10)} // Approximate for display
+        totalItems={
+          totalPages *
+          (recipes.length > 0 ? recipes.length : itemsPerPageOptions[0] || 10)
+        } // Approximate for display
         itemsPerPage={itemsPerPageOptions[0] || 10}
         onPageChange={onPageChange || (() => {})}
         onItemsPerPageChange={onItemsPerPageChange || (() => {})}

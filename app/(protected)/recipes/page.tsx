@@ -71,8 +71,11 @@ export default function RecipesPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [availableSubcategories, setAvailableSubcategories] = useState<string[]>([]);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [availableSubcategories, setAvailableSubcategories] = useState<
+    string[]
+  >([]);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   // Get unique categories for filters
   const categories = ["all", ...availableCategories];
@@ -297,16 +300,18 @@ export default function RecipesPage() {
       const response = await fetchRecipes(params, newAbortController.signal);
 
       // Transform the API recipes to match local Recipe interface
-      const transformedRecipes: Recipe[] = response.recipes.map((recipe: any) => ({
-        id: recipe.id,
-        name: recipe.name,
-        category: recipe.category,
-        subcategory: recipe.subcategory || "",
-        cost: 0,
-        instructions: recipe.instructions ?? null,
-        createdAt: new Date(recipe.createdAt || Date.now()),
-        updatedAt: new Date(recipe.updatedAt || Date.now()),
-      }));
+      const transformedRecipes: Recipe[] = response.recipes.map(
+        (recipe: any) => ({
+          id: recipe.id,
+          name: recipe.name,
+          category: recipe.category,
+          subcategory: recipe.subcategory || "",
+          cost: 0,
+          instructions: recipe.instructions ?? null,
+          createdAt: new Date(recipe.createdAt || Date.now()),
+          updatedAt: new Date(recipe.updatedAt || Date.now()),
+        }),
+      );
 
       setRecipes(transformedRecipes);
       setTotalCount(response.pagination.totalCount);
@@ -315,8 +320,8 @@ export default function RecipesPage() {
       setItemsPerPage(response.pagination.limit);
     } catch (error: any) {
       // Don't show error for aborted requests
-      if (error.name === 'AbortError' || error.name === "CanceledError") {
-        console.log('Recipes fetch request was cancelled');
+      if (error.name === "AbortError" || error.name === "CanceledError") {
+        console.log("Recipes fetch request was cancelled");
         return;
       }
       console.error("Error fetching data:", error);
@@ -347,8 +352,8 @@ export default function RecipesPage() {
         setAvailableSubcategories(filters.subcategories);
       } catch (error: any) {
         // Don't show error for aborted requests
-        if (error.name === 'AbortError' || error.name === "CanceledError") {
-          console.log('Filter loading request was cancelled');
+        if (error.name === "AbortError" || error.name === "CanceledError") {
+          console.log("Filter loading request was cancelled");
           return;
         }
         console.error("Error loading filters:", error);
@@ -369,7 +374,13 @@ export default function RecipesPage() {
       category: filterCategory,
       subcategory: filterSubcategory,
     });
-  }, [currentPage, itemsPerPage, searchTerm, filterCategory, filterSubcategory]);
+  }, [
+    currentPage,
+    itemsPerPage,
+    searchTerm,
+    filterCategory,
+    filterSubcategory,
+  ]);
 
   // Cleanup effect to cancel any pending requests on unmount
   useEffect(() => {

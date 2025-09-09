@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     console.error("Get recipe filters API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipe filters" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
