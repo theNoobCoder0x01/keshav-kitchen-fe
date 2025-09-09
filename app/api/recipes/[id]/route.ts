@@ -175,6 +175,9 @@ export async function PATCH(
 
     // Update core fields
     const updated = await prisma.$transaction(async (tx) => {
+      let totalQuantity = 0;
+      let preparedQuantityUnitToSet = preparedQuantityUnit;
+
       if (Array.isArray(ingredients)) {
         await tx.ingredient.deleteMany({ where: { recipeId: id } });
         if (ingredients.length > 0) {
@@ -188,7 +191,18 @@ export async function PATCH(
                 ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
             })),
           });
+          // Calculate preparedQuantity as sum of ingredient quantities
+          totalQuantity = ingredients.reduce((sum: number, ing: any) => sum + (Number(ing.quantity) || 0), 0);
+          preparedQuantityUnitToSet = ingredients.length > 0 ? ingredients[0].unit : preparedQuantityUnit;
         }
+      } else {
+        // If ingredients not provided, recalculate from existing
+        const existingIngredients = await tx.ingredient.findMany({
+          where: { recipeId: id },
+          select: { quantity: true, unit: true },
+        });
+        totalQuantity = existingIngredients.reduce((sum: number, ing: any) => sum + (Number(ing.quantity) || 0), 0);
+        preparedQuantityUnitToSet = existingIngredients.length > 0 ? existingIngredients[0].unit : preparedQuantityUnit;
       }
 
       const recipe = await tx.recipe.update({
@@ -197,9 +211,8 @@ export async function PATCH(
           name,
           description,
           instructions,
-          preparedQuantity:
-            preparedQuantity != null ? Number(preparedQuantity) : undefined,
-          preparedQuantityUnit,
+          preparedQuantity: totalQuantity,
+          preparedQuantityUnit: preparedQuantityUnitToSet,
           servingQuantity:
             servingQuantity != null ? Number(servingQuantity) : undefined,
           servingQuantityUnit,

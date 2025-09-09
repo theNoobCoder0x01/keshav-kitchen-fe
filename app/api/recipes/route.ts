@@ -209,6 +209,18 @@ export async function POST(request: NextRequest) {
         data: ingredientData,
       });
 
+      // Calculate preparedQuantity as sum of ingredient quantities
+      const totalQuantity = ingredientData.reduce((sum: number, ing: any) => sum + (Number(ing.quantity) || 0), 0);
+
+      // Update the recipe with calculated preparedQuantity
+      await tx.recipe.update({
+        where: { id: newRecipe.id },
+        data: {
+          preparedQuantity: totalQuantity,
+          preparedQuantityUnit: ingredientData.length > 0 ? ingredientData[0].unit : data.preparedQuantityUnit,
+        },
+      });
+
       // Return the complete recipe with relationships
       return await tx.recipe.findUnique({
         where: { id: newRecipe.id },
