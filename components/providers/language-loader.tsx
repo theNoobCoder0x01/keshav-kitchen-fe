@@ -18,7 +18,7 @@ export function LanguageLoader() {
 
   const fetchUserLanguagePreference = async () => {
     try {
-      const response = await api.get("/user/language");
+      const response = await api.get("/user/language/");
       if (response.status.toString().startsWith("2")) {
         const data = await response.data;
         if (

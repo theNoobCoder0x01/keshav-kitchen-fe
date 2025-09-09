@@ -111,7 +111,7 @@ export function AddRecipeDialog({
       if (isEditMode && recipeId && !fetchedRecipe) {
         setIsLoadingRecipe(true);
         try {
-          const response = await api.get(`/recipes/${recipeId}`);
+          const response = await api.get(`/recipes/${recipeId}/`);
           if (response.status === 200 || response.status === 201) {
             const recipeData = await response.data;
             setFetchedRecipe(recipeData);

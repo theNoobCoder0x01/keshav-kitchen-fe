@@ -31,11 +31,11 @@ export default function KitchenDetailsPage() {
     setError(null);
     try {
       // Fetch kitchen details
-      const kitchenRes = await api.get(`/kitchens/${id}`);
+      const kitchenRes = await api.get(`/kitchens/${id}/`);
       const kitchenData = await kitchenRes.data;
       setKitchen(kitchenData);
       // Fetch menu components
-      const menuRes = await api.get(`/kitchens/${id}/menu-components`);
+      const menuRes = await api.get(`/kitchens/${id}/menu-components/`);
       const menuData = await menuRes.data;
       setMenuComponents(menuData);
     } catch (e) {
@@ -54,13 +54,13 @@ export default function KitchenDetailsPage() {
       if (menuComponent.id) {
         // Edit
         await api.put(
-          `/kitchens/${id}/menu-components/${menuComponent.id}`,
+          `/kitchens/${id}/menu-components/${menuComponent.id}/`,
           menuComponent,
         );
         toast.success(t("messages.menuComponentUpdated"));
       } else {
         // Add
-        await api.post(`/kitchens/${id}/menu-components`, menuComponent);
+        await api.post(`/kitchens/${id}/menu-components/`, menuComponent);
         toast.success(t("messages.menuComponentAdded"));
       }
       setDialogOpen(false);
@@ -80,7 +80,7 @@ export default function KitchenDetailsPage() {
     if (window.confirm(t("messages.confirmDeleteMenuComponent"))) {
       setDeletingId(idToDelete);
       try {
-        await api.delete(`/kitchens/${id}/menu-components/${idToDelete}`);
+        await api.delete(`/kitchens/${id}/menu-components/${idToDelete}/`);
         toast.success(t("messages.menuComponentDeleted"));
         loadMenuComponents();
       } catch {

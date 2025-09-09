@@ -86,7 +86,7 @@ export function LanguageProvider({
   // Update user language preference in database
   const updateUserLanguage = async (lang: Language) => {
     try {
-      const response = await api.patch("/user/language", {
+      const response = await api.patch("/user/language/", {
         language: lang,
       });
 

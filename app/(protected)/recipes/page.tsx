@@ -82,7 +82,7 @@ export default function RecipesPage() {
   const handlePrintRecipe = async (recipe: Recipe) => {
     try {
       // Fetch detailed recipe data from API
-      const response = await api.get(`/recipes/${recipe.id}`);
+      const response = await api.get(`/recipes/${recipe.id}/`);
       if (
         !response.status ||
         (response.status !== 200 && response.status !== 201)
@@ -133,7 +133,7 @@ export default function RecipesPage() {
   const handleDeleteRecipe = async (id: string) => {
     setDeletingId(id);
     try {
-      const response = await api.delete(`/recipes/${id}`);
+      const response = await api.delete(`/recipes/${id}/`);
 
       if (
         !response.status ||

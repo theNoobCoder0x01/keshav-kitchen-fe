@@ -25,7 +25,7 @@ export default function RecipeDetailPage() {
 
       try {
         setLoading(true);
-        const response = await api.get(`/recipes/${recipeId}`);
+        const response = await api.get(`/recipes/${recipeId}/`);
 
         if (
           !response.status ||

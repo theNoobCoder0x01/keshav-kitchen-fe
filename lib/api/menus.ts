@@ -4,12 +4,12 @@ import type { IngredientFormValue } from "@/types/forms";
 import type { MealType } from "@/types/menus";
 
 export async function fetchMenus(params = {}) {
-  const response = await api.get("/menus", { params });
+  const response = await api.get("/menus/", { params });
   return response.data;
 }
 
 export async function fetchMenuStats(epochMs: number, kitchenId?: string) {
-  const response = await api.get("/menus/stats", {
+  const response = await api.get("/menus/stats/", {
     params: {
       epochMs,
       kitchenId,
@@ -34,16 +34,16 @@ export async function createMenu(data: {
   ingredients?: IngredientFormValue[];
   menuComponentId?: string;
 }) {
-  const response = await api.post("/menus", data);
+  const response = await api.post("/menus/", data);
   return response.data;
 }
 
 export async function updateMenu(id: string, data: any) {
-  const response = await api.put(`/menus?id=${id}`, data);
+  const response = await api.put(`/menus/?id=${id}`, data);
   return response.data;
 }
 
 export async function deleteMenu(id: string) {
-  const response = await api.delete(`/menus?id=${id}`);
+  const response = await api.delete(`/menus/?id=${id}`);
   return response.data;
 }

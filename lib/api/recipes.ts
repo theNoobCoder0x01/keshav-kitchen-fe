@@ -31,7 +31,7 @@ export async function fetchRecipes(
     if (params?.category) queryParams.append("category", params.category);
     if (params?.subcategory) queryParams.append("subcategory", params.subcategory);
 
-    const response = await api.get(`/recipes?${queryParams.toString()}`, {
+    const response = await api.get(`/recipes?${queryParams.toString()}/`, {
       signal,
     });
     return response.data;
@@ -47,7 +47,7 @@ export async function fetchRecipes(
 
 export async function fetchRecipeById(id: string): Promise<Recipe> {
   try {
-    const response = await api.get(`/recipes/${id}`);
+    const response = await api.get(`/recipes/${id}/`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching recipe with id ${id}:`, error);
@@ -74,7 +74,7 @@ export async function createRecipe(data: {
   }>;
 }) {
   try {
-    const response = await api.post("/recipes", data);
+    const response = await api.post("/recipes/", data);
     return response.data;
   } catch (error) {
     console.error("Error creating recipe:", error);
@@ -104,7 +104,7 @@ export async function updateRecipe(
   },
 ) {
   try {
-    const response = await api.patch(`/recipes/${id}`, data);
+    const response = await api.patch(`/recipes/${id}/`, data);
     return response.data;
   } catch (error) {
     console.error(`Error updating recipe with id ${id}:`, error);
@@ -117,7 +117,7 @@ export async function fetchRecipeFilters(signal?: AbortSignal): Promise<{
   subcategories: string[];
 }> {
   try {
-    const response = await api.get("/recipes/filters", { signal });
+    const response = await api.get("/recipes/filters/", { signal });
     return response.data;
   } catch (error: any) {
     if (error.name === 'AbortError') {
@@ -136,7 +136,7 @@ export async function fetchAllRecipesForDropdown(signal?: AbortSignal): Promise<
     queryParams.append("page", "1");
     queryParams.append("limit", "10000"); // Large limit to get all recipes
 
-    const response = await api.get(`/recipes?${queryParams.toString()}`, {
+    const response = await api.get(`/recipes?${queryParams.toString()}/`, {
       signal,
     });
     return response.data.recipes;

@@ -27,7 +27,7 @@ export function useTithi(date?: Date): TithiInfo {
           epochMs: targetDate.getTime().toString(),
         });
 
-        const response = await api.get(`/calendar/tithi?${params}`);
+        const response = await api.get(`/calendar/tithi/?${params}`);
         const data = await response.data;
 
         if (!response.status.toString().startsWith("2") || !data.success) {
