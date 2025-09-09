@@ -59,10 +59,11 @@ export async function GET(
                 quantity: true,
                 unit: true,
                 costPerUnit: true,
+                createdAt: true,
               },
               orderBy: [
                 {
-                  name: "asc",
+                  createdAt: "asc",
                 },
               ],
             },
