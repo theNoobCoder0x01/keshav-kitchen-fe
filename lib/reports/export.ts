@@ -15,15 +15,16 @@ export async function createReportPDF(url: string): Promise<Buffer> {
     cookiesRes.get("__Secure-authjs_session")?.value;
 
   if (authCookie) {
-    await page.setCookie({
+    const parsedUrl = new URL(url);
+    await browser.setCookie({
       name: cookiesRes.get("authjs_session")?.value
         ? "authjs_session"
         : "__Secure-authjs_session",
       value: authCookie,
-      domain: "localhost",
+      domain: parsedUrl.hostname, // ✅ dynamic domain
       path: "/",
       httpOnly: true,
-      secure: false,
+      secure: parsedUrl.protocol === "https:",
     });
   }
 

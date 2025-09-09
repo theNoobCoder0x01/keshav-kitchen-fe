@@ -17,7 +17,6 @@ import {
   TabNavigationSkeleton,
 } from "@/components/ui/tab-navigation";
 import { useTranslations } from "@/hooks/use-translations";
-import api from "@/lib/api/axios";
 import { fetchKitchens } from "@/lib/api/kitchens";
 import { deleteMenu, fetchMenus, fetchMenuStats } from "@/lib/api/menus";
 import type { MealType as UnifiedMealType } from "@/types/menus";
@@ -33,6 +32,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// import html2pdf from "html2pdf.js";
 
 export default function MenuPage() {
   const { t } = useTranslations();
@@ -193,18 +193,32 @@ export default function MenuPage() {
   };
 
   const handleDownloadReport = async (type: string) => {
-    const response = await api.get(
-      `/reports/pdf?url=${window.origin}/prod/reports/${type}?epochMs=${selectedDate.getTime()}`,
-      { responseType: "blob" }
+    setReportPdfPreviewDialog(true);
+    const reportWindow = window.open(
+      `/dev/reports/${type}?epochMs=${selectedDate.getTime()}`,
+      "_blank"
     );
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `${type}-report.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    if (!reportWindow) {
+      console.error("Failed to open report window");
+      return;
+    }
+
+    reportWindow.onload = () => {
+      const reportContent = reportWindow.document.body;
+      if (reportContent) {
+        // html2pdf()
+        //   .from(reportContent)
+        //   .set({
+        //     margin: 0,
+        //     filename: `${type}-report.pdf`,
+        //     image: { type: "jpeg", quality: 0.98 },
+        //     html2canvas: { scale: 2 },
+        //     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        //   })
+        //   .save();
+      }
+    };
   };
 
   const handleTabChange = (index: number) => {
@@ -377,7 +391,7 @@ export default function MenuPage() {
       >
         <div className="p-2 border border-primary">
           <iframe
-            src={`/api/reports/pdf?url=${window.origin}/reports/recipes?epochMs=1755967928000`}
+            src={`${window.origin}/dev/reports/recipes?epochMs=1755967928000`}
             width="100%"
             height="800"
           />

@@ -16,7 +16,8 @@ export default function CookReport() {
   const searchParams = useSearchParams();
 
   const epochMs = parseInt(searchParams.get("epochMs") ?? "");
-  const currentEventInfo = useTithi(epochToDate(epochMs));
+  const date = useMemo(() => epochToDate(epochMs), [epochMs]);
+  const currentEventInfo = useTithi(date);
 
   const mealTypeIconMap = {
     [MealType.BREAKFAST]: BreakfastIcon,

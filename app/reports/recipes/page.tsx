@@ -6,7 +6,7 @@ import { epochToDate, formatEpochToDate } from "@/lib/utils/date";
 import { Calendar } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useLayoutEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 
 export default function RecipesReport() {
   const [data, setData] = useState<any[]>([]);
@@ -14,7 +14,8 @@ export default function RecipesReport() {
   const searchParams = useSearchParams();
 
   const epochMs = parseInt(searchParams.get("epochMs") ?? "");
-  const currentEventInfo = useTithi(epochToDate(epochMs));
+  const date = useMemo(() => epochToDate(epochMs), [epochMs]);
+  const currentEventInfo = useTithi(date);
 
   const loadData = useCallback(async () => {
     try {
