@@ -313,13 +313,13 @@ export default function RecipesPage() {
       setTotalPages(response.pagination.totalPages);
       setCurrentPage(response.pagination.page);
       setItemsPerPage(response.pagination.limit);
-    } catch (err: any) {
+    } catch (error: any) {
       // Don't show error for aborted requests
-      if (err.name === 'AbortError') {
+      if (error.name === 'AbortError' || error.name === "CanceledError") {
         console.log('Recipes fetch request was cancelled');
         return;
       }
-      console.error("Error fetching data:", err);
+      console.error("Error fetching data:", error);
       toast.error(t("messages.failedToLoadRecipes"));
     } finally {
       setLoading(false);
@@ -347,7 +347,7 @@ export default function RecipesPage() {
         setAvailableSubcategories(filters.subcategories);
       } catch (error: any) {
         // Don't show error for aborted requests
-        if (error.name === 'AbortError') {
+        if (error.name === 'AbortError' || error.name === "CanceledError") {
           console.log('Filter loading request was cancelled');
           return;
         }

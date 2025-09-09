@@ -423,8 +423,8 @@ export function AddMealDialog({
         setRecipes(recipesData);
       } catch (error: any) {
         // Don't show error for aborted requests
-        if (error.name === 'AbortError') {
-          console.log('Add meal dialog recipes fetch was cancelled');
+        if (error.name === "AbortError" || error.name === "CanceledError") {
+          console.log("Add meal dialog recipes fetch was cancelled");
           return;
         }
         console.error("Error loading data:", error);

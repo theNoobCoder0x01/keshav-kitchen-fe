@@ -29,15 +29,16 @@ export async function fetchRecipes(
     if (params?.limit) queryParams.append("limit", params.limit.toString());
     if (params?.search) queryParams.append("search", params.search);
     if (params?.category) queryParams.append("category", params.category);
-    if (params?.subcategory) queryParams.append("subcategory", params.subcategory);
+    if (params?.subcategory)
+      queryParams.append("subcategory", params.subcategory);
 
     const response = await api.get(`/recipes/?${queryParams.toString()}`, {
       signal,
     });
     return response.data;
   } catch (error: any) {
-    if (error.name === 'AbortError') {
-      console.log('Fetch recipes request was cancelled');
+    if (error.name === "AbortError" || error.name === "CanceledError") {
+      console.log("Fetch recipes request was cancelled");
       throw error;
     }
     console.error("Error fetching recipes:", error);
@@ -101,7 +102,7 @@ export async function updateRecipe(
       name: string;
       sortOrder: number;
     }>;
-  },
+  }
 ) {
   try {
     const response = await api.patch(`/recipes/${id}/`, data);
@@ -120,8 +121,8 @@ export async function fetchRecipeFilters(signal?: AbortSignal): Promise<{
     const response = await api.get("/recipes/filters/", { signal });
     return response.data;
   } catch (error: any) {
-    if (error.name === 'AbortError') {
-      console.log('Fetch recipe filters request was cancelled');
+    if (error.name === "AbortError" || error.name === "CanceledError") {
+      console.log("Fetch recipe filters request was cancelled");
       throw error;
     }
     console.error("Error fetching recipe filters:", error);
@@ -129,7 +130,9 @@ export async function fetchRecipeFilters(signal?: AbortSignal): Promise<{
   }
 }
 
-export async function fetchAllRecipesForDropdown(signal?: AbortSignal): Promise<Recipe[]> {
+export async function fetchAllRecipesForDropdown(
+  signal?: AbortSignal
+): Promise<Recipe[]> {
   try {
     // Fetch all recipes without pagination for dropdowns
     const queryParams = new URLSearchParams();
@@ -141,8 +144,8 @@ export async function fetchAllRecipesForDropdown(signal?: AbortSignal): Promise<
     });
     return response.data.recipes;
   } catch (error: any) {
-    if (error.name === 'AbortError') {
-      console.log('Fetch all recipes for dropdown request was cancelled');
+    if (error.name === "AbortError" || error.name === "CanceledError") {
+      console.log("Fetch all recipes for dropdown request was cancelled");
       throw error;
     }
     console.error("Error fetching all recipes for dropdown:", error);
