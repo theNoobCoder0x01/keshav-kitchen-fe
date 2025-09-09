@@ -63,7 +63,7 @@ export async function GET(
               },
               orderBy: [
                 {
-                  createdAt: "asc",
+                  id: "asc",
                 },
               ],
             },
