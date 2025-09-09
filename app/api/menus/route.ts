@@ -170,7 +170,7 @@ export async function GET(request: Request) {
     console.error("Failed to fetch menus:", error);
     return NextResponse.json(
       { error: "Failed to fetch menus." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
           error:
             "Missing required fields: recipeId, mealType, kitchenId, userId",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -203,7 +203,7 @@ export async function POST(request: Request) {
     }
 
     // Extract ingredients from data
-    const { ingredients, ...menuData } = data;
+    const { ingredients, epochMs, ...menuData } = data;
 
     const menu = await prisma.menu.create({
       data: {
@@ -255,7 +255,7 @@ export async function POST(request: Request) {
     console.error("Create menu API error:", error);
     return NextResponse.json(
       { error: "Failed to create menu." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -349,7 +349,7 @@ export async function PUT(request: Request) {
     console.error("Update menu API error:", error);
     return NextResponse.json(
       { error: "Failed to update menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }
@@ -372,7 +372,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }
