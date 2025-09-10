@@ -70,7 +70,7 @@ export default function RecipesReport() {
           </div>
         </div>
 
-        <div className="px-2 flex flex-col mt-[77px] gap-3">
+        <div className="px-2 pt-3 flex flex-col gap-3">
           {data.map((recipe) => (
             <div className="bg-secondary rounded p-3 flex flex-col gap-3 break-inside-avoid">
               <div className="flex items-center justify-between border-b-2 border-muted-foreground pb-2">
