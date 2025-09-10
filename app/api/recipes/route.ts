@@ -65,6 +65,11 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          orderBy: [
+            {
+              id: "asc",
+            },
+          ],
         },
         ingredientGroups: {
           select: {
@@ -79,6 +84,11 @@ export async function GET(request: NextRequest) {
                 unit: true,
                 costPerUnit: true,
               },
+              orderBy: [
+                {
+                  id: "asc",
+                },
+              ],
             },
           },
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -121,7 +131,7 @@ export async function GET(request: NextRequest) {
     console.error("Get recipes API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipes" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -201,7 +211,7 @@ export async function POST(request: NextRequest) {
       // Calculate preparedQuantity as sum of ingredient quantities
       const totalQuantity = ingredientData.reduce(
         (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-        0,
+        0
       );
 
       // Update the recipe with calculated preparedQuantity
@@ -224,10 +234,21 @@ export async function POST(request: NextRequest) {
             include: {
               group: true,
             },
+            orderBy: [
+              {
+                id: "asc",
+              },
+            ],
           },
           ingredientGroups: {
             include: {
-              ingredients: true,
+              ingredients: {
+                orderBy: [
+                  {
+                    id: "asc",
+                  },
+                ],
+              },
             },
             orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           },
