@@ -44,11 +44,6 @@ export function groupIngredientsByGroup(
     grouped[groupName].ingredients.push(ingredient);
   });
 
-  // Sort ingredients within each group by name
-  Object.values(grouped).forEach((group) => {
-    group.ingredients.sort((a, b) => a.name.localeCompare(b.name));
-  });
-
   return grouped;
 }
 
