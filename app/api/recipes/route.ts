@@ -65,9 +65,6 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          orderBy: {
-            id: "asc",
-          },
         },
         ingredientGroups: {
           select: {
@@ -82,14 +79,6 @@ export async function GET(request: NextRequest) {
                 unit: true,
                 costPerUnit: true,
               },
-              orderBy: [
-                {
-                  quantity: "desc",
-                },
-                {
-                  name: "asc",
-                },
-              ],
             },
           },
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],

@@ -38,14 +38,6 @@ export async function GET(
               },
             },
           },
-          orderBy: [
-            {
-              quantity: "desc",
-            },
-            {
-              name: "asc",
-            },
-          ],
         },
         ingredientGroups: {
           select: {
@@ -61,11 +53,6 @@ export async function GET(
                 costPerUnit: true,
                 createdAt: true,
               },
-              orderBy: [
-                {
-                  id: "asc",
-                },
-              ],
             },
           },
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
