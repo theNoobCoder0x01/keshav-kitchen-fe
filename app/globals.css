@@ -227,3 +227,15 @@
 .focus-ring {
   @apply focus:outline-hidden focus:ring-2 focus:ring-ring focus:border-ring;
 }
+
+@media print {
+  @page {
+    size: A4 portrait; /* or A5 landscape */
+    margin: 1cm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -24,7 +24,9 @@ export function ProfileDropdown() {
   const { auth, settings } = useTranslations();
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/auth/signin" });
+    await signOut({
+      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/auth/signin`,
+    });
   };
 
   const handleSettingsClick = () => {
@@ -57,7 +59,9 @@ export function ProfileDropdown() {
             className="relative h-10 w-10 rounded-full p-0"
           >
             <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all border border-accent-foreground/10 shadow-md p-1">
-              <AvatarImage src="/prod/logo.svg?height=40&width=40" />
+              <AvatarImage
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/logo.svg?height=40&width=40`}
+              />
               <AvatarFallback className="bg-linear-to-br from-primary to-primary/80 text-primary-foreground text-sm font-semibold">
                 {session?.user?.name?.charAt(0) || "U"}
               </AvatarFallback>

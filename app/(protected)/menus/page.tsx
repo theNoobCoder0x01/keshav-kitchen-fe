@@ -17,6 +17,7 @@ import {
   TabNavigationSkeleton,
 } from "@/components/ui/tab-navigation";
 import { useTranslations } from "@/hooks/use-translations";
+import api from "@/lib/api/axios";
 import { fetchKitchens } from "@/lib/api/kitchens";
 import { deleteMenu, fetchMenus, fetchMenuStats } from "@/lib/api/menus";
 import type { MealType as UnifiedMealType } from "@/types/menus";
@@ -30,7 +31,7 @@ import {
 import { AlertTriangle, ChevronDown, File } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 // import html2pdf from "html2pdf.js";
 
@@ -39,9 +40,11 @@ export default function MenuPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
-  const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState(false);
+  const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState<
+    string | undefined
+  >(undefined);
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
-    MealType.BREAKFAST,
+    MealType.BREAKFAST
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -54,6 +57,8 @@ export default function MenuPage() {
     stats: 0,
     menus: 0,
   });
+
+  const reportIFrameRef = useRef<HTMLIFrameElement | null>(null);
 
   const loadKitchens = useCallback(async () => {
     try {
@@ -112,11 +117,11 @@ export default function MenuPage() {
       // Transform menus data to match the expected format
       const groupedMenus = {
         BREAKFAST: menusResponse.filter(
-          (m: any) => m.mealType === MealType.BREAKFAST,
+          (m: any) => m.mealType === MealType.BREAKFAST
         ),
         LUNCH: menusResponse.filter((m: any) => m.mealType === MealType.LUNCH),
         DINNER: menusResponse.filter(
-          (m: any) => m.mealType === MealType.DINNER,
+          (m: any) => m.mealType === MealType.DINNER
         ),
         SNACK: menusResponse.filter((m: any) => m.mealType === MealType.SNACK),
       };
@@ -159,7 +164,7 @@ export default function MenuPage() {
 
   const handleAddMeal = (
     mealType: UnifiedMealType,
-    menuComponentId?: string,
+    menuComponentId?: string
   ) => {
     setSelectedMealType(mealType);
     setEditMeal({
@@ -193,32 +198,8 @@ export default function MenuPage() {
   };
 
   const handleDownloadReport = async (type: string) => {
-    setReportPdfPreviewDialog(true);
-    const reportWindow = window.open(
-      `/dev/reports/${type}?epochMs=${selectedDate.getTime()}`,
-      "_blank",
-    );
-
-    if (!reportWindow) {
-      console.error("Failed to open report window");
-      return;
-    }
-
-    reportWindow.onload = () => {
-      const reportContent = reportWindow.document.body;
-      if (reportContent) {
-        // html2pdf()
-        //   .from(reportContent)
-        //   .set({
-        //     margin: 0,
-        //     filename: `${type}-report.pdf`,
-        //     image: { type: "jpeg", quality: 0.98 },
-        //     html2canvas: { scale: 2 },
-        //     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        //   })
-        //   .save();
-      }
-    };
+    const reportUrl = `/reports/${type}?epochMs=${selectedDate.getTime()}`;
+    setReportPdfPreviewDialog(reportUrl);
   };
 
   const handleTabChange = (index: number) => {
@@ -237,8 +218,52 @@ export default function MenuPage() {
     }
   };
 
-  const handleReportPdfPreviewClose = (open: boolean) => {
-    setReportPdfPreviewDialog(open);
+  const handleReportPdfPreviewClose = () => {
+    setReportPdfPreviewDialog(undefined);
+  };
+
+  const handleDownloadIframePdfV2 = async () => {
+    const iframe = reportIFrameRef.current;
+
+    if (!iframe?.contentDocument) {
+      console.error("Iframe not found or not loaded yet");
+      return;
+    }
+    const reportRoute = `${window.origin}/${process.env.NEXT_PUBLIC_BASE_PATH || ""}/reports/cook?epochMs=${selectedDate.getTime()}`;
+    const headerHtml = `<h1>Kitchen Report</h1><p>${new Date().toLocaleDateString()}</p>`;
+    const authToken = localStorage.getItem("pdfToken"); // or any short-lived token
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+      const res = await api.post(
+        "/reports/pdf/",
+        { route: reportRoute, headerHtml, authToken, timezone },
+        { responseType: "arraybuffer" }
+      );
+
+      debugger;
+      console.log("Hello");
+
+      const arrayBuffer = await res.data;
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "report.pdf";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF");
+    }
+  };
+  const handleDownloadIframePdf = () => {
+    const iframe = document.getElementById(
+      "report-preview-iframe"
+    ) as HTMLIFrameElement | null;
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }
   };
 
   // Show loading while checking authentication
@@ -382,16 +407,29 @@ export default function MenuPage() {
         editMeal={editMeal}
       />
       <BaseDialog
-        open={reportPdfPreviewDialog}
+        open={!!reportPdfPreviewDialog}
         onOpenChange={handleReportPdfPreviewClose}
         title="Preview"
         description="This is a preview of pdf report"
         icon={<File className="w-5 h-5 text-primary-foreground" />}
         size="6xl"
       >
-        <div className="p-2 border border-primary">
+        <div className="flex justify-end gap-2 mb-2">
+          {/* <Button variant="outline" onClick={handleDownloadIframePdf}>
+            Download
+          </Button> */}
+          <Button variant="outline" onClick={handleDownloadIframePdf}>
+            Print
+          </Button>
+        </div>
+        <div
+          className="p-2 border border-primary"
+          style={{ colorScheme: "light" }}
+        >
           <iframe
-            src={`${window.origin}/dev/reports/recipes?epochMs=1755967928000`}
+            id="report-preview-iframe"
+            ref={reportIFrameRef}
+            src={`${window.origin}/${process.env.NEXT_PUBLIC_BASE_PATH || ""}/${reportPdfPreviewDialog}`}
             width="100%"
             height="800"
           />
