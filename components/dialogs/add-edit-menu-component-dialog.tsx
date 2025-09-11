@@ -147,6 +147,7 @@ export function AddEditMenuComponentDialog({
                     id="sequenceNumber"
                     type="number"
                     min={1}
+                    step={1}
                     required
                   />
                 )}

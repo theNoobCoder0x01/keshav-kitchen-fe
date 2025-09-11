@@ -670,8 +670,8 @@ export function AddRecipeDialog({
                         id="preparedQuantity"
                         name="preparedQuantity"
                         type="number"
-                        step="0.000001"
-                        min="0"
+                        min={0}
+                        step={0.0001}
                         placeholder={t("recipes.preparedQuantity")}
                         className="border-border focus:border-primary focus:ring-primary/20"
                       />
@@ -732,8 +732,8 @@ export function AddRecipeDialog({
                         id="servingQuantity"
                         name="servingQuantity"
                         type="number"
-                        step="0.000001"
-                        min="0"
+                        min={0}
+                        step={0.0001}
                         placeholder="Serving quantity"
                         className="border-border focus:border-primary focus:ring-primary/20"
                       />
@@ -796,8 +796,8 @@ export function AddRecipeDialog({
                           id="quantityPerPiece"
                           name="quantityPerPiece"
                           type="number"
-                          step="0.000001"
-                          min="0"
+                          min={0}
+                          step={0.0001}
                           placeholder="Quantity per piece"
                           className="border-border focus:border-primary focus:ring-primary/20"
                         />
