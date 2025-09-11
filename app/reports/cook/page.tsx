@@ -97,7 +97,7 @@ export default function CookReport() {
             <div
               className={cn(
                 "px-4 py-2 print:pt-0 flex items-center justify-between border-b border-accent-foreground",
-                index && "break-before-page"
+                index && "break-before-page",
               )}
             >
               <div className="flex items-center space-x-1 h-15">

@@ -1,5 +1,6 @@
 import api from "@/lib/api/axios";
 import { getCurrentDateUTC } from "@/lib/utils/date";
+import { endOfDay, startOfDay } from "date-fns";
 import { useEffect, useState } from "react";
 
 interface TithiInfo {
@@ -22,9 +23,11 @@ export function useTithi(date?: Date): TithiInfo {
 
       try {
         const targetDate = date || getCurrentDateUTC(); // Use UTC for consistency
-
+        const startEpochMs = startOfDay(targetDate).getTime();
+        const endEpochMs = endOfDay(targetDate).getTime();
         const params = new URLSearchParams({
-          epochMs: targetDate.getTime().toString(),
+          startEpochMs: startEpochMs.toString(),
+          endEpochMs: endEpochMs.toString(),
         });
 
         const response = await api.get(`/calendar/tithi/?${params}`);

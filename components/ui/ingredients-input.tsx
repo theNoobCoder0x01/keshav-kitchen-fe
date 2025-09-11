@@ -100,7 +100,7 @@ export function IngredientsInput<
 
   const setGroupSelection = (groupIndex: number, checked: boolean) => {
     const ids = ingredientGroups[groupIndex].ingredients.map(
-      (ing: any) => ing.localId
+      (ing: any) => ing.localId,
     );
     const newSelection = new Set(selectedIds);
     if (checked) {
@@ -115,7 +115,7 @@ export function IngredientsInput<
 
   const moveSelectedIngredients = (
     destinationGroupIndex: number,
-    position: "end" | "start" = "end"
+    position: "end" | "start" = "end",
   ) => {
     if (selectedIds.size === 0) return;
 
@@ -179,7 +179,7 @@ export function IngredientsInput<
         onPasteIngredients(e);
       }
     },
-    [onPasteIngredients]
+    [onPasteIngredients],
   );
 
   return (
@@ -199,7 +199,7 @@ export function IngredientsInput<
                 <Badge variant="outline" className="text-xs">
                   {ingredientGroups.reduce(
                     (total, group) => total + group.ingredients.length,
-                    0
+                    0,
                   )}{" "}
                   ingredients
                 </Badge>
@@ -275,7 +275,7 @@ export function IngredientsInput<
                       checked={
                         group.ingredients.length > 0 &&
                         group.ingredients.every((ing: any) =>
-                          selectedIds.has(ing.localId)
+                          selectedIds.has(ing.localId),
                         )
                       }
                       onCheckedChange={(checked) =>
@@ -330,12 +330,12 @@ export function IngredientsInput<
                               <div className="flex items-center gap-2">
                                 <Checkbox
                                   checked={Boolean(
-                                    selectedIds.has(ingredient.localId)
+                                    selectedIds.has(ingredient.localId),
                                   )}
                                   onCheckedChange={(checked) =>
                                     toggleRowSelected(
                                       ingredient.localId,
-                                      Boolean(checked)
+                                      Boolean(checked),
                                     )
                                   }
                                 />
@@ -453,7 +453,7 @@ export function IngredientsInput<
                               </div>
                             </div>
                           </div>
-                        )
+                        ),
                       )}
 
                       <Button

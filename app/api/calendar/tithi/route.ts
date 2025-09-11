@@ -4,7 +4,6 @@ import { respondError } from "@/lib/api/response";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { extractTithi } from "@/lib/utils/ics-parser";
-import { endOfDay, startOfDay } from "date-fns";
 import { getServerSession } from "next-auth";
 
 export const dynamic = "force-dynamic";
@@ -18,15 +17,8 @@ export const GET = apiHandler({
       throw respondError("Authentication required", 401, { code: ERR.AUTH });
     }
 
-    const dateParam = ctx.searchParams.get("date");
-    const epochMsParam = parseInt(ctx.searchParams.get("epochMs") ?? "");
-
-    // Use provided date or default to today
-    const targetDate = epochMsParam
-      ? new Date(epochMsParam)
-      : dateParam
-        ? new Date(dateParam)
-        : new Date();
+    const startEpochMs = parseInt(ctx.searchParams.get("startEpochMs") ?? "");
+    const endEpochMs = parseInt(ctx.searchParams.get("endEpochMs") ?? "");
 
     // Get user info
     const user = await prisma.user.findUnique({
@@ -39,8 +31,8 @@ export const GET = apiHandler({
     }
 
     // Calculate date range for the day
-    const startOfTargetDay = startOfDay(targetDate);
-    const endOfTargetDay = endOfDay(targetDate);
+    const startOfTargetDay = new Date(startEpochMs);
+    const endOfTargetDay = new Date(endEpochMs);
 
     // Get events for the specified date
     const events = await prisma.calendarEvent.findMany({
@@ -112,7 +104,6 @@ export const GET = apiHandler({
     }
 
     return {
-      date: targetDate.toISOString().split("T")[0],
       tithi,
       eventSummary,
       eventsCount: events.length,
@@ -120,8 +111,8 @@ export const GET = apiHandler({
         id: event.id,
         summary: event.summary,
         description: event.description,
-        startDate: event.startDate.toISOString(),
-        endDate: event.endDate?.toISOString(),
+        startDate: event.startDate.getTime(),
+        endDate: event.endDate?.getTime(),
         location: event.location,
       })),
     };

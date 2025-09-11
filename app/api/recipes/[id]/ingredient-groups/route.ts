@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 // GET /api/recipes/[id]/ingredient-groups - Get all ingredient groups for a recipe
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -37,7 +37,7 @@ export async function GET(
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -69,7 +69,7 @@ export async function GET(
     console.error("Get ingredient groups API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch ingredient groups" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -77,7 +77,7 @@ export async function GET(
 // POST /api/recipes/[id]/ingredient-groups - Create new ingredient group
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -100,7 +100,7 @@ export async function POST(
     if (!recipe) {
       return NextResponse.json(
         { error: "Recipe not found or access denied" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -115,7 +115,7 @@ export async function POST(
     if (existingGroup) {
       return NextResponse.json(
         { error: "A group with this name already exists for this recipe" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -148,14 +148,14 @@ export async function POST(
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("Create ingredient group API error:", error);
     return NextResponse.json(
       { error: "Failed to create ingredient group" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
