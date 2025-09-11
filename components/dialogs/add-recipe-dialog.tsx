@@ -126,8 +126,8 @@ export function AddRecipeDialog({
       }
     };
 
-    fetchRecipeDetails();
-  }, [isEditMode, recipeId]); // Removed fetchedRecipe from dependencies
+    if (isOpen) fetchRecipeDetails();
+  }, [isEditMode, recipeId, isOpen]); // Removed fetchedRecipe from dependencies
 
   // Helper function to organize ingredients by groups
   const organizeIngredientsIntoGroups = useCallback(
@@ -226,11 +226,11 @@ export function AddRecipeDialog({
 
       // Sort groups by sortOrder
       const sortedGroups = groups.sort(
-        (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
+        (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)
       );
       return sortedGroups;
     },
-    [],
+    []
   );
 
   // Reset fetched recipe when dialog opens/closes or recipeId changes
@@ -278,18 +278,18 @@ export function AddRecipeDialog({
                   "is-number-or-empty",
                   t("ingredients.costValidationError"),
                   (value) =>
-                    !value || (!isNaN(Number(value)) && Number(value) >= 0),
+                    !value || (!isNaN(Number(value)) && Number(value) >= 0)
                 ),
-              }),
+              })
             )
             .min(0),
-        }),
+        })
       )
       .min(1, "At least one ingredient group is required")
       .test("has-ingredients", t("recipes.ingredientsRequired"), (groups) => {
         if (!groups) return false;
         return groups.some(
-          (group) => group.ingredients && group.ingredients.length > 0,
+          (group) => group.ingredients && group.ingredients.length > 0
         );
       }),
   });
@@ -304,7 +304,7 @@ export function AddRecipeDialog({
       ingredientGroups: fetchedRecipe?.ingredients
         ? organizeIngredientsIntoGroups(
             fetchedRecipe.ingredients,
-            fetchedRecipe.ingredientGroups,
+            fetchedRecipe.ingredientGroups
           )
         : initialRecipe?.ingredientGroups
           ? initialRecipe.ingredientGroups.map((group) => ({
@@ -357,7 +357,7 @@ export function AddRecipeDialog({
 
   const handleSubmit = (
     values: typeof initialValues,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
     // Trim all string fields before submission using utility function
     const trimmedValues = trimObjectStrings(values);
@@ -368,7 +368,7 @@ export function AddRecipeDialog({
         id: group.id || `temp_${index}`,
         name: group.name,
         sortOrder: group.sortOrder,
-      }),
+      })
     );
 
     // Flatten all ingredients with their group assignments
@@ -446,7 +446,6 @@ export function AddRecipeDialog({
         {({ values, isSubmitting, dirty, errors, touched, setFieldValue }) => {
           // Ensure stable localId per ingredient for selection & DnD
           // We'll handle this in the render function instead of useEffect to avoid form interference
-
           // Show loading state while fetching recipe details
           if (isEditMode && recipeId && (isLoadingRecipe || !fetchedRecipe)) {
             return (
@@ -472,26 +471,26 @@ export function AddRecipeDialog({
             if (!targetElement) return;
 
             const inputEl = targetElement.closest(
-              'input[name^="ingredientGroups["]',
+              'input[name^="ingredientGroups["]'
             ) as HTMLInputElement | null;
             let fieldName: string | null = inputEl?.name || null;
             if (!fieldName) {
               const fieldEl = targetElement.closest(
-                "[data-field-name]",
+                "[data-field-name]"
               ) as HTMLElement | null;
               fieldName = fieldEl?.getAttribute("data-field-name") ?? null;
             }
             if (!fieldName) return;
 
             const match = fieldName.match(
-              /ingredientGroups\[(\d+)\]\.ingredients\[(\d+)\]\.(name|quantity|unit|costPerUnit)/,
+              /ingredientGroups\[(\d+)\]\.ingredients\[(\d+)\]\.(name|quantity|unit|costPerUnit)/
             );
             if (!match) return;
 
             const groupIndex = parseInt(match[1], 10);
             const ingredientIndex = parseInt(match[2], 10);
             const startCol = columnOrder.indexOf(
-              match[3] as (typeof columnOrder)[number],
+              match[3] as (typeof columnOrder)[number]
             );
 
             const text = e.clipboardData.getData("text/plain");
@@ -535,7 +534,7 @@ export function AddRecipeDialog({
               const found = UNIT_OPTIONS.find(
                 (opt) =>
                   opt.value.toLowerCase() === trimmed.toLowerCase() ||
-                  opt.label.toLowerCase() === trimmed.toLowerCase(),
+                  opt.label.toLowerCase() === trimmed.toLowerCase()
               );
               return found ? found.value : trimmed;
             };
@@ -561,7 +560,7 @@ export function AddRecipeDialog({
             setFieldValue(
               `ingredientGroups[${groupIndex}].ingredients`,
               nextIngredients,
-              true,
+              true
             );
           };
 
@@ -821,7 +820,7 @@ export function AddRecipeDialog({
                           servingQuantity: values.servingQuantity,
                           servingQuantityUnit: values.servingQuantityUnit,
                           quantityPerPiece: values.quantityPerPiece ?? null,
-                        }),
+                        })
                       ) => (
                         <div className="space-y-1">
                           <div>

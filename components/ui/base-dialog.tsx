@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
 export interface BaseDialogProps {
   open: boolean;
@@ -60,12 +60,25 @@ export function BaseDialog({
     }
   };
 
+  const scrollDivRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      if (scrollDivRef) {
+        scrollDivRef.current?.scrollTo(0, 0);
+      }
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(sizeClasses[size], "max-h-[90vh]", className)}
       >
-        <div className={cn("overflow-y-auto", contentClassName)}>
+        <div
+          ref={scrollDivRef}
+          className={cn("overflow-y-auto", contentClassName)}
+        >
           <DialogHeader className="pb-4 border-b border-border">
             <div className="flex items-center gap-3">
               {icon && (
