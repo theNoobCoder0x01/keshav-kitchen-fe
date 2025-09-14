@@ -5,7 +5,7 @@ import type { MealCalculationResult } from "@/types/calculations";
  */
 export function generateRecipeSummaryObject(
   calculation: any,
-  recipeName: string,
+  recipeName: string
 ): {
   recipeName: string;
   preparedQuantity: number;
@@ -38,7 +38,7 @@ export function generateRecipeSummaryObject(
  */
 export function generateMealSummary(
   calculation: MealCalculationResult,
-  mealType: string,
+  mealType: string
 ): string {
   const { display } = calculation;
 
@@ -59,14 +59,16 @@ export const getCalculatedQuantities = ({
   servingQuantity,
   servingQuantityUnit,
   quantityPerPiece,
+  ghanFactor = 1,
 }: {
   preparedQuantity: number | null;
   preparedQuantityUnit: string | null;
   servingQuantity: number | null;
   servingQuantityUnit: string | null;
   quantityPerPiece: number | null;
+  ghanFactor?: number | undefined;
 }) => {
-  const preparedQty = preparedQuantity || 0;
+  const preparedQty = (preparedQuantity || 0) * ghanFactor;
   const servingQty = servingQuantity || 1;
   const qtyPerPiece = quantityPerPiece || 1;
 

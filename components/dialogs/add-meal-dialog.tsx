@@ -128,7 +128,7 @@ export function AddMealDialog({
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = (
     ingredients: any[],
-    ingredientGroups: any[] = [],
+    ingredientGroups: any[] = []
   ): IngredientGroupFormValue[] => {
     const groups: IngredientGroupFormValue[] = [];
 
@@ -244,7 +244,7 @@ export function AddMealDialog({
       .trim()
       .required(t("meals.servingQuantityUnitRequired")),
     quantityPerPiece: Yup.number().positive(
-      t("meals.quantityPerPiecePositive"),
+      t("meals.quantityPerPiecePositive")
     ),
     ingredientGroups: Yup.array()
       .of(
@@ -264,16 +264,16 @@ export function AddMealDialog({
                 costPerUnit: Yup.number()
                   .required(t("meals.costPerUnitRequired"))
                   .min(0, t("meals.costPerUnitMin")),
-              }),
+              })
             )
             .min(0), // Allow empty groups
-        }),
+        })
       )
       .min(1, t("meals.ingredientsRequired"))
       .test("has-ingredients", t("meals.ingredientsRequired"), (groups) => {
         if (!groups) return false;
         return groups.some(
-          (group) => group.ingredients && group.ingredients.length > 0,
+          (group) => group.ingredients && group.ingredients.length > 0
         );
       }),
   });
@@ -281,7 +281,7 @@ export function AddMealDialog({
   // This will be computed dynamically based on editMeal prop
   const getInitialValues = (
     editMeal?: AddMealDialogProps["editMeal"],
-    recipes?: Recipe[],
+    recipes?: Recipe[]
   ): MealFormValuesWithGroups => {
     if (editMeal?.id) {
       // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
@@ -329,7 +329,7 @@ export function AddMealDialog({
           // Use recipe ingredient groups
           ingredientGroups = organizeIngredientsIntoGroups(
             recipeIngredients,
-            recipeGroups,
+            recipeGroups
           );
         } else {
           // Create default "Ungrouped" group
@@ -440,7 +440,7 @@ export function AddMealDialog({
   const handleRecipeSelect = (
     recipeId: string,
     setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
+    values: MealFormValuesWithGroups
   ) => {
     const selectedRecipe = recipes.find((r) => r.id === recipeId);
     if (selectedRecipe) {
@@ -448,17 +448,8 @@ export function AddMealDialog({
       const recipeGroups = selectedRecipe.ingredientGroups || [];
 
       if (selectedRecipe.preparedQuantity) {
-        if (values.preparedQuantity) {
-          let newGhanFactor =
-            values.preparedQuantity / selectedRecipe.preparedQuantity;
-          setFieldValue(
-            "preparedQuantity",
-            newGhanFactor * selectedRecipe.preparedQuantity,
-          );
-          setFieldValue("ghanFactor", newGhanFactor);
-        }
+        setFieldValue("preparedQuantity", selectedRecipe.preparedQuantity);
       } else {
-        setFieldValue("ghanFactor", 1.0);
         if (selectedRecipe.preparedQuantity) {
           setFieldValue("preparedQuantity", selectedRecipe.preparedQuantity);
         }
@@ -467,7 +458,7 @@ export function AddMealDialog({
       if (selectedRecipe.preparedQuantityUnit) {
         setFieldValue(
           "preparedQuantityUnit",
-          selectedRecipe.preparedQuantityUnit,
+          selectedRecipe.preparedQuantityUnit
         );
       }
       if (selectedRecipe.servingQuantity) {
@@ -476,7 +467,7 @@ export function AddMealDialog({
       if (selectedRecipe.servingQuantityUnit) {
         setFieldValue(
           "servingQuantityUnit",
-          selectedRecipe.servingQuantityUnit,
+          selectedRecipe.servingQuantityUnit
         );
       }
       if (selectedRecipe.quantityPerPiece) {
@@ -487,7 +478,7 @@ export function AddMealDialog({
         // Use recipe ingredient groups
         const ingredientGroups = organizeIngredientsIntoGroups(
           recipeIngredients,
-          recipeGroups,
+          recipeGroups
         );
         setFieldValue("ingredientGroups", ingredientGroups);
       } else {
@@ -518,38 +509,10 @@ export function AddMealDialog({
     }
   };
 
-  const handleGhanFactorChange = (
-    ghanFactor: number,
-    setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
-  ) => {
-    if (!ghanFactor) return;
-    const recipePreparedQuantity =
-      (values.preparedQuantity ?? 0) / (values.ghanFactor || 1);
-
-    const calculatedPreparedQuantity = ghanFactor * recipePreparedQuantity;
-    setFieldValue("ghanFactor", ghanFactor);
-    setFieldValue("preparedQuantity", calculatedPreparedQuantity);
-  };
-
-  const handlePreparedQuantityChange = (
-    preparedQuantity: number,
-    setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
-  ) => {
-    const recipePreparedQuantity =
-      (values.preparedQuantity ?? 0) / (values.ghanFactor || 1);
-
-    const calculatedGhanFactor =
-      preparedQuantity / (recipePreparedQuantity || 1);
-    setFieldValue("ghanFactor", calculatedGhanFactor);
-    setFieldValue("preparedQuantity", preparedQuantity);
-  };
-
   const handleFollowRecipeChange = (
     followRecipe: boolean,
     setFieldValue: (field: string, value: any) => void,
-    values: MealFormValuesWithGroups,
+    values: MealFormValuesWithGroups
   ) => {
     setFieldValue("followRecipe", followRecipe);
     if (followRecipe && values.recipeId) {
@@ -561,7 +524,7 @@ export function AddMealDialog({
 
   const handleSubmit = async (
     values: MealFormValuesWithGroups,
-    { resetForm }: { resetForm: () => void },
+    { resetForm }: { resetForm: () => void }
   ) => {
     try {
       setIsFormSubmitting(true);
@@ -628,7 +591,7 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealUpdatedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       } else {
         // Flatten all ingredients with their group assignments
@@ -676,7 +639,7 @@ export function AddMealDialog({
         toast.success(
           t("meals.mealAddedSuccessfully", {
             mealType: mealType.toLowerCase(),
-          }),
+          })
         );
       }
       resetForm();
@@ -699,7 +662,7 @@ export function AddMealDialog({
         (selectedRecipeCategory === "all" ||
           selectedRecipeCategory === recipe.category) &&
         (selectedRecipeSubcategory === "all" ||
-          selectedRecipeSubcategory === recipe.subcategory),
+          selectedRecipeSubcategory === recipe.subcategory)
     );
   }, [recipes, selectedRecipeCategory, selectedRecipeSubcategory]);
 
@@ -707,7 +670,7 @@ export function AddMealDialog({
     const categories = [
       "all",
       ...Array.from(
-        new Set(recipes.map((recipe) => recipe.category).filter(Boolean)),
+        new Set(recipes.map((recipe) => recipe.category).filter(Boolean))
       ),
     ];
     return categories;
@@ -723,11 +686,11 @@ export function AddMealDialog({
               selectedRecipeCategory
                 ? selectedRecipeCategory === "all" ||
                   recipe.category === selectedRecipeCategory
-                : true,
+                : true
             )
             .map((recipe) => recipe.subcategory)
-            .filter(Boolean),
-        ),
+            .filter(Boolean)
+        )
       ) ?? []),
     ];
     return subcategories;
@@ -909,7 +872,7 @@ export function AddMealDialog({
                               handleFollowRecipeChange(
                                 checked,
                                 setFieldValue,
-                                values,
+                                values
                               );
                               return field.onChange({
                                 target: { name: field.name, value: checked },
@@ -943,16 +906,6 @@ export function AddMealDialog({
                               as={Input}
                               name={`ghanFactor`}
                               type="number"
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>,
-                              ) => {
-                                const ghanValue = parseFloat(e.target.value);
-                                handleGhanFactorChange(
-                                  isNaN(ghanValue) ? 0 : ghanValue,
-                                  setFieldValue,
-                                  values,
-                                );
-                              }}
                               min={0}
                               step={0.0001}
                               className="border-border focus:border-primary focus:ring-primary/20"
@@ -978,16 +931,6 @@ export function AddMealDialog({
                             id="preparedQuantity"
                             name="preparedQuantity"
                             type="number"
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>,
-                            ) => {
-                              const preparedQty = parseFloat(e.target.value);
-                              handlePreparedQuantityChange(
-                                isNaN(preparedQty) ? 0 : preparedQty,
-                                setFieldValue,
-                                values,
-                              );
-                            }}
                             min={0}
                             step={0.0001}
                             placeholder={t("recipes.preparedQuantity")}
@@ -1139,9 +1082,19 @@ export function AddMealDialog({
                               servingQuantity: values.servingQuantity,
                               servingQuantityUnit: values.servingQuantityUnit,
                               quantityPerPiece: values.quantityPerPiece ?? null,
-                            }),
+                              ghanFactor: values.followRecipe
+                                ? values.ghanFactor
+                                : 1,
+                            })
                           ) => (
                             <div className="space-y-1">
+                              <div>
+                                <span className="font-medium">
+                                  Total {t("recipes.preparedQuantity")}:
+                                </span>{" "}
+                                {calculatedQuantities.preparedQuantity}{" "}
+                                {calculatedQuantities.preparedUnit}
+                              </div>
                               <div>
                                 <span className="font-medium">
                                   {t("recipes.numberOfServings")}:
