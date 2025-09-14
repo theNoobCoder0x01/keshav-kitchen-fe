@@ -924,7 +924,8 @@ export function AddMealDialog({
                             htmlFor="preparedQuantity"
                             className="text-sm font-medium text-foreground mb-2 block"
                           >
-                            {t("recipes.preparedQuantity")}
+                            {t("recipes.preparedQuantity")}{" "}
+                            {values.followRecipe ? "(per ghan)" : ""}
                           </Label>
                           <Field
                             as={Input}
