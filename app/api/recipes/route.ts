@@ -203,7 +203,10 @@ export async function POST(request: NextRequest) {
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit ?? undefined,
-          sequenceNumber: ingredient.sequenceNumber,
+          sequenceNumber:
+            ingredient.sequenceNumber != null
+              ? Number(ingredient.sequenceNumber)
+              : null,
           groupId: finalGroupId,
         };
       });

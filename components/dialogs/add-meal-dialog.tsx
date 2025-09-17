@@ -68,7 +68,7 @@ interface IngredientGroupFormValue {
   id?: string;
   name: string;
   sortOrder: number;
-  ingredients: IngredientFormValue[];
+  ingredients: (IngredientFormValue & { sequenceNumber?: number })[];
 }
 
 interface AddMealDialogProps {
@@ -145,6 +145,7 @@ export function AddMealDialog({
           quantity: ing.quantity,
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
+          sequenceNumber: ing.sequenceNumber ?? 1,
           localId:
             ing.localId ||
             (typeof crypto !== "undefined"
@@ -185,6 +186,7 @@ export function AddMealDialog({
         quantity: ing.quantity,
         unit: ing.unit,
         costPerUnit: ing.costPerUnit,
+        sequenceNumber: ing.sequenceNumber ?? 1,
         localId:
           ing.localId ||
           (typeof crypto !== "undefined"
@@ -211,6 +213,7 @@ export function AddMealDialog({
           quantity: ing.quantity,
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
+          sequenceNumber: ing.sequenceNumber ?? 1,
           localId:
             ing.localId ||
             (typeof crypto !== "undefined"
@@ -296,6 +299,7 @@ export function AddMealDialog({
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit,
+          sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
           localId:
             ingredient.localId ||
             (typeof crypto !== "undefined"
@@ -489,6 +493,7 @@ export function AddMealDialog({
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit || 0,
+          sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
           localId:
             ingredient.localId ||
             (typeof crypto !== "undefined"
@@ -568,6 +573,10 @@ export function AddMealDialog({
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
                 costPerUnit: ingredient.costPerUnit,
+                sequenceNumber:
+                  ingredient.sequenceNumber != null
+                    ? Number(ingredient.sequenceNumber)
+                    : undefined,
                 groupId: group.name === "Ungrouped" ? null : groupId,
               });
             }
@@ -607,6 +616,10 @@ export function AddMealDialog({
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
                 costPerUnit: ingredient.costPerUnit,
+                sequenceNumber:
+                  ingredient.sequenceNumber != null
+                    ? Number(ingredient.sequenceNumber)
+                    : undefined,
                 groupId: group.name === "Ungrouped" ? null : groupId,
               });
             }

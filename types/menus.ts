@@ -42,6 +42,7 @@ export interface MenuIngredient {
   quantity: number;
   unit: string;
   costPerUnit: number;
+  sequenceNumber?: number | null;
   groupId?: string | null;
   group?: MenuIngredientGroup | null;
 }
