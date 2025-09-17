@@ -86,7 +86,13 @@ export async function PUT(
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
           },
+          orderBy: [
+            {
+              sequenceNumber: "asc",
+            },
+          ],
         },
       },
     });

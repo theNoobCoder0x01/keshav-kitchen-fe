@@ -26,7 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
-import { ErrorMessage, Field, FieldArray } from "formik";
+import { useRef } from "react";
+import { ErrorMessage, Field, FieldArray, useFormikContext } from "formik";
 import {
   ChevronDown,
   DollarSign,
@@ -37,29 +38,10 @@ import {
   X,
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
-import { useCallback, useState } from "react";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import {
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useCallback, useEffect, useState } from "react";
 
-// Sortable Ingredient Component
-interface SortableIngredientProps {
+// Ingredient Component
+interface IngredientProps {
   ingredient: any;
   ingredientIndex: number;
   groupIndex: number;
@@ -68,9 +50,12 @@ interface SortableIngredientProps {
   removeIngredient: (index: number) => void;
   name: string;
   groupIngredientsLength: number;
+  onSequenceChange: (localId: string, sequence: number) => void;
+  scrollToIngredient: (localId: string) => void;
+  values: any;
 }
 
-function SortableIngredient({
+function Ingredient({
   ingredient,
   ingredientIndex,
   groupIndex,
@@ -79,34 +64,26 @@ function SortableIngredient({
   removeIngredient,
   name,
   groupIngredientsLength,
-}: SortableIngredientProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: ingredient.localId });
+  onSequenceChange,
+  scrollToIngredient,
+  values,
+}: IngredientProps) {
+  const ingredientRef = useRef<HTMLDivElement>(null);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  useEffect(() => {
+    if (ingredientRef.current) {
+      scrollToIngredient(ingredient.localId);
+    }
+  }, [ingredient.sequenceNumber, scrollToIngredient, ingredient.localId]);
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      className={`p-3 border border-border/50 rounded-lg bg-background/50 ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      ref={ingredientRef}
+      id={`ingredient-${ingredient.localId}`}
+      className="p-3 border border-border/50 rounded-lg bg-background/50"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div {...attributes} {...listeners} className="cursor-grab">
-            <GripVertical className="w-4 h-4 text-muted-foreground" />
-          </div>
           <Checkbox
             checked={Boolean(selectedIds.has(ingredient.localId))}
             onCheckedChange={(checked) =>
@@ -129,8 +106,34 @@ function SortableIngredient({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-        <div className="sm:col-span-5">
+      <div className="grid grid-cols-1 sm:grid-cols-13 gap-3">
+        <div className="sm:col-span-1">
+          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+            Seq
+          </Label>
+          <Field
+            as={Input}
+            name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].sequenceNumber`}
+            placeholder="1"
+            type="number"
+            min={1}
+            className="text-sm"
+            onBlur={() => {
+              // Trigger sorting when user finishes editing sequence number
+              const currentValue = (values as any)[name]?.[groupIndex]?.ingredients?.[ingredientIndex]?.sequenceNumber;
+              if (currentValue) {
+                onSequenceChange(ingredient.localId, currentValue);
+              }
+            }}
+          />
+          <ErrorMessage
+            name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].sequenceNumber`}
+            component="p"
+            className="text-destructive text-xs mt-1"
+          />
+        </div>
+
+        <div className="sm:col-span-4">
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Name *
           </Label>
@@ -171,7 +174,9 @@ function SortableIngredient({
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Unit *
           </Label>
-          <Field name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].unit`}>
+          <Field
+            name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].unit`}
+          >
             {({ field }: { field: any }) => (
               <Select
                 value={field.value}
@@ -196,7 +201,7 @@ function SortableIngredient({
           </Field>
         </div>
 
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-3">
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Cost/Unit
           </Label>
@@ -230,6 +235,7 @@ export interface GenericIngredient {
   unit: string;
   costPerUnit?: string | number;
   localId?: string;
+  sequenceNumber?: number;
 }
 
 export interface IngredientGroup<
@@ -272,6 +278,9 @@ export function IngredientsInput<
   quantityType = "string",
   onPasteIngredients,
 }: IngredientsInputProps<T>) {
+  const { setFieldValue, values } = useFormikContext();
+  const currentIngredientGroups = (values as any)[name] || ingredientGroups;
+
   const toggleRowSelected = (localId: string, checked: boolean) => {
     const newSelection = new Set(selectedIds);
     if (checked) {
@@ -284,7 +293,7 @@ export function IngredientsInput<
 
   const setGroupSelection = (groupIndex: number, checked: boolean) => {
     const ids = ingredientGroups[groupIndex].ingredients.map(
-      (ing: any) => ing.localId,
+      (ing: any) => ing.localId
     );
     const newSelection = new Set(selectedIds);
     if (checked) {
@@ -299,7 +308,7 @@ export function IngredientsInput<
 
   const moveSelectedIngredients = (
     destinationGroupIndex: number,
-    position: "end" | "start" = "end",
+    position: "end" | "start" = "end"
   ) => {
     if (selectedIds.size === 0) return;
 
@@ -327,7 +336,7 @@ export function IngredientsInput<
         ? [...moved, ...dest.ingredients]
         : [...dest.ingredients, ...moved];
 
-    onFieldChange(name, nextGroups, false);
+    setFieldValue(name, nextGroups);
     clearSelection();
   };
 
@@ -338,6 +347,7 @@ export function IngredientsInput<
       unit: DEFAULT_UNIT,
       costPerUnit: quantityType === "string" ? "" : 0,
       localId: generateStableId(),
+      sequenceNumber: 1,
     };
     return baseIngredient as T;
   };
@@ -363,326 +373,248 @@ export function IngredientsInput<
         onPasteIngredients(e);
       }
     },
-    [onPasteIngredients],
+    [onPasteIngredients]
   );
 
-  // Drag and drop state
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-  );
-
-  const updateSequenceNumbers = (groups: IngredientGroup<T>[]) => {
-    let sequence = 1;
-    groups.forEach((group) => {
-      group.ingredients.forEach((ingredient: any) => {
-        if (ingredient.sequenceNumber !== undefined) {
-          ingredient.sequenceNumber = sequence++;
-        }
-      });
-    });
+  // Sort ingredients by sequence number
+  const sortIngredientsBySequence = (groups: IngredientGroup<T>[]) => {
+    return groups.map((group) => ({
+      ...group,
+      ingredients: [...group.ingredients].sort((a, b) => {
+        const seqA = (a as any).sequenceNumber || 1;
+        const seqB = (b as any).sequenceNumber || 1;
+        return seqA - seqB;
+      }),
+    }));
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveId(null);
-
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Find the source group and ingredient
-    let sourceGroupIndex = -1;
-    let sourceIngredientIndex = -1;
-    let destinationGroupIndex = -1;
-    let destinationIngredientIndex = -1;
-
-    ingredientGroups.forEach((group, gIdx) => {
-      group.ingredients.forEach((ing: any, iIdx) => {
-        if (ing.localId === activeId) {
-          sourceGroupIndex = gIdx;
-          sourceIngredientIndex = iIdx;
+  // Handle sequence number change
+  const handleSequenceChange = (localId: string, sequence: number) => {
+    const nextGroups = currentIngredientGroups.map((group: IngredientGroup<T>) => ({
+      ...group,
+      ingredients: group.ingredients.map((ing: any) => {
+        if (ing.localId === localId) {
+          return { ...ing, sequenceNumber: sequence };
         }
-        if (ing.localId === overId) {
-          destinationGroupIndex = gIdx;
-          destinationIngredientIndex = iIdx;
-        }
-      });
-    });
-
-    // If dropping on a group (not an ingredient), move to that group
-    if (destinationGroupIndex === -1) {
-      // Check if overId is a group
-      ingredientGroups.forEach((group, gIdx) => {
-        if (`group-${gIdx}` === overId) {
-          destinationGroupIndex = gIdx;
-        }
-      });
-    }
-
-    if (sourceGroupIndex === -1) return;
-
-    const nextGroups = ingredientGroups.map((g) => ({
-      ...g,
-      ingredients: [...g.ingredients],
+        return ing;
+      }),
     }));
 
-    if (sourceGroupIndex === destinationGroupIndex) {
-      // Reordering within the same group
-      const group = nextGroups[sourceGroupIndex];
-      if (destinationIngredientIndex !== -1) {
-        group.ingredients = arrayMove(
-          group.ingredients,
-          sourceIngredientIndex,
-          destinationIngredientIndex,
-        );
-      }
-    } else if (destinationGroupIndex !== -1) {
-      // Moving to different group
-      const sourceGroup = nextGroups[sourceGroupIndex];
-      const destGroup = nextGroups[destinationGroupIndex];
-      const [moved] = sourceGroup.ingredients.splice(sourceIngredientIndex, 1);
-
-      if (destinationIngredientIndex !== -1) {
-        destGroup.ingredients.splice(destinationIngredientIndex, 0, moved);
-      } else {
-        destGroup.ingredients.push(moved);
-      }
-
-      // Remove empty groups or add empty ingredient if needed
-      if (sourceGroup.ingredients.length === 0) {
-        sourceGroup.ingredients = [createEmptyIngredient()];
-      }
-    }
-
-    updateSequenceNumbers(nextGroups);
-    onFieldChange(name, nextGroups, false);
+    // Sort and update
+    const sortedGroups = sortIngredientsBySequence(nextGroups);
+    setFieldValue(name, sortedGroups);
   };
 
+  // Scroll to ingredient
+  const scrollToIngredient = (localId: string) => {
+    const element = document.getElementById(`ingredient-${localId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  // Get sorted ingredient groups
+  const sortedIngredientGroups = sortIngredientsBySequence(currentIngredientGroups);
+
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <FieldArray name={name}>
-        {({ remove: removeGroup, push: pushGroup }) => (
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Package className="w-5 h-5 text-primary" />
-                    {title}
-                  </CardTitle>
-                  <CardDescription>{description}</CardDescription>
-                </div>
-                <div className="flex items-center justify-end gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {ingredientGroups.reduce(
-                      (total, group) => total + group.ingredients.length,
-                      0,
-                    )}{" "}
-                    ingredients
-                  </Badge>
-                  {selectedIds.size > 0 && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        {selectedIds.size} selected
-                      </span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="text-xs px-3 py-1 h-7"
+    <FieldArray name={name}>
+      {({ remove: removeGroup, push: pushGroup }) => (
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+              <div>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Package className="w-5 h-5 text-primary" />
+                  {title}
+                </CardTitle>
+                <CardDescription>{description}</CardDescription>
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {sortedIngredientGroups.reduce(
+                    (total, group) => total + group.ingredients.length,
+                    0
+                  )}{" "}
+                  ingredients
+                </Badge>
+                {selectedIds.size > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {selectedIds.size} selected
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="text-xs px-3 py-1 h-7"
+                        >
+                          Move To <ChevronDown className="w-3 h-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        {sortedIngredientGroups.map((g, idx) => (
+                          <DropdownMenuItem
+                            key={idx}
+                            onClick={() => {
+                              moveSelectedIngredients(idx);
+                            }}
+                            className="cursor-pointer"
                           >
-                            Move To <ChevronDown className="w-3 h-3 ml-1" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          {ingredientGroups.map((g, idx) => (
-                            <DropdownMenuItem
-                              key={idx}
-                              onClick={() => {
-                                moveSelectedIngredients(idx);
-                              }}
-                              className="cursor-pointer"
-                            >
-                              {g.name || `Group ${idx + 1}`}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            {g.name || `Group ${idx + 1}`}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSelection}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    pushGroup({
+                      name: "",
+                      sortOrder: sortedIngredientGroups.length,
+                      ingredients: [createEmptyIngredient()],
+                    });
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Group
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {sortedIngredientGroups.map((group, groupIndex) => (
+              <div
+                key={groupIndex}
+                id={`group-${groupIndex}`}
+                className="border border-border rounded-lg p-4 bg-card/30"
+              >
+                {/* Group Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <Checkbox
+                      checked={
+                        group.ingredients.length > 0 &&
+                        group.ingredients.every((ing: any) =>
+                          selectedIds.has(ing.localId)
+                        )
+                      }
+                      onCheckedChange={(checked) =>
+                        setGroupSelection(groupIndex, Boolean(checked))
+                      }
+                      className="mr-1"
+                    />
+                    <div className="flex-1">
+                      <Field
+                        as={Input}
+                        name={`${name}[${groupIndex}].name`}
+                        placeholder="Group name (e.g., Dough, Filling, Sauce)"
+                        className="font-medium"
+                      />
+                      <ErrorMessage
+                        name={`${name}[${groupIndex}].name`}
+                        component="p"
+                        className="text-destructive text-xs mt-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {group.ingredients.length} items
+                    </Badge>
+                    {sortedIngredientGroups.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={clearSelection}
+                        onClick={() => removeGroup(groupIndex)}
+                        className="text-destructive hover:bg-destructive/10"
                       >
-                        Clear
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Group Ingredients */}
+                <FieldArray name={`${name}[${groupIndex}].ingredients`}>
+                  {({
+                    remove: removeIngredient,
+                    push: pushIngredient,
+                  }) => (
+                    <div
+                      className="space-y-3"
+                      onPaste={handlePasteIngredients}
+                    >
+                      {group.ingredients.map(
+                        (ingredient: any, ingredientIndex) => (
+                          <Ingredient
+                            key={ingredient.localId}
+                            ingredient={ingredient}
+                            ingredientIndex={ingredientIndex}
+                            groupIndex={groupIndex}
+                            selectedIds={selectedIds}
+                            toggleRowSelected={toggleRowSelected}
+                            removeIngredient={removeIngredient}
+                            name={name}
+                            groupIngredientsLength={
+                              group.ingredients.length
+                            }
+                            onSequenceChange={handleSequenceChange}
+                            scrollToIngredient={scrollToIngredient}
+                            values={values}
+                          />
+                        )
+                      )}
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          pushIngredient(createEmptyIngredient());
+                        }}
+                        className="w-full border-dashed"
+                      >
+                        <Plus className="w-3 h-3 mr-2" />
+                        Add Ingredient to {group.name || "Group"}
                       </Button>
                     </div>
                   )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      pushGroup({
-                        name: "",
-                        sortOrder: ingredientGroups.length,
-                        ingredients: [createEmptyIngredient()],
-                      });
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Add Group
-                  </Button>
+                </FieldArray>
+              </div>
+            ))}
+
+            {/* Cost Summary */}
+            {showCostSummary && (
+              <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">
+                    Estimated Total Cost:
+                  </span>
+                  <span className="text-lg font-bold text-primary">
+                    ${calculateTotalCost(sortedIngredientGroups).toFixed(2)}
+                  </span>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {ingredientGroups.map((group, groupIndex) => (
-                <div
-                  key={groupIndex}
-                  id={`group-${groupIndex}`}
-                  className="border border-border rounded-lg p-4 bg-card/30"
-                >
-                  {/* Group Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <Checkbox
-                        checked={
-                          group.ingredients.length > 0 &&
-                          group.ingredients.every((ing: any) =>
-                            selectedIds.has(ing.localId),
-                          )
-                        }
-                        onCheckedChange={(checked) =>
-                          setGroupSelection(groupIndex, Boolean(checked))
-                        }
-                        className="mr-1"
-                      />
-                      <GripVertical className="w-4 h-4 text-muted-foreground" />
-                      <div className="flex-1">
-                        <Field
-                          as={Input}
-                          name={`${name}[${groupIndex}].name`}
-                          placeholder="Group name (e.g., Dough, Filling, Sauce)"
-                          className="font-medium"
-                        />
-                        <ErrorMessage
-                          name={`${name}[${groupIndex}].name`}
-                          component="p"
-                          className="text-destructive text-xs mt-1"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {group.ingredients.length} items
-                      </Badge>
-                      {ingredientGroups.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeGroup(groupIndex)}
-                          className="text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Group Ingredients */}
-                  <FieldArray name={`${name}[${groupIndex}].ingredients`}>
-                    {({ remove: removeIngredient, push: pushIngredient }) => (
-                      <div className="space-y-3" onPaste={handlePasteIngredients}>
-                        <SortableContext
-                          items={group.ingredients.map((ing: any) => ing.localId)}
-                          strategy={verticalListSortingStrategy}
-                        >
-                          {group.ingredients.map(
-                            (ingredient: any, ingredientIndex) => (
-                              <SortableIngredient
-                                key={ingredient.localId}
-                                ingredient={ingredient}
-                                ingredientIndex={ingredientIndex}
-                                groupIndex={groupIndex}
-                                selectedIds={selectedIds}
-                                toggleRowSelected={toggleRowSelected}
-                                removeIngredient={removeIngredient}
-                                name={name}
-                                groupIngredientsLength={group.ingredients.length}
-                              />
-                            ),
-                          )}
-                        </SortableContext>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            pushIngredient(createEmptyIngredient());
-                          }}
-                          className="w-full border-dashed"
-                        >
-                          <Plus className="w-3 h-3 mr-2" />
-                          Add Ingredient to {group.name || "Group"}
-                        </Button>
-                      </div>
-                    )}
-                  </FieldArray>
-                </div>
-              ))}
-
-              {/* Cost Summary */}
-              {showCostSummary && (
-                <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">
-                      Estimated Total Cost:
-                    </span>
-                    <span className="text-lg font-bold text-primary">
-                      ${calculateTotalCost(ingredientGroups).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </FieldArray>
-      <DragOverlay>
-        {activeId ? (
-          <div className="p-3 border border-border/50 rounded-lg bg-background/80 shadow-lg">
-            <div className="text-sm font-medium">
-              {(() => {
-                for (const group of ingredientGroups) {
-                  const ing = group.ingredients.find((i: any) => i.localId === activeId);
-                  if (ing) return ing.name || "Unnamed ingredient";
-                }
-                return "Ingredient";
-              })()}
-            </div>
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </FieldArray>
   );
 }

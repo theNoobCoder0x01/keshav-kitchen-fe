@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -29,6 +29,7 @@ export async function GET(
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
             groupId: true,
             group: {
               select: {
@@ -40,7 +41,7 @@ export async function GET(
           },
           orderBy: [
             {
-              id: "asc",
+              sequenceNumber: "asc",
             },
           ],
         },
@@ -56,11 +57,12 @@ export async function GET(
                 quantity: true,
                 unit: true,
                 costPerUnit: true,
+                sequenceNumber: true,
                 createdAt: true,
               },
               orderBy: [
                 {
-                  id: "asc",
+                  sequenceNumber: "asc",
                 },
               ],
             },
@@ -90,14 +92,14 @@ export async function GET(
     console.error("Get recipe by ID API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -131,14 +133,14 @@ export async function DELETE(
     console.error("Delete recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to delete recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -186,12 +188,13 @@ export async function PATCH(
               unit: ing.unit,
               costPerUnit:
                 ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
+              sequenceNumber: ing.sequenceNumber,
             })),
           });
           // Calculate preparedQuantity as sum of ingredient quantities
           totalQuantity = ingredients.reduce(
             (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-            0,
+            0
           );
           preparedQuantityUnitToSet =
             ingredients.length > 0 ? ingredients[0].unit : preparedQuantityUnit;
@@ -204,7 +207,7 @@ export async function PATCH(
         });
         totalQuantity = existingIngredients.reduce(
           (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-          0,
+          0
         );
         preparedQuantityUnitToSet =
           existingIngredients.length > 0
@@ -230,9 +233,17 @@ export async function PATCH(
         },
         include: {
           ingredients: {
+            select: {
+              id: true,
+              name: true,
+              quantity: true,
+              unit: true,
+              costPerUnit: true,
+              sequenceNumber: true,
+            },
             orderBy: [
               {
-                id: "asc",
+                sequenceNumber: "asc",
               },
             ],
           },
@@ -246,7 +257,7 @@ export async function PATCH(
     console.error("Patch recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to update recipe" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

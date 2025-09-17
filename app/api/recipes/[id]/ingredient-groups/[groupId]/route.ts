@@ -89,10 +89,11 @@ export async function PUT(
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
           },
           orderBy: [
             {
-              id: "asc",
+              sequenceNumber: "asc",
             },
           ],
         },
@@ -151,9 +152,17 @@ export async function DELETE(
       },
       include: {
         ingredients: {
+          select: {
+            id: true,
+            name: true,
+            quantity: true,
+            unit: true,
+            costPerUnit: true,
+            sequenceNumber: true,
+          },
           orderBy: [
             {
-              id: "asc",
+              sequenceNumber: "asc",
             },
           ],
         },
@@ -189,8 +198,13 @@ export async function DELETE(
       });
     }
 
+    // Count ingredients in the group before moving them
+    const ingredientCount = await prisma.ingredient.count({
+      where: { groupId },
+    });
+
     // Move all ingredients from the deleted group to "Ungrouped"
-    if (existingGroup.ingredients.length > 0) {
+    if (ingredientCount > 0) {
       await prisma.ingredient.updateMany({
         where: {
           groupId,
@@ -208,7 +222,7 @@ export async function DELETE(
 
     return NextResponse.json({
       message: "Ingredient group deleted successfully",
-      movedToUngrouped: existingGroup.ingredients.length > 0,
+      movedToUngrouped: ingredientCount > 0,
     });
   } catch (error) {
     console.error("Delete ingredient group API error:", error);

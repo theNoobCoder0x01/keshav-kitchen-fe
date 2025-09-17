@@ -49,6 +49,7 @@ export async function GET(request: Request) {
               quantity: true,
               unit: true,
               costPerUnit: true,
+              sequenceNumber: true,
               groupId: true,
               group: {
                 select: {
@@ -58,6 +59,11 @@ export async function GET(request: Request) {
                 },
               },
             },
+            orderBy: [
+              {
+                sequenceNumber: "asc",
+              },
+            ],
           },
           ingredientGroups: {
             select: {
@@ -132,6 +138,7 @@ export async function GET(request: Request) {
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
             groupId: true,
             group: {
               select: {
@@ -141,6 +148,11 @@ export async function GET(request: Request) {
               },
             },
           },
+          orderBy: [
+            {
+              sequenceNumber: "asc",
+            },
+          ],
         },
         ingredientGroups: {
           select: {
@@ -170,7 +182,7 @@ export async function GET(request: Request) {
     console.error("Failed to fetch menus:", error);
     return NextResponse.json(
       { error: "Failed to fetch menus." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -193,7 +205,7 @@ export async function POST(request: Request) {
           error:
             "Missing required fields: recipeId, mealType, kitchenId, userId",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -234,7 +246,13 @@ export async function POST(request: Request) {
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
           },
+          orderBy: [
+            {
+              sequenceNumber: "asc",
+            },
+          ],
         },
         kitchen: {
           select: {
@@ -255,7 +273,7 @@ export async function POST(request: Request) {
     console.error("Create menu API error:", error);
     return NextResponse.json(
       { error: "Failed to create menu." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -311,6 +329,7 @@ export async function PUT(request: Request) {
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
             groupId: true,
             group: {
               select: {
@@ -320,6 +339,11 @@ export async function PUT(request: Request) {
               },
             },
           },
+          orderBy: [
+            {
+              sequenceNumber: "asc",
+            },
+          ],
         },
         ingredientGroups: {
           select: {
@@ -349,7 +373,7 @@ export async function PUT(request: Request) {
     console.error("Update menu API error:", error);
     return NextResponse.json(
       { error: "Failed to update menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }
@@ -372,7 +396,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete menu." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 }

@@ -41,7 +41,13 @@ export async function GET(
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
           },
+          orderBy: [
+            {
+              sequenceNumber: "asc",
+            },
+          ],
         },
       },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -127,7 +133,13 @@ export async function POST(
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
           },
+          orderBy: [
+            {
+              sequenceNumber: "asc",
+            },
+          ],
         },
       },
     });

@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
             quantity: true,
             unit: true,
             costPerUnit: true,
+            sequenceNumber: true,
             createdAt: true,
             groupId: true,
             group: {
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
           },
           orderBy: [
             {
-              id: "asc",
+              sequenceNumber: "asc",
             },
           ],
         },
@@ -83,10 +84,11 @@ export async function GET(request: NextRequest) {
                 quantity: true,
                 unit: true,
                 costPerUnit: true,
+                sequenceNumber: true,
               },
               orderBy: [
                 {
-                  id: "asc",
+                  sequenceNumber: "asc",
                 },
               ],
             },
@@ -117,6 +119,7 @@ export async function GET(request: NextRequest) {
         },
       ],
     });
+    console.log(JSON.parse(JSON.stringify(recipes[0])));
 
     return NextResponse.json({
       recipes,
@@ -131,7 +134,7 @@ export async function GET(request: NextRequest) {
     console.error("Get recipes API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipes" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -200,6 +203,7 @@ export async function POST(request: NextRequest) {
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit ?? undefined,
+          sequenceNumber: ingredient.sequenceNumber,
           groupId: finalGroupId,
         };
       });
@@ -211,7 +215,7 @@ export async function POST(request: NextRequest) {
       // Calculate preparedQuantity as sum of ingredient quantities
       const totalQuantity = ingredientData.reduce(
         (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-        0,
+        0
       );
 
       // Update the recipe with calculated preparedQuantity
@@ -236,7 +240,7 @@ export async function POST(request: NextRequest) {
             },
             orderBy: [
               {
-                id: "asc",
+                sequenceNumber: "asc",
               },
             ],
           },
@@ -245,7 +249,7 @@ export async function POST(request: NextRequest) {
               ingredients: {
                 orderBy: [
                   {
-                    id: "asc",
+                    sequenceNumber: "asc",
                   },
                 ],
               },

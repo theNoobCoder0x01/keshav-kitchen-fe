@@ -25,5 +25,6 @@ export interface RecipeDialogIngredientValue {
   quantity: string;
   unit: string;
   costPerUnit?: string;
+  sequenceNumber: number;
   localId?: string;
 }

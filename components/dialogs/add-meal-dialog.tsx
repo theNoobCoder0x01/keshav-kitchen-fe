@@ -30,7 +30,7 @@ import { getCalculatedQuantities } from "@/lib/utils/meal-calculations";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
 import type { MealType } from "@/types/menus";
 import type { RecipeApiItem } from "@/types/recipes";
-import { uuidv4 } from "zod";
+import { v4 as uuidv4 } from "uuid";
 import {
   Card,
   CardContent,
