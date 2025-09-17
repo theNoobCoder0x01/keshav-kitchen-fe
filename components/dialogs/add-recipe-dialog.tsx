@@ -152,7 +152,8 @@ export function AddRecipeDialog({
               quantity: String(ing.quantity || ""),
               unit: ing.unit || DEFAULT_UNIT,
               costPerUnit: String(ing.costPerUnit || ""),
-              sequenceNumber: parseInt(ing.sequenceNumber) || 0,
+              sequenceNumber:
+                ing.sequenceNumber != null ? Number(ing.sequenceNumber) : 1,
               localId: ing.localId || generateStableId(),
             })),
           });
@@ -167,7 +168,7 @@ export function AddRecipeDialog({
                 quantity: "",
                 unit: DEFAULT_UNIT,
                 costPerUnit: "",
-                sequenceNumber: 0,
+                sequenceNumber: 1,
                 localId: generateStableId(),
               },
             ],
@@ -185,7 +186,8 @@ export function AddRecipeDialog({
             quantity: String(ing.quantity || ""),
             unit: ing.unit || DEFAULT_UNIT,
             costPerUnit: String(ing.costPerUnit || ""),
-            sequenceNumber: parseInt(ing.sequenceNumber) || 0,
+            sequenceNumber:
+              ing.sequenceNumber != null ? Number(ing.sequenceNumber) : 1,
             localId: ing.localId || generateStableId(),
           }));
 
@@ -203,7 +205,7 @@ export function AddRecipeDialog({
                     quantity: "",
                     unit: DEFAULT_UNIT,
                     costPerUnit: "",
-                    sequenceNumber: 0,
+                    sequenceNumber: 1,
                     localId: generateStableId(),
                   },
                 ],
@@ -218,7 +220,8 @@ export function AddRecipeDialog({
           quantity: String(ing.quantity || ""),
           unit: ing.unit || DEFAULT_UNIT,
           costPerUnit: String(ing.costPerUnit || ""),
-          sequenceNumber: parseInt(ing.sequenceNumber) || 0,
+          sequenceNumber:
+            ing.sequenceNumber != null ? Number(ing.sequenceNumber) : 1,
           localId: ing.localId || generateStableId(),
         }));
 
@@ -330,7 +333,8 @@ export function AddRecipeDialog({
                     quantity: "",
                     unit: DEFAULT_UNIT,
                     costPerUnit: "",
-                    sequenceNumber: 0,
+                    sequenceNumber: 1,
+                    sequenceNumber: 1,
                     localId: generateStableId(),
                   },
                 ],
@@ -382,7 +386,7 @@ export function AddRecipeDialog({
     const allIngredients: any[] = [];
     trimmedValues.ingredientGroups.forEach((group: any, groupIndex: number) => {
       const groupId = group.id || `temp_${groupIndex}`;
-      group.ingredients.forEach((ingredient: any) => {
+      group.ingredients.forEach((ingredient: any, ingredientIndex: number) => {
         if (ingredient.name.trim()) {
           // Only include ingredients with names
           allIngredients.push({
@@ -390,7 +394,10 @@ export function AddRecipeDialog({
             quantity: ingredient.quantity,
             unit: ingredient.unit,
             costPerUnit: ingredient.costPerUnit || "0",
-            sequenceNumber: ingredient.sequenceNumber || 0,
+            sequenceNumber:
+              ingredient.sequenceNumber != null
+                ? Number(ingredient.sequenceNumber)
+                : ingredientIndex + 1,
             groupId: group.name === "Ungrouped" ? null : groupId,
           });
         }
@@ -522,7 +529,7 @@ export function AddRecipeDialog({
                   quantity: "",
                   unit: DEFAULT_UNIT,
                   costPerUnit: "",
-                  sequenceNumber: 0,
+                  sequenceNumber: rowIndex + 1,
                   localId: generateStableId(),
                 });
               }
@@ -532,7 +539,7 @@ export function AddRecipeDialog({
                   quantity: "",
                   unit: DEFAULT_UNIT,
                   costPerUnit: "",
-                  sequenceNumber: 0,
+                  sequenceNumber: rowIndex + 1,
                   localId: generateStableId(),
                 };
               }
