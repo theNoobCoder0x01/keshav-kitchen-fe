@@ -73,6 +73,7 @@ export async function createRecipe(data: {
     name: string;
     sortOrder: number;
   }>;
+  deletedIngredientGroupIds?: string[];
 }) {
   try {
     const response = await api.post("/recipes/", data);
@@ -102,6 +103,7 @@ export async function updateRecipe(
       name: string;
       sortOrder: number;
     }>;
+    deletedIngredientGroupIds?: string[];
   },
 ) {
   try {

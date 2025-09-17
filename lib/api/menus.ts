@@ -38,6 +38,7 @@ export async function createMenu(data: {
     name: string;
     sortOrder: number;
   }>;
+  deletedIngredientGroupIds?: string[];
 }) {
   const response = await api.post("/menus/", data);
   return response.data;
@@ -65,6 +66,7 @@ export async function updateMenu(
       name: string;
       sortOrder: number;
     }>;
+    deletedIngredientGroupIds?: string[];
     // Allow any additional fields without breaking callers
     [key: string]: any;
   },

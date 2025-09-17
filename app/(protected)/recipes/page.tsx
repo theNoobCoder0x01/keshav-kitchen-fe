@@ -241,6 +241,7 @@ export default function RecipesPage() {
           : undefined,
         ingredients: parsedIngredients,
         ingredientGroups: data.ingredientGroups || [],
+        deletedIngredientGroupIds: data.deletedIngredientGroupIds || [],
         instructions: data.instructions ?? undefined,
         user: { connect: { id: userId } },
       };
