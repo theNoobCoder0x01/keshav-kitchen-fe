@@ -89,6 +89,7 @@ model Ingredient {
   quantity    Float
   unit        String
   costPerUnit Float?
+  sequenceNumber Int?
   recipeId    String
   recipe      Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   groupId     String?
@@ -149,6 +150,7 @@ model MenuIngredient {
   quantity    Float
   unit        String
   costPerUnit Float
+  sequenceNumber Int?
   menuId      String
   menu        Menu                 @relation(fields: [menuId], references: [id], onDelete: Cascade)
   groupId     String? // Add groupId to support grouping
