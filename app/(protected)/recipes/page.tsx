@@ -209,6 +209,10 @@ export default function RecipesPage() {
       costPerUnit: ingredient.costPerUnit
         ? parseFloat(ingredient.costPerUnit) || 0
         : undefined,
+      sequenceNumber:
+        ingredient.sequenceNumber != null
+          ? Number(ingredient.sequenceNumber)
+          : undefined,
       groupId: ingredient.groupId || null,
     }));
 
