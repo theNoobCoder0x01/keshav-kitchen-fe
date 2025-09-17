@@ -92,6 +92,11 @@ interface AddMealDialogProps {
       name: string;
     };
     ingredients?: IngredientFormValue[];
+    ingredientGroups?: Array<{
+      id: string;
+      name: string;
+      sortOrder: number;
+    }>;
   } | null;
 }
 
@@ -559,6 +564,15 @@ export function AddMealDialog({
         throw new Error("Ghan factor must be greater than zero.");
       }
 
+      // Prepare ingredient group definitions to send to API
+      const processedGroups = values.ingredientGroups
+        .map((group: any, index: number) => ({
+          id: group.id || `temp_${index}`,
+          name: group.name,
+          sortOrder: group.sortOrder,
+        }))
+        .filter((g: any) => g.name !== "Ungrouped");
+
       if (editMeal?.id) {
         // Flatten all ingredients with their group assignments
         const allIngredients: any[] = [];
@@ -593,6 +607,7 @@ export function AddMealDialog({
           ghanFactor: values.ghanFactor,
           notes: `Meal updated for ${mealType.toLowerCase()} with ${values.servingQuantity} ${values.servingQuantityUnit} servings and ${values.ghanFactor} ghan factor.`,
           ingredients: trimIngredients(allIngredients),
+          ingredientGroups: processedGroups,
           menuComponentId: values.menuComponentId,
         };
 
@@ -645,6 +660,7 @@ export function AddMealDialog({
             ghanFactor: values.ghanFactor,
           }),
           ingredients: trimIngredients(allIngredients),
+          ingredientGroups: processedGroups,
           menuComponentId: values.menuComponentId,
         };
 

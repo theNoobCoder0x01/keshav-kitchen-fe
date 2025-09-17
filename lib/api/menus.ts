@@ -33,12 +33,42 @@ export async function createMenu(data: {
   notes?: string;
   ingredients?: IngredientFormValue[];
   menuComponentId?: string;
+  ingredientGroups?: Array<{
+    id?: string;
+    name: string;
+    sortOrder: number;
+  }>;
 }) {
   const response = await api.post("/menus/", data);
   return response.data;
 }
 
-export async function updateMenu(id: string, data: any) {
+export async function updateMenu(
+  id: string,
+  data: {
+    epochMs?: number;
+    mealType?: MealType;
+    recipeId?: string;
+    kitchenId?: string;
+    userId?: string;
+    preparedQuantity?: number;
+    preparedQuantityUnit?: string;
+    servingQuantity?: number;
+    servingQuantityUnit?: string;
+    quantityPerPiece?: number | null;
+    ghanFactor?: number;
+    notes?: string;
+    ingredients?: IngredientFormValue[];
+    menuComponentId?: string;
+    ingredientGroups?: Array<{
+      id?: string;
+      name: string;
+      sortOrder: number;
+    }>;
+    // Allow any additional fields without breaking callers
+    [key: string]: any;
+  },
+) {
   const response = await api.put(`/menus/?id=${id}`, data);
   return response.data;
 }
