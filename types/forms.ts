@@ -5,6 +5,7 @@ export interface IngredientFormValue {
   unit: string;
   costPerUnit: number;
   sequenceNumber?: number;
+  groupId?: string | null;
   localId?: string;
 }
 
