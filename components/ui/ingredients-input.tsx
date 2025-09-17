@@ -413,8 +413,8 @@ export function IngredientsInput<
     }
   };
 
-  // Get sorted ingredient groups
-  const sortedIngredientGroups = sortIngredientsBySequence(currentIngredientGroups);
+  // Get ingredient groups without auto-sorting; sorting happens on blur
+  const sortedIngredientGroups = currentIngredientGroups;
 
   return (
     <FieldArray name={name}>
