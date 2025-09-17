@@ -61,6 +61,7 @@ interface AddRecipeDialogProps {
       name: string;
       sortOrder: number;
     }>;
+    deletedIngredientGroupIds?: string[];
     instructions?: string | null;
     preparedQuantity?: number | null;
     preparedQuantityUnit?: string | null;
@@ -382,6 +383,24 @@ export function AddRecipeDialog({
       })
     );
 
+    // Compute deleted group IDs (existing groups removed by the user)
+    const originalGroups: Array<{ id: string; name: string }> =
+      fetchedRecipe?.ingredientGroups?.map((g: any) => ({
+        id: g.id,
+        name: g.name,
+      })) || [];
+    const originalGroupIds = new Set(
+      originalGroups.filter((g) => g.name !== "Ungrouped").map((g) => g.id)
+    );
+    const currentGroupIds = new Set(
+      processedGroups
+        .filter((g) => g.name !== "Ungrouped")
+        .map((g) => g.id!)
+    );
+    const deletedGroupIds = Array.from(originalGroupIds).filter(
+      (id) => !currentGroupIds.has(id)
+    );
+
     // Flatten all ingredients with their group assignments
     const allIngredients: any[] = [];
     trimmedValues.ingredientGroups.forEach((group: any, groupIndex: number) => {
@@ -410,6 +429,7 @@ export function AddRecipeDialog({
       subcategory: trimmedValues.subcategory,
       ingredients: allIngredients,
       ingredientGroups: processedGroups.filter((g) => g.name !== "Ungrouped"),
+      deletedIngredientGroupIds: deletedGroupIds,
       instructions: trimmedValues.instructions,
       preparedQuantity: trimmedValues.preparedQuantity,
       preparedQuantityUnit: trimmedValues.preparedQuantityUnit,

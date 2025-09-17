@@ -311,23 +311,29 @@ export function AddMealDialog({
               ? String(uuidv4())
               : `${Math.random()}`),
         }));
-
-        // For now, we'll create a default "Ungrouped" group for existing menus
-        // In the future, this could be enhanced to load actual ingredient groups
-        ingredientGroups = [
-          {
-            name: "Ungrouped",
-            sortOrder: 999,
-            ingredients: ingredients.map((ing) => ({
-              ...ing,
-              localId:
-                ing.localId ||
-                (typeof crypto !== "undefined"
-                  ? String(uuidv4())
-                  : `${Math.random()}`),
-            })),
-          },
-        ];
+        if (editMeal.ingredientGroups && editMeal.ingredientGroups.length > 0) {
+          // Preserve existing menu ingredient groups
+          ingredientGroups = organizeIngredientsIntoGroups(
+            ingredients,
+            editMeal.ingredientGroups,
+          );
+        } else {
+          // Create default "Ungrouped" group
+          ingredientGroups = [
+            {
+              name: "Ungrouped",
+              sortOrder: 999,
+              ingredients: ingredients.map((ing) => ({
+                ...ing,
+                localId:
+                  ing.localId ||
+                  (typeof crypto !== "undefined"
+                    ? String(uuidv4())
+                    : `${Math.random()}`),
+              })),
+            },
+          ];
+        }
       } else {
         // Fall back to recipe ingredients if menu doesn't have ingredients saved
         const selectedRecipe = recipes?.find((r) => r.id === editMeal.recipeId);
@@ -573,6 +579,20 @@ export function AddMealDialog({
         }))
         .filter((g: any) => g.name !== "Ungrouped");
 
+      // Compute deleted group IDs if editing an existing menu (groups that were present before and now removed)
+      const originalGroups: Array<{ id: string; name: string }> =
+        editMeal?.ingredientGroups?.map((g: any) => ({
+          id: g.id,
+          name: g.name,
+        })) || [];
+      const originalGroupIds = new Set(
+        originalGroups.filter((g) => g.name !== "Ungrouped").map((g) => g.id)
+      );
+      const currentGroupIds = new Set(processedGroups.map((g) => g.id!));
+      const deletedGroupIds = Array.from(originalGroupIds).filter(
+        (id) => !currentGroupIds.has(id)
+      );
+
       if (editMeal?.id) {
         // Flatten all ingredients with their group assignments
         const allIngredients: any[] = [];
@@ -608,6 +628,7 @@ export function AddMealDialog({
           notes: `Meal updated for ${mealType.toLowerCase()} with ${values.servingQuantity} ${values.servingQuantityUnit} servings and ${values.ghanFactor} ghan factor.`,
           ingredients: trimIngredients(allIngredients),
           ingredientGroups: processedGroups,
+          deletedIngredientGroupIds: deletedGroupIds,
           menuComponentId: values.menuComponentId,
         };
 
@@ -661,6 +682,7 @@ export function AddMealDialog({
           }),
           ingredients: trimIngredients(allIngredients),
           ingredientGroups: processedGroups,
+          deletedIngredientGroupIds: [],
           menuComponentId: values.menuComponentId,
         };
 
