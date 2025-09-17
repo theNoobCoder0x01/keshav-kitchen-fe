@@ -188,7 +188,8 @@ export async function PATCH(
               unit: ing.unit,
               costPerUnit:
                 ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
-              sequenceNumber: ing.sequenceNumber,
+              sequenceNumber:
+                ing.sequenceNumber != null ? Number(ing.sequenceNumber) : null,
             })),
           });
           // Calculate preparedQuantity as sum of ingredient quantities

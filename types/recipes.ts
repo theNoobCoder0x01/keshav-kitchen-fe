@@ -30,6 +30,7 @@ export interface RecipeIngredientBase {
   quantity: number;
   unit: string;
   costPerUnit?: number | null;
+  sequenceNumber?: number | null;
   groupId?: string | null;
   group?: IngredientGroup | null;
   localId?: string;

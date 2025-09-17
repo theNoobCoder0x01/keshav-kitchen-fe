@@ -44,6 +44,15 @@ export function groupIngredientsByGroup(
     grouped[groupName].ingredients.push(ingredient);
   });
 
+  // Sort ingredients within each group by sequenceNumber (ascending), fallback to 1
+  Object.values(grouped).forEach((group) => {
+    group.ingredients.sort((a, b) => {
+      const seqA = (a as any).sequenceNumber ?? 1;
+      const seqB = (b as any).sequenceNumber ?? 1;
+      return seqA - seqB;
+    });
+  });
+
   return grouped;
 }
 

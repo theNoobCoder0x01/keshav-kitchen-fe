@@ -227,6 +227,7 @@ export async function POST(request: Request) {
               quantity: ingredient.quantity,
               unit: ingredient.unit,
               costPerUnit: ingredient.costPerUnit,
+              sequenceNumber: ingredient.sequenceNumber ?? null,
             })) || [],
         },
       },
@@ -309,6 +310,7 @@ export async function PUT(request: Request) {
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
                 costPerUnit: ingredient.costPerUnit,
+                sequenceNumber: ingredient.sequenceNumber ?? null,
               })),
             }
           : undefined,
