@@ -161,7 +161,9 @@ export async function PATCH(
       quantityPerPiece,
       category,
       subcategory,
-      ingredients,
+    ingredients,
+    ingredientGroups,
+    deletedIngredientGroupIds,
     } = body || {};
 
     const existingRecipe = await prisma.recipe.findUnique({
@@ -177,11 +179,54 @@ export async function PATCH(
       let totalQuantity = 0;
       let preparedQuantityUnitToSet = preparedQuantityUnit;
 
+      // Handle ingredient groups: deletes, creates/updates, and ID mapping for temp IDs
+      const groupIdMap = new Map<string, string>();
+      if (Array.isArray(deletedIngredientGroupIds) && deletedIngredientGroupIds.length > 0) {
+        await tx.ingredientGroup.deleteMany({
+          where: { id: { in: deletedIngredientGroupIds }, recipeId: id },
+        });
+      }
+
+      if (Array.isArray(ingredientGroups)) {
+        for (const group of ingredientGroups as Array<{ id?: string; name: string; sortOrder?: number }>) {
+          const sortOrder = group.sortOrder ?? 0;
+          if (group.id && !group.id.startsWith("temp_")) {
+            const existing = await tx.ingredientGroup.findFirst({
+              where: { id: group.id, recipeId: id },
+              select: { id: true },
+            });
+            if (existing) {
+              await tx.ingredientGroup.update({
+                where: { id: group.id },
+                data: { name: group.name, sortOrder },
+              });
+              groupIdMap.set(group.id, group.id);
+            } else {
+              const created = await tx.ingredientGroup.create({
+                data: { name: group.name, sortOrder, recipeId: id },
+              });
+              groupIdMap.set(group.id, created.id);
+            }
+          } else {
+            const created = await tx.ingredientGroup.create({
+              data: { name: group.name, sortOrder, recipeId: id },
+            });
+            if (group.id) {
+              groupIdMap.set(group.id, created.id);
+            }
+          }
+        }
+      }
+
       if (Array.isArray(ingredients)) {
         await tx.ingredient.deleteMany({ where: { recipeId: id } });
         if (ingredients.length > 0) {
-          await tx.ingredient.createMany({
-            data: ingredients.map((ing: any) => ({
+          const ingredientData = ingredients.map((ing: any) => {
+            let finalGroupId: string | null = null;
+            if (ing.groupId) {
+              finalGroupId = groupIdMap.get(ing.groupId) ?? ing.groupId;
+            }
+            return {
               recipeId: id,
               name: ing.name,
               quantity: Number(ing.quantity) || 0,
@@ -190,15 +235,17 @@ export async function PATCH(
                 ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
               sequenceNumber:
                 ing.sequenceNumber != null ? Number(ing.sequenceNumber) : null,
-            })),
+              groupId: finalGroupId,
+            };
           });
+          await tx.ingredient.createMany({ data: ingredientData });
           // Calculate preparedQuantity as sum of ingredient quantities
-          totalQuantity = ingredients.reduce(
+          totalQuantity = ingredientData.reduce(
             (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
             0
           );
           preparedQuantityUnitToSet =
-            ingredients.length > 0 ? ingredients[0].unit : preparedQuantityUnit;
+            ingredientData.length > 0 ? ingredientData[0].unit : preparedQuantityUnit;
         }
       } else {
         // If ingredients not provided, recalculate from existing
