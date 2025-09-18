@@ -623,6 +623,8 @@ export default function RecipesPage() {
             itemsPerPageOptions={[10, 20, 50]}
             currentPage={currentPage}
             totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={itemsPerPage}
             onPageChange={(page) => {
               setCurrentPage(page);
               getRecipes({
