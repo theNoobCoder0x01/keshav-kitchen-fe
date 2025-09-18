@@ -30,6 +30,7 @@ import { createRecipe, updateRecipe } from "@/lib/api/recipes";
 import type { RecipeDetailData } from "@/types";
 import { Filter, Plus, RefreshCw, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -39,6 +40,9 @@ export default function RecipesPage() {
 
   const { t } = useTranslations();
   const { data: session } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -76,6 +80,44 @@ export default function RecipesPage() {
   >([]);
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
+
+  // Initialize state from URL query params and keep in sync when URL changes (e.g., back/forward)
+  useEffect(() => {
+    if (!searchParams) return;
+
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "all";
+    const subcategory = searchParams.get("subcategory") || "all";
+    const filters = searchParams.get("filters");
+
+    setSearchTerm(search);
+    setFilterCategory(category);
+    setFilterSubcategory(subcategory);
+    setCurrentPage(pageParam ? Math.max(1, parseInt(pageParam)) : 1);
+    setItemsPerPage(limitParam ? Math.max(1, parseInt(limitParam)) : 10);
+    if (filters != null) {
+      setShowAdvancedFilters(filters === "1" || filters === "true");
+    }
+  }, [searchParams]);
+
+  // Sync URL with current filter/pagination state
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("search", searchTerm);
+    if (filterCategory && filterCategory !== "all")
+      params.set("category", filterCategory);
+    if (filterSubcategory && filterSubcategory !== "all")
+      params.set("subcategory", filterSubcategory);
+    params.set("page", String(currentPage));
+    params.set("limit", String(itemsPerPage));
+    if (showAdvancedFilters) params.set("filters", "1");
+
+    const query = params.toString();
+    const targetUrl = query ? `${pathname}?${query}` : pathname;
+    router.replace(targetUrl);
+  }, [searchTerm, filterCategory, filterSubcategory, currentPage, itemsPerPage, showAdvancedFilters, pathname, router]);
 
   // Get unique categories for filters
   const categories = ["all", ...availableCategories];
@@ -351,6 +393,7 @@ export default function RecipesPage() {
     setSearchTerm("");
     setFilterCategory("all");
     setFilterSubcategory("all");
+    setCurrentPage(1);
   };
 
   // Fetch filter options on component mount
@@ -598,6 +641,7 @@ export default function RecipesPage() {
                 subcategory: filterSubcategory,
               });
             }}
+            listQuery={typeof window !== "undefined" ? window.location.search.slice(1) : undefined}
           />
         )}
       </div>
