@@ -335,7 +335,6 @@ export function AddRecipeDialog({
                     unit: DEFAULT_UNIT,
                     costPerUnit: "",
                     sequenceNumber: 1,
-                    sequenceNumber: 1,
                     localId: generateStableId(),
                   },
                 ],
