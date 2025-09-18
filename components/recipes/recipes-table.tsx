@@ -23,6 +23,8 @@ interface RecipesTableProps {
   itemsPerPageOptions?: number[];
   currentPage?: number;
   totalPages?: number;
+  totalItems?: number;
+  itemsPerPage?: number;
   onPageChange?: (page: number) => void;
   onItemsPerPageChange?: (limit: number) => void;
   listQuery?: string;
@@ -37,12 +39,19 @@ export function RecipesTable({
   itemsPerPageOptions = [10, 20, 50],
   currentPage = 1,
   totalPages = 1,
+  totalItems,
+  itemsPerPage,
   onPageChange,
   onItemsPerPageChange,
   listQuery,
 }: RecipesTableProps) {
   // Use server-side pagination - no local slicing needed
   const displayRecipes = recipes;
+  const effectiveItemsPerPage = itemsPerPage ?? itemsPerPageOptions[0] || 10;
+  const effectiveTotalItems =
+    typeof totalItems === "number"
+      ? totalItems
+      : totalPages * (displayRecipes.length > 0 ? displayRecipes.length : effectiveItemsPerPage);
 
   return (
     <div className="bg-card rounded-lg border shadow-xs">
@@ -137,11 +146,8 @@ export function RecipesTable({
       </Table>
       <TablePagination
         currentPage={currentPage}
-        totalItems={
-          totalPages *
-          (recipes.length > 0 ? recipes.length : itemsPerPageOptions[0] || 10)
-        } // Approximate for display
-        itemsPerPage={itemsPerPageOptions[0] || 10}
+        totalItems={effectiveTotalItems}
+        itemsPerPage={effectiveItemsPerPage}
         onPageChange={onPageChange || (() => {})}
         onItemsPerPageChange={onItemsPerPageChange || (() => {})}
         itemsPerPageOptions={itemsPerPageOptions}
