@@ -80,7 +80,7 @@ function Ingredient({
     <div
       ref={ingredientRef}
       id={`ingredient-${ingredient.localId}`}
-      className="p-3 border border-border/50 rounded-lg bg-background/50"
+      className="px-1 py-3"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ function Ingredient({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-13 gap-3">
-        <div className="sm:col-span-1">
+        <div className="sm:col-span-2">
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Seq
           </Label>
@@ -133,7 +133,7 @@ function Ingredient({
           />
         </div>
 
-        <div className="sm:col-span-4">
+        <div className="sm:col-span-3">
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Name *
           </Label>
@@ -170,7 +170,7 @@ function Ingredient({
           />
         </div>
 
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-3">
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Unit *
           </Label>
@@ -201,7 +201,7 @@ function Ingredient({
           </Field>
         </div>
 
-        <div className="sm:col-span-3">
+        <div className="sm:col-span-2">
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Cost/Unit
           </Label>
@@ -557,7 +557,7 @@ export function IngredientsInput<
                     push: pushIngredient,
                   }) => (
                     <div
-                      className="space-y-3"
+                      className="divide-y divide-accent"
                       onPaste={handlePasteIngredients}
                     >
                       {group.ingredients.map(
