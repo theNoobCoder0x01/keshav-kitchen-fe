@@ -201,19 +201,20 @@ export default function RecipesPage() {
       return;
     }
 
-    // Parse ingredients to ensure numeric values for quantity and costPerUnit
+    // Normalize ingredients to numeric types and preserve group references (temp IDs allowed)
     const parsedIngredients = data.ingredients.map((ingredient: any) => ({
       name: ingredient.name,
       quantity: parseFloat(ingredient.quantity) || 0,
       unit: ingredient.unit,
-      costPerUnit: ingredient.costPerUnit
-        ? parseFloat(ingredient.costPerUnit) || 0
-        : undefined,
+      costPerUnit:
+        ingredient.costPerUnit !== undefined && ingredient.costPerUnit !== null && `${ingredient.costPerUnit}`.trim() !== ""
+          ? parseFloat(ingredient.costPerUnit)
+          : undefined,
       sequenceNumber:
         ingredient.sequenceNumber != null
           ? Number(ingredient.sequenceNumber)
           : undefined,
-      groupId: ingredient.groupId || null,
+      groupId: ingredient.groupId ?? null,
     }));
 
     try {
@@ -240,10 +241,15 @@ export default function RecipesPage() {
           ? parseFloat(data.quantityPerPiece) || undefined
           : undefined,
         ingredients: parsedIngredients,
-        ingredientGroups: data.ingredientGroups || [],
-        deletedIngredientGroupIds: data.deletedIngredientGroupIds || [],
+        ingredientGroups: (data.ingredientGroups || []).map((g: any) => ({
+          id: g.id,
+          name: g.name,
+          sortOrder: Number(g.sortOrder) || 0,
+        })),
+        deletedIngredientGroupIds: Array.isArray(data.deletedIngredientGroupIds)
+          ? data.deletedIngredientGroupIds
+          : [],
         instructions: data.instructions ?? undefined,
-        user: { connect: { id: userId } },
       };
       let result;
       try {
