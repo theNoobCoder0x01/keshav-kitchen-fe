@@ -70,11 +70,11 @@ function Ingredient({
 }: IngredientProps) {
   const ingredientRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (ingredientRef.current) {
-      scrollToIngredient(ingredient.localId);
-    }
-  }, [ingredient.sequenceNumber, scrollToIngredient, ingredient.localId]);
+  // useEffect(() => {
+  //   if (ingredientRef.current) {
+  //     scrollToIngredient(ingredient.localId);
+  //   }
+  // }, [ingredient.sequenceNumber, scrollToIngredient, ingredient.localId]);
 
   return (
     <div
