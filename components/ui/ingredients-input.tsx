@@ -340,6 +340,43 @@ export function IngredientsInput<
     clearSelection();
   };
 
+  const moveSelectedIngredientsToNewGroup = (
+    groupName = "",
+    position: "end" | "start" = "end"
+  ) => {
+    if (selectedIds.size === 0) return;
+
+    const nextGroups = ingredientGroups.map((g) => ({
+      ...g,
+      ingredients: [...g.ingredients],
+    }));
+
+    const moved: any[] = [];
+    nextGroups.forEach((group) => {
+      const keep: any[] = [];
+      for (const ing of group.ingredients as any[]) {
+        if (selectedIds.has(ing.localId)) {
+          moved.push(ing);
+        } else {
+          keep.push(ing);
+        }
+      }
+      group.ingredients = keep.length ? keep : [createEmptyIngredient()];
+    });
+
+    const newGroup: IngredientGroup<T> = {
+      name: groupName,
+      sortOrder: nextGroups.length,
+      ingredients:
+        position === "start" ? [...moved] : [...moved],
+    } as IngredientGroup<T>;
+
+    nextGroups.push(newGroup);
+
+    setFieldValue(name, nextGroups);
+    clearSelection();
+  };
+
   const createEmptyIngredient = (): T => {
     const baseIngredient = {
       name: "",
@@ -454,6 +491,12 @@ export function IngredientsInput<
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem
+                          onClick={() => moveSelectedIngredientsToNewGroup("New Group")}
+                          className="cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3 mr-2" /> New Group
+                        </DropdownMenuItem>
                         {sortedIngredientGroups.map((g, idx) => (
                           <DropdownMenuItem
                             key={idx}
