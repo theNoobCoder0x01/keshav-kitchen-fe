@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import api from "@/lib/api/axios";
 import type { RecipeDetailData } from "@/types";
 import { ArrowLeft, Printer } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function RecipeDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const recipeId = params.id as string;
 
   const [recipe, setRecipe] = useState<RecipeDetailData | null>(null);
@@ -87,8 +86,7 @@ export default function RecipeDetailPage() {
   };
 
   const handleBack = () => {
-    const query = searchParams?.toString();
-    router.push(query ? `/recipes?${query}` : "/recipes");
+    router.push("/recipes");
   };
 
   if (loading) {

@@ -30,8 +30,8 @@ import { createRecipe, updateRecipe } from "@/lib/api/recipes";
 import type { RecipeDetailData } from "@/types";
 import { Filter, Plus, RefreshCw, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export default function RecipesPage() {
@@ -41,8 +41,6 @@ export default function RecipesPage() {
   const { t } = useTranslations();
   const { data: session } = useSession();
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -80,52 +78,69 @@ export default function RecipesPage() {
   >([]);
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
+  const [hasInitializedFromStorage, setHasInitializedFromStorage] =
+    useState(false);
 
-  // Initialize state from URL query params and keep in sync when URL changes (e.g., back/forward)
+  const STORAGE_KEY = "recipesPageState/v1";
+
+  // Initialize state from localStorage once on mount
   useEffect(() => {
-    if (!searchParams) return;
-
-    const pageParam = searchParams.get("page");
-    const limitParam = searchParams.get("limit");
-    const search = searchParams.get("search") || "";
-    const category = searchParams.get("category") || "all";
-    const subcategory = searchParams.get("subcategory") || "all";
-    const filters = searchParams.get("filters");
-
-    setSearchTerm(search);
-    setFilterCategory(category);
-    setFilterSubcategory(subcategory);
-    setCurrentPage(pageParam ? Math.max(1, parseInt(pageParam)) : 1);
-    setItemsPerPage(limitParam ? Math.max(1, parseInt(limitParam)) : 20);
-    if (filters != null) {
-      setShowAdvancedFilters(filters === "1" || filters === "true");
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (typeof saved.searchTerm === "string") setSearchTerm(saved.searchTerm);
+        if (typeof saved.filterCategory === "string")
+          setFilterCategory(saved.filterCategory);
+        if (typeof saved.filterSubcategory === "string")
+          setFilterSubcategory(saved.filterSubcategory);
+        if (
+          typeof saved.currentPage === "number" &&
+          Number.isFinite(saved.currentPage) &&
+          saved.currentPage >= 1
+        )
+          setCurrentPage(saved.currentPage);
+        if (
+          typeof saved.itemsPerPage === "number" &&
+          Number.isFinite(saved.itemsPerPage) &&
+          saved.itemsPerPage >= 1
+        )
+          setItemsPerPage(saved.itemsPerPage);
+        if (typeof saved.showAdvancedFilters === "boolean")
+          setShowAdvancedFilters(saved.showAdvancedFilters);
+      }
+    } catch (e) {
+      console.warn("Failed to parse recipes page state from storage", e);
+    } finally {
+      setHasInitializedFromStorage(true);
     }
-  }, [searchParams]);
+  }, []);
 
-  // Sync URL with current filter/pagination state
+  // Persist state to localStorage whenever it changes
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchTerm) params.set("search", searchTerm);
-    if (filterCategory && filterCategory !== "all")
-      params.set("category", filterCategory);
-    if (filterSubcategory && filterSubcategory !== "all")
-      params.set("subcategory", filterSubcategory);
-    params.set("page", String(currentPage));
-    params.set("limit", String(itemsPerPage));
-    if (showAdvancedFilters) params.set("filters", "1");
-
-    const query = params.toString();
-    const targetUrl = query ? `${pathname}?${query}` : pathname;
-    router.replace(targetUrl);
+    if (!hasInitializedFromStorage || typeof window === "undefined") return;
+    try {
+      const stateToStore = {
+        searchTerm,
+        filterCategory,
+        filterSubcategory,
+        currentPage,
+        itemsPerPage,
+        showAdvancedFilters,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToStore));
+    } catch (e) {
+      console.warn("Failed to save recipes page state to storage", e);
+    }
   }, [
+    hasInitializedFromStorage,
     searchTerm,
     filterCategory,
     filterSubcategory,
     currentPage,
     itemsPerPage,
     showAdvancedFilters,
-    pathname,
-    router,
   ]);
 
   // Get unique categories for filters
@@ -198,10 +213,12 @@ export default function RecipesPage() {
         throw new Error(`Error: ${response.status}`);
       }
 
-      setRecipes((prevRecipes) => prevRecipes.filter((r) => r.id !== id));
+      setRecipes((prevRecipes: Recipe[]) =>
+        prevRecipes.filter((r: Recipe) => r.id !== id),
+      );
       toast.success(t("messages.recipeDeleted"), {
         description: t("messages.recipeDeletedDescription", {
-          name: recipes.find((r) => r.id === id)?.name,
+          name: recipes.find((r: Recipe) => r.id === id)?.name,
         }),
       });
     } catch (error) {
@@ -405,6 +422,13 @@ export default function RecipesPage() {
     setFilterCategory("all");
     setFilterSubcategory("all");
     setCurrentPage(1);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.warn("Failed to clear recipes page state from storage", e);
+      }
+    }
   };
 
   // Fetch filter options on mount and whenever category filter changes (to filter subcategories)
@@ -435,6 +459,7 @@ export default function RecipesPage() {
   }, [filterCategory]);
 
   useEffect(() => {
+    if (!hasInitializedFromStorage) return;
     getRecipes({
       page: currentPage,
       limit: itemsPerPage,
@@ -443,6 +468,7 @@ export default function RecipesPage() {
       subcategory: filterSubcategory,
     });
   }, [
+    hasInitializedFromStorage,
     currentPage,
     itemsPerPage,
     searchTerm,
@@ -499,7 +525,9 @@ export default function RecipesPage() {
               <Input
                 placeholder={t("recipes.searchPlaceholder")}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearchTerm(e.target.value)
+                }
                 className="pl-10"
               />
             </div>
@@ -657,11 +685,6 @@ export default function RecipesPage() {
                 subcategory: filterSubcategory,
               });
             }}
-            listQuery={
-              typeof window !== "undefined"
-                ? window.location.search.slice(1)
-                : undefined
-            }
           />
         )}
       </div>
