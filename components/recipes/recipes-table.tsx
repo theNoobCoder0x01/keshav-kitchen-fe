@@ -25,6 +25,7 @@ interface RecipesTableProps {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   onItemsPerPageChange?: (limit: number) => void;
+  listQuery?: string;
 }
 
 export function RecipesTable({
@@ -38,6 +39,7 @@ export function RecipesTable({
   totalPages = 1,
   onPageChange,
   onItemsPerPageChange,
+  listQuery,
 }: RecipesTableProps) {
   // Use server-side pagination - no local slicing needed
   const displayRecipes = recipes;
@@ -73,7 +75,7 @@ export function RecipesTable({
               <TableRow key={recipe.id}>
                 <TableCell className="py-4 px-6 font-medium text-foreground">
                   <Link
-                    href={`/recipes/${recipe.id}`}
+                    href={`/recipes/${recipe.id}${listQuery ? `?${listQuery}` : ""}`}
                     className="hover:text-primary hover:underline cursor-pointer transition-colors"
                   >
                     {recipe.name}
