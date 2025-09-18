@@ -575,7 +575,7 @@ export function AddMealDialog({
         .map((group: any, index: number) => ({
           id: group.id || `temp_${index}`,
           name: group.name,
-          sortOrder: group.sortOrder,
+          sortOrder: Number(group.sortOrder) || 0,
         }))
         .filter((g: any) => g.name !== "Ungrouped");
 
