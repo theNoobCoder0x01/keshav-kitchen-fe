@@ -396,29 +396,32 @@ export default function RecipesPage() {
     setCurrentPage(1);
   };
 
-  // Fetch filter options on component mount
+  // Fetch filter options on mount and whenever category filter changes (to filter subcategories)
   useEffect(() => {
     const loadFilters = async () => {
       try {
         const { fetchRecipeFilters } = await import("@/lib/api/recipes");
-        const filters = await fetchRecipeFilters();
+        const filters = await fetchRecipeFilters({
+          category: filterCategory !== "all" ? filterCategory : undefined,
+        });
         setAvailableCategories(filters.categories);
         setAvailableSubcategories(filters.subcategories);
       } catch (error: any) {
-        // Don't show error for aborted requests
         if (error.name === "AbortError" || error.name === "CanceledError") {
           console.log("Filter loading request was cancelled");
           return;
         }
         console.error("Error loading filters:", error);
-        // Fallback to default values if API fails
-        setAvailableCategories(["Breakfast", "Lunch", "Dinner", "Snacks"]);
-        setAvailableSubcategories(["Veg", "Non-Veg", "Sweet", "Savory"]);
+        // Fallbacks if API fails (keeps previously loaded lists if any)
+        if (availableCategories.length === 0)
+          setAvailableCategories(["Breakfast", "Lunch", "Dinner", "Snacks"]);
+        if (availableSubcategories.length === 0)
+          setAvailableSubcategories(["Veg", "Non-Veg", "Sweet", "Savory"]);
       }
     };
 
     loadFilters();
-  }, []);
+  }, [filterCategory]);
 
   useEffect(() => {
     getRecipes({
