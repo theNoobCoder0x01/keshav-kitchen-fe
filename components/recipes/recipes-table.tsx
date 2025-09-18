@@ -36,7 +36,7 @@ export function RecipesTable({
   onDelete,
   onPrint,
   deletingId,
-  itemsPerPageOptions = [10, 20, 50],
+  itemsPerPageOptions = [20, 50],
   currentPage = 1,
   totalPages = 1,
   totalItems,
@@ -47,11 +47,14 @@ export function RecipesTable({
 }: RecipesTableProps) {
   // Use server-side pagination - no local slicing needed
   const displayRecipes = recipes;
-  const effectiveItemsPerPage = itemsPerPage ?? itemsPerPageOptions[0] || 10;
+  const effectiveItemsPerPage = (itemsPerPage ?? itemsPerPageOptions[0]) || 20;
   const effectiveTotalItems =
     typeof totalItems === "number"
       ? totalItems
-      : totalPages * (displayRecipes.length > 0 ? displayRecipes.length : effectiveItemsPerPage);
+      : totalPages *
+        (displayRecipes.length > 0
+          ? displayRecipes.length
+          : effectiveItemsPerPage);
 
   return (
     <div className="bg-card rounded-lg border shadow-xs">

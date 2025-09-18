@@ -71,7 +71,7 @@ export default function RecipesPage() {
   const [filterSubcategory, setFilterSubcategory] = useState("all");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(true); // Filters open by default
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
@@ -96,7 +96,7 @@ export default function RecipesPage() {
     setFilterCategory(category);
     setFilterSubcategory(subcategory);
     setCurrentPage(pageParam ? Math.max(1, parseInt(pageParam)) : 1);
-    setItemsPerPage(limitParam ? Math.max(1, parseInt(limitParam)) : 10);
+    setItemsPerPage(limitParam ? Math.max(1, parseInt(limitParam)) : 20);
     if (filters != null) {
       setShowAdvancedFilters(filters === "1" || filters === "true");
     }
@@ -117,7 +117,16 @@ export default function RecipesPage() {
     const query = params.toString();
     const targetUrl = query ? `${pathname}?${query}` : pathname;
     router.replace(targetUrl);
-  }, [searchTerm, filterCategory, filterSubcategory, currentPage, itemsPerPage, showAdvancedFilters, pathname, router]);
+  }, [
+    searchTerm,
+    filterCategory,
+    filterSubcategory,
+    currentPage,
+    itemsPerPage,
+    showAdvancedFilters,
+    pathname,
+    router,
+  ]);
 
   // Get unique categories for filters
   const categories = ["all", ...availableCategories];
@@ -249,7 +258,9 @@ export default function RecipesPage() {
       quantity: parseFloat(ingredient.quantity) || 0,
       unit: ingredient.unit,
       costPerUnit:
-        ingredient.costPerUnit !== undefined && ingredient.costPerUnit !== null && `${ingredient.costPerUnit}`.trim() !== ""
+        ingredient.costPerUnit !== undefined &&
+        ingredient.costPerUnit !== null &&
+        `${ingredient.costPerUnit}`.trim() !== ""
           ? parseFloat(ingredient.costPerUnit)
           : undefined,
       sequenceNumber:
@@ -363,7 +374,7 @@ export default function RecipesPage() {
           instructions: recipe.instructions ?? null,
           createdAt: new Date(recipe.createdAt || Date.now()),
           updatedAt: new Date(recipe.updatedAt || Date.now()),
-        }),
+        })
       );
 
       setRecipes(transformedRecipes);
@@ -620,7 +631,7 @@ export default function RecipesPage() {
             onDelete={handleDeleteRecipe}
             onPrint={handlePrintRecipe}
             deletingId={deletingId}
-            itemsPerPageOptions={[10, 20, 50]}
+            itemsPerPageOptions={[20, 50]}
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalCount}
@@ -646,7 +657,11 @@ export default function RecipesPage() {
                 subcategory: filterSubcategory,
               });
             }}
-            listQuery={typeof window !== "undefined" ? window.location.search.slice(1) : undefined}
+            listQuery={
+              typeof window !== "undefined"
+                ? window.location.search.slice(1)
+                : undefined
+            }
           />
         )}
       </div>

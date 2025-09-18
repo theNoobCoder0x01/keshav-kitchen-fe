@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
 export interface BaseDialogProps {
   open: boolean;
@@ -60,13 +60,43 @@ export function BaseDialog({
     }
   };
 
+  const scrolledToHeaderRef = useRef(false);
+
+  const scrollToHeader = () => {
+    const element = document.getElementById(`dialog-header`);
+    if (element && !scrolledToHeaderRef.current) {
+      console.log("element");
+      console.log("set flag ref");
+      scrolledToHeaderRef.current = true;
+      element.scrollIntoView({ behavior: "instant", block: "center" });
+    }
+  };
+
+  useEffect(() => {
+    if (open && !scrolledToHeaderRef.current) {
+      const t = setInterval(() => {
+        scrollToHeader();
+      }, 500);
+      setTimeout(() => {
+        clearInterval(t);
+      }, 3000);
+    } else {
+      console.log("reset flag ref");
+
+      scrolledToHeaderRef.current = false;
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(sizeClasses[size], "max-h-[90vh]", className)}
       >
         <div className={cn("overflow-y-auto", contentClassName)}>
-          <DialogHeader className="pb-4 border-b border-border">
+          <DialogHeader
+            className="pb-4 border-b border-border"
+            id="dialog-header"
+          >
             <div className="flex items-center gap-3">
               {icon && (
                 <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
