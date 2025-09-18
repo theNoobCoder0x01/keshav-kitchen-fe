@@ -115,12 +115,15 @@ export async function updateRecipe(
   }
 }
 
-export async function fetchRecipeFilters(signal?: AbortSignal): Promise<{
-  categories: string[];
-  subcategories: string[];
-}> {
+export async function fetchRecipeFilters(
+  params?: { category?: string },
+  signal?: AbortSignal,
+): Promise<{ categories: string[]; subcategories: string[] }> {
   try {
-    const response = await api.get("/recipes/filters/", { signal });
+    const query = new URLSearchParams();
+    if (params?.category) query.set("category", params.category);
+    const path = query.toString() ? `/recipes/filters/?${query}` : "/recipes/filters/";
+    const response = await api.get(path, { signal });
     return response.data;
   } catch (error: any) {
     if (error.name === "AbortError" || error.name === "CanceledError") {
