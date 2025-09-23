@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTranslations } from "@/hooks/use-translations";
+import api from "@/lib/api/axios";
 import { createMenu, updateMenu } from "@/lib/api/menus";
 import { fetchAllRecipesForDropdown } from "@/lib/api/recipes";
 import { BookOpen, Utensils } from "lucide-react";
@@ -130,6 +131,48 @@ export function AddMealDialog({
     useState<string>("all");
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Step 1: Add state for loading and fetched menu
+  const [isLoadingMenu, setIsLoadingMenu] = useState(false);
+  const [fetchedMenu, setFetchedMenu] = useState<any>(null);
+
+  // Reset fetched menu when dialog closes or menu ID changes
+  useEffect(() => {
+    if (!open) {
+      setFetchedMenu(null);
+      setIsLoadingMenu(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    setFetchedMenu(null);
+    setIsLoadingMenu(false);
+  }, [editMeal?.id]);
+
+  // Fetch menu details when in edit mode
+  useEffect(() => {
+    const fetchMenuDetails = async () => {
+      if (open && editMeal?.id && !fetchedMenu) {
+        setIsLoadingMenu(true);
+        try {
+          const response = await api.get(`/menus/${editMeal.id}/`);
+          if (response.status === 200) {
+            setFetchedMenu(response.data);
+          } else {
+            console.error("Failed to fetch menu details");
+            toast.error(t("meals.failedToLoadMenu"));
+          }
+        } catch (error) {
+          console.error("Error fetching menu details:", error);
+          toast.error(t("meals.failedToLoadMenu"));
+        } finally {
+          setIsLoadingMenu(false);
+        }
+      }
+    };
+
+    fetchMenuDetails();
+  }, [open, editMeal?.id, fetchedMenu, t]);
 
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = (
@@ -316,7 +359,7 @@ export function AddMealDialog({
           // Preserve existing menu ingredient groups
           ingredientGroups = organizeIngredientsIntoGroups(
             ingredients,
-            editMeal.ingredientGroups,
+            editMeal.ingredientGroups
           );
         } else {
           // Create default "Ungrouped" group
@@ -389,7 +432,10 @@ export function AddMealDialog({
 
       return {
         recipeId: editMeal.recipeId,
-        followRecipe: typeof editMeal.followRecipe === "boolean" ? editMeal.followRecipe : false,
+        followRecipe:
+          typeof editMeal.followRecipe === "boolean"
+            ? editMeal.followRecipe
+            : false,
         ghanFactor: editMeal.ghanFactor || 1.0,
         preparedQuantity: editMeal.preparedQuantity,
         preparedQuantityUnit: editMeal.preparedQuantityUnit,
@@ -763,458 +809,470 @@ export function AddMealDialog({
       icon={<Utensils className="w-5 h-5 text-primary-foreground" />}
       size="6xl"
     >
-      <Formik
-        initialValues={getInitialValues(editMeal, recipes)}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-        enableReinitialize={false}
-        key={editMeal?.id || "new"} // Force re-initialization when switching between add/edit
-      >
-        {({ values, setFieldValue, handleSubmit: formikHandleSubmit }) => {
-          // Generate stable ID function for the component
-          const generateStableId = () => {
-            return typeof crypto !== "undefined"
-              ? String(uuidv4())
-              : `id_${Date.now()}_${Math.random()}`;
-          };
+      {/* Show loading state while fetching menu details */}
+      {isLoadingMenu ? (
+        <div className="flex items-center justify-center p-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">{t("meals.loadingMenu")}</p>
+          </div>
+        </div>
+      ) : (
+        <Formik
+          initialValues={getInitialValues(fetchedMenu || editMeal, recipes)}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+          enableReinitialize={false}
+          key={editMeal?.id || "new"} // Force re-initialization when switching between add/edit
+        >
+          {({ values, setFieldValue, handleSubmit: formikHandleSubmit }) => {
+            // Generate stable ID function for the component
+            const generateStableId = () => {
+              return typeof crypto !== "undefined"
+                ? String(uuidv4())
+                : `id_${Date.now()}_${Math.random()}`;
+            };
 
-          // Removing helpers that referenced non-existent fields in this form
-          return (
-            <div className="overflow-y-auto">
-              <form onSubmit={formikHandleSubmit}>
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-12 sm:col-span-3 md:col-span-3">
-                    <Label
-                      htmlFor="recipeCategory"
-                      className="text-base font-medium text-foreground mb-2"
-                    >
-                      {t("recipes.category")}
-                    </Label>
-                    <Field name={`recipeCategory`}>
-                      {({ field }: { field: any }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange({
-                              target: { name: field.name, value },
-                            });
-                            setSelectedRecipeCategory(value);
-                          }}
-                        >
-                          <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                            <SelectValue
-                              placeholder={t("recipes.allCategories")}
-                            />
-                          </SelectTrigger>
-                          <SelectContent searchable>
-                            {recipeCategories.map((recipeCategory) => (
-                              <SelectItem
-                                key={recipeCategory}
-                                value={recipeCategory}
-                              >
-                                {recipeCategory === "all"
-                                  ? t("recipes.allCategories")
-                                  : recipeCategory}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </Field>
-                    <ErrorMessage
-                      name={`recipeCategory`}
-                      component="p"
-                      className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    />
-                  </div>
-                  <div className="col-span-12 sm:col-span-3 md:col-span-3">
-                    <Label
-                      htmlFor="recipeSubcategory"
-                      className="text-base font-medium text-foreground mb-2"
-                    >
-                      {t("recipes.subcategory")}
-                    </Label>
-                    <Field name={`recipeSubcategory`}>
-                      {({ field }: { field: any }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange({
-                              target: { name: field.name, value },
-                            });
-                            setSelectedRecipeSubcategory(value);
-                          }}
-                        >
-                          <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                            <SelectValue
-                              placeholder={t("recipes.allSubcategories")}
-                            />
-                          </SelectTrigger>
-                          <SelectContent searchable>
-                            {recipeSubcategories.map((subcategory) => (
-                              <SelectItem
-                                key={subcategory}
-                                value={subcategory}
-                                className="break-all"
-                              >
-                                {subcategory === "all"
-                                  ? t("recipes.allSubcategories")
-                                  : subcategory}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </Field>
-                    <ErrorMessage
-                      name={`recipeSubcategory`}
-                      component="p"
-                      className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    />
-                  </div>
-                  <div className="col-span-12 sm:col-span-3 md:col-span-4">
-                    <Label
-                      htmlFor="recipe"
-                      className="text-base font-medium text-foreground mb-2"
-                    >
-                      {t("meals.recipe")}
-                    </Label>
-                    <Field name={`recipeId`}>
-                      {({ field }: { field: any }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange({
-                              target: { name: field.name, value },
-                            });
-                            handleRecipeSelect(value, setFieldValue, values);
-                          }}
-                        >
-                          <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                            <SelectValue
-                              placeholder={t("meals.selectRecipe")}
-                            />
-                          </SelectTrigger>
-                          <SelectContent searchable>
-                            {filteredRecipes.map((recipe) => (
-                              <SelectItem key={recipe.id} value={recipe.id}>
-                                {recipe.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </Field>
-                    <ErrorMessage
-                      name={`recipeId`}
-                      component="p"
-                      className="text-destructive text-xs mt-1 flex items-center gap-1"
-                    />
-                  </div>
-                  <div className="col-span-12 sm:col-span-3 md:col-span-2">
-                    <Label className="text-base font-medium text-foreground">
-                      {t("meals.followRecipe")}
-                    </Label>
-                    <Field name={`followRecipe`}>
-                      {({ field }: { field: any }) => (
-                        <div className="w-full h-10 flex items-center">
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={(checked) => {
-                              handleFollowRecipeChange(
-                                checked,
-                                setFieldValue,
-                                values
-                              );
-                              return field.onChange({
-                                target: { name: field.name, value: checked },
+            // Removing helpers that referenced non-existent fields in this form
+            return (
+              <div className="overflow-y-auto">
+                <form onSubmit={formikHandleSubmit}>
+                  <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-12 sm:col-span-3 md:col-span-3">
+                      <Label
+                        htmlFor="recipeCategory"
+                        className="text-base font-medium text-foreground mb-2"
+                      >
+                        {t("recipes.category")}
+                      </Label>
+                      <Field name={`recipeCategory`}>
+                        {({ field }: { field: any }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) => {
+                              field.onChange({
+                                target: { name: field.name, value },
                               });
+                              setSelectedRecipeCategory(value);
                             }}
-                            className="data-[state=checked]:bg-primary"
-                          />
-                        </div>
-                      )}
-                    </Field>
-                  </div>
-
-                  <Card className="col-span-12">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <BookOpen className="w-5 h-5 text-primary" />
-                        {t("recipes.quantityInformation")}
-                      </CardTitle>
-                      <CardDescription>
-                        {t("recipes.quantityInformationDescription")}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="@container grid grid-cols-12 gap-4">
-                        {values.followRecipe && (
-                          <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                            <Label className="text-sm font-medium text-foreground mb-2 block">
-                              {t("meals.ghan")}
-                            </Label>
-                            <Field
-                              as={Input}
-                              name={`ghanFactor`}
-                              type="number"
-                              min={0}
-                              step={0.0001}
-                              className="border-border focus:border-primary focus:ring-primary/20"
-                            />
-                            <ErrorMessage
-                              name={`ghanFactor`}
-                              component="p"
-                              className="text-destructive text-xs mt-1 flex items-center gap-1"
+                          >
+                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                              <SelectValue
+                                placeholder={t("recipes.allCategories")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {recipeCategories.map((recipeCategory) => (
+                                <SelectItem
+                                  key={recipeCategory}
+                                  value={recipeCategory}
+                                >
+                                  {recipeCategory === "all"
+                                    ? t("recipes.allCategories")
+                                    : recipeCategory}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <ErrorMessage
+                        name={`recipeCategory`}
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+                    <div className="col-span-12 sm:col-span-3 md:col-span-3">
+                      <Label
+                        htmlFor="recipeSubcategory"
+                        className="text-base font-medium text-foreground mb-2"
+                      >
+                        {t("recipes.subcategory")}
+                      </Label>
+                      <Field name={`recipeSubcategory`}>
+                        {({ field }: { field: any }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) => {
+                              field.onChange({
+                                target: { name: field.name, value },
+                              });
+                              setSelectedRecipeSubcategory(value);
+                            }}
+                          >
+                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                              <SelectValue
+                                placeholder={t("recipes.allSubcategories")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {recipeSubcategories.map((subcategory) => (
+                                <SelectItem
+                                  key={subcategory}
+                                  value={subcategory}
+                                  className="break-all"
+                                >
+                                  {subcategory === "all"
+                                    ? t("recipes.allSubcategories")
+                                    : subcategory}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <ErrorMessage
+                        name={`recipeSubcategory`}
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+                    <div className="col-span-12 sm:col-span-3 md:col-span-4">
+                      <Label
+                        htmlFor="recipe"
+                        className="text-base font-medium text-foreground mb-2"
+                      >
+                        {t("meals.recipe")}
+                      </Label>
+                      <Field name={`recipeId`}>
+                        {({ field }: { field: any }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) => {
+                              field.onChange({
+                                target: { name: field.name, value },
+                              });
+                              handleRecipeSelect(value, setFieldValue, values);
+                            }}
+                          >
+                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                              <SelectValue
+                                placeholder={t("meals.selectRecipe")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {filteredRecipes.map((recipe) => (
+                                <SelectItem key={recipe.id} value={recipe.id}>
+                                  {recipe.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <ErrorMessage
+                        name={`recipeId`}
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+                    <div className="col-span-12 sm:col-span-3 md:col-span-2">
+                      <Label className="text-base font-medium text-foreground">
+                        {t("meals.followRecipe")}
+                      </Label>
+                      <Field name={`followRecipe`}>
+                        {({ field }: { field: any }) => (
+                          <div className="w-full h-10 flex items-center">
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={(checked) => {
+                                handleFollowRecipeChange(
+                                  checked,
+                                  setFieldValue,
+                                  values
+                                );
+                                return field.onChange({
+                                  target: { name: field.name, value: checked },
+                                });
+                              }}
+                              className="data-[state=checked]:bg-primary"
                             />
                           </div>
                         )}
+                      </Field>
+                    </div>
 
-                        {/* Prepared Quantity */}
-                        <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                          <Label
-                            htmlFor="preparedQuantity"
-                            className="text-sm font-medium text-foreground mb-2 block"
-                          >
-                            {t("recipes.preparedQuantity")}{" "}
-                            {values.followRecipe ? "(per ghan)" : ""}
-                          </Label>
-                          <Field
-                            as={Input}
-                            id="preparedQuantity"
-                            name="preparedQuantity"
-                            type="number"
-                            min={0}
-                            step={0.0001}
-                            placeholder={t("recipes.preparedQuantity")}
-                            className="border-border focus:border-primary focus:ring-primary/20"
-                          />
-                          <ErrorMessage
-                            name="preparedQuantity"
-                            component="p"
-                            className="text-destructive text-xs mt-1 flex items-center gap-1"
-                          />
-                        </div>
-                        <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                          <Label
-                            htmlFor="preparedQuantityUnit"
-                            className="text-sm font-medium text-foreground mb-2 block"
-                          >
-                            {t("recipes.preparedQuantityUnit")}
-                          </Label>
-                          <Field name="preparedQuantityUnit">
-                            {({ field }: { field: any }) => (
-                              <Select
-                                value={field.value}
-                                onValueChange={(value) =>
-                                  field.onChange({
-                                    target: { name: field.name, value },
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="text-sm">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent searchable>
-                                  {UNIT_OPTIONS.map((option) => (
-                                    <SelectItem
-                                      key={option.value}
-                                      value={option.value}
-                                    >
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          </Field>
-                          <ErrorMessage
-                            name="preparedQuantityUnit"
-                            component="p"
-                            className="text-destructive text-xs mt-1 flex items-center gap-1"
-                          />
-                        </div>
-                        <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                          <Label
-                            htmlFor="servingQuantity"
-                            className="text-sm font-medium text-foreground mb-2 block"
-                          >
-                            {t("recipes.servingQuantity")}
-                          </Label>
-                          <Field
-                            as={Input}
-                            id="servingQuantity"
-                            name="servingQuantity"
-                            type="number"
-                            min={0}
-                            step={0.0001}
-                            placeholder="Serving quantity"
-                            className="border-border focus:border-primary focus:ring-primary/20"
-                          />
-                          <ErrorMessage
-                            name="servingQuantity"
-                            component="p"
-                            className="text-destructive text-xs mt-1 flex items-center gap-1"
-                          />
-                        </div>
-                        <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                          <Label
-                            htmlFor="servingQuantityUnit"
-                            className="text-sm font-medium text-foreground mb-2 block"
-                          >
-                            {t("recipes.servingQuantityUnit")}
-                          </Label>
-                          <Field name="servingQuantityUnit">
-                            {({ field }: { field: any }) => (
-                              <Select
-                                value={field.value}
-                                onValueChange={(value) =>
-                                  field.onChange({
-                                    target: { name: field.name, value },
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="text-sm">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent searchable>
-                                  {UNIT_OPTIONS.map((option) => (
-                                    <SelectItem
-                                      key={option.value}
-                                      value={option.value}
-                                    >
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          </Field>
-                          <ErrorMessage
-                            name="servingQuantityUnit"
-                            component="p"
-                            className="text-destructive text-xs mt-1 flex items-center gap-1"
-                          />
-                        </div>
-                        {/* Quantity Per Piece (only if servingQuantityUnit is 'pcs') */}
-                        {(values.servingQuantityUnit === "pcs" ||
-                          values.preparedQuantityUnit === "pcs") && (
+                    <Card className="col-span-12">
+                      <CardHeader className="pb-4">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <BookOpen className="w-5 h-5 text-primary" />
+                          {t("recipes.quantityInformation")}
+                        </CardTitle>
+                        <CardDescription>
+                          {t("recipes.quantityInformationDescription")}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="@container grid grid-cols-12 gap-4">
+                          {values.followRecipe && (
+                            <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
+                              <Label className="text-sm font-medium text-foreground mb-2 block">
+                                {t("meals.ghan")}
+                              </Label>
+                              <Field
+                                as={Input}
+                                name={`ghanFactor`}
+                                type="number"
+                                min={0}
+                                step={0.0001}
+                                className="border-border focus:border-primary focus:ring-primary/20"
+                              />
+                              <ErrorMessage
+                                name={`ghanFactor`}
+                                component="p"
+                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                              />
+                            </div>
+                          )}
+
+                          {/* Prepared Quantity */}
                           <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
                             <Label
-                              htmlFor="quantityPerPiece"
+                              htmlFor="preparedQuantity"
                               className="text-sm font-medium text-foreground mb-2 block"
                             >
-                              {t("recipes.quantityPerPiece")}
+                              {t("recipes.preparedQuantity")}{" "}
+                              {values.followRecipe ? "(per ghan)" : ""}
                             </Label>
                             <Field
                               as={Input}
-                              id="quantityPerPiece"
-                              name="quantityPerPiece"
+                              id="preparedQuantity"
+                              name="preparedQuantity"
                               type="number"
                               min={0}
                               step={0.0001}
-                              placeholder="Quantity per piece"
+                              placeholder={t("recipes.preparedQuantity")}
                               className="border-border focus:border-primary focus:ring-primary/20"
                             />
                             <ErrorMessage
-                              name="quantityPerPiece"
+                              name="preparedQuantity"
                               component="p"
                               className="text-destructive text-xs mt-1 flex items-center gap-1"
                             />
                           </div>
-                        )}
-                      </div>
-
-                      {/* Quantity calculations */}
-                      <div className="p-2 border border-border rounded-lg bg-accent">
-                        <p className="text-sm text-foreground/70">
-                          {((
-                            calculatedQuantities = getCalculatedQuantities({
-                              preparedQuantity: values.preparedQuantity,
-                              preparedQuantityUnit: values.preparedQuantityUnit,
-                              servingQuantity: values.servingQuantity,
-                              servingQuantityUnit: values.servingQuantityUnit,
-                              quantityPerPiece: values.quantityPerPiece ?? null,
-                              ghanFactor: values.followRecipe
-                                ? values.ghanFactor
-                                : 1,
-                            })
-                          ) => (
-                            <div className="space-y-1">
-                              <div>
-                                <span className="font-medium">
-                                  Total {t("recipes.preparedQuantity")}:
-                                </span>{" "}
-                                {calculatedQuantities.preparedQuantity}{" "}
-                                {calculatedQuantities.preparedUnit}
-                              </div>
-                              <div>
-                                <span className="font-medium">
-                                  {t("recipes.numberOfServings")}:
-                                </span>{" "}
-                                {calculatedQuantities.numberOfServings}{" "}
-                                {calculatedQuantities.numberOfServings === 1
-                                  ? "person"
-                                  : "people"}
-                              </div>
-                              <div>
-                                <span className="font-medium">
-                                  {t("recipes.extraQuantity")}:
-                                </span>{" "}
-                                {calculatedQuantities.extraQuantity}{" "}
-                                {calculatedQuantities.preparedUnit}
-                              </div>
+                          <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
+                            <Label
+                              htmlFor="preparedQuantityUnit"
+                              className="text-sm font-medium text-foreground mb-2 block"
+                            >
+                              {t("recipes.preparedQuantityUnit")}
+                            </Label>
+                            <Field name="preparedQuantityUnit">
+                              {({ field }: { field: any }) => (
+                                <Select
+                                  value={field.value}
+                                  onValueChange={(value) =>
+                                    field.onChange({
+                                      target: { name: field.name, value },
+                                    })
+                                  }
+                                >
+                                  <SelectTrigger className="text-sm">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent searchable>
+                                    {UNIT_OPTIONS.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </Field>
+                            <ErrorMessage
+                              name="preparedQuantityUnit"
+                              component="p"
+                              className="text-destructive text-xs mt-1 flex items-center gap-1"
+                            />
+                          </div>
+                          <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
+                            <Label
+                              htmlFor="servingQuantity"
+                              className="text-sm font-medium text-foreground mb-2 block"
+                            >
+                              {t("recipes.servingQuantity")}
+                            </Label>
+                            <Field
+                              as={Input}
+                              id="servingQuantity"
+                              name="servingQuantity"
+                              type="number"
+                              min={0}
+                              step={0.0001}
+                              placeholder="Serving quantity"
+                              className="border-border focus:border-primary focus:ring-primary/20"
+                            />
+                            <ErrorMessage
+                              name="servingQuantity"
+                              component="p"
+                              className="text-destructive text-xs mt-1 flex items-center gap-1"
+                            />
+                          </div>
+                          <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
+                            <Label
+                              htmlFor="servingQuantityUnit"
+                              className="text-sm font-medium text-foreground mb-2 block"
+                            >
+                              {t("recipes.servingQuantityUnit")}
+                            </Label>
+                            <Field name="servingQuantityUnit">
+                              {({ field }: { field: any }) => (
+                                <Select
+                                  value={field.value}
+                                  onValueChange={(value) =>
+                                    field.onChange({
+                                      target: { name: field.name, value },
+                                    })
+                                  }
+                                >
+                                  <SelectTrigger className="text-sm">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent searchable>
+                                    {UNIT_OPTIONS.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </Field>
+                            <ErrorMessage
+                              name="servingQuantityUnit"
+                              component="p"
+                              className="text-destructive text-xs mt-1 flex items-center gap-1"
+                            />
+                          </div>
+                          {/* Quantity Per Piece (only if servingQuantityUnit is 'pcs') */}
+                          {(values.servingQuantityUnit === "pcs" ||
+                            values.preparedQuantityUnit === "pcs") && (
+                            <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
+                              <Label
+                                htmlFor="quantityPerPiece"
+                                className="text-sm font-medium text-foreground mb-2 block"
+                              >
+                                {t("recipes.quantityPerPiece")}
+                              </Label>
+                              <Field
+                                as={Input}
+                                id="quantityPerPiece"
+                                name="quantityPerPiece"
+                                type="number"
+                                min={0}
+                                step={0.0001}
+                                placeholder="Quantity per piece"
+                                className="border-border focus:border-primary focus:ring-primary/20"
+                              />
+                              <ErrorMessage
+                                name="quantityPerPiece"
+                                component="p"
+                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                              />
                             </div>
-                          ))()}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                          )}
+                        </div>
 
-                  {/* Ingredient Groups Section */}
-                  <div
-                    className={`col-span-12 ${values.followRecipe ? "pointer-events-none" : ""}`}
-                  >
-                    <IngredientsInput
-                      name="ingredientGroups"
-                      ingredientGroups={values.ingredientGroups}
-                      onFieldChange={setFieldValue}
-                      selectedIds={selectedIds}
-                      onSelectionChange={setSelectedIds}
-                      generateStableId={generateStableId}
-                      title={t("meals.ingredients")}
-                      description="Organize ingredients into logical groups"
-                      showCostSummary={false}
-                      quantityType="number"
-                    />
-                  </div>
+                        {/* Quantity calculations */}
+                        <div className="p-2 border border-border rounded-lg bg-accent">
+                          <p className="text-sm text-foreground/70">
+                            {((
+                              calculatedQuantities = getCalculatedQuantities({
+                                preparedQuantity: values.preparedQuantity,
+                                preparedQuantityUnit:
+                                  values.preparedQuantityUnit,
+                                servingQuantity: values.servingQuantity,
+                                servingQuantityUnit: values.servingQuantityUnit,
+                                quantityPerPiece:
+                                  values.quantityPerPiece ?? null,
+                                ghanFactor: values.followRecipe
+                                  ? values.ghanFactor
+                                  : 1,
+                              })
+                            ) => (
+                              <div className="space-y-1">
+                                <div>
+                                  <span className="font-medium">
+                                    Total {t("recipes.preparedQuantity")}:
+                                  </span>{" "}
+                                  {calculatedQuantities.preparedQuantity}{" "}
+                                  {calculatedQuantities.preparedUnit}
+                                </div>
+                                <div>
+                                  <span className="font-medium">
+                                    {t("recipes.numberOfServings")}:
+                                  </span>{" "}
+                                  {calculatedQuantities.numberOfServings}{" "}
+                                  {calculatedQuantities.numberOfServings === 1
+                                    ? "person"
+                                    : "people"}
+                                </div>
+                                <div>
+                                  <span className="font-medium">
+                                    {t("recipes.extraQuantity")}:
+                                  </span>{" "}
+                                  {calculatedQuantities.extraQuantity}{" "}
+                                  {calculatedQuantities.preparedUnit}
+                                </div>
+                              </div>
+                            ))()}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                  {/* Form Actions */}
-                  <div className="col-span-12 flex justify-end space-x-3 pt-4 border-t border-border mt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleClose}
-                      className="border-border text-foreground hover:bg-muted bg-transparent"
+                    {/* Ingredient Groups Section */}
+                    <div
+                      className={`col-span-12 ${values.followRecipe ? "pointer-events-none" : ""}`}
                     >
-                      {t("common.cancel")}
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={isFormSubmitting}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      {isFormSubmitting
-                        ? t("meals.saving")
-                        : t("meals.saveMeal")}
-                    </Button>
+                      <IngredientsInput
+                        name="ingredientGroups"
+                        ingredientGroups={values.ingredientGroups}
+                        onFieldChange={setFieldValue}
+                        selectedIds={selectedIds}
+                        onSelectionChange={setSelectedIds}
+                        generateStableId={generateStableId}
+                        title={t("meals.ingredients")}
+                        description="Organize ingredients into logical groups"
+                        showCostSummary={false}
+                        quantityType="number"
+                      />
+                    </div>
+
+                    {/* Form Actions */}
+                    <div className="col-span-12 flex justify-end space-x-3 pt-4 border-t border-border mt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleClose}
+                        className="border-border text-foreground hover:bg-muted bg-transparent"
+                      >
+                        {t("common.cancel")}
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isFormSubmitting}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                        {isFormSubmitting
+                          ? t("meals.saving")
+                          : t("meals.saveMeal")}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </form>
-            </div>
-          );
-        }}
-      </Formik>
+                </form>
+              </div>
+            );
+          }}
+        </Formik>
+      )}
     </BaseDialog>
   );
 }
