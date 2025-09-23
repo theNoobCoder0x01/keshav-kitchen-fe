@@ -215,9 +215,9 @@ export async function POST(request: Request) {
     }
 
     // Extract ingredients and ingredientGroups from data
-    const { ingredients, ingredientGroups, epochMs, ...menuData } = data;
+  const { ingredients, ingredientGroups, deletedIngredientGroupIds, epochMs, ...menuData } = data;
 
-    // Build menu creation data
+    // Build menu creation data (omit deletedIngredientGroupIds)
     const menuCreateData: any = {
       ...menuData,
       ingredients: {
@@ -308,8 +308,18 @@ export async function PUT(request: Request) {
 
     const data = await request.json();
 
-    // Extract ingredients from data
-    const { ingredients, ...menuData } = data;
+    // Extract ingredients and deletedIngredientGroupIds from data
+    const { ingredients, deletedIngredientGroupIds, ...menuData } = data;
+
+    // If there are ingredient group IDs to delete, handle them first
+    if (deletedIngredientGroupIds && Array.isArray(deletedIngredientGroupIds) && deletedIngredientGroupIds.length > 0) {
+      await prisma.menuIngredientGroup.deleteMany({
+        where: {
+          id: { in: deletedIngredientGroupIds },
+          menuId: id,
+        },
+      });
+    }
 
     const menu = await prisma.menu.update({
       where: { id },
