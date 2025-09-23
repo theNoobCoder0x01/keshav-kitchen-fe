@@ -97,6 +97,7 @@ interface AddMealDialogProps {
       name: string;
       sortOrder: number;
     }>;
+    followRecipe?: boolean;
   } | null;
 }
 
@@ -388,7 +389,7 @@ export function AddMealDialog({
 
       return {
         recipeId: editMeal.recipeId,
-        followRecipe: true,
+        followRecipe: typeof editMeal.followRecipe === "boolean" ? editMeal.followRecipe : false,
         ghanFactor: editMeal.ghanFactor || 1.0,
         preparedQuantity: editMeal.preparedQuantity,
         preparedQuantityUnit: editMeal.preparedQuantityUnit,
