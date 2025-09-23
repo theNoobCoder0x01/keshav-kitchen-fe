@@ -4,7 +4,12 @@ import type { IngredientFormValue } from "@/types/forms";
 import type { MealType } from "@/types/menus";
 
 export async function fetchMenus(params = {}) {
-  const response = await api.get("/menus/", { params });
+  const response = await api.get("/menus", { params });
+  return response.data;
+}
+
+export async function fetchMenu(id: string, params = {}) {
+  const response = await api.get(`/menus/${id}`, { params });
   return response.data;
 }
 
@@ -69,7 +74,7 @@ export async function updateMenu(
     deletedIngredientGroupIds?: string[];
     // Allow any additional fields without breaking callers
     [key: string]: any;
-  },
+  }
 ) {
   const response = await api.put(`/menus/?id=${id}`, data);
   return response.data;
