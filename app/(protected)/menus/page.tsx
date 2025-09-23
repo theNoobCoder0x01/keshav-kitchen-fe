@@ -223,7 +223,7 @@ export default function MenuPage() {
       console.error("Iframe not found or not loaded yet");
       return;
     }
-    const reportRoute = `${window.origin}/${process.env.NEXT_PUBLIC_BASE_PATH || ""}/reports/cook?epochMs=${selectedDate.getTime()}`;
+    const reportRoute = `${window.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ""}/reports/cook?epochMs=${selectedDate.getTime()}`;
     const headerHtml = `<h1>Kitchen Report</h1><p>${new Date().toLocaleDateString()}</p>`;
     const authToken = localStorage.getItem("pdfToken"); // or any short-lived token
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -420,7 +420,7 @@ export default function MenuPage() {
           <iframe
             id="report-preview-iframe"
             ref={reportIFrameRef}
-            src={`${window.origin}/${process.env.NEXT_PUBLIC_BASE_PATH || ""}/${reportPdfPreviewDialog}`}
+            src={`${window.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ""}/${reportPdfPreviewDialog}`}
             width="100%"
             height="800"
           />
