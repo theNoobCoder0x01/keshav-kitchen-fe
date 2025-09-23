@@ -214,23 +214,36 @@ export async function POST(request: Request) {
       data.date = new Date(data.epochMs);
     }
 
-    // Extract ingredients from data
-    const { ingredients, epochMs, ...menuData } = data;
+    // Extract ingredients and ingredientGroups from data
+    const { ingredients, ingredientGroups, epochMs, ...menuData } = data;
+
+    // Build menu creation data
+    const menuCreateData: any = {
+      ...menuData,
+      ingredients: {
+        create:
+          ingredients?.map((ingredient: any) => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit,
+            sequenceNumber: ingredient.sequenceNumber ?? null,
+          })) || [],
+      },
+    };
+
+    // Only add ingredientGroups if present and non-empty
+    if (ingredientGroups && Array.isArray(ingredientGroups) && ingredientGroups.length > 0) {
+      menuCreateData.ingredientGroups = {
+        create: ingredientGroups.map((group: any) => ({
+          name: group.name,
+          sortOrder: group.sortOrder ?? 0,
+        })),
+      };
+    }
 
     const menu = await prisma.menu.create({
-      data: {
-        ...menuData,
-        ingredients: {
-          create:
-            ingredients?.map((ingredient: any) => ({
-              name: ingredient.name,
-              quantity: ingredient.quantity,
-              unit: ingredient.unit,
-              costPerUnit: ingredient.costPerUnit,
-              sequenceNumber: ingredient.sequenceNumber ?? null,
-            })) || [],
-        },
-      },
+      data: menuCreateData,
       include: {
         recipe: {
           select: {
