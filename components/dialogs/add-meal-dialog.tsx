@@ -172,7 +172,7 @@ export function AddMealDialog({
     };
 
     fetchMenuDetails();
-  }, [open, editMeal?.id, fetchedMenu, t]);
+  }, [open, editMeal?.id, fetchedMenu]);
 
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = (
