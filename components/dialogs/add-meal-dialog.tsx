@@ -597,17 +597,21 @@ export function AddMealDialog({
       const processedGroups = values.ingredientGroups
         .map((group: any, index: number) => ({
           id: group.id || `temp_${index}`,
-          name: group.name,
-          sortOrder: Number(group.sortOrder) || 0,
+          name: String(group.name || "").trim(),
+          // keep sortOrder stable with current UI order if not explicitly set
+          sortOrder:
+            typeof group.sortOrder === "number"
+              ? Number(group.sortOrder)
+              : index,
         }))
         .filter((g: any) => g.name !== "Ungrouped");
 
       // Compute deleted group IDs if editing an existing menu (groups that were present before and now removed)
-      const originalGroups: Array<{ id: string; name: string }> =
-        editMeal?.ingredientGroups?.map((g: any) => ({
-          id: g.id,
-          name: g.name,
-        })) || [];
+      const originalGroupsSource =
+        (fetchedMenu as any)?.ingredientGroups || editMeal?.ingredientGroups || [];
+      const originalGroups: Array<{ id: string; name: string }> = (
+        originalGroupsSource as any[]
+      ).map((g: any) => ({ id: g.id, name: g.name }));
       const originalGroupIds = new Set(
         originalGroups.filter((g) => g.name !== "Ungrouped").map((g) => g.id)
       );
@@ -621,7 +625,7 @@ export function AddMealDialog({
         const allIngredients: any[] = [];
         values.ingredientGroups.forEach((group: any, groupIndex: number) => {
           const groupId = group.id || `temp_${groupIndex}`;
-          group.ingredients.forEach((ingredient: any) => {
+          group.ingredients.forEach((ingredient: any, ingredientIndex: number) => {
             if (ingredient.name.trim()) {
               // Only include ingredients with names
               allIngredients.push({
@@ -633,8 +637,8 @@ export function AddMealDialog({
                 sequenceNumber:
                   ingredient.sequenceNumber != null
                     ? Number(ingredient.sequenceNumber)
-                    : undefined,
-                groupId: group.name === "Ungrouped" ? null : groupId,
+                    : ingredientIndex + 1,
+                groupId: String(group.name || "").trim() === "Ungrouped" ? null : groupId,
               });
             }
           });
@@ -667,7 +671,7 @@ export function AddMealDialog({
         const allIngredients: any[] = [];
         values.ingredientGroups.forEach((group: any, groupIndex: number) => {
           const groupId = group.id || `temp_${groupIndex}`;
-          group.ingredients.forEach((ingredient: any) => {
+          group.ingredients.forEach((ingredient: any, ingredientIndex: number) => {
             if (ingredient.name.trim()) {
               // Only include ingredients with names
               allIngredients.push({
@@ -679,8 +683,8 @@ export function AddMealDialog({
                 sequenceNumber:
                   ingredient.sequenceNumber != null
                     ? Number(ingredient.sequenceNumber)
-                    : undefined,
-                groupId: group.name === "Ungrouped" ? null : groupId,
+                    : ingredientIndex + 1,
+                groupId: String(group.name || "").trim() === "Ungrouped" ? null : groupId,
               });
             }
           });
