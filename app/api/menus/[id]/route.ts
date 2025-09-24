@@ -107,7 +107,7 @@ export async function PUT(
     const data = await request.json();
 
     // Extract ingredients and deletedIngredientGroupIds from data
-    const { ingredients, deletedIngredientGroupIds, ...menuData } = data;
+    const { ingredients, deletedIngredientGroupIds, ingredientGroups, ...menuData } = data;
 
     // If there are ingredient group IDs to delete, handle them first
     if (

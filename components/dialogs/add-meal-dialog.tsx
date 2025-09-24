@@ -2,7 +2,7 @@
 
 import { ErrorMessage, Field, Formik } from "formik";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as Yup from "yup";
 
@@ -136,6 +136,14 @@ export function AddMealDialog({
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
   const [fetchedMenu, setFetchedMenu] = useState<any>(null);
 
+  // Stable ID generation to prevent unnecessary re-renders and ensure temp IDs
+  // used for new groups are consistent across the submission process.
+  const generateStableId = useCallback(() => {
+    return typeof crypto !== "undefined"
+      ? String(uuidv4())
+      : `id_${Date.now()}_${Math.random()}`;
+  }, []);
+
   // Reset fetched menu when dialog closes or menu ID changes
   useEffect(() => {
     if (!open) {
@@ -195,11 +203,7 @@ export function AddMealDialog({
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
           sequenceNumber: ing.sequenceNumber ?? 1,
-          localId:
-            ing.localId ||
-            (typeof crypto !== "undefined"
-              ? String(uuidv4())
-              : `${Math.random()}`),
+          localId: ing.localId || generateStableId(),
         }));
 
       // Always preserve the group, even if it has no ingredients
@@ -217,10 +221,7 @@ export function AddMealDialog({
                   quantity: 0,
                   unit: DEFAULT_UNIT,
                   costPerUnit: 0,
-                  localId:
-                    typeof crypto !== "undefined"
-                      ? String(uuidv4())
-                      : `${Math.random()}`,
+                  localId: generateStableId(),
                 },
               ],
       });
@@ -236,11 +237,7 @@ export function AddMealDialog({
         unit: ing.unit,
         costPerUnit: ing.costPerUnit,
         sequenceNumber: ing.sequenceNumber ?? 1,
-        localId:
-          ing.localId ||
-          (typeof crypto !== "undefined"
-            ? String(uuidv4())
-            : `${Math.random()}`),
+        localId: ing.localId || generateStableId(),
       }));
 
     if (ungroupedIngredients.length > 0) {
@@ -263,11 +260,7 @@ export function AddMealDialog({
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
           sequenceNumber: ing.sequenceNumber ?? 1,
-          localId:
-            ing.localId ||
-            (typeof crypto !== "undefined"
-              ? String(uuidv4())
-              : `${Math.random()}`),
+          localId: ing.localId || generateStableId(),
         })),
       });
     }
@@ -295,7 +288,7 @@ export function AddMealDialog({
     servingQuantityUnit: Yup.string()
       .trim()
       .required(t("meals.servingQuantityUnitRequired")),
-    quantityPerPiece: Yup.number().positive(
+    quantityPerPiece: Yup.number().nullable().positive(
       t("meals.quantityPerPiecePositive")
     ),
     ingredientGroups: Yup.array()
@@ -349,11 +342,7 @@ export function AddMealDialog({
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit,
           sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
-          localId:
-            ingredient.localId ||
-            (typeof crypto !== "undefined"
-              ? String(uuidv4())
-              : `${Math.random()}`),
+          localId: ingredient.localId || generateStableId(),
         }));
         if (editMeal.ingredientGroups && editMeal.ingredientGroups.length > 0) {
           // Preserve existing menu ingredient groups
@@ -369,11 +358,7 @@ export function AddMealDialog({
               sortOrder: 999,
               ingredients: ingredients.map((ing) => ({
                 ...ing,
-                localId:
-                  ing.localId ||
-                  (typeof crypto !== "undefined"
-                    ? String(uuidv4())
-                    : `${Math.random()}`),
+                localId: ing.localId || generateStableId(),
               })),
             },
           ];
@@ -400,11 +385,7 @@ export function AddMealDialog({
                   quantity: ingredient.quantity,
                   unit: ingredient.unit,
                   costPerUnit: ingredient.costPerUnit || 0,
-                  localId:
-                    ingredient.localId ||
-                    (typeof crypto !== "undefined"
-                      ? String(uuidv4())
-                      : `${Math.random()}`),
+                  localId: ingredient.localId || generateStableId(),
                 }))
               : [
                   {
@@ -413,10 +394,7 @@ export function AddMealDialog({
                     quantity: 0,
                     unit: DEFAULT_UNIT,
                     costPerUnit: 0,
-                    localId:
-                      typeof crypto !== "undefined"
-                        ? String(uuidv4())
-                        : `${Math.random()}`,
+                    localId: generateStableId(),
                   },
                 ];
 
@@ -467,10 +445,7 @@ export function AddMealDialog({
               quantity: 0,
               unit: DEFAULT_UNIT,
               costPerUnit: 0,
-              localId:
-                typeof crypto !== "undefined"
-                  ? String(uuidv4())
-                  : `${Math.random()}`,
+              localId: generateStableId(),
             },
           ],
         },
@@ -552,11 +527,7 @@ export function AddMealDialog({
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit || 0,
           sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
-          localId:
-            ingredient.localId ||
-            (typeof crypto !== "undefined"
-              ? String(uuidv4())
-              : `${Math.random()}`),
+          localId: ingredient.localId || generateStableId(),
         }));
 
         const ingredientGroups = [
@@ -617,7 +588,9 @@ export function AddMealDialog({
         throw new Error("Ghan factor must be greater than zero.");
       }
 
-      // Prepare ingredient group definitions to send to API
+      // Prepare ingredient group definitions to send to API (exclude Ungrouped)
+      // Use recipe dialog's temp id format so server-side mapping can detect
+      // frontend temporary group IDs.
       const processedGroups = values.ingredientGroups
         .map((group: any, index: number) => ({
           id: group.id || `temp_${index}`,
@@ -677,6 +650,7 @@ export function AddMealDialog({
           ingredientGroups: processedGroups,
           deletedIngredientGroupIds: deletedGroupIds,
           menuComponentId: values.menuComponentId,
+          followRecipe: values.followRecipe,
         };
 
         const result = await updateMenu(editMeal.id, updateData);
@@ -721,6 +695,7 @@ export function AddMealDialog({
           servingQuantityUnit: values.servingQuantityUnit,
           quantityPerPiece: values.quantityPerPiece,
           ghanFactor: values.ghanFactor,
+          followRecipe: values.followRecipe,
           notes: t("meals.mealPlannedNotes", {
             mealType: mealType.toLowerCase(),
             servings: values.servingQuantity,
@@ -825,13 +800,13 @@ export function AddMealDialog({
           enableReinitialize={false}
           key={editMeal?.id || "new"} // Force re-initialization when switching between add/edit
         >
-          {({ values, setFieldValue, handleSubmit: formikHandleSubmit }) => {
-            // Generate stable ID function for the component
-            const generateStableId = () => {
-              return typeof crypto !== "undefined"
-                ? String(uuidv4())
-                : `id_${Date.now()}_${Math.random()}`;
-            };
+          {({
+            values,
+            setFieldValue,
+            handleSubmit: formikHandleSubmit,
+            errors,
+          }) => {
+            console.log("errrors", errors);
 
             // Removing helpers that referenced non-existent fields in this form
             return (
@@ -1182,7 +1157,7 @@ export function AddMealDialog({
 
                         {/* Quantity calculations */}
                         <div className="p-2 border border-border rounded-lg bg-accent">
-                          <p className="text-sm text-foreground/70">
+                          <div className="text-sm text-foreground/70">
                             {((
                               calculatedQuantities = getCalculatedQuantities({
                                 preparedQuantity: values.preparedQuantity,
@@ -1223,7 +1198,7 @@ export function AddMealDialog({
                                 </div>
                               </div>
                             ))()}
-                          </p>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

@@ -44,6 +44,7 @@ export async function createMenu(data: {
     sortOrder: number;
   }>;
   deletedIngredientGroupIds?: string[];
+  followRecipe?: boolean;
 }) {
   const response = await api.post("/menus/", data);
   return response.data;
@@ -72,15 +73,16 @@ export async function updateMenu(
       sortOrder: number;
     }>;
     deletedIngredientGroupIds?: string[];
+    followRecipe?: boolean;
     // Allow any additional fields without breaking callers
     [key: string]: any;
   }
 ) {
-  const response = await api.put(`/menus/?id=${id}`, data);
+  const response = await api.put(`/menus/${id}`, data);
   return response.data;
 }
 
 export async function deleteMenu(id: string) {
-  const response = await api.delete(`/menus/?id=${id}`);
+  const response = await api.delete(`/menus/${id}`);
   return response.data;
 }

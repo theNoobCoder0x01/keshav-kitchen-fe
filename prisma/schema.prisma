@@ -84,18 +84,18 @@ model IngredientGroup {
 }
 
 model Ingredient {
-  id          String           @id @default(cuid())
-  name        String
-  quantity    Float
-  unit        String
-  costPerUnit Float?
+  id             String           @id @default(cuid())
+  name           String
+  quantity       Float
+  unit           String
+  costPerUnit    Float?
   sequenceNumber Int?
-  recipeId    String
-  recipe      Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  groupId     String?
-  group       IngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  recipeId       String
+  recipe         Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  groupId        String?
+  group          IngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@index([recipeId])
   @@index([groupId])
@@ -117,6 +117,7 @@ model Menu {
   servingQuantityUnit  String?
   quantityPerPiece     Float?
   ghanFactor           Float                 @default(1.0)
+  followRecipe         Boolean               @default(true)
   notes                String?
   ingredients          MenuIngredient[] // Store ingredients separately for each menu
   ingredientGroups     MenuIngredientGroup[] // Add ingredient groups for menus
@@ -145,18 +146,18 @@ model MenuIngredientGroup {
 }
 
 model MenuIngredient {
-  id          String               @id @default(cuid())
-  name        String
-  quantity    Float
-  unit        String
-  costPerUnit Float
+  id             String               @id @default(cuid())
+  name           String
+  quantity       Float
+  unit           String
+  costPerUnit    Float
   sequenceNumber Int?
-  menuId      String
-  menu        Menu                 @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  groupId     String? // Add groupId to support grouping
-  group       MenuIngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  menuId         String
+  menu           Menu                 @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  groupId        String? // Add groupId to support grouping
+  group          MenuIngredientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 
   @@index([menuId])
   @@index([groupId]) // Add index for groupId
