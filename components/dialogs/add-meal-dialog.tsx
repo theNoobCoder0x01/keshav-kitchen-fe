@@ -3,6 +3,7 @@
 import { ErrorMessage, Field, Formik } from "formik";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ClipboardEvent } from "react";
 import { toast } from "sonner";
 import * as Yup from "yup";
 
@@ -149,12 +150,14 @@ export function AddMealDialog({
     if (!open) {
       setFetchedMenu(null);
       setIsLoadingMenu(false);
+      setSelectedIds(new Set());
     }
   }, [open]);
 
   useEffect(() => {
     setFetchedMenu(null);
     setIsLoadingMenu(false);
+    setSelectedIds(new Set());
   }, [editMeal?.id]);
 
   // Fetch menu details when in edit mode
@@ -809,6 +812,116 @@ export function AddMealDialog({
             console.log("errrors", errors);
 
             // Removing helpers that referenced non-existent fields in this form
+            const handlePasteIngredients = (e: ClipboardEvent) => {
+              const columnOrder = [
+                "name",
+                "quantity",
+                "unit",
+                "costPerUnit",
+              ] as const;
+              const targetElement = e.target as HTMLElement | null;
+              if (!targetElement) return;
+
+              const inputEl = targetElement.closest(
+                'input[name^="ingredientGroups["]'
+              ) as HTMLInputElement | null;
+              let fieldName: string | null = inputEl?.name || null;
+              if (!fieldName) {
+                const fieldEl = targetElement.closest(
+                  "[data-field-name]"
+                ) as HTMLElement | null;
+                fieldName = fieldEl?.getAttribute("data-field-name") ?? null;
+              }
+              if (!fieldName) return;
+
+              const match = fieldName.match(
+                /ingredientGroups\[(\d+)\]\.ingredients\[(\d+)\]\.(name|quantity|unit|costPerUnit)/
+              );
+              if (!match) return;
+
+              const groupIndex = parseInt(match[1], 10);
+              const ingredientIndex = parseInt(match[2], 10);
+              const startCol = columnOrder.indexOf(
+                match[3] as (typeof columnOrder)[number]
+              );
+
+              const text = e.clipboardData.getData("text/plain");
+              if (!text) return;
+
+              // Only prevent default when we know we're handling ingredients paste
+              e.preventDefault();
+
+              const rows = text.replace(/\r/g, "").split("\n");
+              if (rows.length && rows[rows.length - 1] === "") rows.pop();
+              const grid = rows.map((row) => row.split("\t"));
+
+              const nextIngredients = [
+                ...values.ingredientGroups[groupIndex].ingredients,
+              ];
+
+              const ensureRow = (rowIndex: number) => {
+                while (nextIngredients.length <= rowIndex) {
+                  nextIngredients.push({
+                    id: undefined,
+                    name: "",
+                    quantity: 0,
+                    unit: DEFAULT_UNIT,
+                    costPerUnit: 0,
+                    sequenceNumber: rowIndex + 1,
+                    localId: generateStableId(),
+                  });
+                }
+                if (!nextIngredients[rowIndex]) {
+                  nextIngredients[rowIndex] = {
+                    id: undefined,
+                    name: "",
+                    quantity: 0,
+                    unit: DEFAULT_UNIT,
+                    costPerUnit: 0,
+                    sequenceNumber: rowIndex + 1,
+                    localId: generateStableId(),
+                  } as any;
+                }
+              };
+
+              const normalizeUnit = (raw: string) => {
+                const trimmed = raw.trim();
+                if (!trimmed) return DEFAULT_UNIT;
+                const found = UNIT_OPTIONS.find(
+                  (opt) =>
+                    opt.value.toLowerCase() === trimmed.toLowerCase() ||
+                    opt.label.toLowerCase() === trimmed.toLowerCase()
+                );
+                return found ? found.value : trimmed;
+              };
+
+              grid.forEach((cells, r) => {
+                const rowIndex = ingredientIndex + r;
+                ensureRow(rowIndex);
+                const updatedRow = { ...nextIngredients[rowIndex] } as any;
+                cells.forEach((cell, c) => {
+                  const colIndex = startCol + c;
+                  if (colIndex > columnOrder.length - 1) return;
+                  const key = columnOrder[colIndex];
+                  const rawValue = (cell ?? "").trim();
+                  if (key === "unit") {
+                    updatedRow.unit = normalizeUnit(rawValue);
+                  } else if (key === "quantity" || key === "costPerUnit") {
+                    const parsed = parseFloat(rawValue);
+                    updatedRow[key] = isNaN(parsed) ? 0 : parsed;
+                  } else {
+                    updatedRow[key] = rawValue;
+                  }
+                });
+                nextIngredients[rowIndex] = updatedRow;
+              });
+
+              setFieldValue(
+                `ingredientGroups[${groupIndex}].ingredients`,
+                nextIngredients,
+                true
+              );
+            };
             return (
               <div className="overflow-y-auto">
                 <form onSubmit={formikHandleSubmit}>
@@ -1218,6 +1331,7 @@ export function AddMealDialog({
                         description="Organize ingredients into logical groups"
                         showCostSummary={false}
                         quantityType="number"
+                        onPasteIngredients={handlePasteIngredients}
                       />
                     </div>
 
