@@ -36,7 +36,7 @@ export function MenuGrid({
         breakfast: (menus.BREAKFAST || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.preparedQuantity ? `(${menu.preparedQuantity} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
@@ -44,7 +44,7 @@ export function MenuGrid({
         lunch: (menus.LUNCH || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.preparedQuantity ? `(${menu.preparedQuantity} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
@@ -52,7 +52,7 @@ export function MenuGrid({
         dinner: (menus.DINNER || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.preparedQuantity ? `(${menu.preparedQuantity} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
@@ -60,7 +60,7 @@ export function MenuGrid({
         snack: (menus.SNACK || []).map((menu: any) => ({
           id: menu.id,
           name: menu.recipe?.name || "Unknown Recipe",
-          weight: `${menu.servingQuantity} ${menu.ghanFactor ? `(${menu.ghanFactor} ghan)` : ""}`,
+          weight: `${menu.servingQuantity} ${menu.preparedQuantity ? `(${menu.preparedQuantity} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
           menuComponent: menu.menuComponent || null,
