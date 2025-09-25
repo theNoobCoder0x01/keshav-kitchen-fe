@@ -183,6 +183,7 @@ export default function MenuPage() {
     if (window.confirm(t("messages.confirmDeleteMeal"))) {
       try {
         const response = await deleteMenu(mealId);
+        loadMenuData(); // Reload data after deletion
         toast.success(response.message);
       } catch (error) {
         console.error("Error deleting meal:", error);
