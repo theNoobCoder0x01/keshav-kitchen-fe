@@ -344,6 +344,7 @@ export function AddMealDialog({
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit,
+          groupId: (ingredient as any).groupId ?? null,
           sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
           localId: ingredient.localId || generateStableId(),
         }));
@@ -388,6 +389,7 @@ export function AddMealDialog({
                   quantity: ingredient.quantity,
                   unit: ingredient.unit,
                   costPerUnit: ingredient.costPerUnit || 0,
+                  groupId: (ingredient as any).groupId ?? null,
                   localId: ingredient.localId || generateStableId(),
                 }))
               : [
@@ -530,6 +532,7 @@ export function AddMealDialog({
           unit: ingredient.unit,
           costPerUnit: ingredient.costPerUnit || 0,
           sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
+          groupId: (ingredient as any).groupId ?? null,
           localId: ingredient.localId || generateStableId(),
         }));
 
