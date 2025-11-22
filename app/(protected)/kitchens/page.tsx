@@ -52,10 +52,12 @@ export default function KitchensPage() {
   }) => {
     try {
       if (kitchen.id) {
-        await updateKitchen(kitchen.id, kitchen);
+        const { id, ...data } = kitchen;
+        await updateKitchen(id, data);
         toast.success(t("messages.kitchenUpdated"));
       } else {
-        await createKitchen(kitchen);
+        const { id, ...data } = kitchen;
+        await createKitchen(data);
         toast.success(t("messages.kitchenAdded"));
       }
       setDialogOpen(false);

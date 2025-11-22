@@ -44,7 +44,7 @@ export function AddEditKitchenDialog({
   const initialValues = {
     name: initialKitchen?.name || "",
     location: initialKitchen?.location || "",
-    sequenceNumber: initialKitchen?.sequenceNumber || 0,
+    sequenceNumber: initialKitchen?.sequenceNumber ?? 0,
   };
 
   const handleSubmit = (

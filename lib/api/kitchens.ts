@@ -18,11 +18,11 @@ export async function updateKitchen(
   id: string,
   data: { name: string; location: string; sequenceNumber?: number },
 ) {
-  const response = await api.put(`/kitchens/?id=${id}`, data);
+  const response = await api.put(`/kitchens/${id}`, data);
   return response.data;
 }
 
 export async function deleteKitchen(id: string) {
-  const response = await api.delete(`/kitchens/?id=${id}`);
+  const response = await api.delete(`/kitchens/${id}`);
   return response.data;
 }
