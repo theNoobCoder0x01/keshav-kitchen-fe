@@ -84,7 +84,7 @@ export function Sidebar() {
       label: navigation("menus"),
       icon: Calendar,
       href: "/menus",
-      isActive: pathname === "/menus",
+      isActive: pathname.startsWith("/menus"),
       description: navigation("menusDesc"),
       badge: null,
       children: null,
@@ -94,7 +94,7 @@ export function Sidebar() {
       label: navigation("recipes"),
       icon: ChefHat,
       href: "/recipes",
-      isActive: pathname === "/recipes",
+      isActive: pathname.startsWith("/recipes"),
       description: navigation("recipesDesc"),
       badge: null,
       children: null,
@@ -104,7 +104,7 @@ export function Sidebar() {
       label: navigation("reports"),
       icon: BarChart3,
       href: "/reports",
-      isActive: pathname === "/reports",
+      isActive: pathname.startsWith("/reports"),
       description: navigation("reportsDesc"),
       badge: null,
       children: null,
@@ -114,7 +114,7 @@ export function Sidebar() {
       label: navigation("kitchens"),
       icon: Users,
       href: "/kitchens",
-      isActive: pathname === "/kitchens",
+      isActive: pathname.startsWith("/kitchens"),
       description: navigation("kitchensDesc"),
       badge: null,
       children: null,
@@ -136,7 +136,7 @@ export function Sidebar() {
         id="sidebar"
         className={cn(
           "fixed lg:static inset-y-0 left-0 z-50 w-72 bg-background border-r border-border transform transition-transform duration-300 ease-in-out lg:transform-none",
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         <div className="flex flex-col h-full">
@@ -179,7 +179,7 @@ export function Sidebar() {
                     "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200",
                     item.isActive
                       ? "bg-linear-to-r from-primary/10 to-primary/5 text-primary shadow-xs border border-primary/10"
-                      : "text-foreground hover:bg-muted hover:text-primary",
+                      : "text-foreground hover:bg-muted hover:text-primary"
                   )}
                 >
                   <div className="flex items-center space-x-3">
@@ -188,7 +188,7 @@ export function Sidebar() {
                         "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
                         item.isActive
                           ? "bg-linear-to-br from-primary to-primary/80 text-primary-foreground shadow-md"
-                          : "bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                          : "bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary"
                       )}
                     >
                       <item.icon className="w-5 h-5" />
@@ -207,7 +207,7 @@ export function Sidebar() {
                           "text-xs px-2 py-1 transition-colors",
                           item.isActive
                             ? "bg-primary text-primary-foreground"
-                            : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
+                            : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
                         )}
                       >
                         {item.badge}
@@ -219,7 +219,7 @@ export function Sidebar() {
                           "w-4 h-4 transition-transform",
                           item.isActive
                             ? "text-primary"
-                            : "text-muted-foreground",
+                            : "text-muted-foreground"
                         )}
                       />
                     )}

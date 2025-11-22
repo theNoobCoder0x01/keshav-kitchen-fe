@@ -44,7 +44,7 @@ export default function MenuPage() {
     string | undefined
   >(undefined);
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
-    MealType.BREAKFAST,
+    MealType.BREAKFAST
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -117,11 +117,11 @@ export default function MenuPage() {
       // Transform menus data to match the expected format
       const groupedMenus = {
         BREAKFAST: menusResponse.filter(
-          (m: any) => m.mealType === MealType.BREAKFAST,
+          (m: any) => m.mealType === MealType.BREAKFAST
         ),
         LUNCH: menusResponse.filter((m: any) => m.mealType === MealType.LUNCH),
         DINNER: menusResponse.filter(
-          (m: any) => m.mealType === MealType.DINNER,
+          (m: any) => m.mealType === MealType.DINNER
         ),
         SNACK: menusResponse.filter((m: any) => m.mealType === MealType.SNACK),
       };
@@ -164,7 +164,7 @@ export default function MenuPage() {
 
   const handleAddMeal = (
     mealType: UnifiedMealType,
-    menuComponentId?: string,
+    menuComponentId?: string
   ) => {
     setSelectedMealType(mealType);
     setEditMeal({
@@ -232,7 +232,7 @@ export default function MenuPage() {
       const res = await api.post(
         "/reports/pdf/",
         { route: reportRoute, headerHtml, authToken, timezone },
-        { responseType: "arraybuffer" },
+        { responseType: "arraybuffer" }
       );
 
       const arrayBuffer = await res.data;
@@ -250,7 +250,7 @@ export default function MenuPage() {
   };
   const handleDownloadIframePdf = () => {
     const iframe = document.getElementById(
-      "report-preview-iframe",
+      "report-preview-iframe"
     ) as HTMLIFrameElement | null;
     if (iframe?.contentWindow) {
       iframe.contentWindow.focus();
@@ -295,44 +295,54 @@ export default function MenuPage() {
                 className="w-auto"
               />
 
+              {/* Reports button */}
+              <Button
+                variant="default"
+                onClick={() => handleDownloadReport("recipes")}
+              >
+                Recipes Report
+              </Button>
+
               {/* Reports Dropdown Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-xs flex items-center"
+              {false && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-xs flex items-center"
+                    >
+                      <span className="hidden sm:inline">
+                        {t("reports.title")}
+                      </span>
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="bottom"
+                    align="end"
+                    className="z-10 bg-secondary drop-shadow-lg py-2 flex flex-col rounded-lg border"
                   >
-                    <span className="hidden sm:inline">
-                      {t("reports.title")}
-                    </span>
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side="bottom"
-                  align="end"
-                  className="z-10 bg-secondary drop-shadow-lg py-2 flex flex-col rounded-lg border"
-                >
-                  <DropdownMenuItem
-                    className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
-                    onClick={() => handleDownloadReport("cook")}
-                  >
-                    Cook Report
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
-                    onClick={() => handleDownloadReport("supplier")}
-                  >
-                    Supplier Report
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
-                    onClick={() => handleDownloadReport("recipes")}
-                  >
-                    Recipes Report
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuItem
+                      className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
+                      onClick={() => handleDownloadReport("cook")}
+                    >
+                      Cook Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
+                      onClick={() => handleDownloadReport("supplier")}
+                    >
+                      Supplier Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
+                      onClick={() => handleDownloadReport("recipes")}
+                    >
+                      Recipes Report
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           }
         />

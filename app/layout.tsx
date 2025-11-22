@@ -19,7 +19,7 @@ export default function RootLayout({
       <Head>
         <link rel="icon" href="/local/favicon.ico" />
       </Head>
-      <body className={inter.className}>
+      <body className={`${inter.className} overflow-auto`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

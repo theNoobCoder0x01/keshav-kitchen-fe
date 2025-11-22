@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
 import api from "@/lib/api/axios";
-import { Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -22,7 +23,7 @@ export default function KitchenDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMenuComponent, setEditingMenuComponent] = useState<any | null>(
-    null,
+    null
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -55,7 +56,7 @@ export default function KitchenDetailsPage() {
         // Edit
         await api.put(
           `/kitchens/${id}/menu-components/${menuComponent.id}/`,
-          menuComponent,
+          menuComponent
         );
         toast.success(t("messages.menuComponentUpdated"));
       } else {
@@ -96,6 +97,18 @@ export default function KitchenDetailsPage() {
 
   return (
     <div className="w-full flex flex-col gap-2 md:gap-4">
+      <div>
+        <Link href="/kitchens">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 pl-3 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Kitchens
+          </Button>
+        </Link>
+      </div>
       <PageHeader
         title={kitchen?.name || t("kitchens.details")}
         subtitle={kitchen?.location}
