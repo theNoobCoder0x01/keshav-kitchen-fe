@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
         kitchen: {
           select: {
             name: true,
+            sequenceNumber: true,
           },
         },
         menuComponent: {
@@ -92,6 +93,11 @@ export async function GET(request: NextRequest) {
       orderBy: [
         {
           kitchen: {
+            sequenceNumber: "asc",
+          },
+        },
+        {
+          kitchen: {
             name: "asc",
           },
         },
@@ -122,6 +128,7 @@ export async function GET(request: NextRequest) {
       if (!kitchenMap[kitchenName]) {
         kitchenMap[kitchenName] = {
           kitchenName,
+          sequenceNumber: menu.kitchen.sequenceNumber,
           mealTypeMap: {},
         };
       }
@@ -205,39 +212,46 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    const data = Object.values(kitchenMap).map((kitchen: any) => ({
-      kitchenName: kitchen.kitchenName,
-      mealTypes: Object.values(kitchen.mealTypeMap).map((mealType: any) => ({
-        mealType: mealType.mealType,
-        recipes: Object.values(mealType.recipeMap)
-          .sort((a: any, b: any) => {
-            if (a.minSequenceNumber !== b.minSequenceNumber) {
-              return a.minSequenceNumber - b.minSequenceNumber;
-            }
-            return a.recipeName.localeCompare(b.recipeName);
-          })
-          .map((recipe: any) => ({
-          recipeId: recipe.recipeId,
-          recipeName: recipe.recipeName,
-          ghanFactor: recipe.ghanFactor,
-          preparedQuantity: recipe.preparedQuantity,
-          preparedQuantityUnit: recipe.preparedQuantityUnit,
-          menuComponents: Array.from(recipe.menuComponents),
-          ingredientGroups: Object.values(recipe.groupMap)
-            .map((group: any) => ({
-              name: group.name,
-              ingredients: Object.values(group.ingredientMap).sort(
-                (a: any, b: any) => a.sequenceNumber - b.sequenceNumber
-              ),
-            }))
+    const data = Object.values(kitchenMap)
+      .sort((a: any, b: any) => {
+        if (a.sequenceNumber !== b.sequenceNumber) {
+          return a.sequenceNumber - b.sequenceNumber;
+        }
+        return a.kitchenName.localeCompare(b.kitchenName);
+      })
+      .map((kitchen: any) => ({
+        kitchenName: kitchen.kitchenName,
+        mealTypes: Object.values(kitchen.mealTypeMap).map((mealType: any) => ({
+          mealType: mealType.mealType,
+          recipes: Object.values(mealType.recipeMap)
             .sort((a: any, b: any) => {
-              if (a.name === "Ungrouped") return -1;
-              if (b.name === "Ungrouped") return 1;
-              return a.name.localeCompare(b.name);
-            }),
+              if (a.minSequenceNumber !== b.minSequenceNumber) {
+                return a.minSequenceNumber - b.minSequenceNumber;
+              }
+              return a.recipeName.localeCompare(b.recipeName);
+            })
+            .map((recipe: any) => ({
+              recipeId: recipe.recipeId,
+              recipeName: recipe.recipeName,
+              ghanFactor: recipe.ghanFactor,
+              preparedQuantity: recipe.preparedQuantity,
+              preparedQuantityUnit: recipe.preparedQuantityUnit,
+              menuComponents: Array.from(recipe.menuComponents),
+              ingredientGroups: Object.values(recipe.groupMap)
+                .map((group: any) => ({
+                  name: group.name,
+                  ingredients: Object.values(group.ingredientMap).sort(
+                    (a: any, b: any) => a.sequenceNumber - b.sequenceNumber
+                  ),
+                }))
+                .sort((a: any, b: any) => {
+                  if (a.name === "Ungrouped") return -1;
+                  if (b.name === "Ungrouped") return 1;
+                  return a.name.localeCompare(b.name);
+                }),
+            })),
         })),
-      })),
-    }));
+      }));
 
     return NextResponse.json(data);
   } catch (error) {

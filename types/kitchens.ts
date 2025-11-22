@@ -3,6 +3,7 @@ export interface Kitchen {
   name: string;
   location?: string | null;
   description?: string | null;
+  sequenceNumber?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -47,6 +47,7 @@ export default function KitchensPage() {
   const handleSave = async (kitchen: {
     name: string;
     location: string;
+    sequenceNumber?: number;
     id?: string;
   }) => {
     try {

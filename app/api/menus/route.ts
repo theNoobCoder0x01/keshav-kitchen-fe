@@ -103,6 +103,7 @@ export async function GET(request: Request) {
           select: {
             id: true,
             name: true,
+            sequenceNumber: true,
           },
         },
         user: {
@@ -112,7 +113,11 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: [{ mealType: "asc" }, { createdAt: "asc" }],
+      orderBy: [
+        { kitchen: { sequenceNumber: "asc" } },
+        { mealType: "asc" },
+        { createdAt: "asc" },
+      ],
     });
     return NextResponse.json(menus);
   } catch (error) {

@@ -5,14 +5,18 @@ export async function fetchKitchens() {
   return response.data;
 }
 
-export async function createKitchen(data: { name: string; location: string }) {
+export async function createKitchen(data: {
+  name: string;
+  location: string;
+  sequenceNumber?: number;
+}) {
   const response = await api.post("/kitchens/", data);
   return response.data;
 }
 
 export async function updateKitchen(
   id: string,
-  data: { name: string; location: string },
+  data: { name: string; location: string; sequenceNumber?: number },
 ) {
   const response = await api.put(`/kitchens/?id=${id}`, data);
   return response.data;

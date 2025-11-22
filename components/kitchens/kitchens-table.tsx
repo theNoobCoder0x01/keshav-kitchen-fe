@@ -84,6 +84,15 @@ export function KitchensTable({
           <TableRow>
             <TableHead
               className="text-foreground font-semibold py-4 px-6 cursor-pointer"
+              onClick={() => handleSort("sequenceNumber")}
+            >
+              <div className="flex items-center space-x-2">
+                <span>SEQ</span>
+                {getSortIcon("sequenceNumber")}
+              </div>
+            </TableHead>
+            <TableHead
+              className="text-foreground font-semibold py-4 px-6 cursor-pointer"
               onClick={() => handleSort("name")}
             >
               <div className="flex items-center space-x-2">
@@ -109,6 +118,9 @@ export function KitchensTable({
           {paginatedKitchens.length > 0 ? (
             paginatedKitchens.map((kitchen: Kitchen) => (
               <TableRow key={kitchen.id}>
+                <TableCell className="py-4 px-6 text-foreground">
+                  {kitchen.sequenceNumber ?? 0}
+                </TableCell>
                 <TableCell className="py-4 px-6 font-medium text-foreground">
                   <Link
                     href={`/kitchens/${kitchen.id}`}
@@ -182,6 +194,12 @@ export function KitchensTableSkeleton({
           <TableRow>
             <TableHead className="text-foreground font-semibold py-4 px-6">
               <div className="flex items-center space-x-2">
+                <Skeleton className="h-4 w-8 rounded" />
+                <Skeleton className="h-4 w-4 rounded" />
+              </div>
+            </TableHead>
+            <TableHead className="text-foreground font-semibold py-4 px-6">
+              <div className="flex items-center space-x-2">
                 <Skeleton className="h-4 w-16 rounded" />
                 <Skeleton className="h-4 w-4 rounded" />
               </div>
@@ -200,6 +218,9 @@ export function KitchensTableSkeleton({
         <TableBody>
           {Array.from({ length: rowCount }).map((_, idx) => (
             <TableRow key={idx}>
+              <TableCell className="py-4 px-6">
+                <Skeleton className="h-5 w-8 rounded" />
+              </TableCell>
               <TableCell className="py-4 px-6">
                 <Skeleton className="h-5 w-32 rounded" />
               </TableCell>

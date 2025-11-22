@@ -56,6 +56,11 @@ export async function GET(request: NextRequest) {
       orderBy: [
         {
           kitchen: {
+            sequenceNumber: "asc",
+          },
+        },
+        {
+          kitchen: {
             name: "asc",
           },
         },

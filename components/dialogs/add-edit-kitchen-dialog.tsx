@@ -17,8 +17,14 @@ interface AddEditKitchenDialogProps {
     id?: string;
     name: string;
     location: string;
+    sequenceNumber?: number;
   } | null;
-  onSave: (kitchen: { name: string; location: string; id?: string }) => void;
+  onSave: (kitchen: {
+    name: string;
+    location: string;
+    sequenceNumber: number;
+    id?: string;
+  }) => void;
 }
 
 export function AddEditKitchenDialog({
@@ -32,11 +38,13 @@ export function AddEditKitchenDialog({
   const validationSchema = Yup.object({
     name: Yup.string().trim().required(t("kitchens.nameRequired")),
     location: Yup.string().trim().required(t("kitchens.locationRequired")),
+    sequenceNumber: Yup.number().required(t("kitchens.sequenceNumberRequired")),
   });
 
   const initialValues = {
     name: initialKitchen?.name || "",
     location: initialKitchen?.location || "",
+    sequenceNumber: initialKitchen?.sequenceNumber || 0,
   };
 
   const handleSubmit = (
@@ -49,6 +57,7 @@ export function AddEditKitchenDialog({
     onSave({
       name: trimmedValues.name,
       location: trimmedValues.location,
+      sequenceNumber: Number(values.sequenceNumber),
       id: initialKitchen?.id,
     });
     setSubmitting(false);
@@ -107,6 +116,23 @@ export function AddEditKitchenDialog({
                 />
                 <ErrorMessage
                   name="location"
+                  component="p"
+                  className="text-destructive text-xs mt-1 flex items-center gap-1"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  {t("kitchens.sequenceNumber")} *
+                </Label>
+                <Field
+                  as={Input}
+                  type="number"
+                  name="sequenceNumber"
+                  placeholder={t("kitchens.enterSequenceNumber")}
+                  className="border-border focus:border-primary focus:ring-primary/20"
+                />
+                <ErrorMessage
+                  name="sequenceNumber"
                   component="p"
                   className="text-destructive text-xs mt-1 flex items-center gap-1"
                 />

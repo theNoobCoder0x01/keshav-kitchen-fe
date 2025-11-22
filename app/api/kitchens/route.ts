@@ -13,6 +13,9 @@ export async function GET(request: Request) {
     const kitchens = await prisma.kitchen.findMany({
       orderBy: [
         {
+          sequenceNumber: "asc",
+        },
+        {
           name: "asc",
         },
       ],
@@ -43,6 +46,7 @@ export async function POST(request: Request) {
         name: data.name,
         location: data.location,
         description: data.description,
+        sequenceNumber: data.sequenceNumber,
       },
     });
 
