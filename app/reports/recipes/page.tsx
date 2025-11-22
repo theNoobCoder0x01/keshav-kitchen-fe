@@ -70,42 +70,84 @@ export default function RecipesReport() {
           </div>
         </div>
 
-        <div className="px-2 pt-3 flex flex-col gap-3">
-          {data.map((recipe) => (
-            <div className="bg-secondary rounded p-3 flex flex-col gap-3 break-inside-avoid">
-              <div className="flex items-center justify-between border-b-2 border-muted-foreground pb-2">
-                <h2 className="flex gap-2 font-extrabold">
-                  <RecipeIcon />
-                  {recipe.recipeName}
-                </h2>
-                <div className="font-medium text-xs text-accent-foreground">
-                  Total Ghan:{" "}
-                  <span className="font-bold text-sm">{recipe.ghanFactor}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                {recipe.ingredientGroups.map((group: any) => (
-                  <div key={group.name}>
-                    <h3 className="font-bold text-sm text-primary mb-2">
-                      {group.name}
-                    </h3>
-                    <div className="grid grid-cols-3 gap-x-10 gap-y-1 text-sm text-muted-foreground font-bold">
-                      {group.ingredients.map((ingredient: any) => (
-                        <div
-                          key={`${ingredient.name}-${ingredient.unit}`}
-                          className="flex items-center justify-between pb-1 border-b border-dashed border-muted-foreground break-inside-avoid"
-                        >
-                          <div>{ingredient.name}</div>
-                          <div>
-                            {ingredient.quantity} {ingredient.unit}
+        <div className="px-2 pt-3 flex flex-col gap-6">
+          {data.map((kitchen) => (
+            <div
+              key={kitchen.kitchenName}
+              className="flex flex-col gap-4 break-inside-avoid"
+            >
+              <h1 className="text-xl font-extrabold text-primary border-b-2 border-primary pb-1">
+                {kitchen.kitchenName}
+              </h1>
+              {kitchen.mealTypes.map((mealType: any) => (
+                <div key={mealType.mealType} className="flex flex-col gap-3">
+                  <h2 className="text-lg font-bold text-secondary-foreground pl-2 border-l-4 border-secondary">
+                    {mealType.mealType}
+                  </h2>
+                  <div className="flex flex-col gap-3">
+                    {mealType.recipes.map((recipe: any) => (
+                      <div
+                        key={recipe.recipeId}
+                        className="bg-secondary rounded p-3 flex flex-col gap-3 break-inside-avoid"
+                      >
+                        <div className="flex items-center justify-between border-b-2 border-muted-foreground pb-2">
+                          <h2 className="flex gap-2 font-extrabold">
+                            <RecipeIcon />
+                            <span>
+                              {recipe.menuComponents.length > 0 && (
+                                <span className="text-primary mr-1">
+                                  [{recipe.menuComponents.join(", ")}]
+                                </span>
+                              )}
+                              {recipe.recipeName}
+                            </span>
+                          </h2>
+                          <div className="flex gap-4 font-medium text-xs text-accent-foreground">
+                            <div>
+                              Total Ghan:{" "}
+                              <span className="font-bold text-sm">
+                                {recipe.ghanFactor}
+                              </span>
+                            </div>
+                            {recipe.preparedQuantity > 0 && (
+                              <div>
+                                Prepared Qty:{" "}
+                                <span className="font-bold text-sm">
+                                  {recipe.preparedQuantity}{" "}
+                                  {recipe.preparedQuantityUnit}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
+
+                        <div className="flex flex-col gap-3">
+                          {recipe.ingredientGroups.map((group: any) => (
+                            <div key={group.name}>
+                              <h3 className="font-bold text-sm text-primary mb-2">
+                                {group.name}
+                              </h3>
+                              <div className="grid grid-cols-3 gap-x-10 gap-y-1 text-sm text-muted-foreground font-bold">
+                                {group.ingredients.map((ingredient: any) => (
+                                  <div
+                                    key={`${ingredient.name}-${ingredient.unit}`}
+                                    className="flex items-center justify-between pb-1 border-b border-dashed border-muted-foreground break-inside-avoid"
+                                  >
+                                    <div>{ingredient.name}</div>
+                                    <div>
+                                      {ingredient.quantity} {ingredient.unit}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>

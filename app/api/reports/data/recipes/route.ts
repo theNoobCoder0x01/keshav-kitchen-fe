@@ -43,6 +43,17 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
+        kitchen: {
+          select: {
+            name: true,
+          },
+        },
+        menuComponent: {
+          select: {
+            name: true,
+            sequenceNumber: true,
+          },
+        },
         recipe: {
           select: {
             name: true,
@@ -80,6 +91,19 @@ export async function GET(request: NextRequest) {
       },
       orderBy: [
         {
+          kitchen: {
+            name: "asc",
+          },
+        },
+        {
+          mealType: "asc",
+        },
+        {
+          menuComponent: {
+            sequenceNumber: "asc",
+          },
+        },
+        {
           recipe: {
             name: "asc",
           },
@@ -87,20 +111,55 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    // Group by recipeId and sum ghanFactor, aggregate ingredients by groups
-    const recipeMap: { [key: string]: any } = {};
+    // Group by kitchen -> mealType -> recipeId
+    const kitchenMap: { [key: string]: any } = {};
 
-    menus.forEach((menu: Menu) => {
+    menus.forEach((menu: any) => {
+      const kitchenName = menu.kitchen.name;
+      const mealType = menu.mealType;
       const recipeId = menu.recipeId;
+
+      if (!kitchenMap[kitchenName]) {
+        kitchenMap[kitchenName] = {
+          kitchenName,
+          mealTypeMap: {},
+        };
+      }
+
+      if (!kitchenMap[kitchenName].mealTypeMap[mealType]) {
+        kitchenMap[kitchenName].mealTypeMap[mealType] = {
+          mealType,
+          recipeMap: {},
+        };
+      }
+
+      const recipeMap = kitchenMap[kitchenName].mealTypeMap[mealType].recipeMap;
+
       if (!recipeMap[recipeId]) {
         recipeMap[recipeId] = {
           recipeId,
           recipeName: menu.recipe.name,
           ghanFactor: 0,
+          preparedQuantity: 0,
+          preparedQuantityUnit: menu.preparedQuantityUnit,
+          menuComponents: new Set(),
+          minSequenceNumber: menu.menuComponent?.sequenceNumber ?? Infinity,
           groupMap: {},
         };
+      } else {
+        const seq = menu.menuComponent?.sequenceNumber ?? Infinity;
+        if (seq < recipeMap[recipeId].minSequenceNumber) {
+          recipeMap[recipeId].minSequenceNumber = seq;
+        }
       }
       recipeMap[recipeId].ghanFactor += menu.ghanFactor;
+      if (menu.preparedQuantity) {
+        recipeMap[recipeId].preparedQuantity += menu.preparedQuantity;
+      }
+
+      if (menu.menuComponent) {
+        recipeMap[recipeId].menuComponents.add(menu.menuComponent.name);
+      }
 
       // Add menu ingredients to "Ungrouped" group
       if (!recipeMap[recipeId].groupMap["Ungrouped"]) {
@@ -123,7 +182,7 @@ export async function GET(request: NextRequest) {
       });
 
       // Add ingredient groups
-      menu.ingredientGroups.forEach((group: MenuIngredientGroup) => {
+      menu.ingredientGroups.forEach((group: any) => {
         if (!recipeMap[recipeId].groupMap[group.name]) {
           recipeMap[recipeId].groupMap[group.name] = {
             name: group.name,
@@ -146,22 +205,38 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    const data = Object.values(recipeMap).map((recipe) => ({
-      recipeId: recipe.recipeId,
-      recipeName: recipe.recipeName,
-      ghanFactor: recipe.ghanFactor,
-      ingredientGroups: Object.values(recipe.groupMap)
-        .map((group: any) => ({
-          name: group.name,
-          ingredients: Object.values(group.ingredientMap).sort(
-            (a: any, b: any) => a.sequenceNumber - b.sequenceNumber
-          ),
-        }))
-        .sort((a: any, b: any) => {
-          if (a.name === "Ungrouped") return -1;
-          if (b.name === "Ungrouped") return 1;
-          return a.name.localeCompare(b.name);
-        }),
+    const data = Object.values(kitchenMap).map((kitchen: any) => ({
+      kitchenName: kitchen.kitchenName,
+      mealTypes: Object.values(kitchen.mealTypeMap).map((mealType: any) => ({
+        mealType: mealType.mealType,
+        recipes: Object.values(mealType.recipeMap)
+          .sort((a: any, b: any) => {
+            if (a.minSequenceNumber !== b.minSequenceNumber) {
+              return a.minSequenceNumber - b.minSequenceNumber;
+            }
+            return a.recipeName.localeCompare(b.recipeName);
+          })
+          .map((recipe: any) => ({
+          recipeId: recipe.recipeId,
+          recipeName: recipe.recipeName,
+          ghanFactor: recipe.ghanFactor,
+          preparedQuantity: recipe.preparedQuantity,
+          preparedQuantityUnit: recipe.preparedQuantityUnit,
+          menuComponents: Array.from(recipe.menuComponents),
+          ingredientGroups: Object.values(recipe.groupMap)
+            .map((group: any) => ({
+              name: group.name,
+              ingredients: Object.values(group.ingredientMap).sort(
+                (a: any, b: any) => a.sequenceNumber - b.sequenceNumber
+              ),
+            }))
+            .sort((a: any, b: any) => {
+              if (a.name === "Ungrouped") return -1;
+              if (b.name === "Ungrouped") return 1;
+              return a.name.localeCompare(b.name);
+            }),
+        })),
+      })),
     }));
 
     return NextResponse.json(data);
