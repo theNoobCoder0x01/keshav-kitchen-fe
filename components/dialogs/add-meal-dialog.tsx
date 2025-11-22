@@ -131,7 +131,6 @@ export function AddMealDialog({
   const [selectedRecipeSubcategory, setSelectedRecipeSubcategory] =
     useState<string>("all");
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Step 1: Add state for loading and fetched menu
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
@@ -150,14 +149,12 @@ export function AddMealDialog({
     if (!open) {
       setFetchedMenu(null);
       setIsLoadingMenu(false);
-      setSelectedIds(new Set());
     }
   }, [open]);
 
   useEffect(() => {
     setFetchedMenu(null);
     setIsLoadingMenu(false);
-    setSelectedIds(new Set());
   }, [editMeal?.id]);
 
   // Fetch menu details when in edit mode
@@ -207,6 +204,7 @@ export function AddMealDialog({
           costPerUnit: ing.costPerUnit,
           sequenceNumber: ing.sequenceNumber ?? 1,
           localId: ing.localId || generateStableId(),
+          selected: (ing as any).selected ?? false,
         }));
 
       // Always preserve the group, even if it has no ingredients
@@ -225,6 +223,7 @@ export function AddMealDialog({
                   unit: DEFAULT_UNIT,
                   costPerUnit: 0,
                   localId: generateStableId(),
+                  selected: false,
                 },
               ],
       });
@@ -241,6 +240,7 @@ export function AddMealDialog({
         costPerUnit: ing.costPerUnit,
         sequenceNumber: ing.sequenceNumber ?? 1,
         localId: ing.localId || generateStableId(),
+        selected: (ing as any).selected ?? false,
       }));
 
     if (ungroupedIngredients.length > 0) {
@@ -264,6 +264,7 @@ export function AddMealDialog({
           costPerUnit: ing.costPerUnit,
           sequenceNumber: ing.sequenceNumber ?? 1,
           localId: ing.localId || generateStableId(),
+          selected: (ing as any).selected ?? false,
         })),
       });
     }
@@ -275,22 +276,42 @@ export function AddMealDialog({
   const validationSchema = Yup.object().shape({
     recipeId: Yup.string().trim().required(t("meals.recipeRequired")),
     followRecipe: Yup.boolean().default(false),
-    ghanFactor: Yup.number()
-      .required(t("meals.ghanRequired"))
-      .positive(t("meals.ghanPositive"))
-      .max(100, t("meals.ghanMax")),
-    preparedQuantity: Yup.number()
-      .required(t("meals.preparedQuantityRequired"))
-      .positive(t("meals.preparedQuantityPositive")),
-    preparedQuantityUnit: Yup.string()
-      .trim()
-      .required(t("meals.preparedQuantityUnitRequired")),
-    servingQuantity: Yup.number()
-      .required(t("meals.servingQuantityRequired"))
-      .positive(t("meals.servingQuantityPositive")),
-    servingQuantityUnit: Yup.string()
-      .trim()
-      .required(t("meals.servingQuantityUnitRequired")),
+    ghanFactor: Yup.number().when("followRecipe", {
+      is: true,
+      then: (schema) => schema
+        .required(t("meals.ghanRequired"))
+        .positive(t("meals.ghanPositive"))
+        .max(100, t("meals.ghanMax")),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    preparedQuantity: Yup.number().when("followRecipe", {
+      is: true,
+      then: (schema) => schema
+        .required(t("meals.preparedQuantityRequired"))
+        .positive(t("meals.preparedQuantityPositive")),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    preparedQuantityUnit: Yup.string().when("followRecipe", {
+      is: true,
+      then: (schema) => schema
+        .trim()
+        .required(t("meals.preparedQuantityUnitRequired")),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    servingQuantity: Yup.number().when("followRecipe", {
+      is: true,
+      then: (schema) => schema
+        .required(t("meals.servingQuantityRequired"))
+        .positive(t("meals.servingQuantityPositive")),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    servingQuantityUnit: Yup.string().when("followRecipe", {
+      is: true,
+      then: (schema) => schema
+        .trim()
+        .required(t("meals.servingQuantityUnitRequired")),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     quantityPerPiece: Yup.number().nullable().positive(
       t("meals.quantityPerPiecePositive")
     ),
@@ -347,6 +368,7 @@ export function AddMealDialog({
           groupId: (ingredient as any).groupId ?? null,
           sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
           localId: ingredient.localId || generateStableId(),
+          selected: (ingredient as any).selected ?? false,
         }));
         if (editMeal.ingredientGroups && editMeal.ingredientGroups.length > 0) {
           // Preserve existing menu ingredient groups
@@ -391,6 +413,7 @@ export function AddMealDialog({
                   costPerUnit: ingredient.costPerUnit || 0,
                   groupId: (ingredient as any).groupId ?? null,
                   localId: ingredient.localId || generateStableId(),
+                  selected: false,
                 }))
               : [
                   {
@@ -400,6 +423,7 @@ export function AddMealDialog({
                     unit: DEFAULT_UNIT,
                     costPerUnit: 0,
                     localId: generateStableId(),
+                    selected: false,
                   },
                 ];
 
@@ -451,6 +475,7 @@ export function AddMealDialog({
               unit: DEFAULT_UNIT,
               costPerUnit: 0,
               localId: generateStableId(),
+              selected: false,
             },
           ],
         },
@@ -518,11 +543,17 @@ export function AddMealDialog({
 
       if (recipeGroups.length > 0) {
         // Use recipe ingredient groups
-        const ingredientGroups = organizeIngredientsIntoGroups(
+        const ingredientGroupsWithSelection = organizeIngredientsIntoGroups(
           recipeIngredients,
           recipeGroups
-        );
-        setFieldValue("ingredientGroups", ingredientGroups);
+        ).map((group) => ({
+          ...group,
+          ingredients: group.ingredients.map((ing: any) => ({
+            ...ing,
+            selected: true, // Select all when following recipe
+          })),
+        }));
+        setFieldValue("ingredientGroups", ingredientGroupsWithSelection);
       } else {
         // Create default "Ungrouped" group
         const ingredients = recipeIngredients.map((ingredient) => ({
@@ -534,6 +565,7 @@ export function AddMealDialog({
           sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
           groupId: (ingredient as any).groupId ?? null,
           localId: ingredient.localId || generateStableId(),
+          selected: true, // Select all when following recipe
         }));
 
         const ingredientGroups = [
@@ -559,6 +591,15 @@ export function AddMealDialog({
       handleRecipeSelect(values.recipeId, setFieldValue, values);
     } else {
       setFieldValue("ghanFactor", 1.0);
+      // Deselect all ingredients when follow recipe is turned OFF
+      const updatedGroups = values.ingredientGroups.map((group) => ({
+        ...group,
+        ingredients: group.ingredients.map((ing: any) => ({
+          ...ing,
+          selected: false,
+        })),
+      }));
+      setFieldValue("ingredientGroups", updatedGroups);
     }
   };
 
@@ -585,13 +626,15 @@ export function AddMealDialog({
         throw new Error("Please select a recipe from the dropdown.");
       }
 
-      // Additional validation for positive values
-      if (values.servingQuantity <= 0) {
-        throw new Error("Serving quantity must be greater than zero.");
-      }
+      // Additional validation for positive values when following recipe
+      if (values.followRecipe) {
+        if (values.servingQuantity <= 0) {
+          throw new Error("Serving quantity must be greater than zero.");
+        }
 
-      if (values.ghanFactor <= 0) {
-        throw new Error("Ghan factor must be greater than zero.");
+        if (values.ghanFactor <= 0) {
+          throw new Error("Ghan factor must be greater than zero.");
+        }
       }
 
       // Prepare ingredient group definitions to send to API (exclude Ungrouped)
@@ -629,8 +672,8 @@ export function AddMealDialog({
         values.ingredientGroups.forEach((group: any, groupIndex: number) => {
           const groupId = group.id || `temp_${groupIndex}`;
           group.ingredients.forEach((ingredient: any, ingredientIndex: number) => {
-            if (ingredient.name.trim()) {
-              // Only include ingredients with names
+            // Only include ingredients with names AND that are selected
+            if (ingredient.name.trim() && ingredient.selected) {
               allIngredients.push({
                 id: ingredient.id ?? undefined,
                 name: ingredient.name,
@@ -647,15 +690,34 @@ export function AddMealDialog({
           });
         });
 
+        // Calculate prepared quantity from ingredient sum when followRecipe is OFF
+        let calculatedPreparedQuantity = values.preparedQuantity;
+        let calculatedPreparedQuantityUnit = values.preparedQuantityUnit;
+        let calculatedServingQuantity = values.servingQuantity;
+        let calculatedServingQuantityUnit = values.servingQuantityUnit;
+        let calculatedGhanFactor = values.ghanFactor;
+
+        if (!values.followRecipe && allIngredients.length > 0) {
+          // Sum up all ingredient quantities (assuming same unit or converting to first unit)
+          const totalQuantity = allIngredients.reduce((sum, ing) => sum + (ing.quantity || 0), 0);
+          const firstUnit = allIngredients[0]?.unit || DEFAULT_UNIT;
+
+          calculatedPreparedQuantity = totalQuantity;
+          calculatedPreparedQuantityUnit = firstUnit;
+          calculatedServingQuantity = 1; // Default to 1 serving
+          calculatedServingQuantityUnit = firstUnit;
+          calculatedGhanFactor = 1.0; // Default ghan factor
+        }
+
         const updateData = {
           recipeId: values.recipeId,
-          preparedQuantity: values.preparedQuantity,
-          preparedQuantityUnit: values.preparedQuantityUnit,
-          servingQuantity: values.servingQuantity,
-          servingQuantityUnit: values.servingQuantityUnit,
+          preparedQuantity: calculatedPreparedQuantity,
+          preparedQuantityUnit: calculatedPreparedQuantityUnit,
+          servingQuantity: calculatedServingQuantity,
+          servingQuantityUnit: calculatedServingQuantityUnit,
           quantityPerPiece: values.quantityPerPiece,
-          ghanFactor: values.ghanFactor,
-          notes: `Meal updated for ${mealType.toLowerCase()} with ${values.servingQuantity} ${values.servingQuantityUnit} servings and ${values.ghanFactor} ghan factor.`,
+          ghanFactor: calculatedGhanFactor,
+          notes: `Meal updated for ${mealType.toLowerCase()}.`,
           ingredients: trimIngredients(allIngredients),
           ingredientGroups: processedGroups,
           deletedIngredientGroupIds: deletedGroupIds,
@@ -675,8 +737,8 @@ export function AddMealDialog({
         values.ingredientGroups.forEach((group: any, groupIndex: number) => {
           const groupId = group.id || `temp_${groupIndex}`;
           group.ingredients.forEach((ingredient: any, ingredientIndex: number) => {
-            if (ingredient.name.trim()) {
-              // Only include ingredients with names
+            // Only include ingredients with names AND that are selected
+            if (ingredient.name.trim() && ingredient.selected) {
               allIngredients.push({
                 id: ingredient.id ?? undefined,
                 name: ingredient.name,
@@ -693,24 +755,43 @@ export function AddMealDialog({
           });
         });
 
+        // Calculate prepared quantity from ingredient sum when followRecipe is OFF
+        let calculatedPreparedQuantity = values.preparedQuantity;
+        let calculatedPreparedQuantityUnit = values.preparedQuantityUnit;
+        let calculatedServingQuantity = values.servingQuantity;
+        let calculatedServingQuantityUnit = values.servingQuantityUnit;
+        let calculatedGhanFactor = values.ghanFactor;
+
+        if (!values.followRecipe && allIngredients.length > 0) {
+          // Sum up all ingredient quantities (assuming same unit or converting to first unit)
+          const totalQuantity = allIngredients.reduce((sum, ing) => sum + (ing.quantity || 0), 0);
+          const firstUnit = allIngredients[0]?.unit || DEFAULT_UNIT;
+
+          calculatedPreparedQuantity = totalQuantity;
+          calculatedPreparedQuantityUnit = firstUnit;
+          calculatedServingQuantity = 1; // Default to 1 serving
+          calculatedServingQuantityUnit = firstUnit;
+          calculatedGhanFactor = 1.0; // Default ghan factor
+        }
+
         const menuData = {
           epochMs: selectedDate.getTime(),
           mealType: mealType,
           recipeId: values.recipeId,
           kitchenId: targetKitchenId,
           userId: session.user.id,
-          preparedQuantity: values.preparedQuantity,
-          preparedQuantityUnit: values.preparedQuantityUnit,
-          servingQuantity: values.servingQuantity,
-          servingQuantityUnit: values.servingQuantityUnit,
+          preparedQuantity: calculatedPreparedQuantity,
+          preparedQuantityUnit: calculatedPreparedQuantityUnit,
+          servingQuantity: calculatedServingQuantity,
+          servingQuantityUnit: calculatedServingQuantityUnit,
           quantityPerPiece: values.quantityPerPiece,
-          ghanFactor: values.ghanFactor,
+          ghanFactor: calculatedGhanFactor,
           followRecipe: values.followRecipe,
           notes: t("meals.mealPlannedNotes", {
             mealType: mealType.toLowerCase(),
-            servings: values.servingQuantity,
-            unit: values.servingQuantityUnit,
-            ghanFactor: values.ghanFactor,
+            servings: calculatedServingQuantity,
+            unit: calculatedServingQuantityUnit,
+            ghanFactor: calculatedGhanFactor,
           }),
           ingredients: trimIngredients(allIngredients),
           ingredientGroups: processedGroups,
@@ -876,6 +957,7 @@ export function AddMealDialog({
                     costPerUnit: 0,
                     sequenceNumber: rowIndex + 1,
                     localId: generateStableId(),
+                    selected: false,
                   });
                 }
                 if (!nextIngredients[rowIndex]) {
@@ -887,6 +969,7 @@ export function AddMealDialog({
                     costPerUnit: 0,
                     sequenceNumber: rowIndex + 1,
                     localId: generateStableId(),
+                    selected: false,
                   } as any;
                 }
               };
@@ -1087,17 +1170,18 @@ export function AddMealDialog({
                       </Field>
                     </div>
 
-                    <Card className="col-span-12">
-                      <CardHeader className="pb-4">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <BookOpen className="w-5 h-5 text-primary" />
-                          {t("recipes.quantityInformation")}
-                        </CardTitle>
-                        <CardDescription>
-                          {t("recipes.quantityInformationDescription")}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
+                    {values.followRecipe && (
+                      <Card className="col-span-12">
+                        <CardHeader className="pb-4">
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                            {t("recipes.quantityInformation")}
+                          </CardTitle>
+                          <CardDescription>
+                            {t("recipes.quantityInformationDescription")}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                         <div className="@container grid grid-cols-12 gap-4">
                           {values.followRecipe && (
                             <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
@@ -1322,6 +1406,7 @@ export function AddMealDialog({
                         </div>
                       </CardContent>
                     </Card>
+                    )}
 
                     {/* Ingredient Groups Section */}
                     <div
@@ -1331,14 +1416,13 @@ export function AddMealDialog({
                         name="ingredientGroups"
                         ingredientGroups={values.ingredientGroups}
                         onFieldChange={setFieldValue}
-                        selectedIds={selectedIds}
-                        onSelectionChange={setSelectedIds}
                         generateStableId={generateStableId}
                         title={t("meals.ingredients")}
                         description="Organize ingredients into logical groups"
                         showCostSummary={false}
                         quantityType="number"
                         onPasteIngredients={handlePasteIngredients}
+                        hideGroupManagement={true}
                       />
                     </div>
 

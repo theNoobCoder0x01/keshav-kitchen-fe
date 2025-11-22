@@ -7,6 +7,7 @@ export interface IngredientFormValue {
   sequenceNumber?: number;
   groupId?: string | null;
   localId?: string;
+  selected?: boolean;
 }
 
 export interface MealFormValues {

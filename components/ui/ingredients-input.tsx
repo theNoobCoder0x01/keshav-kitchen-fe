@@ -45,8 +45,7 @@ interface IngredientProps {
   ingredient: any;
   ingredientIndex: number;
   groupIndex: number;
-  selectedIds: Set<string>;
-  toggleRowSelected: (localId: string, checked: boolean) => void;
+  toggleRowSelected: (groupIndex: number, ingredientIndex: number, checked: boolean) => void;
   removeIngredient: (index: number) => void;
   name: string;
   groupIngredientsLength: number;
@@ -59,7 +58,6 @@ function Ingredient({
   ingredient,
   ingredientIndex,
   groupIndex,
-  selectedIds,
   toggleRowSelected,
   removeIngredient,
   name,
@@ -85,9 +83,9 @@ function Ingredient({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Checkbox
-            checked={Boolean(selectedIds.has(ingredient.localId))}
+            checked={Boolean(ingredient.selected)}
             onCheckedChange={(checked) =>
-              toggleRowSelected(ingredient.localId, Boolean(checked))
+              toggleRowSelected(groupIndex, ingredientIndex, Boolean(checked))
             }
           />
           <h5 className="text-sm font-medium text-muted-foreground">
@@ -253,14 +251,13 @@ interface IngredientsInputProps<
   name: string; // Formik field name (e.g., "ingredientGroups")
   ingredientGroups: IngredientGroup<T>[];
   onFieldChange: (field: string, value: any, shouldValidate?: boolean) => void;
-  selectedIds: Set<string>;
-  onSelectionChange: (selectedIds: Set<string>) => void;
   generateStableId: () => string;
   title?: string;
   description?: string;
   showCostSummary?: boolean;
   quantityType?: "string" | "number"; // For recipe vs meal dialogs
   onPasteIngredients?: (e: ClipboardEvent) => void;
+  hideGroupManagement?: boolean; // Hide add/rename/move functionality
 }
 
 export function IngredientsInput<
@@ -269,112 +266,26 @@ export function IngredientsInput<
   name,
   ingredientGroups,
   onFieldChange,
-  selectedIds,
-  onSelectionChange,
   generateStableId,
   title = "Ingredient Groups",
   description = "Organize ingredients into logical groups",
   showCostSummary = true,
   quantityType = "string",
   onPasteIngredients,
+  hideGroupManagement = false,
 }: IngredientsInputProps<T>) {
   const { setFieldValue, values } = useFormikContext();
   const currentIngredientGroups = (values as any)[name] || ingredientGroups;
 
-  const toggleRowSelected = (localId: string, checked: boolean) => {
-    const newSelection = new Set(selectedIds);
-    if (checked) {
-      newSelection.add(localId);
-    } else {
-      newSelection.delete(localId);
-    }
-    onSelectionChange(newSelection);
+  const toggleRowSelected = (groupIndex: number, ingredientIndex: number, checked: boolean) => {
+    setFieldValue(`${name}[${groupIndex}].ingredients[${ingredientIndex}].selected`, checked);
   };
 
   const setGroupSelection = (groupIndex: number, checked: boolean) => {
-    const ids = ingredientGroups[groupIndex].ingredients.map(
-      (ing: any) => ing.localId
-    );
-    const newSelection = new Set(selectedIds);
-    if (checked) {
-      ids.forEach((id: string) => newSelection.add(id));
-    } else {
-      ids.forEach((id: string) => newSelection.delete(id));
-    }
-    onSelectionChange(newSelection);
-  };
-
-  const clearSelection = () => onSelectionChange(new Set());
-
-  const moveSelectedIngredients = (
-    destinationGroupIndex: number,
-    position: "end" | "start" = "end"
-  ) => {
-    if (selectedIds.size === 0) return;
-
-    const nextGroups = ingredientGroups.map((g) => ({
-      ...g,
-      ingredients: [...g.ingredients],
-    }));
-
-    const moved: any[] = [];
-    nextGroups.forEach((group) => {
-      const keep: any[] = [];
-      for (const ing of group.ingredients as any[]) {
-        if (selectedIds.has(ing.localId)) {
-          moved.push(ing);
-        } else {
-          keep.push(ing);
-        }
-      }
-      group.ingredients = keep.length ? keep : [createEmptyIngredient()];
+    const group = currentIngredientGroups[groupIndex];
+    group.ingredients.forEach((_: any, ingredientIndex: number) => {
+      setFieldValue(`${name}[${groupIndex}].ingredients[${ingredientIndex}].selected`, checked);
     });
-
-    const dest = nextGroups[destinationGroupIndex];
-    dest.ingredients =
-      position === "start"
-        ? [...moved, ...dest.ingredients]
-        : [...dest.ingredients, ...moved];
-
-    setFieldValue(name, nextGroups);
-    clearSelection();
-  };
-
-  const moveSelectedIngredientsToNewGroup = (
-    groupName = "",
-    position: "end" | "start" = "end"
-  ) => {
-    if (selectedIds.size === 0) return;
-
-    const nextGroups = ingredientGroups.map((g) => ({
-      ...g,
-      ingredients: [...g.ingredients],
-    }));
-
-    const moved: any[] = [];
-    nextGroups.forEach((group) => {
-      const keep: any[] = [];
-      for (const ing of group.ingredients as any[]) {
-        if (selectedIds.has(ing.localId)) {
-          moved.push(ing);
-        } else {
-          keep.push(ing);
-        }
-      }
-      group.ingredients = keep.length ? keep : [createEmptyIngredient()];
-    });
-
-    const newGroup: IngredientGroup<T> = {
-      name: groupName,
-      sortOrder: nextGroups.length,
-      ingredients:
-        position === "start" ? [...moved] : [...moved],
-    } as IngredientGroup<T>;
-
-    nextGroups.push(newGroup);
-
-    setFieldValue(name, nextGroups);
-    clearSelection();
   };
 
   const createEmptyIngredient = (): T => {
@@ -385,16 +296,17 @@ export function IngredientsInput<
       costPerUnit: quantityType === "string" ? "" : 0,
       localId: generateStableId(),
       sequenceNumber: 1,
-    };
+      selected: false,
+    } as any;
     return baseIngredient as T;
   };
 
   // Calculate total cost from ingredient groups
   const calculateTotalCost = (groups: IngredientGroup<T>[]) => {
-    return groups.reduce((total, group) => {
+    return groups.reduce((total: number, group: IngredientGroup<T>) => {
       return (
         total +
-        group.ingredients.reduce((groupTotal, ingredient) => {
+        group.ingredients.reduce((groupTotal: number, ingredient: T) => {
           const quantity = parseFloat(String(ingredient.quantity)) || 0;
           const costPerUnit =
             parseFloat(String(ingredient.costPerUnit || "0")) || 0;
@@ -427,7 +339,7 @@ export function IngredientsInput<
 
   // Handle sequence number change
   const handleSequenceChange = (localId: string, sequence: number) => {
-    const nextGroups = currentIngredientGroups.map((group: IngredientGroup<T>) => ({
+    const nextGroups = currentIngredientGroups.map((group: IngredientGroup<T>, groupIndex: number) => ({
       ...group,
       ingredients: group.ingredients.map((ing: any) => {
         if (ing.localId === localId) {
@@ -469,78 +381,16 @@ export function IngredientsInput<
               <div className="flex items-center justify-end gap-2">
                 <Badge variant="outline" className="text-xs">
                   {sortedIngredientGroups.reduce(
-                    (total, group) => total + group.ingredients.length,
+                    (total: number, group: IngredientGroup<T>) => total + group.ingredients.length,
                     0
                   )}{" "}
                   ingredients
                 </Badge>
-                {selectedIds.size > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      {selectedIds.size} selected
-                    </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="text-xs px-3 py-1 h-7"
-                        >
-                          Move To <ChevronDown className="w-3 h-3 ml-1" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem
-                          onClick={() => moveSelectedIngredientsToNewGroup("New Group")}
-                          className="cursor-pointer"
-                        >
-                          <Plus className="w-3 h-3 mr-2" /> New Group
-                        </DropdownMenuItem>
-                        {sortedIngredientGroups.map((g, idx) => (
-                          <DropdownMenuItem
-                            key={idx}
-                            onClick={() => {
-                              moveSelectedIngredients(idx);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            {g.name || `Group ${idx + 1}`}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearSelection}
-                    >
-                      Clear
-                    </Button>
-                  </div>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    pushGroup({
-                      name: "",
-                      sortOrder: sortedIngredientGroups.length,
-                      ingredients: [createEmptyIngredient()],
-                    });
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="w-3 h-3" />
-                  Add Group
-                </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {sortedIngredientGroups.map((group, groupIndex) => (
+            {sortedIngredientGroups.map((group: IngredientGroup<T>, groupIndex: number) => (
               <div
                 key={groupIndex}
                 id={`group-${groupIndex}`}
@@ -549,30 +399,38 @@ export function IngredientsInput<
                 {/* Group Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3 flex-1">
-                    <Checkbox
-                      checked={
-                        group.ingredients.length > 0 &&
-                        group.ingredients.every((ing: any) =>
-                          selectedIds.has(ing.localId)
-                        )
-                      }
-                      onCheckedChange={(checked) =>
-                        setGroupSelection(groupIndex, Boolean(checked))
-                      }
-                      className="mr-1"
-                    />
+                    {!hideGroupManagement && (
+                      <Checkbox
+                        checked={
+                          group.ingredients.length > 0 &&
+                          group.ingredients.every((ing: any) => ing.selected)
+                        }
+                        onCheckedChange={(checked) =>
+                          setGroupSelection(groupIndex, Boolean(checked))
+                        }
+                        className="mr-1"
+                      />
+                    )}
                     <div className="flex-1">
-                      <Field
-                        as={Input}
-                        name={`${name}[${groupIndex}].name`}
-                        placeholder="Group name (e.g., Dough, Filling, Sauce)"
-                        className="font-medium"
-                      />
-                      <ErrorMessage
-                        name={`${name}[${groupIndex}].name`}
-                        component="p"
-                        className="text-destructive text-xs mt-1"
-                      />
+                      {hideGroupManagement ? (
+                        <h3 className="font-medium text-base">
+                          {group.name || `Group ${groupIndex + 1}`}
+                        </h3>
+                      ) : (
+                        <>
+                          <Field
+                            as={Input}
+                            name={`${name}[${groupIndex}].name`}
+                            placeholder="Group name (e.g., Dough, Filling, Sauce)"
+                            className="font-medium"
+                          />
+                          <ErrorMessage
+                            name={`${name}[${groupIndex}].name`}
+                            component="p"
+                            className="text-destructive text-xs mt-1"
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -604,13 +462,12 @@ export function IngredientsInput<
                       onPaste={handlePasteIngredients}
                     >
                       {group.ingredients.map(
-                        (ingredient: any, ingredientIndex) => (
+                        (ingredient: any, ingredientIndex: number) => (
                           <Ingredient
                             key={ingredient.localId}
                             ingredient={ingredient}
                             ingredientIndex={ingredientIndex}
                             groupIndex={groupIndex}
-                            selectedIds={selectedIds}
                             toggleRowSelected={toggleRowSelected}
                             removeIngredient={removeIngredient}
                             name={name}
