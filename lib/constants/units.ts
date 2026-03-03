@@ -96,20 +96,6 @@ export const convertUnits = (
   return fromGrams / toConversion;
 };
 
-// Format quantity with appropriate decimal places
-export const formatQuantity = (quantity: number, unit: string): string => {
-  // For very small quantities, show more decimal places
-  if (quantity < 1) {
-    return quantity.toFixed(3);
-  }
-  // For normal quantities, show 2 decimal places
-  if (quantity < 100) {
-    return quantity.toFixed(2);
-  }
-  // For large quantities, show 1 decimal place
-  return quantity.toFixed(1);
-};
-
 // Legacy compatibility - map old unit values to new standardized ones
 export const normalizeUnit = (unit: string): string => {
   const normalized = unit.toLowerCase().trim();

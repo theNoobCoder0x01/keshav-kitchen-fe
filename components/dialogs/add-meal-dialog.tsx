@@ -27,6 +27,7 @@ import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import { formatDecimal } from "@/lib/utils";
 import { trimIngredients } from "@/lib/utils/form-utils";
 import { getCalculatedQuantities } from "@/lib/utils/meal-calculations";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
@@ -516,10 +517,6 @@ export function AddMealDialog({
 
       if (selectedRecipe.preparedQuantity) {
         setFieldValue("preparedQuantity", selectedRecipe.preparedQuantity);
-      } else {
-        if (selectedRecipe.preparedQuantity) {
-          setFieldValue("preparedQuantity", selectedRecipe.preparedQuantity);
-        }
       }
 
       if (selectedRecipe.preparedQuantityUnit) {
@@ -1381,7 +1378,7 @@ export function AddMealDialog({
                                   <span className="font-medium">
                                     Total {t("recipes.preparedQuantity")}:
                                   </span>{" "}
-                                  {calculatedQuantities.preparedQuantity}{" "}
+                                  {formatDecimal(calculatedQuantities.preparedQuantity)}{" "}
                                   {calculatedQuantities.preparedUnit}
                                 </div>
                                 <div>
