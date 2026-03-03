@@ -30,6 +30,21 @@ services:
     networks:
       - app-net
 
+  # For home assistant as we need to use same nginx so that we can use the port 80
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - ../../homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    # We removed 'network_mode: host'
+    ports: # <-- And added this instead
+      - "8123:8123"
+    networks:
+      - app-net
+
   nginx:
     image: nginx:stable-alpine
     container_name: keshav_nginx
