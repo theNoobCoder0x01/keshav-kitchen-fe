@@ -301,14 +301,16 @@ export default function MenuPage() {
                 variant="outline"
                 onClick={() => handleDownloadReport("recipes?compact=true")}
               >
-                Compact Report
-              </Button>
-              <Button
-                variant="default"
-                onClick={() => handleDownloadReport("recipes")}
-              >
                 Recipes Report
               </Button>
+              {false && (
+                <Button
+                  variant="default"
+                  onClick={() => handleDownloadReport("recipes")}
+                >
+                  Recipes Report old
+                </Button>
+              )}
 
               {/* Reports Dropdown Menu */}
               {false && (
