@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // GET menu by ID
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -85,7 +85,7 @@ export async function GET(
     console.error("Failed to fetch menu:", error);
     return NextResponse.json(
       { error: "Failed to fetch menu." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -93,7 +93,7 @@ export async function GET(
 // PUT/PATCH update menu by id
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -117,7 +117,10 @@ export async function PUT(
     // Perform all updates in a single transaction to keep IDs in sync
     const updatedMenu = await prisma.$transaction(async (tx: any) => {
       // Handle deleted groups first (if any)
-      if (Array.isArray(deletedIngredientGroupIds) && deletedIngredientGroupIds.length > 0) {
+      if (
+        Array.isArray(deletedIngredientGroupIds) &&
+        deletedIngredientGroupIds.length > 0
+      ) {
         await tx.menuIngredientGroup.deleteMany({
           where: { id: { in: deletedIngredientGroupIds }, menuId: id },
         });
@@ -126,7 +129,11 @@ export async function PUT(
       // Upsert/update ingredient groups and build id map for temporary IDs
       const groupIdMap = new Map<string, string>();
       if (Array.isArray(ingredientGroups)) {
-        for (const group of ingredientGroups as Array<{ id?: string; name: string; sortOrder?: number }>) {
+        for (const group of ingredientGroups as Array<{
+          id?: string;
+          name: string;
+          sortOrder?: number;
+        }>) {
           const sortOrder = group.sortOrder ?? 0;
           if (group.id && !group.id.startsWith("temp_")) {
             const existing = await tx.menuIngredientGroup.findFirst({
@@ -172,7 +179,8 @@ export async function PUT(
             name: ing.name,
             quantity: Number(ing.quantity) || 0,
             unit: ing.unit,
-            costPerUnit: ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
+            costPerUnit:
+              ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
             sequenceNumber:
               ing.sequenceNumber != null ? Number(ing.sequenceNumber) : null,
             groupId: finalGroupId,
@@ -216,7 +224,7 @@ export async function PUT(
     console.error("Update menu API error:", error);
     return NextResponse.json(
       { error: "Failed to update menu." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
@@ -224,7 +232,7 @@ export async function PUT(
 // DELETE menu by id
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -240,7 +248,7 @@ export async function DELETE(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete menu." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }

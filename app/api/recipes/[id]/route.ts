@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -92,14 +92,14 @@ export async function GET(
     console.error("Get recipe by ID API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -133,14 +133,14 @@ export async function DELETE(
     console.error("Delete recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to delete recipe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -161,9 +161,9 @@ export async function PATCH(
       quantityPerPiece,
       category,
       subcategory,
-    ingredients,
-    ingredientGroups,
-    deletedIngredientGroupIds,
+      ingredients,
+      ingredientGroups,
+      deletedIngredientGroupIds,
     } = body || {};
 
     const existingRecipe = await prisma.recipe.findUnique({
@@ -181,14 +181,21 @@ export async function PATCH(
 
       // Handle ingredient groups: deletes, creates/updates, and ID mapping for temp IDs
       const groupIdMap = new Map<string, string>();
-      if (Array.isArray(deletedIngredientGroupIds) && deletedIngredientGroupIds.length > 0) {
+      if (
+        Array.isArray(deletedIngredientGroupIds) &&
+        deletedIngredientGroupIds.length > 0
+      ) {
         await tx.ingredientGroup.deleteMany({
           where: { id: { in: deletedIngredientGroupIds }, recipeId: id },
         });
       }
 
       if (Array.isArray(ingredientGroups)) {
-        for (const group of ingredientGroups as Array<{ id?: string; name: string; sortOrder?: number }>) {
+        for (const group of ingredientGroups as Array<{
+          id?: string;
+          name: string;
+          sortOrder?: number;
+        }>) {
           const sortOrder = group.sortOrder ?? 0;
           if (group.id && !group.id.startsWith("temp_")) {
             const existing = await tx.ingredientGroup.findFirst({
@@ -242,10 +249,12 @@ export async function PATCH(
           // Calculate preparedQuantity as sum of ingredient quantities
           totalQuantity = ingredientData.reduce(
             (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-            0
+            0,
           );
           preparedQuantityUnitToSet =
-            ingredientData.length > 0 ? ingredientData[0].unit : preparedQuantityUnit;
+            ingredientData.length > 0
+              ? ingredientData[0].unit
+              : preparedQuantityUnit;
         }
       } else {
         // If ingredients not provided, recalculate from existing
@@ -255,7 +264,7 @@ export async function PATCH(
         });
         totalQuantity = existingIngredients.reduce(
           (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-          0
+          0,
         );
         preparedQuantityUnitToSet =
           existingIngredients.length > 0
@@ -305,7 +314,7 @@ export async function PATCH(
     console.error("Patch recipe API error:", error);
     return NextResponse.json(
       { error: "Failed to update recipe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

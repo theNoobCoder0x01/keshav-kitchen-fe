@@ -107,7 +107,8 @@ export const RecipeDetailView = forwardRef<
               </div>
               <p className="text-sm text-muted-foreground">Prepared Quantity</p>
               <p className="text-xl font-semibold text-foreground">
-                {formatDecimal(recipeSummary.preparedQuantity)} {recipeSummary.preparedUnit}
+                {formatDecimal(recipeSummary.preparedQuantity)}{" "}
+                {recipeSummary.preparedUnit}
               </p>
             </div>
             <div className="text-center">
@@ -116,7 +117,8 @@ export const RecipeDetailView = forwardRef<
               </div>
               <p className="text-sm text-muted-foreground">Serving Quantity</p>
               <p className="text-xl font-semibold text-foreground">
-                {formatDecimal(recipeSummary.servingQuantity)} {recipeSummary.servingUnit}
+                {formatDecimal(recipeSummary.servingQuantity)}{" "}
+                {recipeSummary.servingUnit}
               </p>
             </div>
             <div className="text-center">
@@ -136,7 +138,8 @@ export const RecipeDetailView = forwardRef<
               </div>
               <p className="text-sm text-muted-foreground">Extra Quantity</p>
               <p className="text-xl font-semibold text-foreground">
-                {formatDecimal(recipeSummary.extraQuantity)} {recipeSummary.preparedUnit}
+                {formatDecimal(recipeSummary.extraQuantity)}{" "}
+                {recipeSummary.preparedUnit}
               </p>
             </div>
 
@@ -149,7 +152,8 @@ export const RecipeDetailView = forwardRef<
                   Quantity Per Piece
                 </p>
                 <p className="text-xl font-semibold text-foreground">
-                  {formatDecimal(recipe.quantityPerPiece!)} {recipe.preparedQuantityUnit}
+                  {formatDecimal(recipe.quantityPerPiece!)}{" "}
+                  {recipe.preparedQuantityUnit}
                 </p>
               </div>
             )}
@@ -213,7 +217,8 @@ export const RecipeDetailView = forwardRef<
                         </div>
                         <div className="text-right">
                           <div className="font-semibold text-foreground">
-                            {formatDecimal(ingredient.quantity)} {ingredient.unit}
+                            {formatDecimal(ingredient.quantity)}{" "}
+                            {ingredient.unit}
                           </div>
                           {ingredient.costPerUnit && (
                             <div className="text-sm text-muted-foreground">

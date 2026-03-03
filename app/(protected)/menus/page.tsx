@@ -44,7 +44,7 @@ export default function MenuPage() {
     string | undefined
   >(undefined);
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
-    MealType.BREAKFAST
+    MealType.BREAKFAST,
   );
   const [editMeal, setEditMeal] = useState<any>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -117,11 +117,11 @@ export default function MenuPage() {
       // Transform menus data to match the expected format
       const groupedMenus = {
         BREAKFAST: menusResponse.filter(
-          (m: any) => m.mealType === MealType.BREAKFAST
+          (m: any) => m.mealType === MealType.BREAKFAST,
         ),
         LUNCH: menusResponse.filter((m: any) => m.mealType === MealType.LUNCH),
         DINNER: menusResponse.filter(
-          (m: any) => m.mealType === MealType.DINNER
+          (m: any) => m.mealType === MealType.DINNER,
         ),
         SNACK: menusResponse.filter((m: any) => m.mealType === MealType.SNACK),
       };
@@ -164,7 +164,7 @@ export default function MenuPage() {
 
   const handleAddMeal = (
     mealType: UnifiedMealType,
-    menuComponentId?: string
+    menuComponentId?: string,
   ) => {
     setSelectedMealType(mealType);
     setEditMeal({
@@ -233,7 +233,7 @@ export default function MenuPage() {
       const res = await api.post(
         "/reports/pdf/",
         { route: reportRoute, headerHtml, authToken, timezone },
-        { responseType: "arraybuffer" }
+        { responseType: "arraybuffer" },
       );
 
       const arrayBuffer = await res.data;
@@ -251,7 +251,7 @@ export default function MenuPage() {
   };
   const handleDownloadIframePdf = () => {
     const iframe = document.getElementById(
-      "report-preview-iframe"
+      "report-preview-iframe",
     ) as HTMLIFrameElement | null;
     if (iframe?.contentWindow) {
       iframe.contentWindow.focus();

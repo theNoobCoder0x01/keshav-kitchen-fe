@@ -224,7 +224,8 @@ export default function RecipesReport() {
                                   >
                                     <div>{ingredient.name}</div>
                                     <div>
-                                      {formatDecimal(ingredient.quantity)} {ingredient.unit}
+                                      {formatDecimal(ingredient.quantity)}{" "}
+                                      {ingredient.unit}
                                     </div>
                                   </div>
                                 ))}

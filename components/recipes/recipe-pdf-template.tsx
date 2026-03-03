@@ -218,7 +218,8 @@ export const RecipePdfTemplate = forwardRef<
               <tr>
                 <td>Prepared Quantity</td>
                 <td>
-                  {formatDecimal(recipe.preparedQuantity!)} {recipe.preparedQuantityUnit}
+                  {formatDecimal(recipe.preparedQuantity!)}{" "}
+                  {recipe.preparedQuantityUnit}
                 </td>
               </tr>
             )}
@@ -226,7 +227,8 @@ export const RecipePdfTemplate = forwardRef<
               <tr>
                 <td>Serving Quantity</td>
                 <td>
-                  {formatDecimal(recipe.servingQuantity!)} {recipe.servingQuantityUnit}
+                  {formatDecimal(recipe.servingQuantity!)}{" "}
+                  {recipe.servingQuantityUnit}
                 </td>
               </tr>
             )}

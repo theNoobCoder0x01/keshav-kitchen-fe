@@ -14,7 +14,8 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const categoryParam = (searchParams.get("category") || "").trim();
-    const categoryFilter = categoryParam && categoryParam !== "all" ? categoryParam : undefined;
+    const categoryFilter =
+      categoryParam && categoryParam !== "all" ? categoryParam : undefined;
 
     // Fetch distinct categories
     const categoriesRows = await prisma.recipe.findMany({

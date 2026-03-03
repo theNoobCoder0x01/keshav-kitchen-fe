@@ -76,7 +76,7 @@ export async function updateMenu(
     followRecipe?: boolean;
     // Allow any additional fields without breaking callers
     [key: string]: any;
-  }
+  },
 ) {
   const response = await api.put(`/menus/${id}`, data);
   return response.data;

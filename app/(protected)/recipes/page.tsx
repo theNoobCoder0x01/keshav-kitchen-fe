@@ -90,7 +90,8 @@ export default function RecipesPage() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        if (typeof saved.searchTerm === "string") setSearchTerm(saved.searchTerm);
+        if (typeof saved.searchTerm === "string")
+          setSearchTerm(saved.searchTerm);
         if (typeof saved.filterCategory === "string")
           setFilterCategory(saved.filterCategory);
         if (typeof saved.filterSubcategory === "string")
@@ -391,7 +392,7 @@ export default function RecipesPage() {
           instructions: recipe.instructions ?? null,
           createdAt: new Date(recipe.createdAt || Date.now()),
           updatedAt: new Date(recipe.updatedAt || Date.now()),
-        })
+        }),
       );
 
       setRecipes(transformedRecipes);
