@@ -193,7 +193,8 @@ export default function MenuPage() {
   };
 
   const handleDownloadReport = async (type: string) => {
-    const reportUrl = `/reports/${type}?epochMs=${selectedDate.getTime()}`;
+    const sep = type.includes("?") ? "&" : "?";
+    const reportUrl = `/reports/${type}${sep}epochMs=${selectedDate.getTime()}`;
     setReportPdfPreviewDialog(reportUrl);
   };
 
@@ -295,7 +296,13 @@ export default function MenuPage() {
                 className="w-auto"
               />
 
-              {/* Reports button */}
+              {/* Reports buttons */}
+              <Button
+                variant="outline"
+                onClick={() => handleDownloadReport("recipes?compact=true")}
+              >
+                Compact Report
+              </Button>
               <Button
                 variant="default"
                 onClick={() => handleDownloadReport("recipes")}

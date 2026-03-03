@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
       }
       recipeMap[recipeId].ghanFactor += menu.ghanFactor;
       if (menu.preparedQuantity) {
-        recipeMap[recipeId].preparedQuantity += menu.preparedQuantity;
+        recipeMap[recipeId].preparedQuantity += menu.preparedQuantity * menu.ghanFactor;
       }
 
       if (menu.menuComponent) {
