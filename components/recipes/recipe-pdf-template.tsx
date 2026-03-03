@@ -2,6 +2,7 @@
 
 import type { RecipeDetailData } from "@/types";
 import { forwardRef } from "react";
+import { formatDecimal } from "@/lib/utils";
 
 interface RecipePdfTemplateProps {
   recipe: RecipeDetailData;
@@ -217,7 +218,7 @@ export const RecipePdfTemplate = forwardRef<
               <tr>
                 <td>Prepared Quantity</td>
                 <td>
-                  {recipe.preparedQuantity} ${recipe.preparedQuantityUnit}
+                  {formatDecimal(recipe.preparedQuantity!)} {recipe.preparedQuantityUnit}
                 </td>
               </tr>
             )}
@@ -225,14 +226,14 @@ export const RecipePdfTemplate = forwardRef<
               <tr>
                 <td>Serving Quantity</td>
                 <td>
-                  {recipe.servingQuantity} {recipe.servingQuantityUnit}
+                  {formatDecimal(recipe.servingQuantity!)} {recipe.servingQuantityUnit}
                 </td>
               </tr>
             )}
             {recipe.quantityPerPiece && (
               <tr>
                 <td>Quantity per Piece</td>
-                <td>{recipe.quantityPerPiece}</td>
+                <td>{formatDecimal(recipe.quantityPerPiece!)}</td>
               </tr>
             )}
             <tr>
@@ -260,7 +261,7 @@ export const RecipePdfTemplate = forwardRef<
             {recipe.ingredients.map((ingredient, index) => (
               <tr key={ingredient.id || index}>
                 <td>{ingredient.name}</td>
-                <td>{ingredient.quantity}</td>
+                <td>{formatDecimal(ingredient.quantity)}</td>
                 <td>{ingredient.unit}</td>
                 <td>
                   {ingredient.costPerUnit

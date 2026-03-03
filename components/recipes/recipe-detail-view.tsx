@@ -4,6 +4,7 @@ import { LexicalViewer } from "@/components/rich-text/lexical-viewer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { formatDecimal } from "@/lib/utils";
 import { generateRecipeSummaryObject } from "@/lib/utils/meal-calculations";
 import {
   calculateGroupCost,
@@ -106,7 +107,7 @@ export const RecipeDetailView = forwardRef<
               </div>
               <p className="text-sm text-muted-foreground">Prepared Quantity</p>
               <p className="text-xl font-semibold text-foreground">
-                {recipeSummary.preparedQuantity} {recipeSummary.preparedUnit}
+                {formatDecimal(recipeSummary.preparedQuantity)} {recipeSummary.preparedUnit}
               </p>
             </div>
             <div className="text-center">
@@ -115,7 +116,7 @@ export const RecipeDetailView = forwardRef<
               </div>
               <p className="text-sm text-muted-foreground">Serving Quantity</p>
               <p className="text-xl font-semibold text-foreground">
-                {recipeSummary.servingQuantity} {recipeSummary.servingUnit}
+                {formatDecimal(recipeSummary.servingQuantity)} {recipeSummary.servingUnit}
               </p>
             </div>
             <div className="text-center">
@@ -135,7 +136,7 @@ export const RecipeDetailView = forwardRef<
               </div>
               <p className="text-sm text-muted-foreground">Extra Quantity</p>
               <p className="text-xl font-semibold text-foreground">
-                {recipeSummary.extraQuantity} {recipeSummary.preparedUnit}
+                {formatDecimal(recipeSummary.extraQuantity)} {recipeSummary.preparedUnit}
               </p>
             </div>
 
@@ -148,7 +149,7 @@ export const RecipeDetailView = forwardRef<
                   Quantity Per Piece
                 </p>
                 <p className="text-xl font-semibold text-foreground">
-                  {recipe.quantityPerPiece} {recipe.preparedQuantityUnit}
+                  {formatDecimal(recipe.quantityPerPiece!)} {recipe.preparedQuantityUnit}
                 </p>
               </div>
             )}
@@ -212,7 +213,7 @@ export const RecipeDetailView = forwardRef<
                         </div>
                         <div className="text-right">
                           <div className="font-semibold text-foreground">
-                            {ingredient.quantity} {ingredient.unit}
+                            {formatDecimal(ingredient.quantity)} {ingredient.unit}
                           </div>
                           {ingredient.costPerUnit && (
                             <div className="text-sm text-muted-foreground">

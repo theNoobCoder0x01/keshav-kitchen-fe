@@ -91,22 +91,6 @@ export function areUnitsCompatible(unit1: string, unit2: string): boolean {
 }
 
 /**
- * Format quantity with appropriate decimal places
- */
-export function formatQuantity(quantity: number, unit: string): string {
-  // For very small quantities, show more decimal places
-  if (quantity < 1) {
-    return quantity.toFixed(3);
-  }
-  // For normal quantities, show 2 decimal places
-  if (quantity < 100) {
-    return quantity.toFixed(2);
-  }
-  // For large quantities, show 1 decimal place
-  return quantity.toFixed(1);
-}
-
-/**
  * Calculate ingredient cost with unit conversion
  */
 export function calculateIngredientCost(

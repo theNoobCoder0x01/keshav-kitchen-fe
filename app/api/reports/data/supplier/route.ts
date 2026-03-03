@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       mealType: menu.mealType,
       recipeId: menu.recipeId,
       recipeName: menu.recipe.name,
-      totalQuantity: menu.preparedQuantity || 0,
+      totalQuantity: (menu.preparedQuantity || 0) * menu.ghanFactor,
     }));
 
     return NextResponse.json(data);
