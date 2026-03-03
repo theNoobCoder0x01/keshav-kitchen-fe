@@ -5,7 +5,7 @@ import DinnerIcon from "@/components/icons/dinner-icon";
 import LunchIcon from "@/components/icons/lunch-icon";
 import { useTithi } from "@/hooks/use-tithi";
 import { fetchReportData } from "@/lib/api/reports";
-import { cn } from "@/lib/utils";
+import { cn, formatDecimal } from "@/lib/utils";
 import { epochToDate, formatEpochToDate } from "@/lib/utils/date";
 import { MealTypeEnum as MealType } from "@/types";
 import { Calendar } from "lucide-react";
@@ -155,7 +155,7 @@ export default function SupplierReport() {
                           className="flex items-center justify-between pb-1 border-b border-dashed border-muted-foreground break-inside-avoid"
                         >
                           <div>{recipe.recipeName}</div>
-                          <div>{recipe.totalQuantity} Kg</div>
+                          <div>{formatDecimal(recipe.totalQuantity)} Kg</div>
                         </div>
                       ))}
                     </div>
