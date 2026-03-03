@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     if (!epochMs) {
       return NextResponse.json(
         { error: "epochMs is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -27,12 +27,12 @@ export async function GET(request: NextRequest) {
     const startOfDay = new Date(
       date.getFullYear(),
       date.getMonth(),
-      date.getDate()
+      date.getDate(),
     );
     const endOfDay = new Date(
       date.getFullYear(),
       date.getMonth(),
-      date.getDate() + 1
+      date.getDate() + 1,
     );
 
     const menus = await prisma.menu.findMany({
@@ -161,7 +161,8 @@ export async function GET(request: NextRequest) {
       }
       recipeMap[recipeId].ghanFactor += menu.ghanFactor;
       if (menu.preparedQuantity) {
-        recipeMap[recipeId].preparedQuantity += menu.preparedQuantity * menu.ghanFactor;
+        recipeMap[recipeId].preparedQuantity +=
+          menu.preparedQuantity * menu.ghanFactor;
       }
 
       if (menu.menuComponent) {
@@ -241,7 +242,7 @@ export async function GET(request: NextRequest) {
                 .map((group: any) => ({
                   name: group.name,
                   ingredients: Object.values(group.ingredientMap).sort(
-                    (a: any, b: any) => a.sequenceNumber - b.sequenceNumber
+                    (a: any, b: any) => a.sequenceNumber - b.sequenceNumber,
                   ),
                 }))
                 .sort((a: any, b: any) => {
@@ -258,7 +259,7 @@ export async function GET(request: NextRequest) {
     console.error("Get recipes report data API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipes report data" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

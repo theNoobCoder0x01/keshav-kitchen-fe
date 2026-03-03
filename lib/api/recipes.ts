@@ -122,7 +122,9 @@ export async function fetchRecipeFilters(
   try {
     const query = new URLSearchParams();
     if (params?.category) query.set("category", params.category);
-    const path = query.toString() ? `/recipes/filters/?${query}` : "/recipes/filters/";
+    const path = query.toString()
+      ? `/recipes/filters/?${query}`
+      : "/recipes/filters/";
     const response = await api.get(path, { signal });
     return response.data;
   } catch (error: any) {

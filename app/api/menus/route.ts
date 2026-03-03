@@ -124,7 +124,7 @@ export async function GET(request: Request) {
     console.error("Failed to fetch menus:", error);
     return NextResponse.json(
       { error: "Failed to fetch menus." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
           error:
             "Missing required fields: recipeId, mealType, kitchenId, userId",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -157,7 +157,13 @@ export async function POST(request: Request) {
     }
 
     // Extract ingredients and ingredientGroups from payload
-    const { ingredients = [], ingredientGroups = [], deletedIngredientGroupIds, epochMs, ...menuData } = data;
+    const {
+      ingredients = [],
+      ingredientGroups = [],
+      deletedIngredientGroupIds,
+      epochMs,
+      ...menuData
+    } = data;
 
     // Create menu, ingredient groups and ingredients in a transaction so we can map
     // any temporary frontend group IDs to real DB ids (same approach as recipes POST)
@@ -281,9 +287,7 @@ export async function POST(request: Request) {
     console.error("Create menu API error:", error);
     return NextResponse.json(
       { error: "Failed to create menu." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
-

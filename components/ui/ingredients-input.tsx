@@ -45,7 +45,11 @@ interface IngredientProps {
   ingredient: any;
   ingredientIndex: number;
   groupIndex: number;
-  toggleRowSelected: (groupIndex: number, ingredientIndex: number, checked: boolean) => void;
+  toggleRowSelected: (
+    groupIndex: number,
+    ingredientIndex: number,
+    checked: boolean,
+  ) => void;
   removeIngredient: (index: number) => void;
   name: string;
   groupIngredientsLength: number;
@@ -118,7 +122,8 @@ function Ingredient({
             className="text-sm"
             onBlur={() => {
               // Trigger sorting when user finishes editing sequence number
-              const currentValue = (values as any)[name]?.[groupIndex]?.ingredients?.[ingredientIndex]?.sequenceNumber;
+              const currentValue = (values as any)[name]?.[groupIndex]
+                ?.ingredients?.[ingredientIndex]?.sequenceNumber;
               if (currentValue) {
                 onSequenceChange(ingredient.localId, currentValue);
               }
@@ -277,14 +282,24 @@ export function IngredientsInput<
   const { setFieldValue, values } = useFormikContext();
   const currentIngredientGroups = (values as any)[name] || ingredientGroups;
 
-  const toggleRowSelected = (groupIndex: number, ingredientIndex: number, checked: boolean) => {
-    setFieldValue(`${name}[${groupIndex}].ingredients[${ingredientIndex}].selected`, checked);
+  const toggleRowSelected = (
+    groupIndex: number,
+    ingredientIndex: number,
+    checked: boolean,
+  ) => {
+    setFieldValue(
+      `${name}[${groupIndex}].ingredients[${ingredientIndex}].selected`,
+      checked,
+    );
   };
 
   const setGroupSelection = (groupIndex: number, checked: boolean) => {
     const group = currentIngredientGroups[groupIndex];
     group.ingredients.forEach((_: any, ingredientIndex: number) => {
-      setFieldValue(`${name}[${groupIndex}].ingredients[${ingredientIndex}].selected`, checked);
+      setFieldValue(
+        `${name}[${groupIndex}].ingredients[${ingredientIndex}].selected`,
+        checked,
+      );
     });
   };
 
@@ -322,7 +337,7 @@ export function IngredientsInput<
         onPasteIngredients(e);
       }
     },
-    [onPasteIngredients]
+    [onPasteIngredients],
   );
 
   // Sort ingredients by sequence number
@@ -339,15 +354,17 @@ export function IngredientsInput<
 
   // Handle sequence number change
   const handleSequenceChange = (localId: string, sequence: number) => {
-    const nextGroups = currentIngredientGroups.map((group: IngredientGroup<T>, groupIndex: number) => ({
-      ...group,
-      ingredients: group.ingredients.map((ing: any) => {
-        if (ing.localId === localId) {
-          return { ...ing, sequenceNumber: sequence };
-        }
-        return ing;
+    const nextGroups = currentIngredientGroups.map(
+      (group: IngredientGroup<T>, groupIndex: number) => ({
+        ...group,
+        ingredients: group.ingredients.map((ing: any) => {
+          if (ing.localId === localId) {
+            return { ...ing, sequenceNumber: sequence };
+          }
+          return ing;
+        }),
       }),
-    }));
+    );
 
     // Sort and update
     const sortedGroups = sortIngredientsBySequence(nextGroups);
@@ -358,7 +375,7 @@ export function IngredientsInput<
   const scrollToIngredient = (localId: string) => {
     const element = document.getElementById(`ingredient-${localId}`);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   };
 
@@ -381,8 +398,9 @@ export function IngredientsInput<
               <div className="flex items-center justify-end gap-2">
                 <Badge variant="outline" className="text-xs">
                   {sortedIngredientGroups.reduce(
-                    (total: number, group: IngredientGroup<T>) => total + group.ingredients.length,
-                    0
+                    (total: number, group: IngredientGroup<T>) =>
+                      total + group.ingredients.length,
+                    0,
                   )}{" "}
                   ingredients
                 </Badge>
@@ -390,114 +408,111 @@ export function IngredientsInput<
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {sortedIngredientGroups.map((group: IngredientGroup<T>, groupIndex: number) => (
-              <div
-                key={groupIndex}
-                id={`group-${groupIndex}`}
-                className="border border-border rounded-lg p-4 bg-card/30"
-              >
-                {/* Group Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    {!hideGroupManagement && (
-                      <Checkbox
-                        checked={
-                          group.ingredients.length > 0 &&
-                          group.ingredients.every((ing: any) => ing.selected)
-                        }
-                        onCheckedChange={(checked) =>
-                          setGroupSelection(groupIndex, Boolean(checked))
-                        }
-                        className="mr-1"
-                      />
-                    )}
-                    <div className="flex-1">
-                      {hideGroupManagement ? (
-                        <h3 className="font-medium text-base">
-                          {group.name || `Group ${groupIndex + 1}`}
-                        </h3>
-                      ) : (
-                        <>
-                          <Field
-                            as={Input}
-                            name={`${name}[${groupIndex}].name`}
-                            placeholder="Group name (e.g., Dough, Filling, Sauce)"
-                            className="font-medium"
-                          />
-                          <ErrorMessage
-                            name={`${name}[${groupIndex}].name`}
-                            component="p"
-                            className="text-destructive text-xs mt-1"
-                          />
-                        </>
+            {sortedIngredientGroups.map(
+              (group: IngredientGroup<T>, groupIndex: number) => (
+                <div
+                  key={groupIndex}
+                  id={`group-${groupIndex}`}
+                  className="border border-border rounded-lg p-4 bg-card/30"
+                >
+                  {/* Group Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      {!hideGroupManagement && (
+                        <Checkbox
+                          checked={
+                            group.ingredients.length > 0 &&
+                            group.ingredients.every((ing: any) => ing.selected)
+                          }
+                          onCheckedChange={(checked) =>
+                            setGroupSelection(groupIndex, Boolean(checked))
+                          }
+                          className="mr-1"
+                        />
+                      )}
+                      <div className="flex-1">
+                        {hideGroupManagement ? (
+                          <h3 className="font-medium text-base">
+                            {group.name || `Group ${groupIndex + 1}`}
+                          </h3>
+                        ) : (
+                          <>
+                            <Field
+                              as={Input}
+                              name={`${name}[${groupIndex}].name`}
+                              placeholder="Group name (e.g., Dough, Filling, Sauce)"
+                              className="font-medium"
+                            />
+                            <ErrorMessage
+                              name={`${name}[${groupIndex}].name`}
+                              component="p"
+                              className="text-destructive text-xs mt-1"
+                            />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {group.ingredients.length} items
+                      </Badge>
+                      {sortedIngredientGroups.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeGroup(groupIndex)}
+                          className="text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {group.ingredients.length} items
-                    </Badge>
-                    {sortedIngredientGroups.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeGroup(groupIndex)}
-                        className="text-destructive hover:bg-destructive/10"
+
+                  {/* Group Ingredients */}
+                  <FieldArray name={`${name}[${groupIndex}].ingredients`}>
+                    {({ remove: removeIngredient, push: pushIngredient }) => (
+                      <div
+                        className="divide-y divide-accent"
+                        onPaste={handlePasteIngredients}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                        {group.ingredients.map(
+                          (ingredient: any, ingredientIndex: number) => (
+                            <Ingredient
+                              key={ingredient.localId}
+                              ingredient={ingredient}
+                              ingredientIndex={ingredientIndex}
+                              groupIndex={groupIndex}
+                              toggleRowSelected={toggleRowSelected}
+                              removeIngredient={removeIngredient}
+                              name={name}
+                              groupIngredientsLength={group.ingredients.length}
+                              onSequenceChange={handleSequenceChange}
+                              scrollToIngredient={scrollToIngredient}
+                              values={values}
+                            />
+                          ),
+                        )}
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            pushIngredient(createEmptyIngredient());
+                          }}
+                          className="w-full border-dashed"
+                        >
+                          <Plus className="w-3 h-3 mr-2" />
+                          Add Ingredient to {group.name || "Group"}
+                        </Button>
+                      </div>
                     )}
-                  </div>
+                  </FieldArray>
                 </div>
-
-                {/* Group Ingredients */}
-                <FieldArray name={`${name}[${groupIndex}].ingredients`}>
-                  {({
-                    remove: removeIngredient,
-                    push: pushIngredient,
-                  }) => (
-                    <div
-                      className="divide-y divide-accent"
-                      onPaste={handlePasteIngredients}
-                    >
-                      {group.ingredients.map(
-                        (ingredient: any, ingredientIndex: number) => (
-                          <Ingredient
-                            key={ingredient.localId}
-                            ingredient={ingredient}
-                            ingredientIndex={ingredientIndex}
-                            groupIndex={groupIndex}
-                            toggleRowSelected={toggleRowSelected}
-                            removeIngredient={removeIngredient}
-                            name={name}
-                            groupIngredientsLength={
-                              group.ingredients.length
-                            }
-                            onSequenceChange={handleSequenceChange}
-                            scrollToIngredient={scrollToIngredient}
-                            values={values}
-                          />
-                        )
-                      )}
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          pushIngredient(createEmptyIngredient());
-                        }}
-                        className="w-full border-dashed"
-                      >
-                        <Plus className="w-3 h-3 mr-2" />
-                        Add Ingredient to {group.name || "Group"}
-                      </Button>
-                    </div>
-                  )}
-                </FieldArray>
-              </div>
-            ))}
+              ),
+            )}
 
             {/* Cost Summary */}
             {showCostSummary && (
