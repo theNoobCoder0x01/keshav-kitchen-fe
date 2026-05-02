@@ -7,22 +7,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MealType, MealTypeEnum } from "@/types";
+import { formatDecimal } from "@/lib/utils";
+import { MealType, MealTypeEnum, MenuComponentApiItem } from "@/types";
 import { Pencil, Trash2 } from "lucide-react";
 
-export interface MenuComponent {
-  id: string;
-  name: string;
-  label: string;
-  mealType: string;
-  sequenceNumber: number;
-}
+export interface MenuComponent extends MenuComponentApiItem {}
 
 interface Props {
   menuComponents: MenuComponent[];
   onEdit?: (menuComponent: MenuComponent) => void;
   onDelete?: (id: string) => void;
   deletingId?: string | null;
+}
+
+function formatAverageSummary(menuComponent: MenuComponent) {
+  return menuComponent.averages.map((average) => {
+    const baseSummary = `${average.personType.name}: ${formatDecimal(average.quantity)} ${average.unit}`;
+
+    if (average.unit === "pcs" && average.weightPerPiece != null) {
+      return `${baseSummary} @ ${formatDecimal(average.weightPerPiece)} ${average.weightPerPieceUnit} each`;
+    }
+
+    return baseSummary;
+  });
 }
 
 export function MenuComponentsTable({
@@ -46,6 +53,7 @@ export function MenuComponentsTable({
           <TableHead>Name</TableHead>
           <TableHead>Label</TableHead>
           <TableHead>Meal Type</TableHead>
+          <TableHead>Averages</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -53,7 +61,7 @@ export function MenuComponentsTable({
         {menuComponents.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={5}
+              colSpan={6}
               className="text-center text-muted-foreground"
             >
               No menu components found.
@@ -66,6 +74,19 @@ export function MenuComponentsTable({
               <TableCell>{mc.name}</TableCell>
               <TableCell>{mc.label}</TableCell>
               <TableCell>{mealTypesObj[mc.mealType as MealType]}</TableCell>
+              <TableCell className="max-w-md">
+                {mc.averages.length === 0 ? (
+                  <span className="text-sm text-muted-foreground">
+                    No averages configured.
+                  </span>
+                ) : (
+                  <div className="space-y-1 text-sm">
+                    {formatAverageSummary(mc).map((summary, index) => (
+                      <div key={`${mc.id}-average-${index}`}>{summary}</div>
+                    ))}
+                  </div>
+                )}
+              </TableCell>
               <TableCell>
                 <Button
                   variant="ghost"

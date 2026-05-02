@@ -1,8 +1,10 @@
+import type { UnitValue } from "./units";
+
 export interface IngredientFormValue {
   id: string | undefined;
   name: string;
   quantity: number;
-  unit: string;
+  unit: UnitValue;
   costPerUnit: number;
   sequenceNumber?: number;
   groupId?: string | null;
@@ -15,9 +17,9 @@ export interface MealFormValues {
   followRecipe: boolean;
   ghanFactor: number;
   preparedQuantity: number;
-  preparedQuantityUnit: string;
+  preparedQuantityUnit: UnitValue;
   servingQuantity: number;
-  servingQuantityUnit: string;
+  servingQuantityUnit: UnitValue;
   quantityPerPiece?: number;
   ingredients: IngredientFormValue[];
 }
@@ -26,8 +28,8 @@ export interface MealFormValues {
 export interface RecipeDialogIngredientValue {
   name: string;
   quantity: string;
-  unit: string;
+  unit: UnitValue;
   costPerUnit?: string;
-  sequenceNumber: number;
+  sequenceNumber?: number;
   localId?: string;
 }

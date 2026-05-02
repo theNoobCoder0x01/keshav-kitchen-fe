@@ -20,17 +20,26 @@ import {
 } from "@/components/ui/select";
 import { useTranslations } from "@/hooks/use-translations";
 import api from "@/lib/api/axios";
+import { fetchMenuComponents } from "@/lib/api/menu-components";
 import { createMenu, updateMenu } from "@/lib/api/menus";
 import { fetchAllRecipesForDropdown } from "@/lib/api/recipes";
 import { BookOpen, Utensils } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 
-import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import {
+  convertUnits,
+  DEFAULT_UNIT,
+  UNIT_OPTIONS,
+  isValidUnit,
+  normalizeUnit,
+} from "@/lib/constants/units";
 import { formatDecimal } from "@/lib/utils";
 import { trimIngredients } from "@/lib/utils/form-utils";
 import { getCalculatedQuantities } from "@/lib/utils/meal-calculations";
+import { sumCompatibleQuantities } from "@/lib/utils/unit-conversions";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
+import type { MenuComponentApiItem } from "@/types/menu-components";
 import type { MealType } from "@/types/menus";
 import type { RecipeApiItem } from "@/types/recipes";
 import { v4 as uuidv4 } from "uuid";
@@ -109,6 +118,16 @@ interface MealFormProps {
   isSubmitting: boolean;
 }
 
+interface ConsumptionSuggestion {
+  totalPersons: number;
+  totalPieces: number;
+  preparedQuantity: number;
+  preparedQuantityUnit: "g" | "kg";
+  servingQuantity: number;
+  servingQuantityUnit: "g" | "kg";
+  quantityPerPiece: number | null;
+}
+
 // Update MealFormValues to include ingredient groups
 interface MealFormValuesWithGroups extends Omit<MealFormValues, "ingredients"> {
   ingredientGroups: IngredientGroupFormValue[];
@@ -132,6 +151,12 @@ export function AddMealDialog({
   const [selectedRecipeSubcategory, setSelectedRecipeSubcategory] =
     useState<string>("all");
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [menuComponents, setMenuComponents] = useState<MenuComponentApiItem[]>(
+    [],
+  );
+  const [personCounts, setPersonCounts] = useState<Record<string, number>>({});
+  const [hasAppliedConsumptionSuggestion, setHasAppliedConsumptionSuggestion] =
+    useState(false);
 
   // Step 1: Add state for loading and fetched menu
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
@@ -150,12 +175,16 @@ export function AddMealDialog({
     if (!open) {
       setFetchedMenu(null);
       setIsLoadingMenu(false);
+      setPersonCounts({});
+      setHasAppliedConsumptionSuggestion(false);
     }
   }, [open]);
 
   useEffect(() => {
     setFetchedMenu(null);
     setIsLoadingMenu(false);
+    setPersonCounts({});
+    setHasAppliedConsumptionSuggestion(false);
   }, [editMeal?.id]);
 
   // Fetch menu details when in edit mode
@@ -297,7 +326,14 @@ export function AddMealDialog({
     preparedQuantityUnit: Yup.string().when("followRecipe", {
       is: true,
       then: (schema) =>
-        schema.trim().required(t("meals.preparedQuantityUnitRequired")),
+        schema
+          .trim()
+          .required(t("meals.preparedQuantityUnitRequired"))
+          .test(
+            "valid-prepared-unit",
+            t("meals.unitRequired"),
+            (value) => !value || isValidUnit(value),
+          ),
       otherwise: (schema) => schema.notRequired(),
     }),
     servingQuantity: Yup.number().when("followRecipe", {
@@ -311,7 +347,14 @@ export function AddMealDialog({
     servingQuantityUnit: Yup.string().when("followRecipe", {
       is: true,
       then: (schema) =>
-        schema.trim().required(t("meals.servingQuantityUnitRequired")),
+        schema
+          .trim()
+          .required(t("meals.servingQuantityUnitRequired"))
+          .test(
+            "valid-serving-unit",
+            t("meals.unitRequired"),
+            (value) => !value || isValidUnit(value),
+          ),
       otherwise: (schema) => schema.notRequired(),
     }),
     quantityPerPiece: Yup.number()
@@ -331,7 +374,14 @@ export function AddMealDialog({
                 quantity: Yup.number()
                   .required(t("meals.quantityRequired"))
                   .positive(t("meals.quantityPositive")),
-                unit: Yup.string().trim().required(t("meals.unitRequired")),
+                unit: Yup.string()
+                  .trim()
+                  .required(t("meals.unitRequired"))
+                  .test(
+                    "valid-unit",
+                    t("meals.unitRequired"),
+                    (value) => !value || isValidUnit(value),
+                  ),
                 costPerUnit: Yup.number()
                   .required(t("meals.costPerUnitRequired"))
                   .min(0, t("meals.costPerUnitMin")),
@@ -488,8 +538,14 @@ export function AddMealDialog({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const recipesData = await fetchAllRecipesForDropdown();
+        const [recipesData, menuComponentData] = await Promise.all([
+          fetchAllRecipesForDropdown(),
+          kitchenId
+            ? fetchMenuComponents(kitchenId, { mealType })
+            : Promise.resolve([] as MenuComponentApiItem[]),
+        ]);
         setRecipes(recipesData);
+        setMenuComponents(menuComponentData);
       } catch (error: any) {
         // Don't show error for aborted requests
         if (error.name === "AbortError" || error.name === "CanceledError") {
@@ -497,14 +553,106 @@ export function AddMealDialog({
           return;
         }
         console.error("Error loading data:", error);
-        toast.error("Failed to load recipes and ingredients");
+        toast.error("Failed to load recipes and meal configuration");
       }
     };
 
     if (open) {
       loadData();
     }
-  }, [open]);
+  }, [open, kitchenId, mealType]);
+
+  const selectedMenuComponent = useMemo(() => {
+    const selectedMenuComponentId =
+      fetchedMenu?.menuComponentId ?? editMeal?.menuComponentId;
+
+    if (!selectedMenuComponentId) {
+      return null;
+    }
+
+    return (
+      menuComponents.find(
+        (component) => component.id === selectedMenuComponentId,
+      ) || null
+    );
+  }, [menuComponents, editMeal?.menuComponentId, fetchedMenu?.menuComponentId]);
+
+  const consumptionSuggestion = useMemo<ConsumptionSuggestion | null>(() => {
+    if (!selectedMenuComponent || selectedMenuComponent.averages.length === 0) {
+      return null;
+    }
+
+    let totalPersons = 0;
+    let totalPieces = 0;
+    let totalGrams = 0;
+    const pieceWeightsInGrams: number[] = [];
+
+    selectedMenuComponent.averages.forEach((average) => {
+      const personCount = Number(personCounts[average.personTypeId] || 0);
+      if (personCount <= 0) {
+        return;
+      }
+
+      totalPersons += personCount;
+
+      if (average.unit === "pcs") {
+        const pieces = average.quantity * personCount;
+        totalPieces += pieces;
+
+        if (average.weightPerPiece != null && average.weightPerPieceUnit) {
+          const weightPerPieceGrams = convertUnits(
+            average.weightPerPiece,
+            average.weightPerPieceUnit,
+            "g",
+          );
+          pieceWeightsInGrams.push(weightPerPieceGrams);
+          totalGrams += pieces * weightPerPieceGrams;
+        }
+
+        return;
+      }
+
+      totalGrams += convertUnits(
+        average.quantity * personCount,
+        average.unit,
+        "g",
+      );
+    });
+
+    if (totalPersons === 0 || totalGrams <= 0) {
+      return null;
+    }
+
+    const preparedQuantityUnit = totalGrams >= 1000 ? "kg" : "g";
+    const preparedQuantity = convertUnits(
+      totalGrams,
+      "g",
+      preparedQuantityUnit,
+    );
+    const servingQuantity = convertUnits(
+      totalGrams / totalPersons,
+      "g",
+      preparedQuantityUnit,
+    );
+
+    const normalizedPieceWeight =
+      pieceWeightsInGrams.length > 0 &&
+      pieceWeightsInGrams.every(
+        (weight) => Math.abs(weight - pieceWeightsInGrams[0]) < 0.0001,
+      )
+        ? convertUnits(pieceWeightsInGrams[0], "g", preparedQuantityUnit)
+        : null;
+
+    return {
+      totalPersons,
+      totalPieces,
+      preparedQuantity,
+      preparedQuantityUnit,
+      servingQuantity,
+      servingQuantityUnit: preparedQuantityUnit,
+      quantityPerPiece: normalizedPieceWeight,
+    };
+  }, [personCounts, selectedMenuComponent]);
 
   const handleRecipeSelect = (
     recipeId: string,
@@ -601,6 +749,45 @@ export function AddMealDialog({
     }
   };
 
+  useEffect(() => {
+    if (!selectedMenuComponent) {
+      setPersonCounts({});
+      return;
+    }
+
+    setPersonCounts((currentCounts) => {
+      const nextCounts: Record<string, number> = {};
+
+      selectedMenuComponent.averages.forEach((average) => {
+        nextCounts[average.personTypeId] =
+          currentCounts[average.personTypeId] || 0;
+      });
+
+      return nextCounts;
+    });
+  }, [selectedMenuComponent]);
+
+  const applyConsumptionSuggestion = (
+    setFieldValue: (field: string, value: any) => void,
+  ) => {
+    if (!consumptionSuggestion) {
+      return;
+    }
+
+    setFieldValue("preparedQuantity", consumptionSuggestion.preparedQuantity);
+    setFieldValue(
+      "preparedQuantityUnit",
+      consumptionSuggestion.preparedQuantityUnit,
+    );
+    setFieldValue("servingQuantity", consumptionSuggestion.servingQuantity);
+    setFieldValue(
+      "servingQuantityUnit",
+      consumptionSuggestion.servingQuantityUnit,
+    );
+    setFieldValue("quantityPerPiece", consumptionSuggestion.quantityPerPiece);
+    setHasAppliedConsumptionSuggestion(true);
+  };
+
   const handleSubmit = async (
     values: MealFormValuesWithGroups,
     { resetForm }: { resetForm: () => void },
@@ -666,6 +853,24 @@ export function AddMealDialog({
         (id) => !currentGroupIds.has(id),
       );
 
+      const derivePreparedQuantityFromIngredients = (allIngredients: any[]) => {
+        const aggregatedQuantity = sumCompatibleQuantities(allIngredients, {
+          preferUnit: values.preparedQuantityUnit,
+        });
+
+        if (!aggregatedQuantity) {
+          return null;
+        }
+
+        return {
+          preparedQuantity: aggregatedQuantity.quantity,
+          preparedQuantityUnit: aggregatedQuantity.unit,
+          servingQuantity: 1,
+          servingQuantityUnit: aggregatedQuantity.unit,
+          ghanFactor: 1.0,
+        };
+      };
+
       if (editMeal?.id) {
         // Flatten all ingredients with their group assignments
         const allIngredients: any[] = [];
@@ -679,7 +884,7 @@ export function AddMealDialog({
                   id: ingredient.id ?? undefined,
                   name: ingredient.name,
                   quantity: ingredient.quantity,
-                  unit: ingredient.unit,
+                  unit: normalizeUnit(ingredient.unit),
                   costPerUnit: ingredient.costPerUnit,
                   sequenceNumber:
                     ingredient.sequenceNumber != null
@@ -703,18 +908,17 @@ export function AddMealDialog({
         let calculatedGhanFactor = values.ghanFactor;
 
         if (!values.followRecipe && allIngredients.length > 0) {
-          // Sum up all ingredient quantities (assuming same unit or converting to first unit)
-          const totalQuantity = allIngredients.reduce(
-            (sum, ing) => sum + (ing.quantity || 0),
-            0,
-          );
-          const firstUnit = allIngredients[0]?.unit || DEFAULT_UNIT;
+          const derivedQuantity =
+            derivePreparedQuantityFromIngredients(allIngredients);
 
-          calculatedPreparedQuantity = totalQuantity;
-          calculatedPreparedQuantityUnit = firstUnit;
-          calculatedServingQuantity = 1; // Default to 1 serving
-          calculatedServingQuantityUnit = firstUnit;
-          calculatedGhanFactor = 1.0; // Default ghan factor
+          if (derivedQuantity) {
+            calculatedPreparedQuantity = derivedQuantity.preparedQuantity;
+            calculatedPreparedQuantityUnit =
+              derivedQuantity.preparedQuantityUnit;
+            calculatedServingQuantity = derivedQuantity.servingQuantity;
+            calculatedServingQuantityUnit = derivedQuantity.servingQuantityUnit;
+            calculatedGhanFactor = derivedQuantity.ghanFactor;
+          }
         }
 
         const updateData = {
@@ -752,7 +956,7 @@ export function AddMealDialog({
                   id: ingredient.id ?? undefined,
                   name: ingredient.name,
                   quantity: ingredient.quantity,
-                  unit: ingredient.unit,
+                  unit: normalizeUnit(ingredient.unit),
                   costPerUnit: ingredient.costPerUnit,
                   sequenceNumber:
                     ingredient.sequenceNumber != null
@@ -776,18 +980,17 @@ export function AddMealDialog({
         let calculatedGhanFactor = values.ghanFactor;
 
         if (!values.followRecipe && allIngredients.length > 0) {
-          // Sum up all ingredient quantities (assuming same unit or converting to first unit)
-          const totalQuantity = allIngredients.reduce(
-            (sum, ing) => sum + (ing.quantity || 0),
-            0,
-          );
-          const firstUnit = allIngredients[0]?.unit || DEFAULT_UNIT;
+          const derivedQuantity =
+            derivePreparedQuantityFromIngredients(allIngredients);
 
-          calculatedPreparedQuantity = totalQuantity;
-          calculatedPreparedQuantityUnit = firstUnit;
-          calculatedServingQuantity = 1; // Default to 1 serving
-          calculatedServingQuantityUnit = firstUnit;
-          calculatedGhanFactor = 1.0; // Default ghan factor
+          if (derivedQuantity) {
+            calculatedPreparedQuantity = derivedQuantity.preparedQuantity;
+            calculatedPreparedQuantityUnit =
+              derivedQuantity.preparedQuantityUnit;
+            calculatedServingQuantity = derivedQuantity.servingQuantity;
+            calculatedServingQuantityUnit = derivedQuantity.servingQuantityUnit;
+            calculatedGhanFactor = derivedQuantity.ghanFactor;
+          }
         }
 
         const menuData = {
@@ -990,15 +1193,11 @@ export function AddMealDialog({
                 }
               };
 
-              const normalizeUnit = (raw: string) => {
+              const normalizePastedUnit = (raw: string) => {
                 const trimmed = raw.trim();
                 if (!trimmed) return DEFAULT_UNIT;
-                const found = UNIT_OPTIONS.find(
-                  (opt) =>
-                    opt.value.toLowerCase() === trimmed.toLowerCase() ||
-                    opt.label.toLowerCase() === trimmed.toLowerCase(),
-                );
-                return found ? found.value : trimmed;
+                const normalizedValue = normalizeUnit(trimmed);
+                return isValidUnit(normalizedValue) ? normalizedValue : trimmed;
               };
 
               grid.forEach((cells, r) => {
@@ -1011,7 +1210,7 @@ export function AddMealDialog({
                   const key = columnOrder[colIndex];
                   const rawValue = (cell ?? "").trim();
                   if (key === "unit") {
-                    updatedRow.unit = normalizeUnit(rawValue);
+                    updatedRow.unit = normalizePastedUnit(rawValue);
                   } else if (key === "quantity" || key === "costPerUnit") {
                     const parsed = parseFloat(rawValue);
                     updatedRow[key] = isNaN(parsed) ? 0 : parsed;
@@ -1198,6 +1397,143 @@ export function AddMealDialog({
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                          {selectedMenuComponent &&
+                          selectedMenuComponent.averages.length > 0 ? (
+                            <div className="rounded-lg border border-border bg-muted/30 p-4">
+                              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div>
+                                  <h3 className="text-sm font-medium text-foreground">
+                                    Consumption planner
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground">
+                                    Enter the number of people in each group to
+                                    generate a suggested quantity for this menu
+                                    component.
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    applyConsumptionSuggestion(setFieldValue)
+                                  }
+                                  disabled={!consumptionSuggestion}
+                                >
+                                  {hasAppliedConsumptionSuggestion
+                                    ? "Refresh suggestion"
+                                    : "Apply suggestion"}
+                                </Button>
+                              </div>
+
+                              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                {selectedMenuComponent.averages.map(
+                                  (average) => (
+                                    <div
+                                      key={average.id}
+                                      className="rounded-md border border-border bg-background p-3"
+                                    >
+                                      <Label
+                                        htmlFor={`person-count-${average.personTypeId}`}
+                                        className="text-sm font-medium text-foreground"
+                                      >
+                                        {average.personType.name}
+                                      </Label>
+                                      {average.personType.description ? (
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                          {average.personType.description}
+                                        </p>
+                                      ) : null}
+                                      <p className="mt-1 text-xs text-muted-foreground">
+                                        Avg: {formatDecimal(average.quantity)}{" "}
+                                        {average.unit}
+                                        {average.unit === "pcs" &&
+                                        average.weightPerPiece != null
+                                          ? ` @ ${formatDecimal(average.weightPerPiece)} ${average.weightPerPieceUnit} each`
+                                          : ""}
+                                      </p>
+                                      <Input
+                                        id={`person-count-${average.personTypeId}`}
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                        value={
+                                          personCounts[average.personTypeId] ||
+                                          0
+                                        }
+                                        onChange={(event) => {
+                                          const nextValue = Number(
+                                            event.target.value || 0,
+                                          );
+                                          setPersonCounts((currentCounts) => ({
+                                            ...currentCounts,
+                                            [average.personTypeId]:
+                                              Number.isFinite(nextValue) &&
+                                              nextValue > 0
+                                                ? nextValue
+                                                : 0,
+                                          }));
+                                        }}
+                                        className="mt-2"
+                                      />
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+
+                              <div className="mt-4 rounded-md bg-background p-3 text-sm text-foreground">
+                                {consumptionSuggestion ? (
+                                  <div className="space-y-1">
+                                    <div>
+                                      Suggested total:{" "}
+                                      <span className="font-medium">
+                                        {formatDecimal(
+                                          consumptionSuggestion.preparedQuantity,
+                                        )}{" "}
+                                        {
+                                          consumptionSuggestion.preparedQuantityUnit
+                                        }
+                                      </span>
+                                    </div>
+                                    <div>
+                                      Average per person:{" "}
+                                      <span className="font-medium">
+                                        {formatDecimal(
+                                          consumptionSuggestion.servingQuantity,
+                                        )}{" "}
+                                        {
+                                          consumptionSuggestion.servingQuantityUnit
+                                        }
+                                      </span>
+                                    </div>
+                                    <div>
+                                      Total persons:{" "}
+                                      <span className="font-medium">
+                                        {consumptionSuggestion.totalPersons}
+                                      </span>
+                                    </div>
+                                    {consumptionSuggestion.totalPieces > 0 ? (
+                                      <div>
+                                        Total pieces:{" "}
+                                        <span className="font-medium">
+                                          {formatDecimal(
+                                            consumptionSuggestion.totalPieces,
+                                          )}{" "}
+                                          pcs
+                                        </span>
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                ) : (
+                                  <p className="text-muted-foreground">
+                                    Enter at least one person count to calculate
+                                    a suggestion.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ) : null}
+
                           <div className="@container grid grid-cols-12 gap-4">
                             {values.followRecipe && (
                               <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">

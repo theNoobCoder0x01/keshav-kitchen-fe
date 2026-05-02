@@ -1,5 +1,7 @@
 import { auth } from "@/lib/auth";
+import { normalizeUnit } from "@/lib/constants/units";
 import { prisma } from "@/lib/prisma";
+import { sumCompatibleQuantities } from "@/lib/utils/unit-conversions";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -156,11 +158,24 @@ export async function POST(request: NextRequest) {
           name: data.name,
           description: data.description,
           instructions: data.instructions,
-          preparedQuantity: data.preparedQuantity,
-          preparedQuantityUnit: data.preparedQuantityUnit,
-          servingQuantity: data.servingQuantity,
-          servingQuantityUnit: data.servingQuantityUnit,
-          quantityPerPiece: data.quantityPerPiece,
+          preparedQuantity:
+            data.preparedQuantity != null
+              ? Number(data.preparedQuantity)
+              : undefined,
+          preparedQuantityUnit: data.preparedQuantityUnit
+            ? normalizeUnit(data.preparedQuantityUnit)
+            : undefined,
+          servingQuantity:
+            data.servingQuantity != null
+              ? Number(data.servingQuantity)
+              : undefined,
+          servingQuantityUnit: data.servingQuantityUnit
+            ? normalizeUnit(data.servingQuantityUnit)
+            : undefined,
+          quantityPerPiece:
+            data.quantityPerPiece != null
+              ? Number(data.quantityPerPiece)
+              : undefined,
           category: data.category,
           subcategory: data.subcategory,
           userId: session.user.id,
@@ -200,9 +215,12 @@ export async function POST(request: NextRequest) {
         return {
           recipeId: newRecipe.id,
           name: ingredient.name,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          costPerUnit: ingredient.costPerUnit ?? undefined,
+          quantity: Number(ingredient.quantity) || 0,
+          unit: normalizeUnit(ingredient.unit),
+          costPerUnit:
+            ingredient.costPerUnit != null
+              ? Number(ingredient.costPerUnit)
+              : undefined,
           sequenceNumber:
             ingredient.sequenceNumber != null
               ? Number(ingredient.sequenceNumber)
@@ -215,23 +233,22 @@ export async function POST(request: NextRequest) {
         data: ingredientData,
       });
 
-      // Calculate preparedQuantity as sum of ingredient quantities
-      const totalQuantity = ingredientData.reduce(
-        (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-        0,
+      const aggregatedPreparedQuantity = sumCompatibleQuantities(
+        ingredientData,
+        {
+          preferUnit: data.preparedQuantityUnit,
+        },
       );
 
-      // Update the recipe with calculated preparedQuantity
-      await tx.recipe.update({
-        where: { id: newRecipe.id },
-        data: {
-          preparedQuantity: totalQuantity,
-          preparedQuantityUnit:
-            ingredientData.length > 0
-              ? ingredientData[0].unit
-              : data.preparedQuantityUnit,
-        },
-      });
+      if (aggregatedPreparedQuantity) {
+        await tx.recipe.update({
+          where: { id: newRecipe.id },
+          data: {
+            preparedQuantity: aggregatedPreparedQuantity.quantity,
+            preparedQuantityUnit: aggregatedPreparedQuantity.unit,
+          },
+        });
+      }
 
       // Return the complete recipe with relationships
       return await tx.recipe.findUnique({

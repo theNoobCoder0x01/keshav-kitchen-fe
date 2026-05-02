@@ -33,18 +33,35 @@ model User {
 }
 
 model Kitchen {
-  id             String          @id @default(cuid())
+  id             String              @id @default(cuid())
   name           String
   location       String?
   description    String?
-  sequenceNumber Int             @default(0)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  sequenceNumber Int                 @default(0)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
   users          User[]
   menus          Menu[]
   reports        Report[]
   calendarEvents CalendarEvent[]
   MenuComponent  MenuComponent[]
+  personTypes    KitchenPersonType[]
+}
+
+model KitchenPersonType {
+  id             String                 @id @default(cuid())
+  name           String
+  description    String?
+  sequenceNumber Int
+  kitchenId      String
+  kitchen        Kitchen                @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  averages       MenuComponentAverage[]
+
+  @@unique([kitchenId, name])
+  @@index([kitchenId])
+  @@index([kitchenId, sequenceNumber])
 }
 
 model Recipe {
@@ -165,16 +182,35 @@ model MenuIngredient {
 }
 
 model MenuComponent {
-  id             String   @id @default(cuid())
+  id             String                 @id @default(cuid())
   name           String
   label          String
   mealType       MealType
   sequenceNumber Int
   kitchenId      String
-  kitchen        Kitchen  @relation(fields: [kitchenId], references: [id])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  kitchen        Kitchen                @relation(fields: [kitchenId], references: [id])
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  averages       MenuComponentAverage[]
   Menu           Menu[]
+}
+
+model MenuComponentAverage {
+  id                 String            @id @default(cuid())
+  menuComponentId    String
+  menuComponent      MenuComponent     @relation(fields: [menuComponentId], references: [id], onDelete: Cascade)
+  personTypeId       String
+  personType         KitchenPersonType @relation(fields: [personTypeId], references: [id], onDelete: Cascade)
+  quantity           Float
+  unit               String
+  weightPerPiece     Float?
+  weightPerPieceUnit String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@unique([menuComponentId, personTypeId])
+  @@index([menuComponentId])
+  @@index([personTypeId])
 }
 
 model Report {

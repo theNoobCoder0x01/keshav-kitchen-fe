@@ -1,5 +1,7 @@
 import { auth } from "@/lib/auth";
+import { normalizeUnit } from "@/lib/constants/units";
 import { prisma } from "@/lib/prisma";
+import { sumCompatibleQuantities } from "@/lib/utils/unit-conversions";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -168,7 +170,11 @@ export async function PATCH(
 
     const existingRecipe = await prisma.recipe.findUnique({
       where: { id },
-      select: { userId: true },
+      select: {
+        userId: true,
+        preparedQuantity: true,
+        preparedQuantityUnit: true,
+      },
     });
     if (!existingRecipe) {
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
@@ -176,8 +182,14 @@ export async function PATCH(
 
     // Update core fields
     const updated = await prisma.$transaction(async (tx) => {
-      let totalQuantity = 0;
-      let preparedQuantityUnitToSet = preparedQuantityUnit;
+      let preparedQuantityToSet =
+        preparedQuantity != null
+          ? Number(preparedQuantity)
+          : existingRecipe.preparedQuantity;
+      let preparedQuantityUnitToSet =
+        preparedQuantityUnit != null
+          ? normalizeUnit(preparedQuantityUnit)
+          : existingRecipe.preparedQuantityUnit;
 
       // Handle ingredient groups: deletes, creates/updates, and ID mapping for temp IDs
       const groupIdMap = new Map<string, string>();
@@ -237,7 +249,7 @@ export async function PATCH(
               recipeId: id,
               name: ing.name,
               quantity: Number(ing.quantity) || 0,
-              unit: ing.unit,
+              unit: normalizeUnit(ing.unit),
               costPerUnit:
                 ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
               sequenceNumber:
@@ -246,30 +258,22 @@ export async function PATCH(
             };
           });
           await tx.ingredient.createMany({ data: ingredientData });
-          // Calculate preparedQuantity as sum of ingredient quantities
-          totalQuantity = ingredientData.reduce(
-            (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-            0,
+          const aggregatedPreparedQuantity = sumCompatibleQuantities(
+            ingredientData,
+            {
+              preferUnit: preparedQuantityUnitToSet,
+            },
           );
+
+          if (aggregatedPreparedQuantity) {
+            preparedQuantityToSet = aggregatedPreparedQuantity.quantity;
+            preparedQuantityUnitToSet = aggregatedPreparedQuantity.unit;
+          }
+        } else {
+          preparedQuantityToSet = 0;
           preparedQuantityUnitToSet =
-            ingredientData.length > 0
-              ? ingredientData[0].unit
-              : preparedQuantityUnit;
+            preparedQuantityUnitToSet ?? existingRecipe.preparedQuantityUnit;
         }
-      } else {
-        // If ingredients not provided, recalculate from existing
-        const existingIngredients = await tx.ingredient.findMany({
-          where: { recipeId: id },
-          select: { quantity: true, unit: true },
-        });
-        totalQuantity = existingIngredients.reduce(
-          (sum: number, ing: any) => sum + (Number(ing.quantity) || 0),
-          0,
-        );
-        preparedQuantityUnitToSet =
-          existingIngredients.length > 0
-            ? existingIngredients[0].unit
-            : preparedQuantityUnit;
       }
 
       const recipe = await tx.recipe.update({
@@ -278,11 +282,14 @@ export async function PATCH(
           name,
           description,
           instructions,
-          preparedQuantity: totalQuantity,
+          preparedQuantity: preparedQuantityToSet,
           preparedQuantityUnit: preparedQuantityUnitToSet,
           servingQuantity:
             servingQuantity != null ? Number(servingQuantity) : undefined,
-          servingQuantityUnit,
+          servingQuantityUnit:
+            servingQuantityUnit != null
+              ? normalizeUnit(servingQuantityUnit)
+              : undefined,
           quantityPerPiece:
             quantityPerPiece != null ? Number(quantityPerPiece) : undefined,
           category,

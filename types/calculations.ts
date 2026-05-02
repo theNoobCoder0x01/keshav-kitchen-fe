@@ -1,5 +1,6 @@
 import type { MealType } from "./menus";
 import type { RecipeIngredientBase } from "./recipes";
+import type { UnitValue } from "./units";
 
 export type CalculationIngredient = Required<
   Omit<RecipeIngredientBase, "id" | "costPerUnit">
@@ -11,7 +12,7 @@ export type CalculationIngredient = Required<
 export interface IngredientCalculation {
   name: string;
   quantity: number;
-  unit: string;
+  unit: UnitValue;
   costPerUnit: number;
   weightInGrams: number;
   totalCost: number;
@@ -49,9 +50,9 @@ export interface MealCalculationResult {
 export interface MealCalculationInput {
   ghanFactor: number;
   preparedQuantity: number;
-  preparedQuantityUnit: string;
+  preparedQuantityUnit: UnitValue;
   servingQuantity: number;
-  servingQuantityUnit: string;
+  servingQuantityUnit: UnitValue;
   quantityPerPiece?: number;
   ingredients: CalculationIngredient[];
   mealType?: MealType;

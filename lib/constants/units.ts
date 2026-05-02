@@ -1,7 +1,7 @@
 // Unit constants for the application
 // This file centralizes all unit definitions and ensures consistency across the app
 
-import type { UnitOption } from "@/types";
+import type { SupportedUnitValue, UnitCategory, UnitOption } from "@/types";
 
 // Standardized unit options for dropdowns
 export const UNIT_OPTIONS: UnitOption[] = [
@@ -10,53 +10,67 @@ export const UNIT_OPTIONS: UnitOption[] = [
     value: "kg",
     label: "Kilograms (kg)",
     category: "weight",
+    conversionToGrams: 1000,
     isDefault: true,
   },
-  // { value: "g", label: "Grams (g)", category: "weight", conversionToGrams: 1 },
+  {
+    value: "g",
+    label: "Grams (g)",
+    category: "weight",
+    conversionToGrams: 1,
+  },
 
-  // // Volume units
-  // {
-  //   value: "L",
-  //   label: "Liters (L)",
-  //   category: "volume",
-  //   conversionToGrams: 1000,
-  // },
-  // {
-  //   value: "ml",
-  //   label: "Milliliters (ml)",
-  //   category: "volume",
-  //   conversionToGrams: 1,
-  // },
-  // {
-  //   value: "cup",
-  //   label: "Cups (cup)",
-  //   category: "volume",
-  //   conversionToGrams: 240,
-  // },
-  // {
-  //   value: "tbsp",
-  //   label: "Tablespoons (tbsp)",
-  //   category: "volume",
-  //   conversionToGrams: 15,
-  // },
-  // {
-  //   value: "tsp",
-  //   label: "Teaspoons (tsp)",
-  //   category: "volume",
-  //   conversionToGrams: 5,
-  // },
+  // Volume units
+  {
+    value: "L",
+    label: "Liters (L)",
+    category: "volume",
+    conversionToGrams: 1000,
+  },
+  {
+    value: "ml",
+    label: "Milliliters (ml)",
+    category: "volume",
+    conversionToGrams: 1,
+  },
+  {
+    value: "cup",
+    label: "Cups (cup)",
+    category: "volume",
+    conversionToGrams: 240,
+  },
+  {
+    value: "tbsp",
+    label: "Tablespoons (tbsp)",
+    category: "volume",
+    conversionToGrams: 15,
+  },
+  {
+    value: "tsp",
+    label: "Teaspoons (tsp)",
+    category: "volume",
+    conversionToGrams: 5,
+  },
 
   // Count units
   {
     value: "pcs",
     label: "Pieces (pcs)",
     category: "count",
+    conversionToGrams: 1,
   },
 ];
 
-// Get default unit
-export const DEFAULT_UNIT =
-  UNIT_OPTIONS.find((unit) => unit.isDefault)?.value || "kg";
+export const DEFAULT_UNIT: SupportedUnitValue = "kg";
+
+export const DEFAULT_UNITS_BY_CATEGORY: Record<
+  UnitCategory,
+  SupportedUnitValue
+> = {
+  weight: "kg",
+  volume: "L",
+  count: "pcs",
+};
 
 // Get unit options for specific categories
 export const getWeightUnits = () =>
@@ -68,18 +82,33 @@ export const getCountUnits = () =>
 
 // Get unit by value
 export const getUnitByValue = (value: string): UnitOption | undefined => {
-  return UNIT_OPTIONS.find((unit) => unit.value === value);
+  const normalizedValue = normalizeUnit(value);
+  return UNIT_OPTIONS.find((unit) => unit.value === normalizedValue);
 };
 
 // Validate if a unit value is valid
 export const isValidUnit = (value: string): boolean => {
-  return UNIT_OPTIONS.some((unit) => unit.value === value);
+  const normalizedValue = normalizeUnit(value);
+  return UNIT_OPTIONS.some((unit) => unit.value === normalizedValue);
 };
+
+export const normalizeSupportedUnit = (
+  value: string,
+): SupportedUnitValue | null => {
+  const normalizedValue = normalizeUnit(value);
+  return isValidUnit(normalizedValue)
+    ? (normalizedValue as SupportedUnitValue)
+    : null;
+};
+
+export const getDefaultUnitForCategory = (
+  category: UnitCategory,
+): SupportedUnitValue => DEFAULT_UNITS_BY_CATEGORY[category];
 
 // Get conversion factor to grams
 export const getConversionToGrams = (unit: string): number => {
   const unitOption = getUnitByValue(unit);
-  return 1;
+  return unitOption?.conversionToGrams ?? 1;
 };
 
 // Convert between units
@@ -132,5 +161,5 @@ export const normalizeUnit = (unit: string): string => {
     pieces: "pcs",
   };
 
-  return unitMap[normalized] || DEFAULT_UNIT;
+  return unitMap[normalized] || unit.trim();
 };

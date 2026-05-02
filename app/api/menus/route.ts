@@ -1,4 +1,5 @@
 import { authOptions } from "@/lib/auth";
+import { normalizeUnit } from "@/lib/constants/units";
 import { prisma } from "@/lib/prisma";
 import {
   createEndOfDayUTC,
@@ -172,6 +173,28 @@ export async function POST(request: Request) {
       const newMenu = await tx.menu.create({
         data: {
           ...menuData,
+          preparedQuantity:
+            menuData.preparedQuantity != null
+              ? Number(menuData.preparedQuantity)
+              : undefined,
+          preparedQuantityUnit: menuData.preparedQuantityUnit
+            ? normalizeUnit(menuData.preparedQuantityUnit)
+            : undefined,
+          servingQuantity:
+            menuData.servingQuantity != null
+              ? Number(menuData.servingQuantity)
+              : undefined,
+          servingQuantityUnit: menuData.servingQuantityUnit
+            ? normalizeUnit(menuData.servingQuantityUnit)
+            : undefined,
+          quantityPerPiece:
+            menuData.quantityPerPiece != null
+              ? Number(menuData.quantityPerPiece)
+              : undefined,
+          ghanFactor:
+            menuData.ghanFactor != null
+              ? Number(menuData.ghanFactor)
+              : undefined,
           date: data.date ?? undefined,
         },
       });
@@ -208,9 +231,12 @@ export async function POST(request: Request) {
         return {
           menuId: newMenu.id,
           name: ingredient.name,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          costPerUnit: ingredient.costPerUnit ?? undefined,
+          quantity: Number(ingredient.quantity) || 0,
+          unit: normalizeUnit(ingredient.unit),
+          costPerUnit:
+            ingredient.costPerUnit != null
+              ? Number(ingredient.costPerUnit)
+              : undefined,
           sequenceNumber:
             ingredient.sequenceNumber != null
               ? Number(ingredient.sequenceNumber)
