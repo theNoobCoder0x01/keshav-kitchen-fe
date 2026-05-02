@@ -18,13 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
 import type { UnitValue } from "@/types";
 import { useRef } from "react";
@@ -154,55 +148,27 @@ function Ingredient({
           />
         </div>
 
-        <div className="sm:col-span-3">
+        <div className="sm:col-span-6">
           <Label className="text-xs font-medium text-muted-foreground mb-1 block">
             Quantity *
           </Label>
-          <Field
-            as={Input}
-            name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+          <FormikValueUnitInput
+            quantityName={`${name}[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
+            unitName={`${name}[${groupIndex}].ingredients[${ingredientIndex}].unit`}
             placeholder="Amount"
-            type="number"
             min={0}
             step={0.0001}
-            className="text-sm"
           />
           <ErrorMessage
             name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].quantity`}
             component="p"
             className="text-destructive text-xs mt-1"
           />
-        </div>
-
-        <div className="sm:col-span-3">
-          <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-            Unit *
-          </Label>
-          <Field
+          <ErrorMessage
             name={`${name}[${groupIndex}].ingredients[${ingredientIndex}].unit`}
-          >
-            {({ field }: { field: any }) => (
-              <Select
-                value={field.value}
-                onValueChange={(value) =>
-                  field.onChange({
-                    target: { name: field.name, value },
-                  })
-                }
-              >
-                <SelectTrigger className="text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent searchable>
-                  {UNIT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </Field>
+            component="p"
+            className="text-destructive text-xs mt-1"
+          />
         </div>
 
         <div className="sm:col-span-2">

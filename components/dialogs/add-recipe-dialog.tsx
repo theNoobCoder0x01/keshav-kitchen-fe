@@ -13,6 +13,7 @@ import {
 import { IngredientsInput } from "@/components/ui/ingredients-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
 import { useTranslations } from "@/hooks/use-translations";
 import {
   DEFAULT_UNIT,
@@ -711,124 +712,52 @@ export function AddRecipeDialog({
                 <CardContent className="space-y-4">
                   {/* Prepared Quantity */}
                   <div className="@container grid grid-cols-12 gap-4">
-                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3 @3xl:col-span-2">
+                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3">
                       <Label
                         htmlFor="preparedQuantity"
                         className="text-sm font-medium text-foreground mb-2 block"
                       >
                         {t("recipes.preparedQuantity")}
                       </Label>
-                      <Field
-                        as={Input}
+                      <FormikValueUnitInput
                         id="preparedQuantity"
-                        name="preparedQuantity"
-                        type="number"
+                        quantityName="preparedQuantity"
+                        unitName="preparedQuantityUnit"
                         min={0}
                         step={0.0001}
                         placeholder={t("recipes.preparedQuantity")}
-                        className="border-border focus:border-primary focus:ring-primary/20"
                       />
                       <ErrorMessage
                         name="preparedQuantity"
                         component="p"
                         className="text-destructive text-xs mt-1 flex items-center gap-1"
                       />
-                    </div>
-                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3">
-                      <Label
-                        htmlFor="preparedQuantityUnit"
-                        className="text-sm font-medium text-foreground mb-2 block"
-                      >
-                        {t("recipes.preparedQuantityUnit")}
-                      </Label>
-                      <Field name="preparedQuantityUnit">
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) =>
-                              field.onChange({
-                                target: { name: field.name, value },
-                              })
-                            }
-                          >
-                            <SelectTrigger className="text-sm">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent searchable>
-                              {UNIT_OPTIONS.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
                       <ErrorMessage
                         name="preparedQuantityUnit"
                         component="p"
                         className="text-destructive text-xs mt-1 flex items-center gap-1"
                       />
                     </div>
-                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3 @3xl:col-span-2">
+                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3">
                       <Label
                         htmlFor="servingQuantity"
                         className="text-sm font-medium text-foreground mb-2 block"
                       >
                         {t("recipes.servingQuantity")}
                       </Label>
-                      <Field
-                        as={Input}
+                      <FormikValueUnitInput
                         id="servingQuantity"
-                        name="servingQuantity"
-                        type="number"
+                        quantityName="servingQuantity"
+                        unitName="servingQuantityUnit"
                         min={0}
                         step={0.0001}
-                        placeholder="Serving quantity"
-                        className="border-border focus:border-primary focus:ring-primary/20"
+                        placeholder={t("recipes.servingQuantity")}
                       />
                       <ErrorMessage
                         name="servingQuantity"
                         component="p"
                         className="text-destructive text-xs mt-1 flex items-center gap-1"
                       />
-                    </div>
-                    <div className="col-span-12 @sm:col-span-6 @xl:col-span-3">
-                      <Label
-                        htmlFor="servingQuantityUnit"
-                        className="text-sm font-medium text-foreground mb-2 block"
-                      >
-                        {t("recipes.servingQuantityUnit")}
-                      </Label>
-                      <Field name="servingQuantityUnit">
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) =>
-                              field.onChange({
-                                target: { name: field.name, value },
-                              })
-                            }
-                          >
-                            <SelectTrigger className="text-sm">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent searchable>
-                              {UNIT_OPTIONS.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
                       <ErrorMessage
                         name="servingQuantityUnit"
                         component="p"
