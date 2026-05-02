@@ -37,8 +37,8 @@ npm run setup:prod   # Initial prod setup
 
 ### Data Layer
 
-- **Database**: PostgreSQL via Neon (serverless) with Prisma ORM + Prisma Accelerate
-- **Prisma client**: instantiated in `lib/prisma.ts` (singleton pattern for dev, Accelerate for prod)
+- **Database**: PostgreSQL with Prisma ORM
+- **Prisma client**: instantiated in `lib/prisma.ts` (singleton pattern for dev, direct Postgres adapter)
 - **Server Actions**: in `lib/actions/` — prefer these over API routes for mutations
 - **API client utilities**: in `lib/api/` for client-side fetching
 

@@ -2,7 +2,13 @@
 
 import { ErrorMessage, Field, Formik } from "formik";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { ClipboardEvent } from "react";
 import { toast } from "sonner";
 import * as Yup from "yup";
@@ -51,9 +57,6 @@ import {
   CardTitle,
 } from "../ui/card";
 
-// Use centralized unit options
-const UNITS = UNIT_OPTIONS;
-
 type Recipe = Pick<
   RecipeApiItem,
   | "id"
@@ -68,13 +71,6 @@ type Recipe = Pick<
   | "ingredients"
   | "ingredientGroups"
 >;
-
-type IngredientOption = {
-  id: string;
-  name: string;
-  unit: string;
-  costPerUnit: number | null;
-};
 
 interface IngredientGroupFormValue {
   id?: string;
@@ -114,11 +110,6 @@ interface AddMealDialogProps {
   } | null;
 }
 
-interface MealFormProps {
-  ingredientOptions: IngredientOption[];
-  isSubmitting: boolean;
-}
-
 interface ConsumptionSuggestion {
   totalPersons: number;
   totalPieces: number;
@@ -133,6 +124,8 @@ interface ConsumptionSuggestion {
 interface MealFormValuesWithGroups extends Omit<MealFormValues, "ingredients"> {
   ingredientGroups: IngredientGroupFormValue[];
   menuComponentId?: string;
+  recipeCategory: string;
+  recipeSubcategory: string;
 }
 
 export function AddMealDialog({
@@ -147,11 +140,12 @@ export function AddMealDialog({
   const { t } = useTranslations();
   const { data: session } = useSession();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedRecipeCategory, setSelectedRecipeCategory] =
     useState<string>("all");
   const [selectedRecipeSubcategory, setSelectedRecipeSubcategory] =
     useState<string>("all");
+  const deferredRecipeCategory = useDeferredValue(selectedRecipeCategory);
+  const deferredRecipeSubcategory = useDeferredValue(selectedRecipeSubcategory);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [menuComponents, setMenuComponents] = useState<MenuComponentApiItem[]>(
     [],
@@ -212,22 +206,59 @@ export function AddMealDialog({
     };
 
     fetchMenuDetails();
-  }, [open, editMeal?.id, fetchedMenu]);
+  }, [open, editMeal?.id, fetchedMenu, t]);
 
   // Helper function to organize ingredients into groups
-  const organizeIngredientsIntoGroups = (
-    ingredients: any[],
-    ingredientGroups: any[] = [],
-  ): IngredientGroupFormValue[] => {
-    const groups: IngredientGroupFormValue[] = [];
+  const organizeIngredientsIntoGroups = useCallback(
+    (
+      ingredients: any[],
+      ingredientGroups: any[] = [],
+    ): IngredientGroupFormValue[] => {
+      const groups: IngredientGroupFormValue[] = [];
 
-    // Create a map of existing groups
-    const groupMap = new Map(ingredientGroups.map((g) => [g.id, g]));
+      // Create a map of existing groups
+      const groupMap = new Map(ingredientGroups.map((g) => [g.id, g]));
 
-    // Create groups with their ingredients - preserve ALL groups even if empty
-    ingredientGroups.forEach((group) => {
-      const groupIngredients = ingredients
-        .filter((ing) => ing.groupId === group.id)
+      // Create groups with their ingredients - preserve ALL groups even if empty
+      ingredientGroups.forEach((group) => {
+        const groupIngredients = ingredients
+          .filter((ing) => ing.groupId === group.id)
+          .map((ing) => ({
+            id: ing.id,
+            name: ing.name,
+            quantity: ing.quantity,
+            unit: ing.unit,
+            costPerUnit: ing.costPerUnit,
+            sequenceNumber: ing.sequenceNumber ?? 1,
+            localId: ing.localId || generateStableId(),
+            selected: (ing as any).selected ?? false,
+          }));
+
+        // Always preserve the group, even if it has no ingredients
+        groups.push({
+          id: group.id,
+          name: group.name,
+          sortOrder: group.sortOrder,
+          ingredients:
+            groupIngredients.length > 0
+              ? groupIngredients
+              : [
+                  {
+                    id: undefined,
+                    name: "",
+                    quantity: 0,
+                    unit: DEFAULT_UNIT,
+                    costPerUnit: 0,
+                    localId: generateStableId(),
+                    selected: false,
+                  },
+                ],
+        });
+      });
+
+      // Handle ingredients without groups (create "Ungrouped" group)
+      const ungroupedIngredients = ingredients
+        .filter((ing) => !ing.groupId)
         .map((ing) => ({
           id: ing.id,
           name: ing.name,
@@ -239,71 +270,37 @@ export function AddMealDialog({
           selected: (ing as any).selected ?? false,
         }));
 
-      // Always preserve the group, even if it has no ingredients
-      groups.push({
-        id: group.id,
-        name: group.name,
-        sortOrder: group.sortOrder,
-        ingredients:
-          groupIngredients.length > 0
-            ? groupIngredients
-            : [
-                {
-                  id: undefined,
-                  name: "",
-                  quantity: 0,
-                  unit: DEFAULT_UNIT,
-                  costPerUnit: 0,
-                  localId: generateStableId(),
-                  selected: false,
-                },
-              ],
-      });
-    });
+      if (ungroupedIngredients.length > 0) {
+        groups.push({
+          name: "Ungrouped",
+          sortOrder: 999,
+          ingredients: ungroupedIngredients,
+        });
+      }
 
-    // Handle ingredients without groups (create "Ungrouped" group)
-    const ungroupedIngredients = ingredients
-      .filter((ing) => !ing.groupId)
-      .map((ing) => ({
-        id: ing.id,
-        name: ing.name,
-        quantity: ing.quantity,
-        unit: ing.unit,
-        costPerUnit: ing.costPerUnit,
-        sequenceNumber: ing.sequenceNumber ?? 1,
-        localId: ing.localId || generateStableId(),
-        selected: (ing as any).selected ?? false,
-      }));
+      // If no groups exist, create a default "Ungrouped" group with all ingredients
+      if (groups.length === 0 && ingredients.length > 0) {
+        groups.push({
+          name: "Ungrouped",
+          sortOrder: 999,
+          ingredients: ingredients.map((ing) => ({
+            id: ing.id,
+            name: ing.name,
+            quantity: ing.quantity,
+            unit: ing.unit,
+            costPerUnit: ing.costPerUnit,
+            sequenceNumber: ing.sequenceNumber ?? 1,
+            localId: ing.localId || generateStableId(),
+            selected: (ing as any).selected ?? false,
+          })),
+        });
+      }
 
-    if (ungroupedIngredients.length > 0) {
-      groups.push({
-        name: "Ungrouped",
-        sortOrder: 999,
-        ingredients: ungroupedIngredients,
-      });
-    }
-
-    // If no groups exist, create a default "Ungrouped" group with all ingredients
-    if (groups.length === 0 && ingredients.length > 0) {
-      groups.push({
-        name: "Ungrouped",
-        sortOrder: 999,
-        ingredients: ingredients.map((ing) => ({
-          id: ing.id,
-          name: ing.name,
-          quantity: ing.quantity,
-          unit: ing.unit,
-          costPerUnit: ing.costPerUnit,
-          sequenceNumber: ing.sequenceNumber ?? 1,
-          localId: ing.localId || generateStableId(),
-          selected: (ing as any).selected ?? false,
-        })),
-      });
-    }
-
-    // Sort groups by sortOrder
-    return groups.sort((a, b) => a.sortOrder - b.sortOrder);
-  };
+      // Sort groups by sortOrder
+      return groups.sort((a, b) => a.sortOrder - b.sortOrder);
+    },
+    [generateStableId],
+  );
 
   const validationSchema = Yup.object().shape({
     recipeId: Yup.string().trim(),
@@ -402,142 +399,156 @@ export function AddMealDialog({
   });
 
   // This will be computed dynamically based on editMeal prop
-  const getInitialValues = (
-    editMeal?: AddMealDialogProps["editMeal"],
-    recipes?: Recipe[],
-  ): MealFormValuesWithGroups => {
-    if (editMeal?.id) {
-      // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
-      let ingredients;
-      let ingredientGroups;
+  const getInitialValues = useCallback(
+    (
+      editMeal?: AddMealDialogProps["editMeal"],
+      recipes?: Recipe[],
+    ): MealFormValuesWithGroups => {
+      if (editMeal?.id) {
+        // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
+        let ingredients;
+        let ingredientGroups;
 
-      if (editMeal.ingredients && editMeal.ingredients.length > 0) {
-        // Load ingredients from the saved menu
-        ingredients = editMeal.ingredients.map((ingredient) => ({
-          id: ingredient.id,
-          name: ingredient.name,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          costPerUnit: ingredient.costPerUnit,
-          groupId: (ingredient as any).groupId ?? null,
-          sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
-          localId: ingredient.localId || generateStableId(),
-          selected: (ingredient as any).selected ?? false,
-        }));
-        if (editMeal.ingredientGroups && editMeal.ingredientGroups.length > 0) {
-          // Preserve existing menu ingredient groups
-          ingredientGroups = organizeIngredientsIntoGroups(
-            ingredients,
-            editMeal.ingredientGroups,
-          );
-        } else {
-          // Create default "Ungrouped" group
-          ingredientGroups = [
-            {
-              name: "Ungrouped",
-              sortOrder: 999,
-              ingredients: ingredients.map((ing) => ({
-                ...ing,
-                localId: ing.localId || generateStableId(),
-              })),
-            },
-          ];
-        }
-      } else {
-        // Fall back to recipe ingredients if menu doesn't have ingredients saved
-        const selectedRecipe = editMeal.recipeId
-          ? recipes?.find((r) => r.id === editMeal.recipeId)
-          : null;
-        const recipeIngredients = selectedRecipe?.ingredients || [];
-        const recipeGroups = selectedRecipe?.ingredientGroups || [];
-
-        if (recipeGroups.length > 0) {
-          // Use recipe ingredient groups
-          ingredientGroups = organizeIngredientsIntoGroups(
-            recipeIngredients,
-            recipeGroups,
-          );
-        } else {
-          // Create default "Ungrouped" group
-          ingredients =
-            recipeIngredients.length > 0
-              ? recipeIngredients.map((ingredient) => ({
-                  id: ingredient.id,
-                  name: ingredient.name,
-                  quantity: ingredient.quantity,
-                  unit: ingredient.unit,
-                  costPerUnit: ingredient.costPerUnit || 0,
-                  groupId: (ingredient as any).groupId ?? null,
-                  localId: ingredient.localId || generateStableId(),
-                  selected: false,
-                }))
-              : [
-                  {
-                    id: undefined,
-                    name: "",
-                    quantity: 0,
-                    unit: DEFAULT_UNIT,
-                    costPerUnit: 0,
-                    localId: generateStableId(),
-                    selected: false,
-                  },
-                ];
-
-          ingredientGroups = [
-            {
-              name: "Ungrouped",
-              sortOrder: 999,
+        if (editMeal.ingredients && editMeal.ingredients.length > 0) {
+          // Load ingredients from the saved menu
+          ingredients = editMeal.ingredients.map((ingredient) => ({
+            id: ingredient.id,
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            costPerUnit: ingredient.costPerUnit,
+            groupId: (ingredient as any).groupId ?? null,
+            sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
+            localId: ingredient.localId || generateStableId(),
+            selected:
+              (ingredient as any).selected ?? Boolean(editMeal.followRecipe),
+          }));
+          if (
+            editMeal.ingredientGroups &&
+            editMeal.ingredientGroups.length > 0
+          ) {
+            // Preserve existing menu ingredient groups
+            ingredientGroups = organizeIngredientsIntoGroups(
               ingredients,
-            },
-          ];
+              editMeal.ingredientGroups,
+            );
+          } else {
+            // Create default "Ungrouped" group
+            ingredientGroups = [
+              {
+                name: "Ungrouped",
+                sortOrder: 999,
+                ingredients: ingredients.map((ing) => ({
+                  ...ing,
+                  localId: ing.localId || generateStableId(),
+                })),
+              },
+            ];
+          }
+        } else {
+          // Fall back to recipe ingredients if menu doesn't have ingredients saved
+          const selectedRecipe = editMeal.recipeId
+            ? recipes?.find((r) => r.id === editMeal.recipeId)
+            : null;
+          const recipeIngredients = selectedRecipe?.ingredients || [];
+          const recipeGroups = selectedRecipe?.ingredientGroups || [];
+
+          if (recipeGroups.length > 0) {
+            // Use recipe ingredient groups
+            ingredientGroups = organizeIngredientsIntoGroups(
+              recipeIngredients.map((ingredient) => ({
+                ...ingredient,
+                selected: Boolean(editMeal.followRecipe),
+              })),
+              recipeGroups,
+            );
+          } else {
+            // Create default "Ungrouped" group
+            ingredients =
+              recipeIngredients.length > 0
+                ? recipeIngredients.map((ingredient) => ({
+                    id: ingredient.id,
+                    name: ingredient.name,
+                    quantity: ingredient.quantity,
+                    unit: ingredient.unit,
+                    costPerUnit: ingredient.costPerUnit || 0,
+                    groupId: (ingredient as any).groupId ?? null,
+                    localId: ingredient.localId || generateStableId(),
+                    selected: Boolean(editMeal.followRecipe),
+                  }))
+                : [
+                    {
+                      id: undefined,
+                      name: "",
+                      quantity: 0,
+                      unit: DEFAULT_UNIT,
+                      costPerUnit: 0,
+                      localId: generateStableId(),
+                      selected: false,
+                    },
+                  ];
+
+            ingredientGroups = [
+              {
+                name: "Ungrouped",
+                sortOrder: 999,
+                ingredients,
+              },
+            ];
+          }
         }
+
+        return {
+          recipeCategory: "all",
+          recipeSubcategory: "all",
+          recipeId: editMeal.recipeId || "",
+          followRecipe:
+            typeof editMeal.followRecipe === "boolean"
+              ? editMeal.followRecipe
+              : false,
+          ghanFactor: editMeal.ghanFactor || 1.0,
+          preparedQuantity: editMeal.preparedQuantity,
+          preparedQuantityUnit: editMeal.preparedQuantityUnit,
+          servingQuantity: editMeal.servingQuantity,
+          servingQuantityUnit: editMeal.servingQuantityUnit,
+          quantityPerPiece: editMeal.quantityPerPiece,
+          menuComponentId: editMeal.menuComponentId,
+          ingredientGroups,
+        };
       }
 
       return {
-        recipeId: editMeal.recipeId || "",
-        followRecipe:
-          typeof editMeal.followRecipe === "boolean"
-            ? editMeal.followRecipe
-            : false,
-        ghanFactor: editMeal.ghanFactor || 1.0,
-        preparedQuantity: editMeal.preparedQuantity,
-        preparedQuantityUnit: editMeal.preparedQuantityUnit,
-        servingQuantity: editMeal.servingQuantity,
-        servingQuantityUnit: editMeal.servingQuantityUnit,
-        quantityPerPiece: editMeal.quantityPerPiece,
-        menuComponentId: editMeal.menuComponentId,
-        ingredientGroups,
+        recipeCategory: "all",
+        recipeSubcategory: "all",
+        recipeId: "",
+        followRecipe: false,
+        ghanFactor: 1.0,
+        servingQuantity: 0,
+        servingQuantityUnit: DEFAULT_UNIT,
+        preparedQuantity: 0,
+        preparedQuantityUnit: DEFAULT_UNIT,
+        menuComponentId: editMeal?.menuComponentId,
+        ingredientGroups: [
+          {
+            name: "Ungrouped",
+            sortOrder: 999,
+            ingredients: [
+              {
+                id: undefined,
+                name: "",
+                quantity: 0,
+                unit: DEFAULT_UNIT,
+                costPerUnit: 0,
+                localId: generateStableId(),
+                selected: false,
+              },
+            ],
+          },
+        ],
       };
-    }
-
-    return {
-      recipeId: "",
-      followRecipe: false,
-      ghanFactor: 1.0,
-      servingQuantity: 0,
-      servingQuantityUnit: DEFAULT_UNIT,
-      preparedQuantity: 0,
-      preparedQuantityUnit: DEFAULT_UNIT,
-      menuComponentId: editMeal?.menuComponentId,
-      ingredientGroups: [
-        {
-          name: "Ungrouped",
-          sortOrder: 999,
-          ingredients: [
-            {
-              id: undefined,
-              name: "",
-              quantity: 0,
-              unit: DEFAULT_UNIT,
-              costPerUnit: 0,
-              localId: generateStableId(),
-              selected: false,
-            },
-          ],
-        },
-      ],
-    };
-  };
+    },
+    [generateStableId, organizeIngredientsIntoGroups],
+  );
 
   useEffect(() => {
     const loadData = async () => {
@@ -855,7 +866,40 @@ export function AddMealDialog({
         (id) => !currentGroupIds.has(id),
       );
 
-      const derivePreparedQuantityFromIngredients = (allIngredients: any[]) => {
+      const allIngredients: any[] = [];
+      values.ingredientGroups.forEach((group: any, groupIndex: number) => {
+        const groupId = group.id || `temp_${groupIndex}`;
+        group.ingredients.forEach(
+          (ingredient: any, ingredientIndex: number) => {
+            if (
+              ingredient.name.trim() &&
+              (ingredient.selected || !values.followRecipe)
+            ) {
+              allIngredients.push({
+                id: ingredient.id ?? undefined,
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                unit: normalizeUnit(ingredient.unit),
+                costPerUnit: ingredient.costPerUnit,
+                sequenceNumber:
+                  ingredient.sequenceNumber != null
+                    ? Number(ingredient.sequenceNumber)
+                    : ingredientIndex + 1,
+                groupId:
+                  String(group.name || "").trim() === "Ungrouped"
+                    ? null
+                    : groupId,
+              });
+            }
+          },
+        );
+      });
+
+      if (allIngredients.length === 0) {
+        throw new Error(t("meals.ingredientsRequired"));
+      }
+
+      const derivePreparedQuantityFromIngredients = () => {
         const aggregatedQuantity = sumCompatibleQuantities(allIngredients, {
           preferUnit: values.preparedQuantityUnit,
         });
@@ -873,59 +917,25 @@ export function AddMealDialog({
         };
       };
 
-      if (editMeal?.id) {
-        // Flatten all ingredients with their group assignments
-        const allIngredients: any[] = [];
-        values.ingredientGroups.forEach((group: any, groupIndex: number) => {
-          const groupId = group.id || `temp_${groupIndex}`;
-          group.ingredients.forEach(
-            (ingredient: any, ingredientIndex: number) => {
-              // Only include ingredients with names AND that are selected
-              if (
-                ingredient.name.trim() &&
-                (ingredient.selected || !values.followRecipe)
-              ) {
-                allIngredients.push({
-                  id: ingredient.id ?? undefined,
-                  name: ingredient.name,
-                  quantity: ingredient.quantity,
-                  unit: normalizeUnit(ingredient.unit),
-                  costPerUnit: ingredient.costPerUnit,
-                  sequenceNumber:
-                    ingredient.sequenceNumber != null
-                      ? Number(ingredient.sequenceNumber)
-                      : ingredientIndex + 1,
-                  groupId:
-                    String(group.name || "").trim() === "Ungrouped"
-                      ? null
-                      : groupId,
-                });
-              }
-            },
-          );
-        });
+      let calculatedPreparedQuantity = values.preparedQuantity;
+      let calculatedPreparedQuantityUnit = values.preparedQuantityUnit;
+      let calculatedServingQuantity = values.servingQuantity;
+      let calculatedServingQuantityUnit = values.servingQuantityUnit;
+      let calculatedGhanFactor = values.ghanFactor;
 
-        // Calculate prepared quantity from ingredient sum when followRecipe is OFF
-        let calculatedPreparedQuantity = values.preparedQuantity;
-        let calculatedPreparedQuantityUnit = values.preparedQuantityUnit;
-        let calculatedServingQuantity = values.servingQuantity;
-        let calculatedServingQuantityUnit = values.servingQuantityUnit;
-        let calculatedGhanFactor = values.ghanFactor;
+      if (!values.followRecipe) {
+        const derivedQuantity = derivePreparedQuantityFromIngredients();
 
-        if (!values.followRecipe && allIngredients.length > 0) {
-          const derivedQuantity =
-            derivePreparedQuantityFromIngredients(allIngredients);
-
-          if (derivedQuantity) {
-            calculatedPreparedQuantity = derivedQuantity.preparedQuantity;
-            calculatedPreparedQuantityUnit =
-              derivedQuantity.preparedQuantityUnit;
-            calculatedServingQuantity = derivedQuantity.servingQuantity;
-            calculatedServingQuantityUnit = derivedQuantity.servingQuantityUnit;
-            calculatedGhanFactor = derivedQuantity.ghanFactor;
-          }
+        if (derivedQuantity) {
+          calculatedPreparedQuantity = derivedQuantity.preparedQuantity;
+          calculatedPreparedQuantityUnit = derivedQuantity.preparedQuantityUnit;
+          calculatedServingQuantity = derivedQuantity.servingQuantity;
+          calculatedServingQuantityUnit = derivedQuantity.servingQuantityUnit;
+          calculatedGhanFactor = derivedQuantity.ghanFactor;
         }
+      }
 
+      if (editMeal?.id) {
         const updateData = {
           recipeId: values.recipeId || null,
           preparedQuantity: calculatedPreparedQuantity,
@@ -942,65 +952,13 @@ export function AddMealDialog({
           followRecipe: values.followRecipe,
         };
 
-        const result = await updateMenu(editMeal.id, updateData);
+        await updateMenu(editMeal.id, updateData);
         toast.success(
           t("meals.mealUpdatedSuccessfully", {
             mealType: mealType.toLowerCase(),
           }),
         );
       } else {
-        // Flatten all ingredients with their group assignments
-        const allIngredients: any[] = [];
-        values.ingredientGroups.forEach((group: any, groupIndex: number) => {
-          const groupId = group.id || `temp_${groupIndex}`;
-          group.ingredients.forEach(
-            (ingredient: any, ingredientIndex: number) => {
-              // Only include ingredients with names AND that are selected
-              if (
-                ingredient.name.trim() &&
-                (ingredient.selected || !values.followRecipe)
-              ) {
-                allIngredients.push({
-                  id: ingredient.id ?? undefined,
-                  name: ingredient.name,
-                  quantity: ingredient.quantity,
-                  unit: normalizeUnit(ingredient.unit),
-                  costPerUnit: ingredient.costPerUnit,
-                  sequenceNumber:
-                    ingredient.sequenceNumber != null
-                      ? Number(ingredient.sequenceNumber)
-                      : ingredientIndex + 1,
-                  groupId:
-                    String(group.name || "").trim() === "Ungrouped"
-                      ? null
-                      : groupId,
-                });
-              }
-            },
-          );
-        });
-
-        // Calculate prepared quantity from ingredient sum when followRecipe is OFF
-        let calculatedPreparedQuantity = values.preparedQuantity;
-        let calculatedPreparedQuantityUnit = values.preparedQuantityUnit;
-        let calculatedServingQuantity = values.servingQuantity;
-        let calculatedServingQuantityUnit = values.servingQuantityUnit;
-        let calculatedGhanFactor = values.ghanFactor;
-
-        if (!values.followRecipe && allIngredients.length > 0) {
-          const derivedQuantity =
-            derivePreparedQuantityFromIngredients(allIngredients);
-
-          if (derivedQuantity) {
-            calculatedPreparedQuantity = derivedQuantity.preparedQuantity;
-            calculatedPreparedQuantityUnit =
-              derivedQuantity.preparedQuantityUnit;
-            calculatedServingQuantity = derivedQuantity.servingQuantity;
-            calculatedServingQuantityUnit = derivedQuantity.servingQuantityUnit;
-            calculatedGhanFactor = derivedQuantity.ghanFactor;
-          }
-        }
-
         const menuData = {
           epochMs: selectedDate.getTime(),
           mealType: mealType,
@@ -1026,7 +984,7 @@ export function AddMealDialog({
           menuComponentId: values.menuComponentId,
         };
 
-        const result = await createMenu(menuData);
+        await createMenu(menuData);
         toast.success(
           t("meals.mealAddedSuccessfully", {
             mealType: mealType.toLowerCase(),
@@ -1047,15 +1005,20 @@ export function AddMealDialog({
     onOpenChange(false);
   };
 
+  const initialFormValues = useMemo(
+    () => getInitialValues(fetchedMenu || editMeal, recipes),
+    [fetchedMenu, editMeal, recipes, getInitialValues],
+  );
+
   const filteredRecipes = useMemo(() => {
     return recipes.filter(
       (recipe) =>
-        (selectedRecipeCategory === "all" ||
-          selectedRecipeCategory === recipe.category) &&
-        (selectedRecipeSubcategory === "all" ||
-          selectedRecipeSubcategory === recipe.subcategory),
+        (deferredRecipeCategory === "all" ||
+          deferredRecipeCategory === recipe.category) &&
+        (deferredRecipeSubcategory === "all" ||
+          deferredRecipeSubcategory === recipe.subcategory),
     );
-  }, [recipes, selectedRecipeCategory, selectedRecipeSubcategory]);
+  }, [recipes, deferredRecipeCategory, deferredRecipeSubcategory]);
 
   const recipeCategories = useMemo(() => {
     const categories = [
@@ -1074,9 +1037,9 @@ export function AddMealDialog({
         new Set(
           recipes
             .filter((recipe) =>
-              selectedRecipeCategory
-                ? selectedRecipeCategory === "all" ||
-                  recipe.category === selectedRecipeCategory
+              deferredRecipeCategory
+                ? deferredRecipeCategory === "all" ||
+                  recipe.category === deferredRecipeCategory
                 : true,
             )
             .map((recipe) => recipe.subcategory)
@@ -1085,7 +1048,7 @@ export function AddMealDialog({
       ) ?? []),
     ];
     return subcategories;
-  }, [recipes, selectedRecipeCategory]);
+  }, [recipes, deferredRecipeCategory]);
 
   return (
     <BaseDialog
@@ -1112,20 +1075,13 @@ export function AddMealDialog({
         </div>
       ) : (
         <Formik
-          initialValues={getInitialValues(fetchedMenu || editMeal, recipes)}
+          initialValues={initialFormValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
-          enableReinitialize={false}
-          key={editMeal?.id || "new"} // Force re-initialization when switching between add/edit
+          enableReinitialize
+          key={editMeal?.id || editMeal?.menuComponentId || "new"}
         >
-          {({
-            values,
-            setFieldValue,
-            handleSubmit: formikHandleSubmit,
-            errors,
-          }) => {
-            console.log("errrors", errors);
-
+          {({ values, setFieldValue, handleSubmit: formikHandleSubmit }) => {
             // Removing helpers that referenced non-existent fields in this form
             const handlePasteIngredients = (e: ClipboardEvent) => {
               const columnOrder = [
