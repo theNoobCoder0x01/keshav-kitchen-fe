@@ -280,9 +280,12 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    return recipe;
+    return NextResponse.json(recipe, { status: 201 });
   } catch (error) {
     console.error("Create recipe error:", error);
-    throw error;
+    return NextResponse.json(
+      { error: "Failed to create recipe" },
+      { status: 500 },
+    );
   }
 }
