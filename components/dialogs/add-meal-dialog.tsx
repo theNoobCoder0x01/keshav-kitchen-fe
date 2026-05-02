@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
+import { QuantityWithPieceInput } from "@/components/ui/quantity-with-piece-input";
 import { useTranslations } from "@/hooks/use-translations";
 import api from "@/lib/api/axios";
 import { fetchMenuComponents } from "@/lib/api/menu-components";
@@ -1554,94 +1555,35 @@ export function AddMealDialog({
 
                             {/* Prepared Quantity */}
                             <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                              <Label
-                                htmlFor="preparedQuantity"
-                                className="mb-1 block text-xs font-medium text-foreground"
-                              >
-                                {t("recipes.preparedQuantity")}{" "}
-                                {values.followRecipe ? "(per ghan)" : ""}
-                              </Label>
-                              <FormikValueUnitInput
+                              <QuantityWithPieceInput
                                 id="preparedQuantity"
+                                label={`${t("recipes.preparedQuantity")}${values.followRecipe ? " (per ghan)" : ""}`}
                                 quantityName="preparedQuantity"
                                 unitName="preparedQuantityUnit"
+                                pieceQuantityName="quantityPerPiece"
+                                pieceUnit={values.servingQuantityUnit}
                                 min={0}
                                 step={0.0001}
                                 placeholder={t("recipes.preparedQuantity")}
-                                className="h-9"
-                              />
-                              <ErrorMessage
-                                name="preparedQuantity"
-                                component="p"
-                                className="text-destructive text-xs mt-1 flex items-center gap-1"
-                              />
-                              <ErrorMessage
-                                name="preparedQuantityUnit"
-                                component="p"
-                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                                inputClassName="h-9"
+                                labelClassName="text-xs"
                               />
                             </div>
                             <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                              <Label
-                                htmlFor="servingQuantity"
-                                className="mb-1 block text-xs font-medium text-foreground"
-                              >
-                                {t("recipes.servingQuantity")}
-                              </Label>
-                              <FormikValueUnitInput
+                              <QuantityWithPieceInput
                                 id="servingQuantity"
+                                label={t("recipes.servingQuantity")}
                                 quantityName="servingQuantity"
                                 unitName="servingQuantityUnit"
+                                pieceQuantityName="quantityPerPiece"
+                                pieceUnit={values.preparedQuantityUnit}
                                 min={0}
                                 step={0.0001}
                                 placeholder={t("recipes.servingQuantity")}
-                                className="h-9"
-                              />
-                              <ErrorMessage
-                                name="servingQuantity"
-                                component="p"
-                                className="text-destructive text-xs mt-1 flex items-center gap-1"
-                              />
-                              <ErrorMessage
-                                name="servingQuantityUnit"
-                                component="p"
-                                className="text-destructive text-xs mt-1 flex items-center gap-1"
+                                inputClassName="h-9"
+                                labelClassName="text-xs"
                               />
                             </div>
-                            {/* Quantity Per Piece (only if exactly one of the units is 'pcs') */}
-                            {(values.servingQuantityUnit === "pcs") !==
-                              (values.preparedQuantityUnit === "pcs") && (
-                              <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                                <Label
-                                  htmlFor="quantityPerPiece"
-                                  className="mb-1 block text-xs font-medium text-foreground"
-                                >
-                                  {t("recipes.quantityPerPiece")}
-                                </Label>
-                                <div className="flex h-9 items-center rounded-md border border-input bg-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-                                  <Field
-                                    id="quantityPerPiece"
-                                    name="quantityPerPiece"
-                                    type="number"
-                                    min={0}
-                                    step={0.0001}
-                                    placeholder="Quantity per piece"
-                                    className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                  />
-                                  <div className="w-px self-stretch bg-input my-1" />
-                                  <span className="shrink-0 px-2 text-sm font-medium text-foreground">
-                                    {values.servingQuantityUnit === "pcs"
-                                      ? values.preparedQuantityUnit
-                                      : values.servingQuantityUnit}
-                                  </span>
-                                </div>
-                                <ErrorMessage
-                                  name="quantityPerPiece"
-                                  component="p"
-                                  className="text-destructive text-xs mt-1 flex items-center gap-1"
-                                />
-                              </div>
-                            )}
                           </div>
 
                           {/* Quantity calculations */}
