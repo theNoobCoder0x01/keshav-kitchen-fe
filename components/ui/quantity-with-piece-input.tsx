@@ -43,10 +43,11 @@ export function QuantityWithPieceInput({
   pieceLabel = "Per piece",
 }: QuantityWithPieceInputProps) {
   const { getFieldProps } = useFormikContext<any>();
-  const isPcs = getFieldProps(unitName).value === "pcs";
+  const showPieceField =
+    getFieldProps(unitName).value === "pcs" && pieceUnit !== "pcs";
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       <Label
         htmlFor={id}
         className={cn(
@@ -78,19 +79,19 @@ export function QuantityWithPieceInput({
         className="mt-1 flex items-center gap-1 text-xs text-destructive"
       />
 
-      {isPcs && (
-        <div className="mt-2 flex items-start gap-1.5 pl-1">
+      {showPieceField && (
+        <div className="mt-2 flex min-w-0 items-start gap-1.5 pl-1">
           <CornerDownRight
             className="mt-1.5 h-3.5 w-3.5 shrink-0 text-muted-foreground"
             aria-hidden
           />
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <span className="mb-1 block text-xs text-muted-foreground">
               {pieceLabel}
             </span>
             <div
               className={cn(
-                "flex items-center rounded-md border border-input bg-background",
+                "flex min-w-0 items-center rounded-md border border-input bg-background",
                 "ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
                 inputClassName ?? "h-10",
               )}
@@ -103,7 +104,7 @@ export function QuantityWithPieceInput({
                 placeholder="0"
                 className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
-              <div className="my-1 w-px self-stretch bg-input" />
+              <div className="my-1 w-px shrink-0 self-stretch bg-input" />
               <span className="shrink-0 px-2 text-sm font-medium text-foreground">
                 {pieceUnit}
               </span>
