@@ -14,7 +14,12 @@ import { IngredientsInput } from "@/components/ui/ingredients-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "@/hooks/use-translations";
-import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import {
+  DEFAULT_UNIT,
+  UNIT_OPTIONS,
+  isValidUnit,
+  normalizeUnit,
+} from "@/lib/constants/units";
 import { trimObjectStrings } from "@/lib/utils/form-utils";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { BookOpen, CheckCircle2, ChefHat } from "lucide-react";
@@ -98,7 +103,6 @@ export function AddRecipeDialog({
   const { t } = useTranslations();
   const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
   const [fetchedRecipe, setFetchedRecipe] = useState<any>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Stable ID generation to prevent unnecessary re-renders
   const generateStableId = useCallback(() => {
@@ -247,14 +251,12 @@ export function AddRecipeDialog({
   useEffect(() => {
     if (!isOpen) {
       setFetchedRecipe(null);
-      setSelectedIds(new Set());
     }
   }, [isOpen]);
 
   // Reset fetched recipe when recipeId changes
   useEffect(() => {
     setFetchedRecipe(null);
-    setSelectedIds(new Set());
   }, [recipeId]);
 
   const validationSchema = Yup.object({
@@ -263,9 +265,21 @@ export function AddRecipeDialog({
     subcategory: Yup.string().trim().required(t("recipes.subcategoryRequired")),
     selectedRecipe: Yup.string(),
     preparedQuantity: Yup.number().nullable(),
-    preparedQuantityUnit: Yup.string().nullable(),
+    preparedQuantityUnit: Yup.string()
+      .nullable()
+      .test(
+        "valid-prepared-unit",
+        t("ingredients.unitRequired"),
+        (value) => !value || isValidUnit(value),
+      ),
     servingQuantity: Yup.number().nullable(),
-    servingQuantityUnit: Yup.string().nullable(),
+    servingQuantityUnit: Yup.string()
+      .nullable()
+      .test(
+        "valid-serving-unit",
+        t("ingredients.unitRequired"),
+        (value) => !value || isValidUnit(value),
+      ),
     quantityPerPiece: Yup.number().nullable(),
     ingredientGroups: Yup.array()
       .of(
@@ -283,7 +297,12 @@ export function AddRecipeDialog({
                   .required(t("ingredients.quantityRequired")),
                 unit: Yup.string()
                   .trim()
-                  .required(t("ingredients.unitRequired")),
+                  .required(t("ingredients.unitRequired"))
+                  .test(
+                    "valid-unit",
+                    t("ingredients.unitRequired"),
+                    (value) => !value || isValidUnit(value),
+                  ),
                 costPerUnit: Yup.string().test(
                   "is-number-or-empty",
                   t("ingredients.costValidationError"),
@@ -408,7 +427,7 @@ export function AddRecipeDialog({
           allIngredients.push({
             name: ingredient.name,
             quantity: ingredient.quantity,
-            unit: ingredient.unit,
+            unit: normalizeUnit(ingredient.unit),
             costPerUnit: ingredient.costPerUnit || "0",
             sequenceNumber:
               ingredient.sequenceNumber != null
@@ -429,9 +448,13 @@ export function AddRecipeDialog({
       deletedIngredientGroupIds: deletedGroupIds,
       instructions: trimmedValues.instructions,
       preparedQuantity: trimmedValues.preparedQuantity,
-      preparedQuantityUnit: trimmedValues.preparedQuantityUnit,
+      preparedQuantityUnit: trimmedValues.preparedQuantityUnit
+        ? normalizeUnit(trimmedValues.preparedQuantityUnit)
+        : null,
       servingQuantity: trimmedValues.servingQuantity,
-      servingQuantityUnit: trimmedValues.servingQuantityUnit,
+      servingQuantityUnit: trimmedValues.servingQuantityUnit
+        ? normalizeUnit(trimmedValues.servingQuantityUnit)
+        : null,
       quantityPerPiece:
         trimmedValues.servingQuantityUnit === "pcs"
           ? trimmedValues.quantityPerPiece
@@ -562,15 +585,11 @@ export function AddRecipeDialog({
               }
             };
 
-            const normalizeUnit = (raw: string) => {
+            const normalizePastedUnit = (raw: string) => {
               const trimmed = raw.trim();
               if (!trimmed) return DEFAULT_UNIT;
-              const found = UNIT_OPTIONS.find(
-                (opt) =>
-                  opt.value.toLowerCase() === trimmed.toLowerCase() ||
-                  opt.label.toLowerCase() === trimmed.toLowerCase(),
-              );
-              return found ? found.value : trimmed;
+              const normalizedValue = normalizeUnit(trimmed);
+              return isValidUnit(normalizedValue) ? normalizedValue : trimmed;
             };
 
             grid.forEach((cells, r) => {
@@ -583,7 +602,7 @@ export function AddRecipeDialog({
                 const key = columnOrder[colIndex];
                 const rawValue = cell ?? "";
                 if (key === "unit") {
-                  updatedRow.unit = normalizeUnit(rawValue);
+                  updatedRow.unit = normalizePastedUnit(rawValue);
                 } else {
                   updatedRow[key] = rawValue.trim();
                 }
@@ -885,8 +904,6 @@ export function AddRecipeDialog({
                 name="ingredientGroups"
                 ingredientGroups={values.ingredientGroups}
                 onFieldChange={setFieldValue}
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
                 generateStableId={generateStableId}
                 title="Ingredient Groups"
                 description="Organize ingredients into logical groups like 'Dough', 'Filling', 'Sauce'"

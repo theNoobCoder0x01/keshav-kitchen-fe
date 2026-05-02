@@ -1,4 +1,5 @@
 import { authOptions } from "@/lib/auth";
+import { normalizeUnit } from "@/lib/constants/units";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -164,7 +165,34 @@ export async function PUT(
       }
 
       // Update the menu core fields
-      await tx.menu.update({ where: { id }, data: { ...menuData } });
+      await tx.menu.update({
+        where: { id },
+        data: {
+          ...menuData,
+          preparedQuantity:
+            menuData.preparedQuantity != null
+              ? Number(menuData.preparedQuantity)
+              : undefined,
+          preparedQuantityUnit: menuData.preparedQuantityUnit
+            ? normalizeUnit(menuData.preparedQuantityUnit)
+            : undefined,
+          servingQuantity:
+            menuData.servingQuantity != null
+              ? Number(menuData.servingQuantity)
+              : undefined,
+          servingQuantityUnit: menuData.servingQuantityUnit
+            ? normalizeUnit(menuData.servingQuantityUnit)
+            : undefined,
+          quantityPerPiece:
+            menuData.quantityPerPiece != null
+              ? Number(menuData.quantityPerPiece)
+              : undefined,
+          ghanFactor:
+            menuData.ghanFactor != null
+              ? Number(menuData.ghanFactor)
+              : undefined,
+        },
+      });
 
       // Recreate ingredients with correct group associations
       await tx.menuIngredient.deleteMany({ where: { menuId: id } });
@@ -178,7 +206,7 @@ export async function PUT(
             menuId: id,
             name: ing.name,
             quantity: Number(ing.quantity) || 0,
-            unit: ing.unit,
+            unit: normalizeUnit(ing.unit),
             costPerUnit:
               ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
             sequenceNumber:

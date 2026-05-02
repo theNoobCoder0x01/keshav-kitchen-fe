@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sumCompatibleQuantities } from "@/lib/utils/unit-conversions";
 import { Menu, MenuIngredient, MenuIngredientGroup } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -147,8 +148,7 @@ export async function GET(request: NextRequest) {
           recipeId,
           recipeName: menu.recipe.name,
           ghanFactor: 0,
-          preparedQuantity: 0,
-          preparedQuantityUnit: menu.preparedQuantityUnit,
+          preparedQuantities: [] as Array<{ quantity: number; unit: string }>,
           menuComponents: new Set(),
           minSequenceNumber: menu.menuComponent?.sequenceNumber ?? Infinity,
           groupMap: {},
@@ -160,9 +160,11 @@ export async function GET(request: NextRequest) {
         }
       }
       recipeMap[recipeId].ghanFactor += menu.ghanFactor;
-      if (menu.preparedQuantity) {
-        recipeMap[recipeId].preparedQuantity +=
-          menu.preparedQuantity * menu.ghanFactor;
+      if (menu.preparedQuantity && menu.preparedQuantityUnit) {
+        recipeMap[recipeId].preparedQuantities.push({
+          quantity: menu.preparedQuantity * menu.ghanFactor,
+          unit: menu.preparedQuantityUnit,
+        });
       }
 
       if (menu.menuComponent) {
@@ -231,26 +233,32 @@ export async function GET(request: NextRequest) {
               }
               return a.recipeName.localeCompare(b.recipeName);
             })
-            .map((recipe: any) => ({
-              recipeId: recipe.recipeId,
-              recipeName: recipe.recipeName,
-              ghanFactor: recipe.ghanFactor,
-              preparedQuantity: recipe.preparedQuantity,
-              preparedQuantityUnit: recipe.preparedQuantityUnit,
-              menuComponents: Array.from(recipe.menuComponents),
-              ingredientGroups: Object.values(recipe.groupMap)
-                .map((group: any) => ({
-                  name: group.name,
-                  ingredients: Object.values(group.ingredientMap).sort(
-                    (a: any, b: any) => a.sequenceNumber - b.sequenceNumber,
-                  ),
-                }))
-                .sort((a: any, b: any) => {
-                  if (a.name === "Ungrouped") return -1;
-                  if (b.name === "Ungrouped") return 1;
-                  return a.name.localeCompare(b.name);
-                }),
-            })),
+            .map((recipe: any) => {
+              const aggregatedPreparedQuantity = sumCompatibleQuantities(
+                recipe.preparedQuantities,
+              );
+
+              return {
+                recipeId: recipe.recipeId,
+                recipeName: recipe.recipeName,
+                ghanFactor: recipe.ghanFactor,
+                preparedQuantity: aggregatedPreparedQuantity?.quantity ?? null,
+                preparedQuantityUnit: aggregatedPreparedQuantity?.unit ?? null,
+                menuComponents: Array.from(recipe.menuComponents),
+                ingredientGroups: Object.values(recipe.groupMap)
+                  .map((group: any) => ({
+                    name: group.name,
+                    ingredients: Object.values(group.ingredientMap).sort(
+                      (a: any, b: any) => a.sequenceNumber - b.sequenceNumber,
+                    ),
+                  }))
+                  .sort((a: any, b: any) => {
+                    if (a.name === "Ungrouped") return -1;
+                    if (b.name === "Ungrouped") return 1;
+                    return a.name.localeCompare(b.name);
+                  }),
+              };
+            }),
         })),
       }));
 

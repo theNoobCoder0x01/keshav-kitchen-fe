@@ -1,12 +1,39 @@
+export type UnitCategory = "weight" | "volume" | "count";
+
+export type SupportedUnitValue =
+  | "kg"
+  | "g"
+  | "L"
+  | "ml"
+  | "cup"
+  | "tbsp"
+  | "tsp"
+  | "pcs";
+
+export type UnitValue = SupportedUnitValue | (string & {});
+
 export interface UnitOption {
-  value: string;
+  value: SupportedUnitValue;
   label: string;
-  category: "weight" | "volume" | "count";
+  category: UnitCategory;
+  conversionToGrams: number;
   isDefault?: boolean;
 }
 
 export interface UnitConversion {
-  unit: string;
+  unit: SupportedUnitValue;
   toGrams: number;
-  category: "weight" | "volume" | "count";
+  category: UnitCategory;
+}
+
+export interface QuantityWithUnit {
+  quantity: number;
+  unit: string | null | undefined;
+}
+
+export interface AggregatedQuantity {
+  quantity: number;
+  unit: UnitValue;
+  category: UnitCategory | "unknown";
+  wasConverted: boolean;
 }

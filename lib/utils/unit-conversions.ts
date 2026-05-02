@@ -1,6 +1,17 @@
 // Unit conversion utilities for meal calculations
-import { UNIT_OPTIONS, normalizeUnit } from "@/lib/constants/units";
-import type { UnitConversion } from "@/types";
+import {
+  UNIT_OPTIONS,
+  getDefaultUnitForCategory,
+  normalizeSupportedUnit,
+  normalizeUnit,
+} from "@/lib/constants/units";
+import type { MealType } from "@/types/menus";
+import type {
+  AggregatedQuantity,
+  QuantityWithUnit,
+  UnitCategory,
+  UnitConversion,
+} from "@/types";
 
 // Unit conversion table - all conversions to grams as base unit
 // This is now derived from the centralized UNIT_OPTIONS
@@ -21,8 +32,8 @@ export const UNIT_CONVERSIONS: Record<string, UnitConversion> =
  * Convert any unit to grams
  */
 export function convertToGrams(quantity: number, unit: string): number {
-  const normalizedUnit = normalizeUnit(unit);
-  const conversion = UNIT_CONVERSIONS[normalizedUnit];
+  const normalizedUnit = normalizeSupportedUnit(unit);
+  const conversion = normalizedUnit ? UNIT_CONVERSIONS[normalizedUnit] : null;
   if (!conversion) {
     console.warn(`Unknown unit: ${unit}, defaulting to 1:1 conversion`);
     return quantity;
@@ -34,8 +45,8 @@ export function convertToGrams(quantity: number, unit: string): number {
  * Convert grams to any unit
  */
 export function convertFromGrams(grams: number, targetUnit: string): number {
-  const normalizedUnit = normalizeUnit(targetUnit);
-  const conversion = UNIT_CONVERSIONS[normalizedUnit];
+  const normalizedUnit = normalizeSupportedUnit(targetUnit);
+  const conversion = normalizedUnit ? UNIT_CONVERSIONS[normalizedUnit] : null;
   if (!conversion) {
     console.warn(`Unknown unit: ${targetUnit}, defaulting to 1:1 conversion`);
     return grams;
@@ -51,9 +62,16 @@ export function convertUnits(
   fromUnit: string,
   toUnit: string,
 ): number {
-  if (fromUnit === toUnit) return quantity;
+  const normalizedFromUnit = normalizeUnit(fromUnit);
+  const normalizedToUnit = normalizeUnit(toUnit);
 
-  const grams = convertToGrams(quantity, fromUnit);
+  if (normalizedFromUnit === normalizedToUnit) return quantity;
+  if (!areUnitsCompatible(normalizedFromUnit, normalizedToUnit)) {
+    console.warn(`Skipping incompatible conversion: ${fromUnit} -> ${toUnit}`);
+    return quantity;
+  }
+
+  const grams = convertToGrams(quantity, normalizedFromUnit);
   return convertFromGrams(grams, toUnit);
 }
 
@@ -63,8 +81,8 @@ export function convertUnits(
 export function getUnitCategory(
   unit: string,
 ): "weight" | "volume" | "count" | "unknown" {
-  const normalizedUnit = normalizeUnit(unit);
-  const conversion = UNIT_CONVERSIONS[normalizedUnit];
+  const normalizedUnit = normalizeSupportedUnit(unit);
+  const conversion = normalizedUnit ? UNIT_CONVERSIONS[normalizedUnit] : null;
   return conversion?.category || "unknown";
 }
 
@@ -72,22 +90,82 @@ export function getUnitCategory(
  * Check if two units are compatible for conversion
  */
 export function areUnitsCompatible(unit1: string, unit2: string): boolean {
+  const normalizedUnit1 = normalizeUnit(unit1);
+  const normalizedUnit2 = normalizeUnit(unit2);
+
+  if (normalizedUnit1 === normalizedUnit2) {
+    return true;
+  }
+
   const category1 = getUnitCategory(unit1);
   const category2 = getUnitCategory(unit2);
 
-  // All units can be converted to grams for calculation purposes
-  // But we warn about cross-category conversions
-  if (
-    category1 !== category2 &&
-    category1 !== "unknown" &&
-    category2 !== "unknown"
-  ) {
-    console.warn(
-      `Converting between different unit categories: ${unit1} (${category1}) to ${unit2} (${category2})`,
-    );
+  return category1 !== "unknown" && category1 === category2;
+}
+
+export function sumCompatibleQuantities(
+  quantities: QuantityWithUnit[],
+  options?: {
+    preferUnit?: string | null;
+  },
+): AggregatedQuantity | null {
+  const normalizedQuantities = quantities
+    .map((entry) => ({
+      quantity: Number(entry.quantity) || 0,
+      unit: normalizeUnit(entry.unit ?? ""),
+    }))
+    .filter((entry) => entry.quantity !== 0 && entry.unit.length > 0);
+
+  if (normalizedQuantities.length === 0) {
+    return null;
   }
 
-  return true;
+  const [first] = normalizedQuantities;
+  const allSameUnit = normalizedQuantities.every(
+    (entry) => entry.unit === first.unit,
+  );
+
+  if (allSameUnit) {
+    return {
+      quantity: normalizedQuantities.reduce(
+        (sum, entry) => sum + entry.quantity,
+        0,
+      ),
+      unit: first.unit,
+      category: getUnitCategory(first.unit),
+      wasConverted: false,
+    };
+  }
+
+  const category = getUnitCategory(first.unit);
+  const allSameCategory =
+    category !== "unknown" &&
+    normalizedQuantities.every(
+      (entry) => getUnitCategory(entry.unit) === category,
+    );
+
+  if (!allSameCategory) {
+    return null;
+  }
+
+  const preferredUnit = options?.preferUnit
+    ? normalizeSupportedUnit(options.preferUnit)
+    : null;
+  const targetUnit =
+    preferredUnit && getUnitCategory(preferredUnit) === category
+      ? preferredUnit
+      : getDefaultUnitForCategory(category as UnitCategory);
+
+  return {
+    quantity: normalizedQuantities.reduce(
+      (sum, entry) =>
+        sum + convertUnits(entry.quantity, entry.unit, targetUnit),
+      0,
+    ),
+    unit: targetUnit,
+    category,
+    wasConverted: true,
+  };
 }
 
 /**
@@ -126,8 +204,6 @@ export function calculateTotalWeight(
 /**
  * Estimate serving size based on meal type and ingredients
  */
-import type { MealType } from "@/types/menus";
-
 export function estimateServingSize(
   totalWeightGrams: number,
   mealType: MealType,

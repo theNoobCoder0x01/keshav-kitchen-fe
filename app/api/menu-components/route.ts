@@ -9,6 +9,24 @@ export async function GET(request: Request) {
     const menuComponents = await prisma.menuComponent.findMany({
       where: mealType ? { mealType } : {},
       orderBy: [{ sequenceNumber: "asc" }],
+      include: {
+        averages: {
+          include: {
+            personType: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+          orderBy: {
+            personType: {
+              sequenceNumber: "asc",
+            },
+          },
+        },
+      },
     });
     return NextResponse.json(menuComponents);
   } catch (error) {

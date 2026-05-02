@@ -1,3 +1,5 @@
+import type { UnitValue } from "./units";
+
 // Ingredient Group types
 export interface IngredientGroup {
   id: string;
@@ -28,7 +30,7 @@ export interface RecipeIngredientBase {
   id?: string;
   name: string;
   quantity: number;
-  unit: string;
+  unit: UnitValue;
   costPerUnit?: number | null;
   sequenceNumber?: number | null;
   groupId?: string | null;
@@ -61,9 +63,9 @@ export interface RecipeApiItem {
   description: string | null;
   instructions: string | null;
   preparedQuantity: number | null;
-  preparedQuantityUnit: string | null;
+  preparedQuantityUnit: UnitValue | null;
   servingQuantity: number | null;
-  servingQuantityUnit: string | null;
+  servingQuantityUnit: UnitValue | null;
   quantityPerPiece: number | null;
   category: string;
   subcategory: string;
@@ -79,9 +81,9 @@ export interface RecipeDetailData {
   description?: string | null;
   instructions?: string | null;
   preparedQuantity?: number | null;
-  preparedQuantityUnit?: string | null;
+  preparedQuantityUnit?: UnitValue | null;
   servingQuantity?: number | null;
-  servingQuantityUnit?: string | null;
+  servingQuantityUnit?: UnitValue | null;
   quantityPerPiece?: number | null;
   category: string;
   subcategory?: string | null;

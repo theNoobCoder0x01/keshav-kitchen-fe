@@ -3,6 +3,7 @@ export * from "./calculations";
 export * from "./calendar";
 export * from "./forms";
 export * from "./kitchens";
+export * from "./menu-components";
 export * from "./menus";
 export * from "./recipes";
 export * from "./units";

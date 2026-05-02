@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import type { UnitValue } from "@/types";
 import { useRef } from "react";
 import { ErrorMessage, Field, FieldArray, useFormikContext } from "formik";
 import {
@@ -235,7 +236,7 @@ function Ingredient({
 export interface GenericIngredient {
   name: string;
   quantity: string | number;
-  unit: string;
+  unit: UnitValue;
   costPerUnit?: string | number;
   localId?: string;
   sequenceNumber?: number;

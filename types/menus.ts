@@ -8,6 +8,7 @@ export enum MealTypeEnum {
 }
 
 import type { RecipeIngredientBase } from "./recipes";
+import type { UnitValue } from "./units";
 
 // Menu Ingredient Group types
 export interface MenuIngredientGroup {
@@ -40,7 +41,7 @@ export interface MenuIngredient {
   id?: string;
   name: string;
   quantity: number;
-  unit: string;
+  unit: UnitValue;
   costPerUnit: number;
   sequenceNumber?: number | null;
   groupId?: string | null;
@@ -64,7 +65,11 @@ export interface MenuWithIngredients {
   id: string;
   date: Date;
   mealType: string;
-  servings: number;
+  preparedQuantity?: number | null;
+  preparedQuantityUnit?: UnitValue | null;
+  servingQuantity?: number | null;
+  servingQuantityUnit?: UnitValue | null;
+  quantityPerPiece?: number | null;
   ghanFactor: number;
   notes?: string;
   kitchen: {
@@ -84,14 +89,14 @@ export interface MenuWithIngredients {
 export interface CombinedIngredient {
   name: string;
   totalQuantity: number;
-  unit: string;
+  unit: UnitValue;
   totalCost: number;
   sources: Array<{
     kitchen: string;
     mealType: string;
     recipe: string;
     quantity: number;
-    servings: number;
+    servingQuantity?: number | null;
   }>;
 }
 
@@ -125,7 +130,10 @@ export interface MenuReportData {
     id: string;
     date: Date;
     mealType: string;
-    servings: number;
+    preparedQuantity?: number | null;
+    preparedQuantityUnit?: UnitValue | null;
+    servingQuantity?: number | null;
+    servingQuantityUnit?: UnitValue | null;
     ghanFactor: number;
     notes?: string;
     kitchen: { name: string };
