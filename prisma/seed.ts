@@ -81,12 +81,7 @@ async function main() {
 
   console.log("✅ Database seeded successfully!");
   console.log("🔑 Login credentials:");
-  console.log("  Admin (Thakorji): admin@kitchen.com / admin123");
-  console.log("  Manager (Premvati): manager1@kitchen.com / password123");
-  console.log("  Chef (Aarsh): chef1@kitchen.com / password123");
-  console.log("  Staff (Mandir): staff1@kitchen.com / password123");
-  console.log("  Chef (Prasad): chef2@kitchen.com / password123");
-  console.log("  Staff (Gurukul): staff2@kitchen.com / password123");
+  console.log("  Admin: admin@kitchen.com / admin123");
 }
 
 main()

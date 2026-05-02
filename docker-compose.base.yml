@@ -8,14 +8,22 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-keshav123}
       POSTGRES_DB: postgres
     ports:
+      # TODO: Remove this port exposure in production — DB should only be accessible within app-net
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
       - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-keshav} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   pgadmin:
+    # TODO: Move to docker-compose.dev.yml only and replace hardcoded credentials with env vars
+    #       once the app is stable enough to not require manual DB edits
     image: dpage/pgadmin4
     container_name: pgadmin
     restart: unless-stopped
