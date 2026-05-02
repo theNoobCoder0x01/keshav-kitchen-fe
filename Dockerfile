@@ -38,61 +38,53 @@ FROM base AS production
 
 WORKDIR /app
 
-# Copy package manifests first (for caching)
 COPY package*.json ./
 
-# Skip Chromium download (we use system Chrome)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install dependencies (dev included for build)
-RUN npm install
+RUN npm ci
 
-# Copy app source
 COPY . .
 
 ENV NODE_ENV=production
 
-# Entrypoint handles DB setup + app start
 COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN npx prisma generate
 
-# Build Next.js
 RUN npm run build
+
+EXPOSE 3002
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "run", "start"]
 
 # -------------------------
-# 4. Dev runtime (optional)
+# 4. Dev / Beta runtime
 # -------------------------
 FROM base AS dev
 
 WORKDIR /app
 
-# Copy package manifests first (for caching)
 COPY package*.json ./
 
-# Skip Chromium download (we use system Chrome)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install dependencies (dev included for build)
-RUN npm install
+RUN npm ci
 
-# Copy app source
 COPY . .
 
 ENV NODE_ENV=development
 
-# Entrypoint handles DB setup + app start
 COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN npx prisma generate
 
-# Build Next.js
 RUN npm run build
+
+EXPOSE 3000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "run", "start"]

@@ -11,7 +11,8 @@ services:
     ports:
       - "3002:3002"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-net
 
