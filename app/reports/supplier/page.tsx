@@ -106,7 +106,7 @@ export default function SupplierReport() {
             >
               <div className="flex items-center space-x-1 h-15">
                 <Image
-                  src="/dev/logo.svg"
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/logo.svg`}
                   alt="Keshav Kitchen"
                   width="20"
                   height="10"

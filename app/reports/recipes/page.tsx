@@ -49,6 +49,7 @@ export default function RecipesReport() {
           width="20"
           height="10"
           className="w-auto h-4/5"
+          loading="eager"
         />
       </div>
       <div>

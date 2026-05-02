@@ -43,6 +43,7 @@ export function Header() {
                 width="20"
                 height="10"
                 className="w-auto h-full"
+                loading="eager"
               />
             </div>
           </div>
