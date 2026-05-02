@@ -208,6 +208,7 @@ export function AddEditMenuComponentDialog({
           handleSubmit,
           isSubmitting,
           values,
+          errors,
           setFieldTouched,
           setFieldValue,
         }) => (
@@ -318,11 +319,11 @@ export function AddEditMenuComponentDialog({
                     </Button>
                   </div>
 
-                  <ErrorMessage
-                    name="averages"
-                    component="div"
-                    className="text-destructive text-xs"
-                  />
+                  {typeof errors.averages === "string" && (
+                    <div className="text-destructive text-xs">
+                      {errors.averages}
+                    </div>
+                  )}
 
                   {values.averages.map((average, index) => {
                     const usesPieces = average.unit === "pcs";
