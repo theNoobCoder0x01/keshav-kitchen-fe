@@ -744,7 +744,7 @@ export function AddRecipeDialog({
 
                   {/* Quantity calculations */}
                   <div className="p-2 border border-border rounded-lg bg-accent">
-                    <p className="text-sm text-foreground/70">
+                    <div className="text-sm text-foreground/70">
                       {((
                         calculatedQuantities = getCalculatedQuantities({
                           preparedQuantity: values.preparedQuantity,
@@ -773,7 +773,7 @@ export function AddRecipeDialog({
                           </div>
                         </div>
                       ))()}
-                    </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
