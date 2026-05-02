@@ -1367,34 +1367,35 @@ export function AddMealDialog({
 
                     {values.followRecipe && (
                       <Card className="col-span-12">
-                        <CardHeader className="pb-4">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                            {t("recipes.quantityInformation")}
-                          </CardTitle>
-                          <CardDescription>
-                            {t("recipes.quantityInformationDescription")}
-                          </CardDescription>
+                        <CardHeader className="px-4 py-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                              <BookOpen className="h-4 w-4 text-primary" />
+                              {t("recipes.quantityInformation")}
+                            </CardTitle>
+                            <CardDescription className="hidden max-w-xl text-xs md:block">
+                              {t("recipes.quantityInformationDescription")}
+                            </CardDescription>
+                          </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-3 px-4 pb-4">
                           {selectedMenuComponent &&
                           selectedMenuComponent.averages.length > 0 ? (
-                            <div className="rounded-lg border border-border bg-muted/30 p-4">
-                              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                                <div>
-                                  <h3 className="text-sm font-medium text-foreground">
+                            <div className="rounded-md border border-border bg-muted/30 p-3">
+                              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                <div className="min-w-0">
+                                  <h3 className="text-sm font-semibold leading-none text-foreground">
                                     Consumption planner
                                   </h3>
-                                  <p className="text-xs text-muted-foreground">
-                                    Enter the number of people in each group to
-                                    generate a suggested quantity for this menu
-                                    component.
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    Counts generate the suggested quantity.
                                   </p>
                                 </div>
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="sm"
+                                  className="h-8 shrink-0 px-3"
                                   onClick={() =>
                                     applyConsumptionSuggestion(setFieldValue)
                                   }
@@ -1406,118 +1407,132 @@ export function AddMealDialog({
                                 </Button>
                               </div>
 
-                              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                                {selectedMenuComponent.averages.map(
-                                  (average) => (
-                                    <div
-                                      key={average.id}
-                                      className="rounded-md border border-border bg-background p-3"
-                                    >
-                                      <Label
-                                        htmlFor={`person-count-${average.personTypeId}`}
-                                        className="text-sm font-medium text-foreground"
+                              <div className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_14rem]">
+                                <div className="grid gap-2 xl:grid-cols-2">
+                                  {selectedMenuComponent.averages.map(
+                                    (average) => (
+                                      <div
+                                        key={average.id}
+                                        className="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-2 rounded-md border border-border bg-background px-3 py-2"
                                       >
-                                        {average.personType.name}
-                                      </Label>
-                                      {average.personType.description ? (
-                                        <p className="mt-1 text-xs text-muted-foreground">
-                                          {average.personType.description}
-                                        </p>
-                                      ) : null}
-                                      <p className="mt-1 text-xs text-muted-foreground">
-                                        Avg: {formatDecimal(average.quantity)}{" "}
-                                        {average.unit}
-                                        {average.unit === "pcs" &&
-                                        average.weightPerPiece != null
-                                          ? ` @ ${formatDecimal(average.weightPerPiece)} ${average.weightPerPieceUnit} each`
-                                          : ""}
-                                      </p>
-                                      <Input
-                                        id={`person-count-${average.personTypeId}`}
-                                        type="number"
-                                        min={0}
-                                        step={1}
-                                        value={
-                                          personCounts[average.personTypeId] ||
-                                          0
-                                        }
-                                        onChange={(event) => {
-                                          const nextValue = Number(
-                                            event.target.value || 0,
-                                          );
-                                          setPersonCounts((currentCounts) => ({
-                                            ...currentCounts,
-                                            [average.personTypeId]:
-                                              Number.isFinite(nextValue) &&
-                                              nextValue > 0
-                                                ? nextValue
-                                                : 0,
-                                          }));
-                                        }}
-                                        className="mt-2"
-                                      />
-                                    </div>
-                                  ),
-                                )}
-                              </div>
+                                        <div className="min-w-0">
+                                          <Label
+                                            htmlFor={`person-count-${average.personTypeId}`}
+                                            className="block truncate text-sm font-medium leading-tight text-foreground"
+                                          >
+                                            {average.personType.name}
+                                          </Label>
+                                          <p className="truncate text-xs text-muted-foreground">
+                                            {average.personType.description
+                                              ? `${average.personType.description} · `
+                                              : ""}
+                                            Avg{" "}
+                                            {formatDecimal(average.quantity)}{" "}
+                                            {average.unit}
+                                            {average.unit === "pcs" &&
+                                            average.weightPerPiece != null
+                                              ? ` @ ${formatDecimal(average.weightPerPiece)} ${average.weightPerPieceUnit}`
+                                              : ""}
+                                          </p>
+                                        </div>
+                                        <Input
+                                          id={`person-count-${average.personTypeId}`}
+                                          type="number"
+                                          min={0}
+                                          step={1}
+                                          value={
+                                            personCounts[
+                                              average.personTypeId
+                                            ] || 0
+                                          }
+                                          onChange={(event) => {
+                                            const nextValue = Number(
+                                              event.target.value || 0,
+                                            );
+                                            setPersonCounts(
+                                              (currentCounts) => ({
+                                                ...currentCounts,
+                                                [average.personTypeId]:
+                                                  Number.isFinite(nextValue) &&
+                                                  nextValue > 0
+                                                    ? nextValue
+                                                    : 0,
+                                              }),
+                                            );
+                                          }}
+                                          className="h-8 text-right"
+                                        />
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
 
-                              <div className="mt-4 rounded-md bg-background p-3 text-sm text-foreground">
-                                {consumptionSuggestion ? (
-                                  <div className="space-y-1">
-                                    <div>
-                                      Suggested total:{" "}
-                                      <span className="font-medium">
-                                        {formatDecimal(
-                                          consumptionSuggestion.preparedQuantity,
-                                        )}{" "}
-                                        {
-                                          consumptionSuggestion.preparedQuantityUnit
-                                        }
-                                      </span>
-                                    </div>
-                                    <div>
-                                      Average per person:{" "}
-                                      <span className="font-medium">
-                                        {formatDecimal(
-                                          consumptionSuggestion.servingQuantity,
-                                        )}{" "}
-                                        {
-                                          consumptionSuggestion.servingQuantityUnit
-                                        }
-                                      </span>
-                                    </div>
-                                    <div>
-                                      Total persons:{" "}
-                                      <span className="font-medium">
-                                        {consumptionSuggestion.totalPersons}
-                                      </span>
-                                    </div>
-                                    {consumptionSuggestion.totalPieces > 0 ? (
-                                      <div>
-                                        Total pieces:{" "}
+                                <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">
+                                  {consumptionSuggestion ? (
+                                    <div className="grid gap-y-1">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs text-muted-foreground">
+                                          Suggested
+                                        </span>
                                         <span className="font-medium">
                                           {formatDecimal(
-                                            consumptionSuggestion.totalPieces,
+                                            consumptionSuggestion.preparedQuantity,
                                           )}{" "}
-                                          pcs
+                                          {
+                                            consumptionSuggestion.preparedQuantityUnit
+                                          }
                                         </span>
                                       </div>
-                                    ) : null}
-                                  </div>
-                                ) : (
-                                  <p className="text-muted-foreground">
-                                    Enter at least one person count to calculate
-                                    a suggestion.
-                                  </p>
-                                )}
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs text-muted-foreground">
+                                          Per person
+                                        </span>
+                                        <span className="font-medium">
+                                          {formatDecimal(
+                                            consumptionSuggestion.servingQuantity,
+                                          )}{" "}
+                                          {
+                                            consumptionSuggestion.servingQuantityUnit
+                                          }
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs text-muted-foreground">
+                                          People
+                                        </span>
+                                        <span className="font-medium">
+                                          {consumptionSuggestion.totalPersons}
+                                        </span>
+                                      </div>
+                                      {consumptionSuggestion.totalPieces > 0 ? (
+                                        <div className="flex items-center justify-between gap-2">
+                                          <span className="text-xs text-muted-foreground">
+                                            Pieces
+                                          </span>
+                                          <span className="font-medium">
+                                            {formatDecimal(
+                                              consumptionSuggestion.totalPieces,
+                                            )}{" "}
+                                            pcs
+                                          </span>
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground">
+                                      Enter a person count to calculate a
+                                      suggestion.
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           ) : null}
 
-                          <div className="@container grid grid-cols-12 gap-4">
+                          <div className="@container grid grid-cols-12 gap-3">
                             {values.followRecipe && (
                               <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                                <Label className="text-sm font-medium text-foreground mb-2 block">
+                                <Label className="mb-1 block text-xs font-medium text-foreground">
                                   {t("meals.ghan")}
                                 </Label>
                                 <Field
@@ -1526,7 +1541,7 @@ export function AddMealDialog({
                                   type="number"
                                   min={0}
                                   step={0.0001}
-                                  className="border-border focus:border-primary focus:ring-primary/20"
+                                  className="h-9 border-border focus:border-primary focus:ring-primary/20"
                                 />
                                 <ErrorMessage
                                   name={`ghanFactor`}
@@ -1540,7 +1555,7 @@ export function AddMealDialog({
                             <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
                               <Label
                                 htmlFor="preparedQuantity"
-                                className="text-sm font-medium text-foreground mb-2 block"
+                                className="mb-1 block text-xs font-medium text-foreground"
                               >
                                 {t("recipes.preparedQuantity")}{" "}
                                 {values.followRecipe ? "(per ghan)" : ""}
@@ -1553,7 +1568,7 @@ export function AddMealDialog({
                                 min={0}
                                 step={0.0001}
                                 placeholder={t("recipes.preparedQuantity")}
-                                className="border-border focus:border-primary focus:ring-primary/20"
+                                className="h-9 border-border focus:border-primary focus:ring-primary/20"
                               />
                               <ErrorMessage
                                 name="preparedQuantity"
@@ -1564,7 +1579,7 @@ export function AddMealDialog({
                             <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
                               <Label
                                 htmlFor="preparedQuantityUnit"
-                                className="text-sm font-medium text-foreground mb-2 block"
+                                className="mb-1 block text-xs font-medium text-foreground"
                               >
                                 {t("recipes.preparedQuantityUnit")}
                               </Label>
@@ -1578,7 +1593,7 @@ export function AddMealDialog({
                                       })
                                     }
                                   >
-                                    <SelectTrigger className="text-sm">
+                                    <SelectTrigger className="h-9 text-sm">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent searchable>
@@ -1603,7 +1618,7 @@ export function AddMealDialog({
                             <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
                               <Label
                                 htmlFor="servingQuantity"
-                                className="text-sm font-medium text-foreground mb-2 block"
+                                className="mb-1 block text-xs font-medium text-foreground"
                               >
                                 {t("recipes.servingQuantity")}
                               </Label>
@@ -1615,7 +1630,7 @@ export function AddMealDialog({
                                 min={0}
                                 step={0.0001}
                                 placeholder="Serving quantity"
-                                className="border-border focus:border-primary focus:ring-primary/20"
+                                className="h-9 border-border focus:border-primary focus:ring-primary/20"
                               />
                               <ErrorMessage
                                 name="servingQuantity"
@@ -1626,7 +1641,7 @@ export function AddMealDialog({
                             <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
                               <Label
                                 htmlFor="servingQuantityUnit"
-                                className="text-sm font-medium text-foreground mb-2 block"
+                                className="mb-1 block text-xs font-medium text-foreground"
                               >
                                 {t("recipes.servingQuantityUnit")}
                               </Label>
@@ -1640,7 +1655,7 @@ export function AddMealDialog({
                                       })
                                     }
                                   >
-                                    <SelectTrigger className="text-sm">
+                                    <SelectTrigger className="h-9 text-sm">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent searchable>
@@ -1668,7 +1683,7 @@ export function AddMealDialog({
                               <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
                                 <Label
                                   htmlFor="quantityPerPiece"
-                                  className="text-sm font-medium text-foreground mb-2 block"
+                                  className="mb-1 block text-xs font-medium text-foreground"
                                 >
                                   {t("recipes.quantityPerPiece")}
                                 </Label>
@@ -1680,7 +1695,7 @@ export function AddMealDialog({
                                   min={0}
                                   step={0.0001}
                                   placeholder="Quantity per piece"
-                                  className="border-border focus:border-primary focus:ring-primary/20"
+                                  className="h-9 border-border focus:border-primary focus:ring-primary/20"
                                 />
                                 <ErrorMessage
                                   name="quantityPerPiece"
@@ -1692,7 +1707,7 @@ export function AddMealDialog({
                           </div>
 
                           {/* Quantity calculations */}
-                          <div className="p-2 border border-border rounded-lg bg-accent">
+                          <div className="rounded-md border border-border bg-accent px-3 py-2">
                             <div className="text-sm text-foreground/70">
                               {((
                                 calculatedQuantities = getCalculatedQuantities({
@@ -1709,31 +1724,38 @@ export function AddMealDialog({
                                     : 1,
                                 }),
                               ) => (
-                                <div className="space-y-1">
-                                  <div>
-                                    <span className="font-medium">
-                                      Total {t("recipes.preparedQuantity")}:
+                                <div className="grid gap-x-4 gap-y-1 sm:grid-cols-3">
+                                  <div className="flex items-center justify-between gap-2 sm:block">
+                                    <span className="text-xs text-muted-foreground">
+                                      Total prepared
                                     </span>{" "}
-                                    {formatDecimal(
-                                      calculatedQuantities.preparedQuantity,
-                                    )}{" "}
-                                    {calculatedQuantities.preparedUnit}
+                                    <span className="font-medium text-foreground sm:block">
+                                      {formatDecimal(
+                                        calculatedQuantities.preparedQuantity,
+                                      )}{" "}
+                                      {calculatedQuantities.preparedUnit}
+                                    </span>
                                   </div>
-                                  <div>
-                                    <span className="font-medium">
-                                      {t("recipes.numberOfServings")}:
+                                  <div className="flex items-center justify-between gap-2 sm:block">
+                                    <span className="text-xs text-muted-foreground">
+                                      {t("recipes.numberOfServings")}
                                     </span>{" "}
-                                    {calculatedQuantities.numberOfServings}{" "}
-                                    {calculatedQuantities.numberOfServings === 1
-                                      ? "person"
-                                      : "people"}
+                                    <span className="font-medium text-foreground sm:block">
+                                      {calculatedQuantities.numberOfServings}{" "}
+                                      {calculatedQuantities.numberOfServings ===
+                                      1
+                                        ? "person"
+                                        : "people"}
+                                    </span>
                                   </div>
-                                  <div>
-                                    <span className="font-medium">
-                                      {t("recipes.extraQuantity")}:
+                                  <div className="flex items-center justify-between gap-2 sm:block">
+                                    <span className="text-xs text-muted-foreground">
+                                      {t("recipes.extraQuantity")}
                                     </span>{" "}
-                                    {calculatedQuantities.extraQuantity}{" "}
-                                    {calculatedQuantities.preparedUnit}
+                                    <span className="font-medium text-foreground sm:block">
+                                      {calculatedQuantities.extraQuantity}{" "}
+                                      {calculatedQuantities.preparedUnit}
+                                    </span>
                                   </div>
                                 </div>
                               ))()}
