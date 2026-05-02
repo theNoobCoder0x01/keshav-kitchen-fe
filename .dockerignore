@@ -49,3 +49,6 @@ __tests__
 
 # Misc
 *.tgz
+
+# Database backups
+backups/
