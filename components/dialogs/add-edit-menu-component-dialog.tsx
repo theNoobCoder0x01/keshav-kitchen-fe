@@ -9,6 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
+import { UNIT_OPTIONS, getWeightUnits } from "@/lib/constants/units";
+import type { UnitOption } from "@/types";
 import type { KitchenPersonType } from "@/types/kitchens";
 import {
   MealType,
@@ -42,6 +45,11 @@ const mealTypesObj = {
 
 const quantityUnits = ["g", "kg", "pcs"] as const;
 const weightUnits = ["g", "kg"] as const;
+
+const quantityUnitOptions: UnitOption[] = UNIT_OPTIONS.filter((o) =>
+  (quantityUnits as readonly string[]).includes(o.value),
+);
+const weightUnitOptions: UnitOption[] = getWeightUnits();
 
 const createEmptyAverage = (): MenuComponentAverageInput => ({
   personTypeId: "",
@@ -392,94 +400,50 @@ export function AddEditMenuComponentDialog({
                             <Label htmlFor={`averages.${index}.quantity`}>
                               Quantity
                             </Label>
-                            <Field
-                              as={Input}
+                            <FormikValueUnitInput
                               id={`averages.${index}.quantity`}
-                              name={`averages.${index}.quantity`}
-                              type="number"
+                              quantityName={`averages.${index}.quantity`}
+                              unitName={`averages.${index}.unit`}
+                              unitOptions={quantityUnitOptions}
                               min={0}
                               step={0.0001}
+                              onUnitChange={(value) => {
+                                setFieldTouched(
+                                  `averages.${index}.unit`,
+                                  true,
+                                  false,
+                                );
+                                if (value !== "pcs") {
+                                  setFieldValue(
+                                    `averages.${index}.weightPerPiece`,
+                                    null,
+                                  );
+                                  setFieldValue(
+                                    `averages.${index}.weightPerPieceUnit`,
+                                    null,
+                                  );
+                                } else if (
+                                  !values.averages[index].weightPerPieceUnit
+                                ) {
+                                  setFieldValue(
+                                    `averages.${index}.weightPerPieceUnit`,
+                                    "g",
+                                  );
+                                }
+                              }}
                             />
                             <ErrorMessage
                               name={`averages.${index}.quantity`}
                               component="div"
                               className="text-destructive text-xs mt-1"
                             />
-                          </div>
-                          <div>
-                            <Label htmlFor={`averages.${index}.unit`}>
-                              Unit
-                            </Label>
-                            <Field name={`averages.${index}.unit`}>
-                              {({ field }: { field: any }) => (
-                                <Select
-                                  value={field.value}
-                                  onValueChange={(value) => {
-                                    setFieldTouched(field.name, true, false);
-                                    field.onChange({
-                                      target: { name: field.name, value },
-                                    });
-
-                                    if (value !== "pcs") {
-                                      setFieldValue(
-                                        `averages.${index}.weightPerPiece`,
-                                        null,
-                                      );
-                                      setFieldValue(
-                                        `averages.${index}.weightPerPieceUnit`,
-                                        null,
-                                      );
-                                    } else if (
-                                      !values.averages[index].weightPerPieceUnit
-                                    ) {
-                                      setFieldValue(
-                                        `averages.${index}.weightPerPieceUnit`,
-                                        "g",
-                                      );
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {quantityUnits.map((unit) => (
-                                      <SelectItem key={unit} value={unit}>
-                                        {unit}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            </Field>
                             <ErrorMessage
                               name={`averages.${index}.unit`}
                               component="div"
                               className="text-destructive text-xs mt-1"
                             />
                           </div>
-                          {usesPieces ? (
-                            <div>
-                              <Label
-                                htmlFor={`averages.${index}.weightPerPiece`}
-                              >
-                                Weight per piece
-                              </Label>
-                              <Field
-                                as={Input}
-                                id={`averages.${index}.weightPerPiece`}
-                                name={`averages.${index}.weightPerPiece`}
-                                type="number"
-                                min={0}
-                                step={0.0001}
-                              />
-                              <ErrorMessage
-                                name={`averages.${index}.weightPerPiece`}
-                                component="div"
-                                className="text-destructive text-xs mt-1"
-                              />
-                            </div>
-                          ) : (
+                          {!usesPieces && (
                             <div className="text-xs text-muted-foreground self-end pb-2">
                               Weight per piece is only needed for piece-based
                               averages.
@@ -490,36 +454,30 @@ export function AddEditMenuComponentDialog({
                         {usesPieces && (
                           <div className="mt-4 max-w-xs">
                             <Label
-                              htmlFor={`averages.${index}.weightPerPieceUnit`}
+                              htmlFor={`averages.${index}.weightPerPiece`}
                             >
-                              Weight unit
+                              Weight per piece
                             </Label>
-                            <Field
-                              name={`averages.${index}.weightPerPieceUnit`}
-                            >
-                              {({ field }: { field: any }) => (
-                                <Select
-                                  value={field.value || "g"}
-                                  onValueChange={(value) => {
-                                    setFieldTouched(field.name, true, false);
-                                    field.onChange({
-                                      target: { name: field.name, value },
-                                    });
-                                  }}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {weightUnits.map((unit) => (
-                                      <SelectItem key={unit} value={unit}>
-                                        {unit}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            </Field>
+                            <FormikValueUnitInput
+                              id={`averages.${index}.weightPerPiece`}
+                              quantityName={`averages.${index}.weightPerPiece`}
+                              unitName={`averages.${index}.weightPerPieceUnit`}
+                              unitOptions={weightUnitOptions}
+                              min={0}
+                              step={0.0001}
+                              onUnitChange={() =>
+                                setFieldTouched(
+                                  `averages.${index}.weightPerPieceUnit`,
+                                  true,
+                                  false,
+                                )
+                              }
+                            />
+                            <ErrorMessage
+                              name={`averages.${index}.weightPerPiece`}
+                              component="div"
+                              className="text-destructive text-xs mt-1"
+                            />
                             <ErrorMessage
                               name={`averages.${index}.weightPerPieceUnit`}
                               component="div"
