@@ -165,31 +165,38 @@ export async function PUT(
       }
 
       // Update the menu core fields
+      const normalizedMenuData = {
+        ...menuData,
+        ...(Object.prototype.hasOwnProperty.call(menuData, "recipeId")
+          ? { recipeId: menuData.recipeId || null }
+          : {}),
+      };
+
       await tx.menu.update({
         where: { id },
         data: {
-          ...menuData,
+          ...normalizedMenuData,
           preparedQuantity:
-            menuData.preparedQuantity != null
-              ? Number(menuData.preparedQuantity)
+            normalizedMenuData.preparedQuantity != null
+              ? Number(normalizedMenuData.preparedQuantity)
               : undefined,
-          preparedQuantityUnit: menuData.preparedQuantityUnit
-            ? normalizeUnit(menuData.preparedQuantityUnit)
+          preparedQuantityUnit: normalizedMenuData.preparedQuantityUnit
+            ? normalizeUnit(normalizedMenuData.preparedQuantityUnit)
             : undefined,
           servingQuantity:
-            menuData.servingQuantity != null
-              ? Number(menuData.servingQuantity)
+            normalizedMenuData.servingQuantity != null
+              ? Number(normalizedMenuData.servingQuantity)
               : undefined,
-          servingQuantityUnit: menuData.servingQuantityUnit
-            ? normalizeUnit(menuData.servingQuantityUnit)
+          servingQuantityUnit: normalizedMenuData.servingQuantityUnit
+            ? normalizeUnit(normalizedMenuData.servingQuantityUnit)
             : undefined,
           quantityPerPiece:
-            menuData.quantityPerPiece != null
-              ? Number(menuData.quantityPerPiece)
+            normalizedMenuData.quantityPerPiece != null
+              ? Number(normalizedMenuData.quantityPerPiece)
               : undefined,
           ghanFactor:
-            menuData.ghanFactor != null
-              ? Number(menuData.ghanFactor)
+            normalizedMenuData.ghanFactor != null
+              ? Number(normalizedMenuData.ghanFactor)
               : undefined,
         },
       });

@@ -92,8 +92,10 @@ export default function KitchenDetailsPage() {
       setMenuComponentDialogOpen(false);
       setEditingMenuComponent(null);
       await loadKitchenDetails();
+      return true;
     } catch {
       toast.error(t("messages.failedToSaveMenuComponent"));
+      return false;
     }
   };
 

@@ -46,6 +46,7 @@ model Kitchen {
   calendarEvents CalendarEvent[]
   MenuComponent  MenuComponent[]
   personTypes    KitchenPersonType[]
+  mealPersonCounts KitchenMealPersonCount[]
 }
 
 model KitchenPersonType {
@@ -58,6 +59,7 @@ model KitchenPersonType {
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
   averages       MenuComponentAverage[]
+  mealCounts      KitchenMealPersonCount[]
 
   @@unique([kitchenId, name])
   @@index([kitchenId])
@@ -123,8 +125,8 @@ model Menu {
   id                   String                @id @default(cuid())
   date                 DateTime
   mealType             MealType
-  recipeId             String
-  recipe               Recipe                @relation(fields: [recipeId], references: [id])
+  recipeId             String?
+  recipe               Recipe?               @relation(fields: [recipeId], references: [id])
   kitchenId            String
   kitchen              Kitchen               @relation(fields: [kitchenId], references: [id])
   userId               String
@@ -147,6 +149,23 @@ model Menu {
   @@index([recipeId])
   @@index([kitchenId])
   @@index([userId])
+}
+
+model KitchenMealPersonCount {
+  id           String            @id @default(cuid())
+  date         DateTime
+  mealType     MealType
+  kitchenId    String
+  kitchen      Kitchen           @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
+  personTypeId String
+  personType   KitchenPersonType @relation(fields: [personTypeId], references: [id], onDelete: Cascade)
+  count        Int
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([date, kitchenId, mealType, personTypeId])
+  @@index([kitchenId, date, mealType])
+  @@index([personTypeId])
 }
 
 model MenuIngredientGroup {

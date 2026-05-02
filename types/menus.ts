@@ -76,12 +76,12 @@ export interface MenuWithIngredients {
     id: string;
     name: string;
   };
-  recipe: {
+  recipe?: {
     id: string;
     name: string;
     description?: string;
     ingredients?: RecipeIngredientBase[];
-  };
+  } | null;
   ingredients?: Required<MenuIngredient>[];
   ingredientGroups?: MenuIngredientGroup[];
 }
@@ -137,11 +137,11 @@ export interface MenuReportData {
     ghanFactor: number;
     notes?: string;
     kitchen: { name: string };
-    recipe: {
+    recipe?: {
       name: string;
       description?: string;
       ingredients?: Partial<RecipeIngredientBase>[];
-    };
+    } | null;
     ingredients?: Required<RecipeIngredientBase>[];
   }>;
 }

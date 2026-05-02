@@ -31,6 +31,8 @@ export function AddEditKitchenPersonTypeDialog({
   const validationSchema = Yup.object().shape({
     name: Yup.string().trim().required(t("kitchens.personTypeNameRequired")),
     sequenceNumber: Yup.number()
+      .typeError(t("kitchens.personTypeSequenceNumberRequired"))
+      .integer(t("kitchens.personTypeSequenceNumberRequired"))
       .min(1, t("kitchens.personTypeSequenceNumberMin"))
       .required(t("kitchens.personTypeSequenceNumberRequired")),
   });

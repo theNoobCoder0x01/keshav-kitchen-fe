@@ -27,7 +27,7 @@ export const MenuSchema = z.object({
     MealType.DINNER,
     MealType.SNACK,
   ]),
-  recipeId: z.string().min(1, "Recipe is required"),
+  recipeId: z.string().nullable().optional(),
   kitchenId: z.string().min(1, "Kitchen is required"),
   ghanFactor: z.number().min(0.1).max(5.0).default(1.0),
   notes: z.string().optional(),
