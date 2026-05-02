@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import crypto from "crypto"; // Use webcrypto for browser compatibility
 
 // Import the crypto utilities for password hashing
@@ -49,7 +50,15 @@ async function hashPasswordForSeed(password: string) {
   return `${saltBase64}.${hashBase64}`;
 }
 
-const prisma = new PrismaClient();
+const databaseUrl = process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL or DIRECT_DATABASE_URL is required to seed");
+}
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: databaseUrl }),
+});
 
 async function main() {
   console.log("🌱 Starting database seed...");
