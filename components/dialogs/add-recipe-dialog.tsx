@@ -457,7 +457,8 @@ export function AddRecipeDialog({
         ? normalizeUnit(trimmedValues.servingQuantityUnit)
         : null,
       quantityPerPiece:
-        trimmedValues.servingQuantityUnit === "pcs"
+        (trimmedValues.servingQuantityUnit === "pcs") !==
+        (trimmedValues.preparedQuantityUnit === "pcs")
           ? trimmedValues.quantityPerPiece
           : null,
     };
@@ -764,8 +765,9 @@ export function AddRecipeDialog({
                         className="text-destructive text-xs mt-1 flex items-center gap-1"
                       />
                     </div>
-                    {/* Quantity Per Piece (only if servingQuantityUnit is 'pcs') */}
-                    {values.servingQuantityUnit === "pcs" && (
+                    {/* Quantity Per Piece (only if exactly one of the units is 'pcs') */}
+                    {(values.servingQuantityUnit === "pcs") !==
+                      (values.preparedQuantityUnit === "pcs") && (
                       <div className="col-span-12 @sm:col-span-6 @xl:col-span-3 @3xl:col-span-2">
                         <Label
                           htmlFor="quantityPerPiece"
@@ -785,7 +787,9 @@ export function AddRecipeDialog({
                           />
                           <div className="w-px self-stretch bg-input my-1" />
                           <span className="shrink-0 px-2 text-sm font-medium text-foreground">
-                            {values.preparedQuantityUnit}
+                            {values.servingQuantityUnit === "pcs"
+                              ? values.preparedQuantityUnit
+                              : values.servingQuantityUnit}
                           </span>
                         </div>
                         <ErrorMessage

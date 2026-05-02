@@ -1608,9 +1608,9 @@ export function AddMealDialog({
                                 className="text-destructive text-xs mt-1 flex items-center gap-1"
                               />
                             </div>
-                            {/* Quantity Per Piece (only if servingQuantityUnit is 'pcs') */}
-                            {(values.servingQuantityUnit === "pcs" ||
-                              values.preparedQuantityUnit === "pcs") && (
+                            {/* Quantity Per Piece (only if exactly one of the units is 'pcs') */}
+                            {(values.servingQuantityUnit === "pcs") !==
+                              (values.preparedQuantityUnit === "pcs") && (
                               <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
                                 <Label
                                   htmlFor="quantityPerPiece"
