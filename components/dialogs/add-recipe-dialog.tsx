@@ -773,16 +773,21 @@ export function AddRecipeDialog({
                         >
                           {t("recipes.quantityPerPiece")}
                         </Label>
-                        <Field
-                          as={Input}
-                          id="quantityPerPiece"
-                          name="quantityPerPiece"
-                          type="number"
-                          min={0}
-                          step={0.0001}
-                          placeholder="Quantity per piece"
-                          className="border-border focus:border-primary focus:ring-primary/20"
-                        />
+                        <div className="flex h-10 items-center rounded-md border border-input bg-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                          <Field
+                            id="quantityPerPiece"
+                            name="quantityPerPiece"
+                            type="number"
+                            min={0}
+                            step={0.0001}
+                            placeholder="Quantity per piece"
+                            className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          />
+                          <div className="w-px self-stretch bg-input my-1" />
+                          <span className="shrink-0 px-2 text-sm font-medium text-foreground">
+                            {values.preparedQuantityUnit}
+                          </span>
+                        </div>
                         <ErrorMessage
                           name="quantityPerPiece"
                           component="p"
