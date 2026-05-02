@@ -1,6 +1,8 @@
 "use client";
 
 import { cn, formatDecimal } from "@/lib/utils";
+import type { KitchenPersonType } from "@/types/kitchens";
+import type { MenuComponentApiItem } from "@/types/menu-components";
 import { MealTypeEnum as MealType } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import { MenuCard, MenuCardSkeleton } from "./menu-card";
@@ -18,6 +20,16 @@ interface MenuGridProps {
   menus: any;
   kitchenId: string;
   selectedDate: Date;
+  personTypes?: KitchenPersonType[];
+  personCountsByMealType?: Record<string, Record<string, number>>;
+  onPersonCountChange?: (
+    mealType: MealType,
+    personTypeId: string,
+    count: number,
+  ) => void;
+  onAddPersonType?: () => void;
+  onEditMenuComponent?: (menuComponent: MenuComponentApiItem) => void;
+  menuComponentsRefreshKey?: number;
 }
 
 export function MenuGrid({
@@ -26,6 +38,12 @@ export function MenuGrid({
   onDeleteMeal,
   menus = {},
   kitchenId,
+  personTypes = [],
+  personCountsByMealType = {},
+  onPersonCountChange,
+  onAddPersonType,
+  onEditMenuComponent,
+  menuComponentsRefreshKey = 0,
 }: MenuGridProps) {
   const [menuData, setMenuData] = useState<Record<string, MenuItem[]>>({});
 
@@ -35,7 +53,7 @@ export function MenuGrid({
       const transformedData: Record<string, MenuItem[]> = {
         breakfast: (menus.BREAKFAST || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || "Unknown Recipe",
+          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
@@ -43,7 +61,7 @@ export function MenuGrid({
         })),
         lunch: (menus.LUNCH || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || "Unknown Recipe",
+          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
@@ -51,7 +69,7 @@ export function MenuGrid({
         })),
         dinner: (menus.DINNER || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || "Unknown Recipe",
+          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
@@ -59,7 +77,7 @@ export function MenuGrid({
         })),
         snack: (menus.SNACK || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || "Unknown Recipe",
+          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
@@ -102,6 +120,14 @@ export function MenuGrid({
             }}
             onDelete={(itemId) => onDeleteMeal(itemId)}
             showActions
+            personTypes={personTypes}
+            personCounts={personCountsByMealType[type] || {}}
+            onPersonCountChange={(personTypeId, count) =>
+              onPersonCountChange?.(type, personTypeId, count)
+            }
+            onAddPersonType={onAddPersonType}
+            onEditMenuComponent={onEditMenuComponent}
+            menuComponentsRefreshKey={menuComponentsRefreshKey}
           />
         ))}
       </div>

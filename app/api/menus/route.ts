@@ -142,11 +142,11 @@ export async function POST(request: Request) {
     const data = await request.json();
 
     // Validate required fields
-    if (!data.recipeId || !data.mealType || !data.kitchenId || !data.userId) {
+    if (!data.mealType || !data.kitchenId || !data.userId) {
       return NextResponse.json(
         {
           error:
-            "Missing required fields: recipeId, mealType, kitchenId, userId",
+            "Missing required fields: mealType, kitchenId, userId",
         },
         { status: 400 },
       );
@@ -165,6 +165,9 @@ export async function POST(request: Request) {
       epochMs,
       ...menuData
     } = data;
+
+    const normalizedRecipeId = menuData.recipeId || null;
+    menuData.recipeId = normalizedRecipeId;
 
     // Create menu, ingredient groups and ingredients in a transaction so we can map
     // any temporary frontend group IDs to real DB ids (same approach as recipes POST)

@@ -124,7 +124,11 @@ export async function GET(request: NextRequest) {
     menus.forEach((menu: any) => {
       const kitchenName = menu.kitchen.name;
       const mealType = menu.mealType;
-      const recipeId = menu.recipeId;
+      const recipeId = menu.recipeId || `menu:${menu.id}`;
+      const recipeName =
+        menu.recipe?.name ||
+        menu.menuComponent?.name ||
+        "Custom menu item";
 
       if (!kitchenMap[kitchenName]) {
         kitchenMap[kitchenName] = {
@@ -146,7 +150,7 @@ export async function GET(request: NextRequest) {
       if (!recipeMap[recipeId]) {
         recipeMap[recipeId] = {
           recipeId,
-          recipeName: menu.recipe.name,
+          recipeName,
           ghanFactor: 0,
           preparedQuantities: [] as Array<{ quantity: number; unit: string }>,
           menuComponents: new Set(),

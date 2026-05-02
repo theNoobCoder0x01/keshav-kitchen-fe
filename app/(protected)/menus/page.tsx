@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  AddEditKitchenPersonTypeDialog,
+  type KitchenPersonTypeForm,
+} from "@/components/dialogs/add-edit-kitchen-person-type-dialog";
+import {
+  AddEditMenuComponentDialog,
+  type MenuComponentForm,
+} from "@/components/dialogs/add-edit-menu-component-dialog";
 import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
 import { MenuGrid, MenuGridSkeleton } from "@/components/menu/menu-grid";
 import { BaseDialog } from "@/components/ui/base-dialog";
@@ -18,8 +26,18 @@ import {
 } from "@/components/ui/tab-navigation";
 import { useTranslations } from "@/hooks/use-translations";
 import api from "@/lib/api/axios";
+import {
+  createKitchenPersonType,
+  fetchKitchenPersonTypes,
+} from "@/lib/api/kitchen-person-types";
 import { fetchKitchens } from "@/lib/api/kitchens";
+import {
+  fetchMealPersonCounts,
+  saveMealPersonCount,
+} from "@/lib/api/meal-person-counts";
 import { deleteMenu, fetchMenus, fetchMenuStats } from "@/lib/api/menus";
+import type { KitchenPersonType } from "@/types/kitchens";
+import type { MenuComponentApiItem } from "@/types/menu-components";
 import type { MealType as UnifiedMealType } from "@/types/menus";
 import { MealTypeEnum as MealType } from "@/types/menus";
 import {
@@ -35,11 +53,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 // import html2pdf from "html2pdf.js";
 
+const EMPTY_PERSON_COUNTS: Record<string, number> = {};
+
 export default function MenuPage() {
   const { t } = useTranslations();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [addMealDialog, setAddMealDialog] = useState(false);
+  const [personTypeDialogOpen, setPersonTypeDialogOpen] = useState(false);
+  const [menuComponentDialogOpen, setMenuComponentDialogOpen] = useState(false);
+  const [editingMenuComponent, setEditingMenuComponent] =
+    useState<MenuComponentForm | null>(null);
+  const [menuComponentsRefreshKey, setMenuComponentsRefreshKey] = useState(0);
   const [reportPdfPreviewDialog, setReportPdfPreviewDialog] = useState<
     string | undefined
   >(undefined);
@@ -50,6 +75,10 @@ export default function MenuPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [kitchens, setKitchens] = useState<any[]>([]);
+  const [personTypes, setPersonTypes] = useState<KitchenPersonType[]>([]);
+  const [personCountsByMealType, setPersonCountsByMealType] = useState<
+    Record<string, Record<string, number>>
+  >({});
   const [menuStats, setMenuStats] = useState<any>(null);
   const [dailyMenus, setDailyMenus] = useState<any>({});
   const [loadingStates, setLoadingStates] = useState({
@@ -96,6 +125,7 @@ export default function MenuPage() {
           byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 },
         });
         setDailyMenus({});
+        setPersonTypes([]);
         return;
       }
 
@@ -106,10 +136,19 @@ export default function MenuPage() {
         menus: prev.menus + 1,
       }));
 
-      const [statsData, menusResponse] = await Promise.all([
+      const [
+        statsData,
+        menusResponse,
+        personTypesData,
+        mealPersonCountsData,
+      ] = await Promise.all([
         fetchMenuStats(selectedDate.getTime(), currentKitchenId),
         fetchMenus({
           kitchenId: currentKitchenId,
+          epochMs: selectedDate.getTime(),
+        }),
+        fetchKitchenPersonTypes(currentKitchenId),
+        fetchMealPersonCounts(currentKitchenId, {
           epochMs: selectedDate.getTime(),
         }),
       ]);
@@ -128,6 +167,19 @@ export default function MenuPage() {
 
       setMenuStats(statsData);
       setDailyMenus(groupedMenus);
+      setPersonTypes(personTypesData);
+      setPersonCountsByMealType(
+        mealPersonCountsData.reduce(
+          (counts, countRow) => {
+            counts[countRow.mealType] = {
+              ...(counts[countRow.mealType] || {}),
+              [countRow.personTypeId]: countRow.count,
+            };
+            return counts;
+          },
+          {} as Record<string, Record<string, number>>,
+        ),
+      );
     } catch (error) {
       console.error("Failed to load menu data:", error);
       toast.error(t("messages.loadMenuDataError"));
@@ -200,10 +252,94 @@ export default function MenuPage() {
 
   const handleTabChange = (index: number) => {
     setActiveTab(index);
+    setPersonCountsByMealType({});
   };
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
+    setPersonCountsByMealType({});
+  };
+
+  const handlePersonCountChange = (
+    mealType: UnifiedMealType,
+    personTypeId: string,
+    count: number,
+  ) => {
+    setPersonCountsByMealType((currentCounts) => ({
+      ...currentCounts,
+      [mealType]: {
+        ...(currentCounts[mealType] || {}),
+        [personTypeId]: count,
+      },
+    }));
+
+    const currentKitchenId = kitchens[activeTab]?.id;
+    if (!currentKitchenId) {
+      return;
+    }
+
+    void saveMealPersonCount(currentKitchenId, {
+      epochMs: selectedDate.getTime(),
+      mealType,
+      personTypeId,
+      count,
+    }).catch((error) => {
+      console.error("Failed to save meal person count:", error);
+      toast.error("Failed to save person count");
+    });
+  };
+
+  const handleSavePersonType = async (personType: KitchenPersonTypeForm) => {
+    const currentKitchenId = kitchens[activeTab]?.id;
+    if (!currentKitchenId) {
+      toast.error("Kitchen information not found. Please try again.");
+      return false;
+    }
+
+    try {
+      await createKitchenPersonType(currentKitchenId, {
+        name: personType.name,
+        description: personType.description || undefined,
+        sequenceNumber: Number(personType.sequenceNumber),
+      });
+      toast.success(t("messages.personTypeAdded"));
+      setPersonTypeDialogOpen(false);
+      const updatedPersonTypes = await fetchKitchenPersonTypes(currentKitchenId);
+      setPersonTypes(updatedPersonTypes);
+      return true;
+    } catch {
+      toast.error(t("messages.failedToSavePersonType"));
+      return false;
+    }
+  };
+
+  const handleEditMenuComponent = (menuComponent: MenuComponentApiItem) => {
+    setEditingMenuComponent(menuComponent);
+    setMenuComponentDialogOpen(true);
+  };
+
+  const handleSaveMenuComponent = async (menuComponent: MenuComponentForm) => {
+    const currentKitchenId = kitchens[activeTab]?.id;
+    if (!currentKitchenId || !menuComponent.id) {
+      toast.error("Menu component information not found. Please try again.");
+      return false;
+    }
+
+    try {
+      await api.put(
+        `/kitchens/${currentKitchenId}/menu-components/${menuComponent.id}/`,
+        menuComponent,
+      );
+      toast.success(t("messages.menuComponentUpdated"));
+      setMenuComponentDialogOpen(false);
+      setEditingMenuComponent(null);
+      setMenuComponentsRefreshKey((key) => key + 1);
+      await loadMenuData();
+      return true;
+    } catch {
+      toast.error(t("messages.failedToSaveMenuComponent"));
+      return false;
+    }
   };
 
   const handleMealDialogClose = (open: boolean) => {
@@ -386,6 +522,12 @@ export default function MenuPage() {
               menus={dailyMenus}
               kitchenId={kitchens[activeTab]?.id}
               selectedDate={selectedDate}
+              personTypes={personTypes}
+              personCountsByMealType={personCountsByMealType}
+              onPersonCountChange={handlePersonCountChange}
+              onAddPersonType={() => setPersonTypeDialogOpen(true)}
+              onEditMenuComponent={handleEditMenuComponent}
+              menuComponentsRefreshKey={menuComponentsRefreshKey}
             />
           )}
         </>
@@ -416,6 +558,32 @@ export default function MenuPage() {
         selectedDate={selectedDate}
         kitchenId={kitchens[activeTab]?.id}
         editMeal={editMeal}
+        initialPersonCounts={
+          personCountsByMealType[selectedMealType] || EMPTY_PERSON_COUNTS
+        }
+      />
+      <AddEditKitchenPersonTypeDialog
+        open={personTypeDialogOpen}
+        onOpenChange={setPersonTypeDialogOpen}
+        initialPersonType={{
+          name: "",
+          description: "",
+          sequenceNumber:
+            Math.max(0, ...personTypes.map((type) => type.sequenceNumber)) + 1,
+        }}
+        onSave={handleSavePersonType}
+      />
+      <AddEditMenuComponentDialog
+        open={menuComponentDialogOpen}
+        onOpenChange={(open) => {
+          setMenuComponentDialogOpen(open);
+          if (!open) {
+            setEditingMenuComponent(null);
+          }
+        }}
+        initialMenuComponent={editingMenuComponent}
+        personTypes={personTypes}
+        onSave={handleSaveMenuComponent}
       />
       <BaseDialog
         open={!!reportPdfPreviewDialog}

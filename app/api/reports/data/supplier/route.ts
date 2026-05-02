@@ -55,6 +55,12 @@ export async function GET(request: NextRequest) {
             name: true,
           },
         },
+        menuComponent: {
+          select: {
+            name: true,
+            label: true,
+          },
+        },
       },
       orderBy: [
         {
@@ -78,12 +84,16 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    const data = menus.map((menu) => ({
+    const data = menus.map((menu: any) => ({
       kitchenId: menu.kitchenId,
       kitchenName: menu.kitchen.name,
       mealType: menu.mealType,
       recipeId: menu.recipeId,
-      recipeName: menu.recipe.name,
+      recipeName:
+        menu.recipe?.name ||
+        menu.menuComponent?.label ||
+        menu.menuComponent?.name ||
+        "Custom menu item",
       totalQuantity: (menu.preparedQuantity || 0) * menu.ghanFactor,
     }));
 

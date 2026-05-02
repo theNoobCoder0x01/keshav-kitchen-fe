@@ -26,7 +26,7 @@ export async function fetchMenuStats(epochMs: number, kitchenId?: string) {
 export async function createMenu(data: {
   epochMs: number;
   mealType: MealType;
-  recipeId: string;
+  recipeId?: string | null;
   kitchenId: string;
   userId: string;
   preparedQuantity: number;
@@ -55,7 +55,7 @@ export async function updateMenu(
   data: {
     epochMs?: number;
     mealType?: MealType;
-    recipeId?: string;
+    recipeId?: string | null;
     kitchenId?: string;
     userId?: string;
     preparedQuantity?: number;

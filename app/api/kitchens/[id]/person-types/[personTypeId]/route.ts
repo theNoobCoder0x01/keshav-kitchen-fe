@@ -50,7 +50,12 @@ export async function PUT(
     const body = await request.json();
     const { name, description, sequenceNumber } = parsePayload(body);
 
-    if (!name || Number.isNaN(sequenceNumber)) {
+    if (
+      !name ||
+      !Number.isFinite(sequenceNumber) ||
+      !Number.isInteger(sequenceNumber) ||
+      sequenceNumber < 1
+    ) {
       return NextResponse.json(
         { error: "Missing required fields." },
         { status: 400 },

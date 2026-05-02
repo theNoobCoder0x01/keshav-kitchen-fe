@@ -89,9 +89,10 @@ interface AddMealDialogProps {
   mealType: MealType;
   selectedDate: Date;
   kitchenId?: string;
+  initialPersonCounts?: Record<string, number>;
   editMeal?: {
     id: string;
-    recipeId: string;
+    recipeId?: string | null;
     preparedQuantity: number;
     preparedQuantityUnit: string;
     servingQuantity: number;
@@ -102,7 +103,7 @@ interface AddMealDialogProps {
     recipe?: {
       id: string;
       name: string;
-    };
+    } | null;
     ingredients?: IngredientFormValue[];
     ingredientGroups?: Array<{
       id: string;
@@ -140,6 +141,7 @@ export function AddMealDialog({
   mealType,
   selectedDate,
   kitchenId,
+  initialPersonCounts = {},
   editMeal,
 }: AddMealDialogProps) {
   const { t } = useTranslations();
@@ -304,7 +306,7 @@ export function AddMealDialog({
   };
 
   const validationSchema = Yup.object().shape({
-    recipeId: Yup.string().trim().required(t("meals.recipeRequired")),
+    recipeId: Yup.string().trim(),
     followRecipe: Yup.boolean().default(false),
     ghanFactor: Yup.number().when("followRecipe", {
       is: true,
@@ -443,7 +445,9 @@ export function AddMealDialog({
         }
       } else {
         // Fall back to recipe ingredients if menu doesn't have ingredients saved
-        const selectedRecipe = recipes?.find((r) => r.id === editMeal.recipeId);
+        const selectedRecipe = editMeal.recipeId
+          ? recipes?.find((r) => r.id === editMeal.recipeId)
+          : null;
         const recipeIngredients = selectedRecipe?.ingredients || [];
         const recipeGroups = selectedRecipe?.ingredientGroups || [];
 
@@ -490,7 +494,7 @@ export function AddMealDialog({
       }
 
       return {
-        recipeId: editMeal.recipeId,
+        recipeId: editMeal.recipeId || "",
         followRecipe:
           typeof editMeal.followRecipe === "boolean"
             ? editMeal.followRecipe
@@ -751,7 +755,7 @@ export function AddMealDialog({
 
   useEffect(() => {
     if (!selectedMenuComponent) {
-      setPersonCounts({});
+      setPersonCounts(initialPersonCounts);
       return;
     }
 
@@ -760,12 +764,14 @@ export function AddMealDialog({
 
       selectedMenuComponent.averages.forEach((average) => {
         nextCounts[average.personTypeId] =
-          currentCounts[average.personTypeId] || 0;
+          currentCounts[average.personTypeId] ||
+          initialPersonCounts[average.personTypeId] ||
+          0;
       });
 
       return nextCounts;
     });
-  }, [selectedMenuComponent]);
+  }, [selectedMenuComponent, initialPersonCounts]);
 
   const applyConsumptionSuggestion = (
     setFieldValue: (field: string, value: any) => void,
@@ -805,10 +811,6 @@ export function AddMealDialog({
 
       if (!session?.user?.id) {
         throw new Error("User information not found. Please log in again.");
-      }
-
-      if (!values.recipeId) {
-        throw new Error("Please select a recipe from the dropdown.");
       }
 
       // Additional validation for positive values when following recipe
@@ -879,7 +881,10 @@ export function AddMealDialog({
           group.ingredients.forEach(
             (ingredient: any, ingredientIndex: number) => {
               // Only include ingredients with names AND that are selected
-              if (ingredient.name.trim() && ingredient.selected) {
+              if (
+                ingredient.name.trim() &&
+                (ingredient.selected || !values.followRecipe)
+              ) {
                 allIngredients.push({
                   id: ingredient.id ?? undefined,
                   name: ingredient.name,
@@ -922,7 +927,7 @@ export function AddMealDialog({
         }
 
         const updateData = {
-          recipeId: values.recipeId,
+          recipeId: values.recipeId || null,
           preparedQuantity: calculatedPreparedQuantity,
           preparedQuantityUnit: calculatedPreparedQuantityUnit,
           servingQuantity: calculatedServingQuantity,
@@ -951,7 +956,10 @@ export function AddMealDialog({
           group.ingredients.forEach(
             (ingredient: any, ingredientIndex: number) => {
               // Only include ingredients with names AND that are selected
-              if (ingredient.name.trim() && ingredient.selected) {
+              if (
+                ingredient.name.trim() &&
+                (ingredient.selected || !values.followRecipe)
+              ) {
                 allIngredients.push({
                   id: ingredient.id ?? undefined,
                   name: ingredient.name,
@@ -996,7 +1004,7 @@ export function AddMealDialog({
         const menuData = {
           epochMs: selectedDate.getTime(),
           mealType: mealType,
-          recipeId: values.recipeId,
+          recipeId: values.recipeId || null,
           kitchenId: targetKitchenId,
           userId: session.user.id,
           preparedQuantity: calculatedPreparedQuantity,
@@ -1332,10 +1340,23 @@ export function AddMealDialog({
                           <Select
                             value={field.value}
                             onValueChange={(value) => {
+                              const nextRecipeId =
+                                value === "__no_recipe__" ? "" : value;
                               field.onChange({
-                                target: { name: field.name, value },
+                                target: {
+                                  name: field.name,
+                                  value: nextRecipeId,
+                                },
                               });
-                              handleRecipeSelect(value, setFieldValue, values);
+                              if (nextRecipeId) {
+                                handleRecipeSelect(
+                                  nextRecipeId,
+                                  setFieldValue,
+                                  values,
+                                );
+                              } else {
+                                setFieldValue("followRecipe", false);
+                              }
                             }}
                           >
                             <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
@@ -1344,6 +1365,9 @@ export function AddMealDialog({
                               />
                             </SelectTrigger>
                             <SelectContent searchable>
+                              <SelectItem value="__no_recipe__">
+                                No stored recipe
+                              </SelectItem>
                               {filteredRecipes.map((recipe) => (
                                 <SelectItem key={recipe.id} value={recipe.id}>
                                   {recipe.name}

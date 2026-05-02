@@ -216,12 +216,12 @@ export async function getRecentActivity() {
     const activities: any[] = [];
 
     // Add menu activities
-    recentMenus.forEach((menu) => {
+    recentMenus.forEach((menu: any) => {
       activities.push({
         id: menu.id,
         type: "menu",
         title: "Menu Updated",
-        description: `${menu.recipe.name} for ${menu.mealType.toLowerCase()}`,
+        description: `${menu.recipe?.name || "Custom menu item"} for ${menu.mealType.toLowerCase()}`,
         time: menu.updatedAt,
         icon: "Clock",
       });

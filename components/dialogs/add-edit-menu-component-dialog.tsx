@@ -27,7 +27,9 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   initialMenuComponent?: MenuComponentForm | null;
   personTypes: KitchenPersonType[];
-  onSave: (menuComponent: MenuComponentForm) => void;
+  onSave: (
+    menuComponent: MenuComponentForm,
+  ) => boolean | void | Promise<boolean | void>;
 }
 
 const mealTypes: MealType[] = ["BREAKFAST", "LUNCH", "DINNER", "SNACK"];
@@ -181,14 +183,26 @@ export function AddEditMenuComponentDialog({
       <Formik<MenuComponentForm>
         initialValues={getInitialValues(initialMenuComponent)}
         validationSchema={validationSchema}
-        onSubmit={(values, { resetForm }) => {
-          onSave(normalizeMenuComponent(values));
-          resetForm();
-          onOpenChange(false);
+        onSubmit={async (values, { resetForm, setSubmitting }) => {
+          try {
+            const saved = await onSave(normalizeMenuComponent(values));
+            if (saved !== false) {
+              resetForm();
+              onOpenChange(false);
+            }
+          } finally {
+            setSubmitting(false);
+          }
         }}
         enableReinitialize
       >
-        {({ handleSubmit, isSubmitting, values, setFieldValue }) => (
+        {({
+          handleSubmit,
+          isSubmitting,
+          values,
+          setFieldTouched,
+          setFieldValue,
+        }) => (
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -223,11 +237,12 @@ export function AddEditMenuComponentDialog({
                   {({ field }: { field: any }) => (
                     <Select
                       value={field.value}
-                      onValueChange={(value) =>
+                      onValueChange={(value) => {
+                        setFieldTouched(field.name, true, false);
                         field.onChange({
                           target: { name: field.name, value },
-                        })
-                      }
+                        });
+                      }}
                       required
                     >
                       <SelectTrigger className="w-full">
@@ -288,6 +303,7 @@ export function AddEditMenuComponentDialog({
                       variant="outline"
                       size="sm"
                       onClick={() => push(createEmptyAverage())}
+                      disabled={values.averages.length >= personTypes.length}
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       Add average
@@ -302,6 +318,13 @@ export function AddEditMenuComponentDialog({
 
                   {values.averages.map((average, index) => {
                     const usesPieces = average.unit === "pcs";
+                    const selectedPersonTypeIds = new Set(
+                      values.averages
+                        .map((item, itemIndex) =>
+                          itemIndex === index ? null : item.personTypeId,
+                        )
+                        .filter(Boolean),
+                    );
 
                     return (
                       <div
@@ -333,11 +356,12 @@ export function AddEditMenuComponentDialog({
                               {({ field }: { field: any }) => (
                                 <Select
                                   value={field.value}
-                                  onValueChange={(value) =>
+                                  onValueChange={(value) => {
+                                    setFieldTouched(field.name, true, false);
                                     field.onChange({
                                       target: { name: field.name, value },
-                                    })
-                                  }
+                                    });
+                                  }}
                                 >
                                   <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select person type" />
@@ -347,6 +371,9 @@ export function AddEditMenuComponentDialog({
                                       <SelectItem
                                         key={personType.id}
                                         value={personType.id}
+                                        disabled={selectedPersonTypeIds.has(
+                                          personType.id,
+                                        )}
                                       >
                                         {personType.name}
                                       </SelectItem>
@@ -388,6 +415,7 @@ export function AddEditMenuComponentDialog({
                                 <Select
                                   value={field.value}
                                   onValueChange={(value) => {
+                                    setFieldTouched(field.name, true, false);
                                     field.onChange({
                                       target: { name: field.name, value },
                                     });
@@ -472,11 +500,12 @@ export function AddEditMenuComponentDialog({
                               {({ field }: { field: any }) => (
                                 <Select
                                   value={field.value || "g"}
-                                  onValueChange={(value) =>
+                                  onValueChange={(value) => {
+                                    setFieldTouched(field.name, true, false);
                                     field.onChange({
                                       target: { name: field.name, value },
-                                    })
-                                  }
+                                    });
+                                  }}
                                 >
                                   <SelectTrigger className="w-full">
                                     <SelectValue />
