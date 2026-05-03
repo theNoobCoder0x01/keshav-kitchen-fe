@@ -38,6 +38,10 @@ FROM base AS production
 
 WORKDIR /app
 
+ARG NEXT_PUBLIC_BASE_PATH
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG BUILD_DATABASE_URL
+
 COPY package*.json ./
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
@@ -47,9 +51,9 @@ RUN npm ci
 COPY . .
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_BASE_PATH=/prod
-ENV NEXT_PUBLIC_API_BASE_URL=/prod/api
-ENV DATABASE_URL=postgresql://keshav:keshav123@db:5432/keshav_kitchen
+ENV NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH}
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV DATABASE_URL=${BUILD_DATABASE_URL}
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
@@ -70,6 +74,10 @@ FROM base AS dev
 
 WORKDIR /app
 
+ARG NEXT_PUBLIC_BASE_PATH
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG BUILD_DATABASE_URL
+
 COPY package*.json ./
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
@@ -79,9 +87,9 @@ RUN npm ci
 COPY . .
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_BASE_PATH=/beta
-ENV NEXT_PUBLIC_API_BASE_URL=/beta/api
-ENV DATABASE_URL=postgresql://keshav:keshav123@db:5432/keshav_kitchen_dev
+ENV NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH}
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV DATABASE_URL=${BUILD_DATABASE_URL}
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

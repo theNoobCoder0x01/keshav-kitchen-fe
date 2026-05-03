@@ -4,18 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile # match Dockerfile name
       target: production # use production stage
+      args:
+        NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH:?NEXT_PUBLIC_BASE_PATH is required}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:?NEXT_PUBLIC_API_BASE_URL is required}
+        BUILD_DATABASE_URL: postgresql://build:build@localhost:5432/build
     container_name: keshav_frontend
     restart: always
     env_file:
-      - path: .env.production
-        required: false
-    environment:
-      DATABASE_URL: ${PROD_DATABASE_URL:-postgresql://${POSTGRES_USER:-keshav}:${POSTGRES_PASSWORD:-keshav123}@db:5432/keshav_kitchen}
-      NODE_ENV: production
-      PORT: 3002
-      NEXT_PUBLIC_BASE_PATH: /prod
-      NEXT_PUBLIC_API_BASE_URL: /prod/api
-      NEXTAUTH_URL: ${PROD_NEXTAUTH_URL:-http://localhost/prod}
+      - path: ${APP_ENV_FILE:-.env.production}
+        required: true
     ports:
       - "3002:3002"
     depends_on:

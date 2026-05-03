@@ -11,12 +11,10 @@ pnpm-debug.log
 out
 dist
 
-# Local env files (only pass needed vars at runtime)
-.env
-.env.development
-.env.local
-.env.test
-.env.*.local
+# Local env files (only pass needed vars through Compose)
+.env*
+!.env.example
+!.env.production.example
 
 # Prisma
 .prisma
