@@ -7,7 +7,15 @@ services:
     container_name: keshav_frontend
     restart: always
     env_file:
-      - .env.production
+      - path: .env.production
+        required: false
+    environment:
+      DATABASE_URL: ${PROD_DATABASE_URL:-postgresql://${POSTGRES_USER:-keshav}:${POSTGRES_PASSWORD:-keshav123}@db:5432/keshav_kitchen}
+      NODE_ENV: production
+      PORT: 3002
+      NEXT_PUBLIC_BASE_PATH: /prod
+      NEXT_PUBLIC_API_BASE_URL: /prod/api
+      NEXTAUTH_URL: ${PROD_NEXTAUTH_URL:-http://localhost/prod}
     ports:
       - "3002:3002"
     depends_on:

@@ -8,6 +8,13 @@ services:
     restart: always
     env_file:
       - .env.development
+    environment:
+      DATABASE_URL: ${DEV_DATABASE_URL:-postgresql://${POSTGRES_USER:-keshav}:${POSTGRES_PASSWORD:-keshav123}@db:5432/keshav_kitchen_dev}
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_BASE_PATH: /beta
+      NEXT_PUBLIC_API_BASE_URL: /beta/api
+      NEXTAUTH_URL: ${DEV_NEXTAUTH_URL:-http://localhost:3000/beta}
     ports:
       - "3000:3000"
     depends_on:

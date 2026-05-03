@@ -47,6 +47,9 @@ RUN npm ci
 COPY . .
 
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_BASE_PATH=/prod
+ENV NEXT_PUBLIC_API_BASE_URL=/prod/api
+ENV DATABASE_URL=postgresql://keshav:keshav123@db:5432/keshav_kitchen
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
@@ -75,7 +78,10 @@ RUN npm ci
 
 COPY . .
 
-ENV NODE_ENV=development
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_BASE_PATH=/beta
+ENV NEXT_PUBLIC_API_BASE_URL=/beta/api
+ENV DATABASE_URL=postgresql://keshav:keshav123@db:5432/keshav_kitchen_dev
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
