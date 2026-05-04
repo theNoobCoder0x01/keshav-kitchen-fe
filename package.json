@@ -20,7 +20,8 @@
     "deploy:dev": "APP_ENV_FILE=.env.development docker compose --env-file .env.development -f docker-compose.base.yml -f docker-compose.dev.yml up -d --build",
     "deploy:prod": "APP_ENV_FILE=.env.production docker compose --env-file .env.production -f docker-compose.base.yml -f docker-compose.prod.yml up -d --build",
     "docker:db": "docker compose --env-file .env.development -f docker-compose.base.yml up db pgadmin -d",
-    "gen:lockfile": "npm install --package-lock-only --ignore-scripts"
+    "gen:lockfile": "./scripts/regenerate-lockfile.sh",
+    "comment": "// gen:lockfile: To be run directly in macos terminal otherwise it produces differnt lock file that does not work in deployment"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
