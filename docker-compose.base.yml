@@ -59,12 +59,12 @@ services:
       POSTGRES_DB: keshav_kitchen,keshav_kitchen_dev
       POSTGRES_USER: ${POSTGRES_USER:-keshav}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-keshav123}
-      SCHEDULE: ${BACKUP_SCHEDULE:-@daily}
+      SCHEDULE: ${BACKUP_SCHEDULE:-@hourly}
       BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-7}
       BACKUP_KEEP_WEEKS: ${BACKUP_KEEP_WEEKS:-4}
       BACKUP_KEEP_MONTHS: ${BACKUP_KEEP_MONTHS:-6}
     volumes:
-      - pg_backups_data:/backups
+      - ./backups:/backups
     depends_on:
       db:
         condition: service_healthy
@@ -74,7 +74,6 @@ services:
 volumes:
   db_data:
   pgadmin_data:
-  pg_backups_data:
 
 networks:
   app-net: # 👈 declare custom network
