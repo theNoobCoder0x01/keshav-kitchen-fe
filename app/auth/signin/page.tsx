@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { checkAuthStatus } from "@/lib/api/auth-check";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -22,6 +24,28 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkAuth() {
+      try {
+        const authStatus = await checkAuthStatus();
+
+        if (isMounted && authStatus.authenticated) {
+          router.replace("/");
+        }
+      } catch {
+        // Stay on signin page when the auth check cannot be completed.
+      }
+    }
+
+    checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

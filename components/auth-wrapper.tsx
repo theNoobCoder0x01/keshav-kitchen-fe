@@ -2,22 +2,46 @@
 
 import type React from "react";
 
-import { useSession } from "next-auth/react";
+import { checkAuthStatus } from "@/lib/api/auth-check";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useState } from "react";
 
 export function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+  const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">(
+    "loading"
+  );
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "loading") return; // Still loading
+    let isMounted = true;
 
-    if (!session) {
-      router.push("/auth/signin");
-      return;
+    async function checkAuth() {
+      try {
+        const authStatus = await checkAuthStatus();
+
+        if (!isMounted) return;
+
+        if (authStatus.authenticated) {
+          setStatus("authenticated");
+          return;
+        }
+
+        setStatus("unauthenticated");
+        router.replace("/auth/signin");
+      } catch {
+        if (!isMounted) return;
+        setStatus("unauthenticated");
+        router.replace("/auth/signin");
+      }
     }
-  }, [session, status, router]);
+
+    checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   if (status === "loading") {
     return (
@@ -30,7 +54,7 @@ export function AuthWrapper({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!session) {
+  if (status === "unauthenticated") {
     return null; // Will redirect
   }
 
