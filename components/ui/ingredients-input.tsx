@@ -19,21 +19,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
-import { DEFAULT_UNIT, UNIT_OPTIONS } from "@/lib/constants/units";
+import { DEFAULT_UNIT } from "@/lib/constants/units";
 import type { UnitValue } from "@/types";
-import { useRef } from "react";
 import { ErrorMessage, Field, FieldArray, useFormikContext } from "formik";
 import {
   ChevronDown,
   DollarSign,
-  GripVertical,
+  MoveRight,
   Package,
   Plus,
   Trash2,
   X,
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useRef } from "react";
 
 // Ingredient Component
 interface IngredientProps {
@@ -49,7 +48,6 @@ interface IngredientProps {
   name: string;
   groupIngredientsLength: number;
   onSequenceChange: (localId: string, sequence: number) => void;
-  scrollToIngredient: (localId: string) => void;
   values: any;
 }
 
@@ -62,7 +60,6 @@ function Ingredient({
   name,
   groupIngredientsLength,
   onSequenceChange,
-  scrollToIngredient,
   values,
 }: IngredientProps) {
   const ingredientRef = useRef<HTMLDivElement>(null);
@@ -237,7 +234,6 @@ export function IngredientsInput<
 >({
   name,
   ingredientGroups,
-  onFieldChange,
   generateStableId,
   title = "Ingredient Groups",
   description = "Organize ingredients into logical groups",
@@ -281,6 +277,121 @@ export function IngredientsInput<
       selected: false,
     } as any;
     return baseIngredient as T;
+  };
+
+  const createEmptyGroup = (): IngredientGroup<T> => ({
+    name: `Group ${currentIngredientGroups.length + 1}`,
+    sortOrder: currentIngredientGroups.length,
+    ingredients: [createEmptyIngredient()],
+  });
+
+  const updateGroups = (groups: IngredientGroup<T>[]) => {
+    setFieldValue(
+      name,
+      groups.map((group, index) => ({
+        ...group,
+        sortOrder: group.name === "Ungrouped" ? 999 : index,
+        ingredients: group.ingredients.map((ingredient, ingredientIndex) => ({
+          ...ingredient,
+          sequenceNumber:
+            (ingredient as any).sequenceNumber ?? ingredientIndex + 1,
+        })),
+      })),
+    );
+  };
+
+  const ensureUngroupedTarget = (groups: IngredientGroup<T>[]) => {
+    const existingIndex = groups.findIndex(
+      (group) => group.name === "Ungrouped",
+    );
+    if (existingIndex >= 0) return existingIndex;
+
+    groups.push({
+      name: "Ungrouped",
+      sortOrder: 999,
+      ingredients: [],
+    });
+    return groups.length - 1;
+  };
+
+  const removeGroupAndKeepIngredients = (groupIndex: number) => {
+    const groups = currentIngredientGroups.map((group: IngredientGroup<T>) => ({
+      ...group,
+      ingredients: [...group.ingredients],
+    }));
+    const [removedGroup] = groups.splice(groupIndex, 1);
+    const ingredientsToKeep = (removedGroup?.ingredients || []).filter(
+      (ingredient: any) =>
+        ingredient.name || ingredient.quantity || ingredient.costPerUnit,
+    );
+
+    if (ingredientsToKeep.length > 0) {
+      const targetIndex = ensureUngroupedTarget(groups);
+      groups[targetIndex] = {
+        ...groups[targetIndex],
+        ingredients: [
+          ...groups[targetIndex].ingredients,
+          ...ingredientsToKeep.map((ingredient: any) => ({
+            ...ingredient,
+            selected: false,
+          })),
+        ],
+      };
+    }
+
+    updateGroups(groups.length > 0 ? groups : [createEmptyGroup()]);
+  };
+
+  const moveSelectedIngredients = (
+    sourceGroupIndex: number,
+    targetGroupIndex: number,
+  ) => {
+    if (sourceGroupIndex === targetGroupIndex) return;
+
+    const groups = currentIngredientGroups.map((group: IngredientGroup<T>) => ({
+      ...group,
+      ingredients: [...group.ingredients],
+    }));
+    const sourceGroup = groups[sourceGroupIndex];
+    const targetGroup = groups[targetGroupIndex];
+    if (!sourceGroup || !targetGroup) return;
+
+    const moving = sourceGroup.ingredients.filter(
+      (ingredient: any) => ingredient.selected,
+    );
+    if (moving.length === 0) return;
+
+    const remaining = sourceGroup.ingredients.filter(
+      (ingredient: any) => !ingredient.selected,
+    );
+
+    groups[sourceGroupIndex] = {
+      ...sourceGroup,
+      ingredients:
+        remaining.length > 0
+          ? remaining
+          : [
+              {
+                ...createEmptyIngredient(),
+                sequenceNumber: 1,
+              },
+            ],
+    };
+    groups[targetGroupIndex] = {
+      ...targetGroup,
+      ingredients: [
+        ...targetGroup.ingredients.filter(
+          (ingredient: any) =>
+            ingredient.name || ingredient.quantity || ingredient.costPerUnit,
+        ),
+        ...moving.map((ingredient: any) => ({
+          ...ingredient,
+          selected: false,
+        })),
+      ],
+    };
+
+    updateGroups(groups);
   };
 
   // Calculate total cost from ingredient groups
@@ -338,20 +449,12 @@ export function IngredientsInput<
     setFieldValue(name, sortedGroups);
   };
 
-  // Scroll to ingredient
-  const scrollToIngredient = (localId: string) => {
-    const element = document.getElementById(`ingredient-${localId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
   // Get ingredient groups without auto-sorting; sorting happens on blur
   const sortedIngredientGroups = currentIngredientGroups;
 
   return (
     <FieldArray name={name}>
-      {({ remove: removeGroup, push: pushGroup }) => (
+      {({ push: pushGroup }) => (
         <Card>
           <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between">
@@ -371,6 +474,22 @@ export function IngredientsInput<
                   )}{" "}
                   ingredients
                 </Badge>
+                {!hideGroupManagement && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      pushGroup({
+                        ...createEmptyGroup(),
+                        name: `Group ${sortedIngredientGroups.length + 1}`,
+                      })
+                    }
+                  >
+                    <Plus className="w-3 h-3 mr-2" />
+                    Add Group
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -423,17 +542,63 @@ export function IngredientsInput<
                       <Badge variant="secondary" className="text-xs">
                         {group.ingredients.length} items
                       </Badge>
-                      {sortedIngredientGroups.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeGroup(groupIndex)}
-                          className="text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                      {!hideGroupManagement &&
+                        sortedIngredientGroups.length > 1 && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={
+                                  !group.ingredients.some(
+                                    (ingredient: any) => ingredient.selected,
+                                  )
+                                }
+                              >
+                                <MoveRight className="w-4 h-4 mr-1" />
+                                Move
+                                <ChevronDown className="w-3 h-3 ml-1" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {sortedIngredientGroups.map(
+                                (
+                                  targetGroup: IngredientGroup<T>,
+                                  targetGroupIndex: number,
+                                ) =>
+                                  targetGroupIndex !== groupIndex ? (
+                                    <DropdownMenuItem
+                                      key={`${targetGroup.name}-${targetGroupIndex}`}
+                                      onClick={() =>
+                                        moveSelectedIngredients(
+                                          groupIndex,
+                                          targetGroupIndex,
+                                        )
+                                      }
+                                    >
+                                      {targetGroup.name ||
+                                        `Group ${targetGroupIndex + 1}`}
+                                    </DropdownMenuItem>
+                                  ) : null,
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      {!hideGroupManagement &&
+                        sortedIngredientGroups.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              removeGroupAndKeepIngredients(groupIndex)
+                            }
+                            className="text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                     </div>
                   </div>
 
@@ -456,7 +621,6 @@ export function IngredientsInput<
                               name={name}
                               groupIngredientsLength={group.ingredients.length}
                               onSequenceChange={handleSequenceChange}
-                              scrollToIngredient={scrollToIngredient}
                               values={values}
                             />
                           ),
