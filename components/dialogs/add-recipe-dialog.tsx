@@ -782,7 +782,6 @@ export function AddRecipeDialog({
               <IngredientsInput
                 name="ingredientGroups"
                 ingredientGroups={values.ingredientGroups}
-                onFieldChange={setFieldValue}
                 generateStableId={generateStableId}
                 title="Ingredient Groups"
                 description="Organize ingredients into logical groups like 'Dough', 'Filling', 'Sauce'"

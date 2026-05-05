@@ -88,15 +88,17 @@ interface AddMealDialogProps {
   selectedDate: Date;
   kitchenId?: string;
   initialPersonCounts?: Record<string, number>;
-  editMeal?: {
-    id: string;
+  mode?: "create" | "update";
+  menuId?: string;
+  initialMeal?: {
+    id?: string;
     recipeId?: string | null;
-    preparedQuantity: number;
-    preparedQuantityUnit: string;
-    servingQuantity: number;
-    servingQuantityUnit: string;
+    preparedQuantity?: number;
+    preparedQuantityUnit?: string;
+    servingQuantity?: number;
+    servingQuantityUnit?: string;
     quantityPerPiece?: number;
-    ghanFactor: number;
+    ghanFactor?: number;
     menuComponentId?: string;
     recipe?: {
       id: string;
@@ -137,7 +139,9 @@ export function AddMealDialog({
   selectedDate,
   kitchenId,
   initialPersonCounts = {},
-  editMeal,
+  mode = "create",
+  menuId,
+  initialMeal,
 }: AddMealDialogProps) {
   const { t } = useTranslations();
   const { data: session } = useSession();
@@ -183,15 +187,15 @@ export function AddMealDialog({
     setIsLoadingMenu(false);
     setPersonCounts({});
     setHasAppliedConsumptionSuggestion(false);
-  }, [editMeal?.id]);
+  }, [menuId]);
 
   // Fetch menu details when in edit mode
   useEffect(() => {
     const fetchMenuDetails = async () => {
-      if (open && editMeal?.id && !fetchedMenu) {
+      if (open && mode === "update" && menuId && !fetchedMenu) {
         setIsLoadingMenu(true);
         try {
-          const response = await api.get(`/menus/${editMeal.id}/`);
+          const response = await api.get(`/menus/${menuId}/`);
           if (response.status === 200) {
             setFetchedMenu(response.data);
           } else {
@@ -208,7 +212,7 @@ export function AddMealDialog({
     };
 
     fetchMenuDetails();
-  }, [open, editMeal?.id, fetchedMenu, t]);
+  }, [open, mode, menuId, fetchedMenu, t]);
 
   // Helper function to organize ingredients into groups
   const organizeIngredientsIntoGroups = useCallback(
@@ -400,20 +404,20 @@ export function AddMealDialog({
       }),
   });
 
-  // This will be computed dynamically based on editMeal prop
+  // This will be computed dynamically based on the meal being edited or initial create defaults.
   const getInitialValues = useCallback(
     (
-      editMeal?: AddMealDialogProps["editMeal"],
+      meal?: AddMealDialogProps["initialMeal"],
       recipes?: Recipe[],
     ): MealFormValuesWithGroups => {
-      if (editMeal?.id) {
+      if (mode === "update" && meal?.id) {
         // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
         let ingredients;
         let ingredientGroups;
 
-        if (editMeal.ingredients && editMeal.ingredients.length > 0) {
+        if (meal.ingredients && meal.ingredients.length > 0) {
           // Load ingredients from the saved menu
-          ingredients = editMeal.ingredients.map((ingredient) => ({
+          ingredients = meal.ingredients.map((ingredient) => ({
             id: ingredient.id,
             name: ingredient.name,
             quantity: ingredient.quantity,
@@ -423,16 +427,13 @@ export function AddMealDialog({
             sequenceNumber: (ingredient as any).sequenceNumber ?? 1,
             localId: ingredient.localId || generateStableId(),
             selected:
-              (ingredient as any).selected ?? Boolean(editMeal.followRecipe),
+              (ingredient as any).selected ?? Boolean(meal.followRecipe),
           }));
-          if (
-            editMeal.ingredientGroups &&
-            editMeal.ingredientGroups.length > 0
-          ) {
+          if (meal.ingredientGroups && meal.ingredientGroups.length > 0) {
             // Preserve existing menu ingredient groups
             ingredientGroups = organizeIngredientsIntoGroups(
               ingredients,
-              editMeal.ingredientGroups,
+              meal.ingredientGroups,
             );
           } else {
             // Create default "Ungrouped" group
@@ -449,8 +450,8 @@ export function AddMealDialog({
           }
         } else {
           // Fall back to recipe ingredients if menu doesn't have ingredients saved
-          const selectedRecipe = editMeal.recipeId
-            ? recipes?.find((r) => r.id === editMeal.recipeId)
+          const selectedRecipe = meal.recipeId
+            ? recipes?.find((r) => r.id === meal.recipeId)
             : null;
           const recipeIngredients = selectedRecipe?.ingredients || [];
           const recipeGroups = selectedRecipe?.ingredientGroups || [];
@@ -460,7 +461,7 @@ export function AddMealDialog({
             ingredientGroups = organizeIngredientsIntoGroups(
               recipeIngredients.map((ingredient) => ({
                 ...ingredient,
-                selected: Boolean(editMeal.followRecipe),
+                selected: Boolean(meal.followRecipe),
               })),
               recipeGroups,
             );
@@ -476,7 +477,7 @@ export function AddMealDialog({
                     costPerUnit: ingredient.costPerUnit || 0,
                     groupId: (ingredient as any).groupId ?? null,
                     localId: ingredient.localId || generateStableId(),
-                    selected: Boolean(editMeal.followRecipe),
+                    selected: Boolean(meal.followRecipe),
                   }))
                 : [
                     {
@@ -503,18 +504,18 @@ export function AddMealDialog({
         return {
           recipeCategory: "all",
           recipeSubcategory: "all",
-          recipeId: editMeal.recipeId || "",
+          recipeId: meal.recipeId || "",
           followRecipe:
-            typeof editMeal.followRecipe === "boolean"
-              ? editMeal.followRecipe
+            typeof meal.followRecipe === "boolean"
+              ? meal.followRecipe
               : false,
-          ghanFactor: editMeal.ghanFactor || 1.0,
-          preparedQuantity: editMeal.preparedQuantity,
-          preparedQuantityUnit: editMeal.preparedQuantityUnit,
-          servingQuantity: editMeal.servingQuantity,
-          servingQuantityUnit: editMeal.servingQuantityUnit,
-          quantityPerPiece: editMeal.quantityPerPiece,
-          menuComponentId: editMeal.menuComponentId,
+          ghanFactor: meal.ghanFactor || 1.0,
+          preparedQuantity: meal.preparedQuantity ?? 0,
+          preparedQuantityUnit: meal.preparedQuantityUnit ?? DEFAULT_UNIT,
+          servingQuantity: meal.servingQuantity ?? 0,
+          servingQuantityUnit: meal.servingQuantityUnit ?? DEFAULT_UNIT,
+          quantityPerPiece: meal.quantityPerPiece,
+          menuComponentId: meal.menuComponentId,
           ingredientGroups,
         };
       }
@@ -529,7 +530,7 @@ export function AddMealDialog({
         servingQuantityUnit: DEFAULT_UNIT,
         preparedQuantity: 0,
         preparedQuantityUnit: DEFAULT_UNIT,
-        menuComponentId: editMeal?.menuComponentId,
+        menuComponentId: meal?.menuComponentId,
         ingredientGroups: [
           {
             name: "Ungrouped",
@@ -549,7 +550,7 @@ export function AddMealDialog({
         ],
       };
     },
-    [generateStableId, organizeIngredientsIntoGroups],
+    [generateStableId, mode, organizeIngredientsIntoGroups],
   );
 
   useEffect(() => {
@@ -581,7 +582,7 @@ export function AddMealDialog({
 
   const selectedMenuComponent = useMemo(() => {
     const selectedMenuComponentId =
-      fetchedMenu?.menuComponentId ?? editMeal?.menuComponentId;
+      fetchedMenu?.menuComponentId ?? initialMeal?.menuComponentId;
 
     if (!selectedMenuComponentId) {
       return null;
@@ -592,7 +593,11 @@ export function AddMealDialog({
         (component) => component.id === selectedMenuComponentId,
       ) || null
     );
-  }, [menuComponents, editMeal?.menuComponentId, fetchedMenu?.menuComponentId]);
+  }, [
+    menuComponents,
+    initialMeal?.menuComponentId,
+    fetchedMenu?.menuComponentId,
+  ]);
 
   const consumptionSuggestion = useMemo<ConsumptionSuggestion | null>(() => {
     if (!selectedMenuComponent || selectedMenuComponent.averages.length === 0) {
@@ -855,7 +860,7 @@ export function AddMealDialog({
       // Compute deleted group IDs if editing an existing menu (groups that were present before and now removed)
       const originalGroupsSource =
         (fetchedMenu as any)?.ingredientGroups ||
-        editMeal?.ingredientGroups ||
+        initialMeal?.ingredientGroups ||
         [];
       const originalGroups: Array<{ id: string; name: string }> = (
         originalGroupsSource as any[]
@@ -937,7 +942,7 @@ export function AddMealDialog({
         }
       }
 
-      if (editMeal?.id) {
+      if (mode === "update" && menuId) {
         const updateData = {
           recipeId: values.recipeId || null,
           preparedQuantity: calculatedPreparedQuantity,
@@ -954,7 +959,7 @@ export function AddMealDialog({
           followRecipe: values.followRecipe,
         };
 
-        await updateMenu(editMeal.id, updateData);
+        await updateMenu(menuId, updateData);
         toast.success(
           t("meals.mealUpdatedSuccessfully", {
             mealType: mealType.toLowerCase(),
@@ -1008,8 +1013,8 @@ export function AddMealDialog({
   };
 
   const initialFormValues = useMemo(
-    () => getInitialValues(fetchedMenu || editMeal, recipes),
-    [fetchedMenu, editMeal, recipes, getInitialValues],
+    () => getInitialValues(fetchedMenu || initialMeal, recipes),
+    [fetchedMenu, initialMeal, recipes, getInitialValues],
   );
 
   const filteredRecipes = useMemo(() => {
@@ -1057,7 +1062,7 @@ export function AddMealDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={
-        editMeal?.id
+        mode === "update"
           ? t("meals.editMeal", { mealType: mealType.toLowerCase() })
           : t("meals.addMeal", { mealType: mealType.toLowerCase() })
       }
@@ -1081,7 +1086,7 @@ export function AddMealDialog({
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
           enableReinitialize
-          key={editMeal?.id || editMeal?.menuComponentId || "new"}
+          key={menuId || initialMeal?.menuComponentId || "new"}
         >
           {({ values, setFieldValue, handleSubmit: formikHandleSubmit }) => {
             // Removing helpers that referenced non-existent fields in this form
@@ -1652,7 +1657,6 @@ export function AddMealDialog({
                       <IngredientsInput
                         name="ingredientGroups"
                         ingredientGroups={values.ingredientGroups}
-                        onFieldChange={setFieldValue}
                         generateStableId={generateStableId}
                         title={t("meals.ingredients")}
                         description="Organize ingredients into logical groups"

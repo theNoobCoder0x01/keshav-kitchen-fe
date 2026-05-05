@@ -32,7 +32,7 @@ import {
   X,
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 
 // Ingredient Component
 interface IngredientProps {
@@ -62,17 +62,8 @@ function Ingredient({
   onSequenceChange,
   values,
 }: IngredientProps) {
-  const ingredientRef = useRef<HTMLDivElement>(null);
-
-  // useEffect(() => {
-  //   if (ingredientRef.current) {
-  //     scrollToIngredient(ingredient.localId);
-  //   }
-  // }, [ingredient.sequenceNumber, scrollToIngredient, ingredient.localId]);
-
   return (
     <div
-      ref={ingredientRef}
       id={`ingredient-${ingredient.localId}`}
       className="px-1 py-3"
     >
@@ -219,7 +210,6 @@ interface IngredientsInputProps<
 > {
   name: string; // Formik field name (e.g., "ingredientGroups")
   ingredientGroups: IngredientGroup<T>[];
-  onFieldChange: (field: string, value: any, shouldValidate?: boolean) => void;
   generateStableId: () => string;
   title?: string;
   description?: string;

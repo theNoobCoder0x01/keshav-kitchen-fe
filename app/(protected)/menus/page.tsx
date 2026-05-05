@@ -55,6 +55,10 @@ import { toast } from "sonner";
 
 const EMPTY_PERSON_COUNTS: Record<string, number> = {};
 
+type MealDialogState =
+  | { mode: "create"; initialMeal?: { menuComponentId?: string } }
+  | { mode: "update"; menuId: string; initialMeal: any };
+
 export default function MenuPage() {
   const { t } = useTranslations();
   const { data: session, status } = useSession();
@@ -71,7 +75,8 @@ export default function MenuPage() {
   const [selectedMealType, setSelectedMealType] = useState<UnifiedMealType>(
     MealType.BREAKFAST,
   );
-  const [editMeal, setEditMeal] = useState<any>(null);
+  const [mealDialogState, setMealDialogState] =
+    useState<MealDialogState | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [kitchens, setKitchens] = useState<any[]>([]);
@@ -219,15 +224,20 @@ export default function MenuPage() {
     menuComponentId?: string,
   ) => {
     setSelectedMealType(mealType);
-    setEditMeal({
-      menuComponentId,
+    setMealDialogState({
+      mode: "create",
+      initialMeal: { menuComponentId },
     });
     setAddMealDialog(true);
   };
 
   const handleEditMeal = (mealType: UnifiedMealType, meal: any) => {
     setSelectedMealType(mealType);
-    setEditMeal(meal);
+    setMealDialogState({
+      mode: "update",
+      menuId: meal.id,
+      initialMeal: meal,
+    });
     setAddMealDialog(true);
   };
 
@@ -345,7 +355,7 @@ export default function MenuPage() {
   const handleMealDialogClose = (open: boolean) => {
     setAddMealDialog(open);
     if (!open) {
-      setEditMeal(null);
+      setMealDialogState(null);
       loadMenuData(); // Reload data when dialog closes
     }
   };
@@ -557,7 +567,11 @@ export default function MenuPage() {
         mealType={selectedMealType}
         selectedDate={selectedDate}
         kitchenId={kitchens[activeTab]?.id}
-        editMeal={editMeal}
+        mode={mealDialogState?.mode ?? "create"}
+        menuId={
+          mealDialogState?.mode === "update" ? mealDialogState.menuId : undefined
+        }
+        initialMeal={mealDialogState?.initialMeal}
         initialPersonCounts={
           personCountsByMealType[selectedMealType] || EMPTY_PERSON_COUNTS
         }
