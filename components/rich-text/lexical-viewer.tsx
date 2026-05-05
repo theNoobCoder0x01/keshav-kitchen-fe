@@ -57,7 +57,7 @@ export function LexicalViewer({ value, className }: LexicalViewerProps) {
         TableCellNode,
       ],
       onError(error: unknown) {
-        // eslint-disable-next-line no-console
+         
         console.error(error);
       },
       editorState: (editor: any) => {

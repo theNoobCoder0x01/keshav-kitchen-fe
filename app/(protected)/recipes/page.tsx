@@ -232,8 +232,10 @@ export default function RecipesPage() {
     }
   };
 
-  // Save handler (for both add and edit)
-  const handleSaveRecipe = async (data: any) => {
+  const handleSaveRecipe = async (
+    data: any,
+    options: { mode: "create" } | { mode: "update"; recipeId: string },
+  ) => {
     // Validate required fields
     if (!data.name || data.name.trim() === "") {
       toast.error(t("common.error"), {
@@ -324,13 +326,13 @@ export default function RecipesPage() {
       };
       let result;
       try {
-        if (editRecipe) {
-          result = await updateRecipe(editRecipe.selectedRecipe, payload);
+        if (options.mode === "update") {
+          result = await updateRecipe(options.recipeId, payload);
         } else {
           result = await createRecipe(payload);
         }
 
-        if (editRecipe) {
+        if (options.mode === "update") {
           getRecipes();
           toast.success(t("messages.recipeUpdated"));
         } else {
@@ -497,7 +499,11 @@ export default function RecipesPage() {
             <div className="flex items-center gap-3">
               <Button
                 className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
-                onClick={() => setIsAddDialogOpen(true)}
+                onClick={() => {
+                  setEditRecipe(null);
+                  setIsEditDialogOpen(false);
+                  setIsAddDialogOpen(true);
+                }}
               >
                 <Plus className="w-4 h-4 mr-1" />
                 {t("recipes.addRecipe")}
@@ -694,12 +700,24 @@ export default function RecipesPage() {
       <AddRecipeDialog
         isOpen={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
-        onSave={handleSaveRecipe}
+        onSave={(data) => handleSaveRecipe(data, { mode: "create" })}
       />
       <AddRecipeDialog
         isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        onSave={handleSaveRecipe}
+        onOpenChange={(open) => {
+          setIsEditDialogOpen(open);
+          if (!open) setEditRecipe(null);
+        }}
+        onSave={(data) => {
+          if (!editRecipe?.selectedRecipe) {
+            toast.error(t("messages.failedToSaveRecipe"));
+            return;
+          }
+          handleSaveRecipe(data, {
+            mode: "update",
+            recipeId: editRecipe.selectedRecipe,
+          });
+        }}
         initialRecipe={editRecipe || null}
         isEditMode={true}
         recipeId={editRecipe?.selectedRecipe}

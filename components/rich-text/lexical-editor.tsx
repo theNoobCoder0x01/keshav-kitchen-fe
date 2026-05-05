@@ -553,7 +553,7 @@ export function LexicalEditor({
         TableCellNode,
       ],
       onError(error: unknown) {
-        // eslint-disable-next-line no-console
+         
         console.error(error);
       },
       editable: true,
