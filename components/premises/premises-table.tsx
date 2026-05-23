@@ -10,6 +10,7 @@ import {
   TablePaginationSkeleton,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslations } from "@/hooks/use-translations";
 import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -31,6 +32,7 @@ export function PremisesTable({
   deletingId,
   itemsPerPageOptions = [10, 20],
 }: PremisesTableProps) {
+  const { t } = useTranslations();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(
     itemsPerPageOptions[0] || 10,
@@ -87,7 +89,7 @@ export function PremisesTable({
               onClick={() => handleSort("sequenceNumber")}
             >
               <div className="flex items-center space-x-2">
-                <span>SEQ</span>
+                <span>{t("premises.sequenceNumber")}</span>
                 {getSortIcon("sequenceNumber")}
               </div>
             </TableHead>
@@ -96,7 +98,7 @@ export function PremisesTable({
               onClick={() => handleSort("name")}
             >
               <div className="flex items-center space-x-2">
-                <span>NAME</span>
+                <span>{t("common.name")}</span>
                 {getSortIcon("name")}
               </div>
             </TableHead>
@@ -105,12 +107,12 @@ export function PremisesTable({
               onClick={() => handleSort("location")}
             >
               <div className="flex items-center space-x-2">
-                <span>LOCATION</span>
+                <span>{t("premises.location")}</span>
                 {getSortIcon("location")}
               </div>
             </TableHead>
             <TableHead className="text-foreground font-semibold py-4 px-6">
-              ACTIONS
+              {t("common.actions")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -139,8 +141,8 @@ export function PremisesTable({
                       variant="ghost"
                       className="w-8 h-8 p-0 text-foreground hover:bg-muted"
                       onClick={() => onEdit(premise)}
-                      aria-label="Edit premise"
-                      title="Edit premise"
+                      aria-label={t("premises.editPremise")}
+                      title={t("premises.editPremise")}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -151,8 +153,8 @@ export function PremisesTable({
                       className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
                       onClick={() => onDelete(premise.id)}
                       disabled={deletingId === premise.id}
-                      aria-label="Delete premise"
-                      title="Delete premise"
+                      aria-label={t("premises.deletePremise")}
+                      title={t("premises.deletePremise")}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -163,7 +165,7 @@ export function PremisesTable({
           ) : (
             <TableRow>
               <TableCell colSpan={3} className="h-24 text-center">
-                No premises found.
+                {t("premises.noPremisesFound")}
               </TableCell>
             </TableRow>
           )}

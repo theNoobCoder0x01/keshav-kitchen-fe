@@ -10,6 +10,7 @@ import {
   TablePaginationSkeleton,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslations } from "@/hooks/use-translations";
 import type { Kitchen } from "@/types/kitchens";
 import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -29,6 +30,7 @@ export function KitchensTable({
   deletingId,
   itemsPerPageOptions = [10, 20],
 }: KitchensTableProps) {
+  const { t } = useTranslations();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(
     itemsPerPageOptions[0] || 10,
@@ -85,7 +87,7 @@ export function KitchensTable({
               onClick={() => handleSort("name")}
             >
               <div className="flex items-center space-x-2">
-                <span>NAME</span>
+                <span>{t("kitchens.name")}</span>
                 {getSortIcon("name")}
               </div>
             </TableHead>
@@ -94,7 +96,7 @@ export function KitchensTable({
               onClick={() => handleSort("description")}
             >
               <div className="flex items-center space-x-2">
-                <span>DESCRIPTION</span>
+                <span>{t("kitchens.description")}</span>
                 {getSortIcon("description")}
               </div>
             </TableHead>
@@ -103,12 +105,12 @@ export function KitchensTable({
               onClick={() => handleSort("defaultCook")}
             >
               <div className="flex items-center space-x-2">
-                <span>DEFAULT COOK</span>
+                <span>{t("kitchens.defaultCook")}</span>
                 {getSortIcon("defaultCook")}
               </div>
             </TableHead>
             <TableHead className="text-foreground font-semibold py-4 px-6">
-              ACTIONS
+              {t("common.actions")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -132,8 +134,8 @@ export function KitchensTable({
                       variant="ghost"
                       className="w-8 h-8 p-0 text-foreground hover:bg-muted"
                       onClick={() => onEdit(kitchen)}
-                      aria-label="Edit kitchen"
-                      title="Edit kitchen"
+                      aria-label={t("kitchens.editKitchen")}
+                      title={t("kitchens.editKitchen")}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -144,8 +146,8 @@ export function KitchensTable({
                       className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
                       onClick={() => onDelete(kitchen.id)}
                       disabled={deletingId === kitchen.id}
-                      aria-label="Delete kitchen"
-                      title="Delete kitchen"
+                      aria-label={t("kitchens.deleteKitchen")}
+                      title={t("kitchens.deleteKitchen")}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -156,7 +158,7 @@ export function KitchensTable({
           ) : (
             <TableRow>
               <TableCell colSpan={4} className="h-24 text-center">
-                No kitchens found.
+                {t("kitchens.noKitchensFound")}
               </TableCell>
             </TableRow>
           )}

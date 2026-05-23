@@ -10,6 +10,7 @@ import {
   TablePaginationSkeleton,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslations } from "@/hooks/use-translations";
 import type { RecipeListItem as Recipe } from "@/types";
 import { Edit, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -43,6 +44,7 @@ export function RecipesTable({
   onPageChange,
   onItemsPerPageChange,
 }: RecipesTableProps) {
+  const { t } = useTranslations();
   // Use server-side pagination - no local slicing needed
   const displayRecipes = recipes;
   const effectiveItemsPerPage = (itemsPerPage ?? itemsPerPageOptions[0]) || 20;
@@ -61,21 +63,21 @@ export function RecipesTable({
           <TableRow>
             <TableHead className="text-foreground font-semibold py-4 px-6 cursor-pointer">
               <div className="flex items-center space-x-2">
-                <span>NAME</span>
+                <span>{t("common.name")}</span>
               </div>
             </TableHead>
             <TableHead className="text-foreground font-semibold py-4 px-6 cursor-pointer">
               <div className="flex items-center space-x-2">
-                <span>CATEGORY</span>
+                <span>{t("recipes.category")}</span>
               </div>
             </TableHead>
             <TableHead className="text-foreground font-semibold py-4 px-6 cursor-pointer">
               <div className="flex items-center space-x-2">
-                <span>SUBCATEGORY</span>
+                <span>{t("recipes.subcategory")}</span>
               </div>
             </TableHead>
             <TableHead className="text-foreground font-semibold py-4 px-6">
-              ACTIONS
+              {t("common.actions")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -104,8 +106,8 @@ export function RecipesTable({
                       variant="ghost"
                       className="w-8 h-8 p-0 text-foreground hover:bg-muted"
                       onClick={() => onEdit(recipe)}
-                      aria-label="Edit recipe"
-                      title="Edit recipe"
+                      aria-label={t("recipes.editRecipe")}
+                      title={t("recipes.editRecipe")}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -115,8 +117,8 @@ export function RecipesTable({
                       variant="ghost"
                       className="w-8 h-8 p-0 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
                       onClick={() => onPrint(recipe)}
-                      aria-label="Print recipe"
-                      title="Print recipe"
+                      aria-label={t("recipes.printRecipe")}
+                      title={t("recipes.printRecipe")}
                     >
                       <Printer className="w-4 h-4" />
                     </Button>
@@ -127,8 +129,8 @@ export function RecipesTable({
                       className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
                       onClick={() => onDelete(recipe.id)}
                       disabled={deletingId === recipe.id}
-                      aria-label="Delete recipe"
-                      title="Delete recipe"
+                      aria-label={t("recipes.deleteRecipe")}
+                      title={t("recipes.deleteRecipe")}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -139,7 +141,7 @@ export function RecipesTable({
           ) : (
             <TableRow>
               <TableCell colSpan={4} className="h-24 text-center">
-                No recipes found.
+                {t("recipes.noRecipesFound")}
               </TableCell>
             </TableRow>
           )}
