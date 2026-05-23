@@ -123,7 +123,7 @@ export default function SignInPage() {
 
           <div className="mt-4 text-center text-sm text-[#4b465c]/60">
             <p>Demo credentials:</p>
-            <p>Email: admin@premise.com</p>
+            <p>Email: admin@kitchen.com</p>
             <p>Password: admin123</p>
           </div>
         </CardContent>
