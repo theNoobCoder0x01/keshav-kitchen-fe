@@ -111,6 +111,7 @@ interface AddMealDialogProps {
       sortOrder: number;
     }>;
     followRecipe?: boolean;
+    customName?: string | null;
   } | null;
 }
 
@@ -130,6 +131,7 @@ interface MealFormValuesWithGroups extends Omit<MealFormValues, "ingredients"> {
   menuComponentId?: string;
   recipeCategory: string;
   recipeSubcategory: string;
+  customName: string;
 }
 
 export function AddMealDialog({
@@ -310,6 +312,12 @@ export function AddMealDialog({
 
   const validationSchema = Yup.object().shape({
     recipeId: Yup.string().trim(),
+    customName: Yup.string().when("followRecipe", {
+      is: false,
+      then: (schema) =>
+        schema.trim().required("Item name is required when not following a recipe"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     followRecipe: Yup.boolean().default(false),
     ghanFactor: Yup.number().when("followRecipe", {
       is: true,
@@ -505,6 +513,7 @@ export function AddMealDialog({
           recipeCategory: "all",
           recipeSubcategory: "all",
           recipeId: meal.recipeId || "",
+          customName: meal.customName || "",
           followRecipe:
             typeof meal.followRecipe === "boolean"
               ? meal.followRecipe
@@ -524,6 +533,7 @@ export function AddMealDialog({
         recipeCategory: "all",
         recipeSubcategory: "all",
         recipeId: "",
+        customName: "",
         followRecipe: false,
         ghanFactor: 1.0,
         servingQuantity: 0,
@@ -945,6 +955,7 @@ export function AddMealDialog({
       if (mode === "update" && menuId) {
         const updateData = {
           recipeId: values.recipeId || null,
+          customName: values.followRecipe ? null : (values.customName || null),
           preparedQuantity: calculatedPreparedQuantity,
           preparedQuantityUnit: calculatedPreparedQuantityUnit,
           servingQuantity: calculatedServingQuantity,
@@ -970,6 +981,7 @@ export function AddMealDialog({
           epochMs: selectedDate.getTime(),
           mealType: mealType,
           recipeId: values.recipeId || null,
+          customName: values.followRecipe ? null : (values.customName || null),
           kitchenId: targetKitchenId,
           userId: session.user.id,
           preparedQuantity: calculatedPreparedQuantity,
@@ -1202,150 +1214,7 @@ export function AddMealDialog({
               <div className="overflow-y-auto">
                 <form onSubmit={formikHandleSubmit}>
                   <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-12 sm:col-span-3 md:col-span-3">
-                      <Label
-                        htmlFor="recipeCategory"
-                        className="text-base font-medium text-foreground mb-2"
-                      >
-                        {t("recipes.category")}
-                      </Label>
-                      <Field name={`recipeCategory`}>
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) => {
-                              field.onChange({
-                                target: { name: field.name, value },
-                              });
-                              setSelectedRecipeCategory(value);
-                            }}
-                          >
-                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                              <SelectValue
-                                placeholder={t("recipes.allCategories")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent searchable>
-                              {recipeCategories.map((recipeCategory) => (
-                                <SelectItem
-                                  key={recipeCategory}
-                                  value={recipeCategory}
-                                >
-                                  {recipeCategory === "all"
-                                    ? t("recipes.allCategories")
-                                    : recipeCategory}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
-                      <ErrorMessage
-                        name={`recipeCategory`}
-                        component="p"
-                        className="text-destructive text-xs mt-1 flex items-center gap-1"
-                      />
-                    </div>
-                    <div className="col-span-12 sm:col-span-3 md:col-span-3">
-                      <Label
-                        htmlFor="recipeSubcategory"
-                        className="text-base font-medium text-foreground mb-2"
-                      >
-                        {t("recipes.subcategory")}
-                      </Label>
-                      <Field name={`recipeSubcategory`}>
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) => {
-                              field.onChange({
-                                target: { name: field.name, value },
-                              });
-                              setSelectedRecipeSubcategory(value);
-                            }}
-                          >
-                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                              <SelectValue
-                                placeholder={t("recipes.allSubcategories")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent searchable>
-                              {recipeSubcategories.map((subcategory) => (
-                                <SelectItem
-                                  key={subcategory}
-                                  value={subcategory}
-                                  className="break-all"
-                                >
-                                  {subcategory === "all"
-                                    ? t("recipes.allSubcategories")
-                                    : subcategory}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
-                      <ErrorMessage
-                        name={`recipeSubcategory`}
-                        component="p"
-                        className="text-destructive text-xs mt-1 flex items-center gap-1"
-                      />
-                    </div>
-                    <div className="col-span-12 sm:col-span-3 md:col-span-4">
-                      <Label
-                        htmlFor="recipe"
-                        className="text-base font-medium text-foreground mb-2"
-                      >
-                        {t("meals.recipe")}
-                      </Label>
-                      <Field name={`recipeId`}>
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) => {
-                              const nextRecipeId =
-                                value === "__no_recipe__" ? "" : value;
-                              field.onChange({
-                                target: {
-                                  name: field.name,
-                                  value: nextRecipeId,
-                                },
-                              });
-                              if (nextRecipeId) {
-                                handleRecipeSelect(
-                                  nextRecipeId,
-                                  setFieldValue,
-                                  values,
-                                );
-                              } else {
-                                setFieldValue("followRecipe", false);
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
-                              <SelectValue
-                                placeholder={t("meals.selectRecipe")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent searchable>
-                              <SelectItem value="__no_recipe__">
-                                No stored recipe
-                              </SelectItem>
-                              {filteredRecipes.map((recipe) => (
-                                <SelectItem key={recipe.id} value={recipe.id}>
-                                  {recipe.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
-                      <ErrorMessage
-                        name={`recipeId`}
-                        component="p"
-                        className="text-destructive text-xs mt-1 flex items-center gap-1"
-                      />
-                    </div>
+                    {/* Follow Recipe toggle — always visible, comes first */}
                     <div className="col-span-12 sm:col-span-3 md:col-span-2">
                       <Label className="text-base font-medium text-foreground">
                         {t("meals.followRecipe")}
@@ -1371,6 +1240,178 @@ export function AddMealDialog({
                         )}
                       </Field>
                     </div>
+
+                    {/* When following a recipe: show category / subcategory / recipe selects */}
+                    {values.followRecipe ? (
+                      <>
+                        <div className="col-span-12 sm:col-span-3 md:col-span-3">
+                          <Label
+                            htmlFor="recipeCategory"
+                            className="text-base font-medium text-foreground mb-2"
+                          >
+                            {t("recipes.category")}
+                          </Label>
+                          <Field name={`recipeCategory`}>
+                            {({ field }: { field: any }) => (
+                              <Select
+                                value={field.value}
+                                onValueChange={(value) => {
+                                  field.onChange({
+                                    target: { name: field.name, value },
+                                  });
+                                  setSelectedRecipeCategory(value);
+                                }}
+                              >
+                                <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                                  <SelectValue
+                                    placeholder={t("recipes.allCategories")}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent searchable>
+                                  {recipeCategories.map((recipeCategory) => (
+                                    <SelectItem
+                                      key={recipeCategory}
+                                      value={recipeCategory}
+                                    >
+                                      {recipeCategory === "all"
+                                        ? t("recipes.allCategories")
+                                        : recipeCategory}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </Field>
+                          <ErrorMessage
+                            name={`recipeCategory`}
+                            component="p"
+                            className="text-destructive text-xs mt-1 flex items-center gap-1"
+                          />
+                        </div>
+                        <div className="col-span-12 sm:col-span-3 md:col-span-3">
+                          <Label
+                            htmlFor="recipeSubcategory"
+                            className="text-base font-medium text-foreground mb-2"
+                          >
+                            {t("recipes.subcategory")}
+                          </Label>
+                          <Field name={`recipeSubcategory`}>
+                            {({ field }: { field: any }) => (
+                              <Select
+                                value={field.value}
+                                onValueChange={(value) => {
+                                  field.onChange({
+                                    target: { name: field.name, value },
+                                  });
+                                  setSelectedRecipeSubcategory(value);
+                                }}
+                              >
+                                <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                                  <SelectValue
+                                    placeholder={t("recipes.allSubcategories")}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent searchable>
+                                  {recipeSubcategories.map((subcategory) => (
+                                    <SelectItem
+                                      key={subcategory}
+                                      value={subcategory}
+                                      className="break-all"
+                                    >
+                                      {subcategory === "all"
+                                        ? t("recipes.allSubcategories")
+                                        : subcategory}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </Field>
+                          <ErrorMessage
+                            name={`recipeSubcategory`}
+                            component="p"
+                            className="text-destructive text-xs mt-1 flex items-center gap-1"
+                          />
+                        </div>
+                        <div className="col-span-12 sm:col-span-6 md:col-span-4">
+                          <Label
+                            htmlFor="recipe"
+                            className="text-base font-medium text-foreground mb-2"
+                          >
+                            {t("meals.recipe")}
+                          </Label>
+                          <Field name={`recipeId`}>
+                            {({ field }: { field: any }) => (
+                              <Select
+                                value={field.value}
+                                onValueChange={(value) => {
+                                  const nextRecipeId =
+                                    value === "__no_recipe__" ? "" : value;
+                                  field.onChange({
+                                    target: {
+                                      name: field.name,
+                                      value: nextRecipeId,
+                                    },
+                                  });
+                                  if (nextRecipeId) {
+                                    handleRecipeSelect(
+                                      nextRecipeId,
+                                      setFieldValue,
+                                      values,
+                                    );
+                                  } else {
+                                    setFieldValue("followRecipe", false);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                                  <SelectValue
+                                    placeholder={t("meals.selectRecipe")}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent searchable>
+                                  <SelectItem value="__no_recipe__">
+                                    No stored recipe
+                                  </SelectItem>
+                                  {filteredRecipes.map((recipe) => (
+                                    <SelectItem key={recipe.id} value={recipe.id}>
+                                      {recipe.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </Field>
+                          <ErrorMessage
+                            name={`recipeId`}
+                            component="p"
+                            className="text-destructive text-xs mt-1 flex items-center gap-1"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      /* When NOT following a recipe: show a free-text name input */
+                      <div className="col-span-12 sm:col-span-9 md:col-span-10">
+                        <Label
+                          htmlFor="customName"
+                          className="text-base font-medium text-foreground mb-2"
+                        >
+                          Item Name
+                        </Label>
+                        <Field
+                          as={Input}
+                          id="customName"
+                          name="customName"
+                          placeholder="Enter a name for this menu item"
+                          className="border-border focus:border-primary focus:ring-primary/20"
+                        />
+                        <ErrorMessage
+                          name="customName"
+                          component="p"
+                          className="text-destructive text-xs mt-1 flex items-center gap-1"
+                        />
+                      </div>
+                    )}
 
                     {values.followRecipe && (
                       <Card className="col-span-12">

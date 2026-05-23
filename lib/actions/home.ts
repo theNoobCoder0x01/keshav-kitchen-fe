@@ -221,7 +221,7 @@ export async function getRecentActivity() {
         id: menu.id,
         type: "menu",
         title: "Menu Updated",
-        description: `${menu.recipe?.name || "Custom menu item"} for ${menu.mealType.toLowerCase()}`,
+        description: `${menu.recipe?.name || menu.customName || "Custom menu item"} for ${menu.mealType.toLowerCase()}`,
         time: menu.updatedAt,
         icon: "Clock",
       });

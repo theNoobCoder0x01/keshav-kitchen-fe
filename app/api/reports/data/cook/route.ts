@@ -88,6 +88,7 @@ export async function GET(request: NextRequest) {
       recipeId: menu.recipeId,
       recipeName:
         menu.recipe?.name ||
+        menu.customName ||
         menu.menuComponent?.label ||
         menu.menuComponent?.name ||
         "Custom menu item",

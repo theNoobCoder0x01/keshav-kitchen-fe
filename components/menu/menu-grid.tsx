@@ -53,7 +53,7 @@ export function MenuGrid({
       const transformedData: Record<string, MenuItem[]> = {
         breakfast: (menus.BREAKFAST || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
+          name: menu.recipe?.name || menu.customName || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
@@ -61,7 +61,7 @@ export function MenuGrid({
         })),
         lunch: (menus.LUNCH || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
+          name: menu.recipe?.name || menu.customName || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
@@ -69,7 +69,7 @@ export function MenuGrid({
         })),
         dinner: (menus.DINNER || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
+          name: menu.recipe?.name || menu.customName || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],
@@ -77,7 +77,7 @@ export function MenuGrid({
         })),
         snack: (menus.SNACK || []).map((menu: any) => ({
           id: menu.id,
-          name: menu.recipe?.name || menu.menuComponent?.label || "Custom menu item",
+          name: menu.recipe?.name || menu.customName || menu.menuComponent?.label || "Custom menu item",
           weight: `${menu.servingQuantity != null ? formatDecimal(menu.servingQuantity) : ""} ${menu.preparedQuantity ? `(${formatDecimal(menu.preparedQuantity)} ${menu.preparedQuantityUnit ?? "kg"})` : ""}`,
           ingredients: menu.ingredients || [],
           ingredientGroups: menu.ingredientGroups || [],

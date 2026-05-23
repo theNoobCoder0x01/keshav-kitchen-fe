@@ -127,6 +127,7 @@ export async function GET(request: NextRequest) {
       const recipeId = menu.recipeId || `menu:${menu.id}`;
       const recipeName =
         menu.recipe?.name ||
+        menu.customName ||
         menu.menuComponent?.name ||
         "Custom menu item";
 
