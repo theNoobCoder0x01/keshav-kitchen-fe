@@ -1,6 +1,6 @@
 import api from "@/lib/api/axios";
 
-type ReportType = "cook" | "supplier" | "recipes";
+type ReportType = "cook" | "supplier" | "recipes" | "prasad";
 
 export async function fetchReportData({
   type,

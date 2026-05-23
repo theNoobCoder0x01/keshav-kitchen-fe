@@ -445,6 +445,12 @@ export default function MenuPage() {
               {/* Reports buttons */}
               <Button
                 variant="outline"
+                onClick={() => handleDownloadReport("prasad")}
+              >
+                Prasad Report
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => handleDownloadReport("recipes?compact=true")}
               >
                 Recipes Report
