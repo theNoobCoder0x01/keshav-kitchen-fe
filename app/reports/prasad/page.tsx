@@ -15,10 +15,6 @@ const MEAL_LABELS: Record<string, string> = {
   SNACK: "Snack",
 };
 
-// Format a single ingredient: "name - qty unit"
-function formatIngredient(ing: { name: string; quantity: number; unit: string }) {
-  return `${ing.name} - ${formatDecimal(ing.quantity)} ${ing.unit}`;
-}
 
 export default function PrasadReport() {
   const [data, setData] = useState<any[]>([]);
@@ -103,52 +99,52 @@ export default function PrasadReport() {
 
                       {/* Right — recipe name + ingredient groups */}
                       <div className="flex-1 leading-snug">
-                        {/* Recipe / custom name (if present) */}
+                        {/* Recipe / custom name */}
                         {item.recipeName && (
-                          <span className="font-semibold">
+                          <div className="font-semibold mb-1">
                             {item.recipeName}
-                          </span>
+                          </div>
                         )}
 
                         {/* Ingredient groups */}
-                        {item.ingredientGroups.map(
-                          (group: any, gi: number) => {
+                        <div className="flex flex-col gap-2">
+                          {item.ingredientGroups.map((group: any) => {
                             if (group.ingredients.length === 0) return null;
-
-                            const ingLine = group.ingredients
-                              .map(formatIngredient)
-                              .join(", ");
-
                             const isUngrouped = group.name === "Ungrouped";
 
                             return (
                               <div
                                 key={group.id ?? group.name}
-                                className={gi === 0 && item.recipeName ? "mt-0" : ""}
+                                className="flex items-start gap-3"
                               >
-                                {/* For the first ungrouped group when there's a recipe name,
-                                    show on the same conceptual line with a separator */}
-                                {isUngrouped ? (
-                                  <span>
-                                    {item.recipeName ? (
-                                      <span className="text-gray-500"> - </span>
-                                    ) : null}
-                                    {ingLine}
-                                  </span>
-                                ) : (
-                                  <div className="mt-0.5">
-                                    <span className="font-semibold text-gray-700">
-                                      {group.name}:{" "}
-                                    </span>
-                                    {ingLine}
+                                {/* Group name on the left — only for named groups */}
+                                {!isUngrouped && (
+                                  <div className="w-24 shrink-0 font-semibold text-gray-700 text-xs leading-tight pt-0.5">
+                                    {group.name}:
                                   </div>
                                 )}
+
+                                {/* Ingredient grid */}
+                                <div className="flex-1 grid grid-cols-3 gap-x-12 gap-y-2 text-sm">
+                                  {group.ingredients.map((ing: any) => (
+                                    <div
+                                      key={`${ing.name}-${ing.unit}`}
+                                      className="flex items-center justify-between pb-0.5 border-b border-dashed border-gray-400"
+                                    >
+                                      <span>{ing.name}</span>
+                                      <span className="font-medium ml-3 whitespace-nowrap">
+                                        {formatDecimal(ing.quantity)}{" "}
+                                        {ing.unit}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             );
-                          },
-                        )}
+                          })}
+                        </div>
 
-                        {/* Fallback when no ingredients at all */}
+                        {/* Fallback — no ingredients and no recipe name */}
                         {item.ingredientGroups.every(
                           (g: any) => g.ingredients.length === 0,
                         ) && !item.recipeName && (
