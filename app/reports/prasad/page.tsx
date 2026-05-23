@@ -137,25 +137,42 @@ export default function PrasadReport() {
                               {item.menuComponentLabel}
                             </div>
 
-                            {/* Recipe name */}
+                            {/* Recipe name + ghan */}
                             <div className="flex flex-1 items-baseline justify-between gap-4">
-                              {item.recipeName ? (
-                                <span className="font-semibold text-[#8B0000]">
-                                  {item.recipeName}
-                                </span>
-                              ) : (
-                                <span />
-                              )}
-
-                              {/* Ghan + prepared qty — right-aligned */}
-                              <span className="flex items-center gap-3 text-xs text-gray-600 whitespace-nowrap shrink-0">
+                              <span className="flex items-baseline gap-2">
+                                {item.recipeName ? (
+                                  <span className="font-semibold text-[#8B0000]">
+                                    {item.recipeName}
+                                  </span>
+                                ) : (
+                                  <span />
+                                )}
                                 {item.followRecipe && (
+                                  <span className="text-xs font-bold text-black whitespace-nowrap">
+                                    {formatDecimal(item.ghanFactor)} ghan
+                                  </span>
+                                )}
+                              </span>
+
+                              {/* Kitchen + Cook — right-aligned */}
+                              <span className="flex items-center gap-3 text-xs text-gray-600 whitespace-nowrap shrink-0">
+                                {item.kitchenName && (
                                   <span>
                                     <span className="font-medium text-gray-500">
-                                      Ghan:
+                                      Kitchen:
                                     </span>{" "}
                                     <span className="font-bold text-black">
-                                      {formatDecimal(item.ghanFactor)}
+                                      {item.kitchenName}
+                                    </span>
+                                  </span>
+                                )}
+                                {item.cook && (
+                                  <span>
+                                    <span className="font-medium text-gray-500">
+                                      Cook:
+                                    </span>{" "}
+                                    <span className="font-bold text-black">
+                                      {item.cook}
                                     </span>
                                   </span>
                                 )}

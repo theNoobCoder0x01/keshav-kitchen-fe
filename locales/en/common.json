@@ -13,7 +13,9 @@
     "menusDesc": "Manage daily menus",
     "recipesDesc": "Recipe management",
     "reportsDesc": "View reports and analytics",
-    "premisesDesc": "Manage premise locations"
+    "premisesDesc": "Manage premise locations",
+    "kitchens": "Kitchens",
+    "kitchensDesc": "Manage kitchen stations"
   },
   "common": {
     "save": "Save",
@@ -168,7 +170,14 @@
     "servingQuantityRequired": "Serving quantity is required",
     "servingQuantityPositive": "Serving quantity must be a positive number",
     "servingQuantityUnitRequired": "Serving quantity unit is required",
-    "quantityPerPiecePositive": "Quantity per piece must be a positive number"
+    "quantityPerPiecePositive": "Quantity per piece must be a positive number",
+    "kitchen": "Kitchen",
+    "selectKitchen": "Select a kitchen",
+    "kitchenRequired": "Kitchen is required",
+    "cook": "Cook",
+    "cookPlaceholder": "Cook name (optional)",
+    "failedToLoadMenu": "Failed to load meal details",
+    "loadingMenu": "Loading meal details..."
   },
   "reports": {
     "title": "Reports",
@@ -592,6 +601,27 @@
     "failedToSavePersonType": "Failed to save person type",
     "confirmDeletePersonType": "Are you sure you want to delete this person type?",
     "personTypeDeleted": "Person type deleted successfully",
-    "failedToDeletePersonType": "Failed to delete person type"
+    "failedToDeletePersonType": "Failed to delete person type",
+    "kitchenUpdated": "Kitchen updated",
+    "kitchenAdded": "Kitchen added",
+    "failedToSaveKitchen": "Failed to save kitchen",
+    "confirmDeleteKitchen": "Are you sure you want to delete this kitchen? This action cannot be undone.",
+    "kitchenDeleted": "Kitchen deleted",
+    "failedToDeleteKitchen": "Failed to delete kitchen",
+    "failedToLoadKitchens": "Failed to load kitchens"
+  },
+  "kitchens": {
+    "title": "Kitchens",
+    "management": "Kitchens Management",
+    "managementSubtitle": "Manage kitchen stations and their default cooks",
+    "addKitchen": "Add Kitchen",
+    "editKitchen": "Edit Kitchen",
+    "name": "Kitchen Name",
+    "enterKitchenName": "Enter kitchen name",
+    "nameRequired": "Kitchen name is required.",
+    "description": "Description",
+    "enterDescription": "Enter description (optional)",
+    "defaultCook": "Default Cook",
+    "enterDefaultCook": "Enter default cook name (optional)"
   }
 }

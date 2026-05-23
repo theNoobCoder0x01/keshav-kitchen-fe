@@ -45,6 +45,8 @@ export function useTranslations() {
     t(`dashboard.${key}`, values);
   const messages = (key: string, values?: TranslationValues) =>
     t(`messages.${key}`, values);
+  const kitchens = (key: string, values?: TranslationValues) =>
+    t(`kitchens.${key}`, values);
 
   return {
     t, // General translation function
@@ -59,6 +61,7 @@ export function useTranslations() {
     menus, // Menu translations
     auth, // Auth translations
     premises, // Premise translations
+    kitchens, // Kitchen translations
     dashboard, // Dashboard translations
     messages, // Message translations
     intl, // Direct access to intl object for advanced usage

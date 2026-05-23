@@ -48,6 +48,9 @@ export async function GET(request: NextRequest) {
         menuComponent: {
           select: { name: true, label: true, sequenceNumber: true },
         },
+        kitchen: {
+          select: { name: true },
+        },
         ingredients: {
           select: {
             name: true,
@@ -165,6 +168,8 @@ export async function GET(request: NextRequest) {
           ? menu.preparedQuantity * menu.ghanFactor
           : null,
         preparedQuantityUnit: menu.preparedQuantityUnit,
+        kitchenName: menu.kitchen?.name ?? null,
+        cook: menu.cook ?? null,
         ingredientGroups,
       });
     });

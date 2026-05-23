@@ -107,6 +107,12 @@ export async function GET(request: Request) {
             sequenceNumber: true,
           },
         },
+        kitchen: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         user: {
           select: {
             id: true,
@@ -142,11 +148,11 @@ export async function POST(request: Request) {
     const data = await request.json();
 
     // Validate required fields
-    if (!data.mealType || !data.premiseId || !data.userId) {
+    if (!data.mealType || !data.premiseId || !data.userId || !data.kitchenId) {
       return NextResponse.json(
         {
           error:
-            "Missing required fields: mealType, premiseId, userId",
+            "Missing required fields: mealType, premiseId, userId, kitchenId",
         },
         { status: 400 },
       );
@@ -296,6 +302,12 @@ export async function POST(request: Request) {
             orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           },
           premise: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          kitchen: {
             select: {
               id: true,
               name: true,

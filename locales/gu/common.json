@@ -13,7 +13,9 @@
     "menusDesc": "દૈનિક મેન્યુ વ્યવસ્થિત કરો",
     "recipesDesc": "વાનગી વ્યવસ્થાપન",
     "reportsDesc": "અહેવાલો અને વિશ્લેષણ જુઓ",
-    "premisesDesc": "રસોડાના સ્થાનો વ્યવસ્થિત કરો"
+    "premisesDesc": "રસોડાના સ્થાનો વ્યવસ્થિત કરો",
+    "kitchens": "રસોઈઘરો",
+    "kitchensDesc": "રસોઈ સ્ટેશન વ્યવસ્થિત કરો"
   },
   "common": {
     "save": "સાચવો",
@@ -168,7 +170,14 @@
     "servingQuantityRequired": "સેવાની માત્રા જરૂરી છે",
     "servingQuantityPositive": "સેવાની માત્રા સકારાત્મક સંખ્યા હોવી જોઈએ",
     "servingQuantityUnitRequired": "સેવાની માત્રા એકમ જરૂરી છે",
-    "quantityPerPiecePositive": "પ્રતિ પીસે જથ્થો સકારાત્મક સંખ્યા હોવો જોઈએ"
+    "quantityPerPiecePositive": "પ્રતિ પીસે જથ્થો સકારાત્મક સંખ્યા હોવો જોઈએ",
+    "kitchen": "રસોઈઘર",
+    "selectKitchen": "રસોઈઘર પસંદ કરો",
+    "kitchenRequired": "રસોઈઘર જરૂરી છે",
+    "cook": "રસોઇયો",
+    "cookPlaceholder": "રસોઇયાનું નામ (વૈકલ્પિક)",
+    "failedToLoadMenu": "ભોજન વિગત લોડ કરવામાં નિષ્ફળ",
+    "loadingMenu": "ભોજન વિગત લોડ થઈ રહ્યું છે..."
   },
   "reports": {
     "title": "અહેવાલો",
@@ -592,6 +601,27 @@
     "failedToSavePersonType": "વ્યક્તિ પ્રકાર સાચવવામાં નિષ્ફળ",
     "confirmDeletePersonType": "શું તમે ખરેખર આ વ્યક્તિ પ્રકાર કાઢી નાખવા માંગો છો?",
     "personTypeDeleted": "વ્યક્તિ પ્રકાર સફળતાપૂર્વક કાઢી નાખવામાં આવ્યો",
-    "failedToDeletePersonType": "વ્યક્તિ પ્રકાર કાઢી નાખવામાં નિષ્ફળ"
+    "failedToDeletePersonType": "વ્યક્તિ પ્રકાર કાઢી નાખવામાં નિષ્ફળ",
+    "kitchenUpdated": "રસોઈઘર અપડેટ થઈ ગયું",
+    "kitchenAdded": "રસોઈઘર ઉમેરાઈ ગયું",
+    "failedToSaveKitchen": "રસોઈઘર સાચવવામાં નિષ્ફળ",
+    "confirmDeleteKitchen": "શું તમે ખરેખર આ રસોઈઘર કાઢી નાખવા માંગો છો? આ ક્રિયા પૂર્વવત્ કરી શકાશે નહીં.",
+    "kitchenDeleted": "રસોઈઘર કાઢી નાખ્યું",
+    "failedToDeleteKitchen": "રસોઈઘર કાઢી નાખવામાં નિષ્ફળ",
+    "failedToLoadKitchens": "રસોઈઘર લોડ કરવામાં નિષ્ફળ"
+  },
+  "kitchens": {
+    "title": "રસોઈઘરો",
+    "management": "રસોઈઘર વ્યવસ્થાપન",
+    "managementSubtitle": "રસોઈ સ્ટેશન અને તેના ડિફૉલ્ટ રસોઇયા વ્યવસ્થિત કરો",
+    "addKitchen": "રસોઈઘર ઉમેરો",
+    "editKitchen": "રસોઈઘર સંપાદિત કરો",
+    "name": "રસોઈઘરનું નામ",
+    "enterKitchenName": "રસોઈઘરનું નામ દાખલ કરો",
+    "nameRequired": "રસોઈઘરનું નામ જરૂરી છે.",
+    "description": "વર્ણન",
+    "enterDescription": "વર્ણન દાખલ કરો (વૈકલ્પિક)",
+    "defaultCook": "ડિફૉલ્ટ રસોઇયો",
+    "enterDefaultCook": "ડિફૉલ્ટ રસોઇયાનું નામ દાખલ કરો (વૈકલ્પિક)"
   }
 }

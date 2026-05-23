@@ -2,6 +2,7 @@ export * from "./api";
 export * from "./calculations";
 export * from "./calendar";
 export * from "./forms";
+export * from "./kitchens";
 export * from "./premises";
 export * from "./menu-components";
 export * from "./menus";

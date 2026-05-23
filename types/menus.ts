@@ -72,6 +72,9 @@ export interface MenuWithIngredients {
   quantityPerPiece?: number | null;
   ghanFactor: number;
   notes?: string;
+  kitchenId?: string;
+  cook?: string | null;
+  kitchen?: { id: string; name: string } | null;
   premise: {
     id: string;
     name: string;

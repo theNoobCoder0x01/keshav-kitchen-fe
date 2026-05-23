@@ -28,6 +28,8 @@ export async function createMenu(data: {
   mealType: MealType;
   recipeId?: string | null;
   premiseId: string;
+  kitchenId: string;
+  cook?: string | null;
   userId: string;
   preparedQuantity: number;
   preparedQuantityUnit: string;
@@ -57,6 +59,8 @@ export async function updateMenu(
     mealType?: MealType;
     recipeId?: string | null;
     premiseId?: string;
+    kitchenId?: string;
+    cook?: string | null;
     userId?: string;
     preparedQuantity?: number;
     preparedQuantityUnit?: string;

@@ -47,6 +47,16 @@ model Premise {
   mealPersonCounts PremiseMealPersonCount[]
 }
 
+model Kitchen {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  defaultCook String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  menus       Menu[]
+}
+
 model PremisePersonType {
   id             String                 @id @default(cuid())
   name           String
@@ -142,12 +152,16 @@ model Menu {
   ingredientGroups     MenuIngredientGroup[] // Add ingredient groups for menus
   menuComponentId      String?
   menuComponent        MenuComponent?        @relation(fields: [menuComponentId], references: [id])
+  kitchenId            String
+  kitchen              Kitchen               @relation(fields: [kitchenId], references: [id])
+  cook                 String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 
   @@index([recipeId])
   @@index([premiseId])
   @@index([userId])
+  @@index([kitchenId])
 }
 
 model PremiseMealPersonCount {

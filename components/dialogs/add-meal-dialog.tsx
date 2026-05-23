@@ -28,6 +28,7 @@ import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
 import { QuantityWithPieceInput } from "@/components/ui/quantity-with-piece-input";
 import { useTranslations } from "@/hooks/use-translations";
 import api from "@/lib/api/axios";
+import { fetchKitchens } from "@/lib/api/kitchens";
 import { fetchMenuComponents } from "@/lib/api/menu-components";
 import { createMenu, updateMenu } from "@/lib/api/menus";
 import { fetchAllRecipesForDropdown } from "@/lib/api/recipes";
@@ -47,6 +48,7 @@ import { trimIngredients } from "@/lib/utils/form-utils";
 import { getCalculatedQuantities } from "@/lib/utils/meal-calculations";
 import { sumCompatibleQuantities } from "@/lib/utils/unit-conversions";
 import type { IngredientFormValue, MealFormValues } from "@/types/forms";
+import type { Kitchen } from "@/types/kitchens";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import type { MealType } from "@/types/menus";
 import type { RecipeApiItem } from "@/types/recipes";
@@ -100,6 +102,8 @@ interface AddMealDialogProps {
     quantityPerPiece?: number;
     ghanFactor?: number;
     menuComponentId?: string;
+    kitchenId?: string | null;
+    cook?: string | null;
     recipe?: {
       id: string;
       name: string;
@@ -132,6 +136,8 @@ interface MealFormValuesWithGroups extends Omit<MealFormValues, "ingredients"> {
   recipeCategory: string;
   recipeSubcategory: string;
   customName: string;
+  kitchenId: string;
+  cook: string;
 }
 
 export function AddMealDialog({
@@ -158,6 +164,7 @@ export function AddMealDialog({
   const [menuComponents, setMenuComponents] = useState<MenuComponentApiItem[]>(
     [],
   );
+  const [kitchens, setKitchens] = useState<Kitchen[]>([]);
   const [personCounts, setPersonCounts] = useState<Record<string, number>>({});
   const [hasAppliedConsumptionSuggestion, setHasAppliedConsumptionSuggestion] =
     useState(false);
@@ -311,6 +318,8 @@ export function AddMealDialog({
   );
 
   const validationSchema = Yup.object().shape({
+    kitchenId: Yup.string().trim().required(t("meals.kitchenRequired")),
+    cook: Yup.string().trim(),
     recipeId: Yup.string().trim(),
     customName: Yup.string().when("followRecipe", {
       is: false,
@@ -525,6 +534,8 @@ export function AddMealDialog({
           servingQuantityUnit: meal.servingQuantityUnit ?? DEFAULT_UNIT,
           quantityPerPiece: meal.quantityPerPiece,
           menuComponentId: meal.menuComponentId,
+          kitchenId: meal.kitchenId || "",
+          cook: meal.cook || "",
           ingredientGroups,
         };
       }
@@ -541,6 +552,8 @@ export function AddMealDialog({
         preparedQuantity: 0,
         preparedQuantityUnit: DEFAULT_UNIT,
         menuComponentId: meal?.menuComponentId,
+        kitchenId: "",
+        cook: "",
         ingredientGroups: [
           {
             name: "Ungrouped",
@@ -566,14 +579,16 @@ export function AddMealDialog({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [recipesData, menuComponentData] = await Promise.all([
+        const [recipesData, menuComponentData, kitchensData] = await Promise.all([
           fetchAllRecipesForDropdown(),
           premiseId
             ? fetchMenuComponents(premiseId, { mealType })
             : Promise.resolve([] as MenuComponentApiItem[]),
+          fetchKitchens(),
         ]);
         setRecipes(recipesData);
         setMenuComponents(menuComponentData);
+        setKitchens(kitchensData);
       } catch (error: any) {
         // Don't show error for aborted requests
         if (error.name === "AbortError" || error.name === "CanceledError") {
@@ -968,6 +983,8 @@ export function AddMealDialog({
           deletedIngredientGroupIds: deletedGroupIds,
           menuComponentId: values.menuComponentId,
           followRecipe: values.followRecipe,
+          kitchenId: values.kitchenId,
+          cook: values.cook || null,
         };
 
         await updateMenu(menuId, updateData);
@@ -983,6 +1000,8 @@ export function AddMealDialog({
           recipeId: values.recipeId || null,
           customName: values.followRecipe ? null : (values.customName || null),
           premiseId: targetPremiseId,
+          kitchenId: values.kitchenId,
+          cook: values.cook || null,
           userId: session.user.id,
           preparedQuantity: calculatedPreparedQuantity,
           preparedQuantityUnit: calculatedPreparedQuantityUnit,
@@ -1214,6 +1233,64 @@ export function AddMealDialog({
               <div className="overflow-y-auto">
                 <form onSubmit={formikHandleSubmit}>
                   <div className="grid grid-cols-12 gap-4">
+                    {/* Kitchen + Cook row — always visible, comes first */}
+                    <div className="col-span-12 sm:col-span-6 md:col-span-5">
+                      <Label className="text-base font-medium text-foreground mb-2 block">
+                        {t("meals.kitchen")} *
+                      </Label>
+                      <Field name="kitchenId">
+                        {({ field }: { field: any }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) => {
+                              field.onChange({
+                                target: { name: field.name, value },
+                              });
+                              const selected = kitchens.find(
+                                (k) => k.id === value,
+                              );
+                              setFieldValue("cook", selected?.defaultCook || "");
+                            }}
+                          >
+                            <SelectTrigger className="w-full border-border focus:border-primary focus:ring-primary/20">
+                              <SelectValue
+                                placeholder={t("meals.selectKitchen")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {kitchens.map((kitchen) => (
+                                <SelectItem key={kitchen.id} value={kitchen.id}>
+                                  {kitchen.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </Field>
+                      <ErrorMessage
+                        name="kitchenId"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+
+                    <div className="col-span-12 sm:col-span-6 md:col-span-5">
+                      <Label className="text-base font-medium text-foreground mb-2 block">
+                        {t("meals.cook")}
+                      </Label>
+                      <Field
+                        as={Input}
+                        name="cook"
+                        placeholder={t("meals.cookPlaceholder")}
+                        className="border-border focus:border-primary focus:ring-primary/20"
+                      />
+                      <ErrorMessage
+                        name="cook"
+                        component="p"
+                        className="text-destructive text-xs mt-1 flex items-center gap-1"
+                      />
+                    </div>
+
                     {/* Follow Recipe toggle — always visible, comes first */}
                     <div className="col-span-12 sm:col-span-3 md:col-span-2">
                       <Label className="text-base font-medium text-foreground">

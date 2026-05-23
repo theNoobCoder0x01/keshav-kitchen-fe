@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Home,
   Users,
+  UtensilsCrossed,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -116,6 +117,16 @@ export function Sidebar() {
       href: "/premises",
       isActive: pathname.startsWith("/premises"),
       description: navigation("premisesDesc"),
+      badge: null,
+      children: null,
+    },
+    {
+      id: "kitchens",
+      label: navigation("kitchens"),
+      icon: UtensilsCrossed,
+      href: "/kitchens",
+      isActive: pathname.startsWith("/kitchens"),
+      description: navigation("kitchensDesc"),
       badge: null,
       children: null,
     },
