@@ -83,28 +83,91 @@ export default function PrasadReport() {
 
                 {/* Items */}
                 <div className="border border-t-0 border-gray-500">
-                  {mealType.items.map((item: any, idx: number) => (
+                  {(() => {
+                    // Max character count among all component labels in this meal section
+                    // (including "અન્ય") so every row's label column aligns uniformly.
+                    const maxComponentLabelChars = mealType.items.reduce(
+                      (max: number, item: any) =>
+                        Math.max(
+                          max,
+                          String(item.menuComponentLabel + " :-").length,
+                        ),
+                      0,
+                    );
+                    const componentLabelWidth =
+                      maxComponentLabelChars > 0
+                        ? `${maxComponentLabelChars}ch`
+                        : undefined;
+
+                    return mealType.items.map((item: any, idx: number) => {
+                    // Max character count among named groups for this item —
+                    // used to size the group-name column consistently within the item.
+                    const maxGroupNameChars = item.ingredientGroups
+                      .filter(
+                        (g: any) =>
+                          g.name !== "Ungrouped" && g.ingredients.length > 0,
+                      )
+                      .reduce(
+                        (max: number, g: any) =>
+                          Math.max(max, String(g.name).length),
+                        0,
+                      );
+                    const groupLabelWidth =
+                      maxGroupNameChars > 0
+                        ? `${maxGroupNameChars}ch`
+                        : undefined;
+
+                    return (
                     <div
                       key={item.menuId}
                       className={`flex items-start px-4 py-1.5 text-sm break-inside-avoid ${
-                        idx < mealType.items.length - 1
-                          ? "border-b border-dashed border-gray-400"
-                          : ""
+                        idx % 2 === 0 ? "bg-white" : "bg-gray-200"
                       }`}
                     >
                       {/* Left — component label */}
-                      <div className="w-36 shrink-0 font-bold text-[#8B0000] pr-3 leading-snug">
+                      <div
+                        className="shrink-0 font-bold text-[#8B0000] pr-3 leading-snug"
+                        style={{
+                          width: componentLabelWidth,
+                          minWidth: componentLabelWidth,
+                        }}
+                      >
                         {item.menuComponentLabel} :-
                       </div>
 
-                      {/* Right — recipe name + ingredient groups */}
+                      {/* Right — recipe name + meta + ingredient groups */}
                       <div className="flex-1 leading-snug">
-                        {/* Recipe / custom name */}
-                        {item.recipeName && (
-                          <div className="font-semibold mb-1">
-                            {item.recipeName}
-                          </div>
-                        )}
+                        {/* Recipe / custom name + ghan + prepared qty */}
+                        <div className="flex items-baseline justify-between gap-4 mb-1">
+                          {item.recipeName ? (
+                            <span className="font-semibold text-[#8B0000]">
+                              {item.recipeName}
+                            </span>
+                          ) : (
+                            <span />
+                          )}
+                          <span className="flex items-center gap-3 text-xs text-gray-600 whitespace-nowrap shrink-0">
+                            {/* Ghan — only when following a recipe */}
+                            {item.followRecipe && (
+                              <span>
+                                <span className="font-medium text-gray-500">Ghan:</span>{" "}
+                                <span className="font-bold text-black">
+                                  {formatDecimal(item.ghanFactor)}
+                                </span>
+                              </span>
+                            )}
+                            {/* Prepared quantity — always shown when available */}
+                            {item.preparedQuantity != null && (
+                              <span>
+                                <span className="font-medium text-gray-500">Qty:</span>{" "}
+                                <span className="font-bold text-black">
+                                  {formatDecimal(item.preparedQuantity)}{" "}
+                                  {item.preparedQuantityUnit}
+                                </span>
+                              </span>
+                            )}
+                          </span>
+                        </div>
 
                         {/* Ingredient groups */}
                         <div className="flex flex-col gap-2">
@@ -119,25 +182,44 @@ export default function PrasadReport() {
                               >
                                 {/* Group name on the left — only for named groups */}
                                 {!isUngrouped && (
-                                  <div className="w-24 shrink-0 font-semibold text-gray-700 text-xs leading-tight pt-0.5">
+                                  <div
+                                    className="shrink-0 font-semibold text-sm leading-tight pt-0.5"
+                                    style={{
+                                      width: groupLabelWidth,
+                                      minWidth: groupLabelWidth,
+                                    }}
+                                  >
                                     {group.name}:
                                   </div>
                                 )}
 
                                 {/* Ingredient grid */}
-                                <div className="flex-1 grid grid-cols-3 gap-x-12 gap-y-2 text-sm">
-                                  {group.ingredients.map((ing: any) => (
-                                    <div
-                                      key={`${ing.name}-${ing.unit}`}
-                                      className="flex items-center justify-between pb-0.5 border-b border-dashed border-gray-400"
-                                    >
-                                      <span>{ing.name}</span>
-                                      <span className="font-medium ml-3 whitespace-nowrap">
-                                        {formatDecimal(ing.quantity)}{" "}
-                                        {ing.unit}
-                                      </span>
-                                    </div>
-                                  ))}
+                                <div className="flex-1 grid grid-cols-3 gap-x-12 gap-y-2 text-xs">
+                                  {group.ingredients.map((ing: any) => {
+                                    const showGhan =
+                                      item.followRecipe &&
+                                      item.ghanFactor !== 1;
+                                    const actualQty =
+                                      showGhan
+                                        ? ing.quantity * item.ghanFactor
+                                        : ing.quantity;
+                                    return (
+                                      <div
+                                        key={`${ing.name}-${ing.unit}`}
+                                        className="flex items-center justify-between pb-0.5 border-b border-dashed border-gray-400"
+                                      >
+                                        <span>{ing.name}</span>
+                                        <span className="font-medium ml-3 whitespace-nowrap">
+                                          {formatDecimal(actualQty)} {ing.unit}
+                                          {showGhan && (
+                                            <span className="text-gray-600 font-normal ml-1">
+                                              ({formatDecimal(ing.quantity)})
+                                            </span>
+                                          )}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             );
@@ -152,7 +234,7 @@ export default function PrasadReport() {
                         )}
                       </div>
                     </div>
-                  ))}
+                  ); }); })()}
                 </div>
               </div>
             ))}

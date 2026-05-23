@@ -157,6 +157,14 @@ export async function GET(request: NextRequest) {
         menuComponentSequenceNumber:
           menu.menuComponent?.sequenceNumber ?? 9999,
         recipeName,
+        followRecipe: menu.followRecipe,
+        ghanFactor: menu.ghanFactor,
+        // preparedQuantity is stored per-ghan when followRecipe, or as total when not.
+        // Multiply by ghanFactor to get the actual total in both cases (ghan=1 when no recipe).
+        preparedQuantity: menu.preparedQuantity != null
+          ? menu.preparedQuantity * menu.ghanFactor
+          : null,
+        preparedQuantityUnit: menu.preparedQuantityUnit,
         ingredientGroups,
       });
     });
