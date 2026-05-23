@@ -1,15 +1,15 @@
 "use client";
 
-import type { Kitchen, KitchenPersonType } from "@/types/kitchens";
+import type { Premise, PremisePersonType } from "@/types/premises";
 
 import {
-  AddEditKitchenPersonTypeDialog,
-  type KitchenPersonTypeForm,
-} from "@/components/dialogs/add-edit-kitchen-person-type-dialog";
+  AddEditPremisePersonTypeDialog,
+  type PremisePersonTypeForm,
+} from "@/components/dialogs/add-edit-premise-person-type-dialog";
 import { AddEditMenuComponentDialog } from "@/components/dialogs/add-edit-menu-component-dialog";
 import type { MenuComponentForm } from "@/components/dialogs/add-edit-menu-component-dialog";
-import { KitchenPersonTypesTable } from "@/components/kitchens/kitchen-person-types-table";
-import { KitchensTableSkeleton } from "@/components/kitchens/kitchens-table";
+import { PremisePersonTypesTable } from "@/components/premises/premise-person-types-table";
+import { PremisesTableSkeleton } from "@/components/premises/premises-table";
 import { MenuComponentsTable } from "@/components/menu/menu-components-table";
 import type { MenuComponent } from "@/components/menu/menu-components-table";
 import { Button } from "@/components/ui/button";
@@ -17,23 +17,23 @@ import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
 import api from "@/lib/api/axios";
 import {
-  createKitchenPersonType,
-  deleteKitchenPersonType,
-  fetchKitchenPersonTypes,
-  updateKitchenPersonType,
-} from "@/lib/api/kitchen-person-types";
+  createPremisePersonType,
+  deletePremisePersonType,
+  fetchPremisePersonTypes,
+  updatePremisePersonType,
+} from "@/lib/api/premise-person-types";
 import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function KitchenDetailsPage() {
+export default function PremiseDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslations();
-  const [kitchen, setKitchen] = useState<Kitchen | null>(null);
+  const [premise, setPremise] = useState<Premise | null>(null);
   const [menuComponents, setMenuComponents] = useState<MenuComponent[]>([]);
-  const [personTypes, setPersonTypes] = useState<KitchenPersonType[]>([]);
+  const [personTypes, setPersonTypes] = useState<PremisePersonType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuComponentDialogOpen, setMenuComponentDialogOpen] = useState(false);
@@ -41,7 +41,7 @@ export default function KitchenDetailsPage() {
   const [editingMenuComponent, setEditingMenuComponent] =
     useState<MenuComponentForm | null>(null);
   const [editingPersonType, setEditingPersonType] =
-    useState<KitchenPersonTypeForm | null>(null);
+    useState<PremisePersonTypeForm | null>(null);
   const [deletingMenuComponentId, setDeletingMenuComponentId] = useState<
     string | null
   >(null);
@@ -49,22 +49,22 @@ export default function KitchenDetailsPage() {
     string | null
   >(null);
 
-  const loadKitchenDetails = async () => {
+  const loadPremiseDetails = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [kitchenRes, menuRes, personTypeData] = await Promise.all([
-        api.get(`/kitchens/${id}/`),
-        api.get(`/kitchens/${id}/menu-components/`),
-        fetchKitchenPersonTypes(id),
+      const [premiseRes, menuRes, personTypeData] = await Promise.all([
+        api.get(`/premises/${id}/`),
+        api.get(`/premises/${id}/menu-components/`),
+        fetchPremisePersonTypes(id),
       ]);
 
-      const kitchenData = kitchenRes.data as Kitchen;
-      setKitchen(kitchenData);
+      const premiseData = premiseRes.data as Premise;
+      setPremise(premiseData);
       setMenuComponents(menuRes.data as MenuComponent[]);
       setPersonTypes(personTypeData);
     } catch {
-      setError(t("messages.failedToLoadKitchenDetails"));
+      setError(t("messages.failedToLoadPremiseDetails"));
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ export default function KitchenDetailsPage() {
 
   useEffect(() => {
     if (id) {
-      void loadKitchenDetails();
+      void loadPremiseDetails();
     }
   }, [id]);
 
@@ -80,18 +80,18 @@ export default function KitchenDetailsPage() {
     try {
       if (menuComponent.id) {
         await api.put(
-          `/kitchens/${id}/menu-components/${menuComponent.id}/`,
+          `/premises/${id}/menu-components/${menuComponent.id}/`,
           menuComponent,
         );
         toast.success(t("messages.menuComponentUpdated"));
       } else {
         // Add
-        await api.post(`/kitchens/${id}/menu-components/`, menuComponent);
+        await api.post(`/premises/${id}/menu-components/`, menuComponent);
         toast.success(t("messages.menuComponentAdded"));
       }
       setMenuComponentDialogOpen(false);
       setEditingMenuComponent(null);
-      await loadKitchenDetails();
+      await loadPremiseDetails();
       return true;
     } catch {
       toast.error(t("messages.failedToSaveMenuComponent"));
@@ -108,9 +108,9 @@ export default function KitchenDetailsPage() {
     if (window.confirm(t("messages.confirmDeleteMenuComponent"))) {
       setDeletingMenuComponentId(idToDelete);
       try {
-        await api.delete(`/kitchens/${id}/menu-components/${idToDelete}/`);
+        await api.delete(`/premises/${id}/menu-components/${idToDelete}/`);
         toast.success(t("messages.menuComponentDeleted"));
-        await loadKitchenDetails();
+        await loadPremiseDetails();
       } catch {
         toast.error(t("messages.failedToDeleteMenuComponent"));
       } finally {
@@ -119,7 +119,7 @@ export default function KitchenDetailsPage() {
     }
   };
 
-  const handleSavePersonType = async (personType: KitchenPersonTypeForm) => {
+  const handleSavePersonType = async (personType: PremisePersonTypeForm) => {
     try {
       const payload = {
         name: personType.name,
@@ -128,16 +128,16 @@ export default function KitchenDetailsPage() {
       };
 
       if (personType.id) {
-        await updateKitchenPersonType(id, personType.id, payload);
+        await updatePremisePersonType(id, personType.id, payload);
         toast.success(t("messages.personTypeUpdated"));
       } else {
-        await createKitchenPersonType(id, payload);
+        await createPremisePersonType(id, payload);
         toast.success(t("messages.personTypeAdded"));
       }
 
       setPersonTypeDialogOpen(false);
       setEditingPersonType(null);
-      await loadKitchenDetails();
+      await loadPremiseDetails();
       return true;
     } catch {
       toast.error(t("messages.failedToSavePersonType"));
@@ -145,7 +145,7 @@ export default function KitchenDetailsPage() {
     }
   };
 
-  const handleEditPersonType = (personType: KitchenPersonType) => {
+  const handleEditPersonType = (personType: PremisePersonType) => {
     setEditingPersonType({
       id: personType.id,
       name: personType.name,
@@ -159,9 +159,9 @@ export default function KitchenDetailsPage() {
     if (window.confirm(t("messages.confirmDeletePersonType"))) {
       setDeletingPersonTypeId(personTypeId);
       try {
-        await deleteKitchenPersonType(id, personTypeId);
+        await deletePremisePersonType(id, personTypeId);
         toast.success(t("messages.personTypeDeleted"));
-        await loadKitchenDetails();
+        await loadPremiseDetails();
       } catch {
         toast.error(t("messages.failedToDeletePersonType"));
       } finally {
@@ -170,26 +170,26 @@ export default function KitchenDetailsPage() {
     }
   };
 
-  if (loading) return <KitchensTableSkeleton />;
+  if (loading) return <PremisesTableSkeleton />;
   if (error) return <div className="text-destructive">{error}</div>;
 
   return (
     <div className="w-full flex flex-col gap-2 md:gap-4">
       <div>
-        <Link href="/kitchens">
+        <Link href="/premises">
           <Button
             variant="ghost"
             size="sm"
             className="gap-1 pl-3 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
-            {t("kitchens.backToKitchens")}
+            {t("premises.backToPremises")}
           </Button>
         </Link>
       </div>
       <PageHeader
-        title={kitchen?.name || t("kitchens.details")}
-        subtitle={kitchen?.location}
+        title={premise?.name || t("premises.details")}
+        subtitle={premise?.location}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button
@@ -200,7 +200,7 @@ export default function KitchenDetailsPage() {
               }}
             >
               <Plus className="mr-1 h-4 w-4" />
-              {t("kitchens.addPersonType")}
+              {t("premises.addPersonType")}
             </Button>
             <Button
               onClick={() => {
@@ -209,7 +209,7 @@ export default function KitchenDetailsPage() {
               }}
             >
               <Plus className="mr-1 h-4 w-4" />
-              {t("kitchens.addMenuComponent")}
+              {t("premises.addMenuComponent")}
             </Button>
           </div>
         }
@@ -224,7 +224,7 @@ export default function KitchenDetailsPage() {
         personTypes={personTypes}
         onSave={handleSaveMenuComponent}
       />
-      <AddEditKitchenPersonTypeDialog
+      <AddEditPremisePersonTypeDialog
         open={personTypeDialogOpen}
         onOpenChange={(open) => {
           setPersonTypeDialogOpen(open);
@@ -235,9 +235,9 @@ export default function KitchenDetailsPage() {
       />
       <div className="mt-4">
         <h2 className="mb-2 text-lg font-semibold">
-          {t("kitchens.personTypes")}
+          {t("premises.personTypes")}
         </h2>
-        <KitchenPersonTypesTable
+        <PremisePersonTypesTable
           personTypes={personTypes}
           onEdit={handleEditPersonType}
           onDelete={handleDeletePersonType}
@@ -246,7 +246,7 @@ export default function KitchenDetailsPage() {
       </div>
       <div className="mt-4">
         <h2 className="mb-2 text-lg font-semibold">
-          {t("kitchens.menuComponents")}
+          {t("premises.menuComponents")}
         </h2>
         <MenuComponentsTable
           menuComponents={menuComponents}

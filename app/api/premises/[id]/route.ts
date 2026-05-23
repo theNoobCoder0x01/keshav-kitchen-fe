@@ -17,11 +17,11 @@ export async function GET(
 
     if (!id)
       return NextResponse.json(
-        { error: "Kitchen id required." },
+        { error: "Premise id required." },
         { status: 400 },
       );
 
-    const kitchen = await prisma.kitchen.findUnique({
+    const premise = await prisma.premise.findUnique({
       where: { id },
       include: {
         _count: {
@@ -33,16 +33,16 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(kitchen);
+    return NextResponse.json(premise);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch kitchen." },
+      { error: "Failed to fetch premise." },
       { status: 500 },
     );
   }
 }
 
-// PUT update kitchen by id (via ?id=)
+// PUT update premise by id (via ?id=)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -58,27 +58,27 @@ export async function PUT(
 
     if (!id)
       return NextResponse.json(
-        { error: "Kitchen id required." },
+        { error: "Premise id required." },
         { status: 400 },
       );
 
     const data = await request.json();
 
-    const kitchen = await prisma.kitchen.update({
+    const premise = await prisma.premise.update({
       where: { id },
       data,
     });
 
-    return NextResponse.json(kitchen);
+    return NextResponse.json(premise);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to update kitchen." },
+      { error: "Failed to update premise." },
       { status: 500 },
     );
   }
 }
 
-// DELETE kitchen by id (via ?id=)
+// DELETE premise by id (via ?id=)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -94,16 +94,16 @@ export async function DELETE(
 
     if (!id)
       return NextResponse.json(
-        { error: "Kitchen id required." },
+        { error: "Premise id required." },
         { status: 400 },
       );
 
-    await prisma.kitchen.delete({ where: { id } });
+    await prisma.premise.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Kitchen deleted." });
+    return NextResponse.json({ message: "Premise deleted." });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to delete kitchen." },
+      { error: "Failed to delete premise." },
       { status: 400 },
     );
   }

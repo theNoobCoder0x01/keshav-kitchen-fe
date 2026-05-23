@@ -1,5 +1,5 @@
 import type { MealType } from "./menus";
-import type { KitchenPersonType } from "./kitchens";
+import type { PremisePersonType } from "./premises";
 import type { UnitValue } from "./units";
 
 export interface MenuComponentAverageInput {
@@ -14,7 +14,7 @@ export interface MenuComponentAverageInput {
 export interface MenuComponentAverageApiItem extends MenuComponentAverageInput {
   id: string;
   menuComponentId: string;
-  personType: Pick<KitchenPersonType, "id" | "name" | "description">;
+  personType: Pick<PremisePersonType, "id" | "name" | "description">;
   weightPerPiece: number | null;
   weightPerPieceUnit: "g" | "kg" | null;
   createdAt: string | Date;

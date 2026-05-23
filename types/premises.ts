@@ -1,20 +1,20 @@
-export interface KitchenPersonType {
+export interface PremisePersonType {
   id: string;
   name: string;
   description?: string | null;
   sequenceNumber: number;
-  kitchenId: string;
+  premiseId: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export interface Kitchen {
+export interface Premise {
   id: string;
   name: string;
   location?: string | null;
   description?: string | null;
   sequenceNumber?: number;
-  personTypes?: KitchenPersonType[];
+  personTypes?: PremisePersonType[];
   createdAt?: Date;
   updatedAt?: Date;
 }

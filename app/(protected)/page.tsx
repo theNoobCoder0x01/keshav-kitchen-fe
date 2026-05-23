@@ -48,7 +48,7 @@ interface RecentActivity {
 interface QuickActionsData {
   menusCount: number;
   recipesCount: number;
-  kitchensCount: number;
+  premisesCount: number;
   ingredientsCount: number;
 }
 
@@ -160,13 +160,13 @@ export default function HomePage() {
       count: quickActionsData?.recipesCount || 0,
     },
     {
-      title: t("navigation.kitchens"),
-      description: t("dashboard.kitchensDesc"),
+      title: t("navigation.premises"),
+      description: t("dashboard.premisesDesc"),
       icon: Users,
-      href: "/kitchens",
+      href: "/premises",
       color: "bg-linear-to-br from-green-500 to-emerald-500",
       iconColor: "text-white",
-      count: quickActionsData?.kitchensCount || 0,
+      count: quickActionsData?.premisesCount || 0,
     },
   ];
 

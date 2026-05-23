@@ -14,36 +14,36 @@ import { ChevronDown, ChevronUp, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import type { Kitchen } from "@/types";
+import type { Premise } from "@/types";
 
-interface KitchensTableProps {
-  kitchens: Kitchen[];
-  onEdit: (kitchen: Kitchen) => void;
+interface PremisesTableProps {
+  premises: Premise[];
+  onEdit: (premise: Premise) => void;
   onDelete: (id: string) => void;
   deletingId: string | null;
   itemsPerPageOptions?: number[];
 }
 
-export function KitchensTable({
-  kitchens,
+export function PremisesTable({
+  premises,
   onEdit,
   onDelete,
   deletingId,
   itemsPerPageOptions = [10, 20],
-}: KitchensTableProps) {
+}: PremisesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(
     itemsPerPageOptions[0] || 10,
   );
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof Kitchen;
+    key: keyof Premise;
     direction: "ascending" | "descending" | null;
   }>({
     key: "name",
     direction: "ascending",
   });
 
-  const handleSort = (key: keyof Kitchen) => {
+  const handleSort = (key: keyof Premise) => {
     setSortConfig((prevConfig) => ({
       key,
       direction:
@@ -53,7 +53,7 @@ export function KitchensTable({
     }));
   };
 
-  const getSortIcon = (key: keyof Kitchen) => {
+  const getSortIcon = (key: keyof Premise) => {
     if (sortConfig.key !== key || sortConfig.direction === null) {
       return <ChevronDown className="w-4 h-4 opacity-50" />;
     }
@@ -64,7 +64,7 @@ export function KitchensTable({
     );
   };
 
-  const sortedKitchens = [...kitchens].sort((a, b) => {
+  const sortedPremises = [...premises].sort((a, b) => {
     if (sortConfig.direction === null) return 0;
     const multiplier = sortConfig.direction === "ascending" ? 1 : -1;
     const av = (a[sortConfig.key] ?? "").toString();
@@ -72,7 +72,7 @@ export function KitchensTable({
     return av > bv ? multiplier : av < bv ? -multiplier : 0;
   });
 
-  const paginatedKitchens = sortedKitchens.slice(
+  const paginatedPremises = sortedPremises.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
@@ -115,22 +115,22 @@ export function KitchensTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedKitchens.length > 0 ? (
-            paginatedKitchens.map((kitchen: Kitchen) => (
-              <TableRow key={kitchen.id}>
+          {paginatedPremises.length > 0 ? (
+            paginatedPremises.map((premise: Premise) => (
+              <TableRow key={premise.id}>
                 <TableCell className="py-4 px-6 text-foreground">
-                  {kitchen.sequenceNumber ?? 0}
+                  {premise.sequenceNumber ?? 0}
                 </TableCell>
                 <TableCell className="py-4 px-6 font-medium text-foreground">
                   <Link
-                    href={`/kitchens/${kitchen.id}`}
+                    href={`/premises/${premise.id}`}
                     className="text-primary underline hover:text-primary/80"
                   >
-                    {kitchen.name}
+                    {premise.name}
                   </Link>
                 </TableCell>
                 <TableCell className="py-4 px-6 text-foreground">
-                  {kitchen.location || "-"}
+                  {premise.location || "-"}
                 </TableCell>
                 <TableCell className="py-4 px-6">
                   <div className="flex items-center space-x-2">
@@ -138,9 +138,9 @@ export function KitchensTable({
                       size="sm"
                       variant="ghost"
                       className="w-8 h-8 p-0 text-foreground hover:bg-muted"
-                      onClick={() => onEdit(kitchen)}
-                      aria-label="Edit kitchen"
-                      title="Edit kitchen"
+                      onClick={() => onEdit(premise)}
+                      aria-label="Edit premise"
+                      title="Edit premise"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -149,10 +149,10 @@ export function KitchensTable({
                       size="sm"
                       variant="ghost"
                       className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10"
-                      onClick={() => onDelete(kitchen.id)}
-                      disabled={deletingId === kitchen.id}
-                      aria-label="Delete kitchen"
-                      title="Delete kitchen"
+                      onClick={() => onDelete(premise.id)}
+                      disabled={deletingId === premise.id}
+                      aria-label="Delete premise"
+                      title="Delete premise"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -163,7 +163,7 @@ export function KitchensTable({
           ) : (
             <TableRow>
               <TableCell colSpan={3} className="h-24 text-center">
-                No kitchens found.
+                No premises found.
               </TableCell>
             </TableRow>
           )}
@@ -171,7 +171,7 @@ export function KitchensTable({
       </Table>
       <TablePagination
         currentPage={currentPage}
-        totalItems={sortedKitchens.length}
+        totalItems={sortedPremises.length}
         itemsPerPage={itemsPerPage}
         onPageChange={setCurrentPage}
         onItemsPerPageChange={setItemsPerPage}
@@ -181,8 +181,8 @@ export function KitchensTable({
   );
 }
 
-// Skeleton loader for KitchensTable
-export function KitchensTableSkeleton({
+// Skeleton loader for PremisesTable
+export function PremisesTableSkeleton({
   rowCount = 10,
 }: {
   rowCount?: number;

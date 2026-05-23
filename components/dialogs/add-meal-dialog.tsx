@@ -86,7 +86,7 @@ interface AddMealDialogProps {
   onOpenChange: (open: boolean) => void;
   mealType: MealType;
   selectedDate: Date;
-  kitchenId?: string;
+  premiseId?: string;
   initialPersonCounts?: Record<string, number>;
   mode?: "create" | "update";
   menuId?: string;
@@ -139,7 +139,7 @@ export function AddMealDialog({
   onOpenChange,
   mealType,
   selectedDate,
-  kitchenId,
+  premiseId,
   initialPersonCounts = {},
   mode = "create",
   menuId,
@@ -568,8 +568,8 @@ export function AddMealDialog({
       try {
         const [recipesData, menuComponentData] = await Promise.all([
           fetchAllRecipesForDropdown(),
-          kitchenId
-            ? fetchMenuComponents(kitchenId, { mealType })
+          premiseId
+            ? fetchMenuComponents(premiseId, { mealType })
             : Promise.resolve([] as MenuComponentApiItem[]),
         ]);
         setRecipes(recipesData);
@@ -588,7 +588,7 @@ export function AddMealDialog({
     if (open) {
       loadData();
     }
-  }, [open, kitchenId, mealType]);
+  }, [open, premiseId, mealType]);
 
   const selectedMenuComponent = useMemo(() => {
     const selectedMenuComponentId =
@@ -829,12 +829,12 @@ export function AddMealDialog({
     try {
       setIsFormSubmitting(true);
 
-      // Use the passed kitchenId or fall back to session kitchenId
-      const targetKitchenId = kitchenId || session?.user?.kitchenId;
+      // Use the passed premiseId or fall back to session premiseId
+      const targetPremiseId = premiseId || session?.user?.premiseId;
 
       // Validate required fields
-      if (!targetKitchenId) {
-        throw new Error("Kitchen information not found. Please try again.");
+      if (!targetPremiseId) {
+        throw new Error("Premise information not found. Please try again.");
       }
 
       if (!session?.user?.id) {
@@ -982,7 +982,7 @@ export function AddMealDialog({
           mealType: mealType,
           recipeId: values.recipeId || null,
           customName: values.followRecipe ? null : (values.customName || null),
-          kitchenId: targetKitchenId,
+          premiseId: targetPremiseId,
           userId: session.user.id,
           preparedQuantity: calculatedPreparedQuantity,
           preparedQuantityUnit: calculatedPreparedQuantityUnit,

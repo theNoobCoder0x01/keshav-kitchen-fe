@@ -309,7 +309,7 @@ export const RecipePdfTemplate = forwardRef<
       {/* Footer */}
       <div className="pdf-footer">
         <p>
-          <strong>Keshav Kitchen Management System</strong>
+          <strong>Keshav Premise Management System</strong>
         </p>
         <p>
           Recipe printed on {new Date().toLocaleDateString()} at{" "}

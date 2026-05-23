@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        kitchen: {
+        premise: {
           select: {
             name: true,
           },
@@ -64,12 +64,12 @@ export async function GET(request: NextRequest) {
       },
       orderBy: [
         {
-          kitchen: {
+          premise: {
             sequenceNumber: "asc",
           },
         },
         {
-          kitchen: {
+          premise: {
             name: "asc",
           },
         },
@@ -85,8 +85,8 @@ export async function GET(request: NextRequest) {
     });
 
     const data = menus.map((menu: any) => ({
-      kitchenId: menu.kitchenId,
-      kitchenName: menu.kitchen.name,
+      premiseId: menu.premiseId,
+      premiseName: menu.premise.name,
       mealType: menu.mealType,
       recipeId: menu.recipeId,
       recipeName:

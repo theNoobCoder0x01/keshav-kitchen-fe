@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { fetchMenuComponents } from "@/lib/api/menu-components";
 import { cn } from "@/lib/utils";
-import type { KitchenPersonType } from "@/types/kitchens";
+import type { PremisePersonType } from "@/types/premises";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import { MenuIngredient, MenuIngredientGroup } from "@/types/menus";
 import { Edit, Plus, SlidersHorizontal, Trash2, Users } from "lucide-react";
@@ -26,7 +26,7 @@ interface MenuItem {
 
 interface MenuCardProps {
   id: string;
-  kitchenId: string;
+  premiseId: string;
   title: string;
   items: MenuItem[];
   onAdd: (menuComponentId?: string) => void;
@@ -34,7 +34,7 @@ interface MenuCardProps {
   onDelete?: (itemId: string) => void;
   showActions?: boolean;
   className?: string;
-  personTypes?: KitchenPersonType[];
+  personTypes?: PremisePersonType[];
   personCounts?: Record<string, number>;
   onPersonCountChange?: (personTypeId: string, count: number) => void;
   onAddPersonType?: () => void;
@@ -43,7 +43,7 @@ interface MenuCardProps {
 }
 
 export function MenuCard({
-  kitchenId,
+  premiseId,
   title,
   items,
   onAdd,
@@ -65,7 +65,7 @@ export function MenuCard({
 
   const loadMenuComponents = async () => {
     try {
-      let menuComponents = await fetchMenuComponents(kitchenId, {
+      let menuComponents = await fetchMenuComponents(premiseId, {
         mealType: title.toUpperCase(),
       });
 
@@ -77,7 +77,7 @@ export function MenuCard({
 
   useEffect(() => {
     loadMenuComponents();
-  }, [title, kitchenId, menuComponentsRefreshKey]);
+  }, [title, premiseId, menuComponentsRefreshKey]);
 
   // Create an array containing either a menuComponent or a menu item, connecting them by id
   const menuComponentWithMenuItemList = useMemo(() => {

@@ -70,7 +70,7 @@ async function main() {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
-  // Create users with proper kitchen references
+  // Create users with proper premise references
   console.log("Creating users...");
   const hashedPassword = await hashPasswordForSeed("admin123");
 

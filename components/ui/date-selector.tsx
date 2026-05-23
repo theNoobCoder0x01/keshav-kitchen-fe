@@ -20,7 +20,7 @@ interface DateSelectorProps {
   onDateChange?: (date: Date) => void; // Returns UTC Date for storage
   subtitle?: string;
   className?: string;
-  kitchenId?: string;
+  premiseId?: string;
   timezone?: string; // IANA timezone for display (defaults to user's local)
 }
 
@@ -29,7 +29,7 @@ export function DateSelector({
   onDateChange,
   subtitle,
   className,
-  kitchenId,
+  premiseId,
   timezone,
 }: DateSelectorProps) {
   const userTimezone = timezone || getLocalTimezone();

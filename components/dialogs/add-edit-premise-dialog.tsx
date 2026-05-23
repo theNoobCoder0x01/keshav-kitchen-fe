@@ -10,16 +10,16 @@ import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Building2 } from "lucide-react";
 import * as Yup from "yup";
 
-interface AddEditKitchenDialogProps {
+interface AddEditPremiseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialKitchen?: {
+  initialPremise?: {
     id?: string;
     name: string;
     location: string;
     sequenceNumber?: number;
   } | null;
-  onSave: (kitchen: {
+  onSave: (premise: {
     name: string;
     location: string;
     sequenceNumber: number;
@@ -27,24 +27,24 @@ interface AddEditKitchenDialogProps {
   }) => void;
 }
 
-export function AddEditKitchenDialog({
+export function AddEditPremiseDialog({
   open,
   onOpenChange,
-  initialKitchen = null,
+  initialPremise = null,
   onSave,
-}: AddEditKitchenDialogProps) {
+}: AddEditPremiseDialogProps) {
   const { t } = useTranslations();
 
   const validationSchema = Yup.object({
-    name: Yup.string().trim().required(t("kitchens.nameRequired")),
-    location: Yup.string().trim().required(t("kitchens.locationRequired")),
-    sequenceNumber: Yup.number().required(t("kitchens.sequenceNumberRequired")),
+    name: Yup.string().trim().required(t("premises.nameRequired")),
+    location: Yup.string().trim().required(t("premises.locationRequired")),
+    sequenceNumber: Yup.number().required(t("premises.sequenceNumberRequired")),
   });
 
   const initialValues = {
-    name: initialKitchen?.name || "",
-    location: initialKitchen?.location || "",
-    sequenceNumber: initialKitchen?.sequenceNumber ?? 0,
+    name: initialPremise?.name || "",
+    location: initialPremise?.location || "",
+    sequenceNumber: initialPremise?.sequenceNumber ?? 0,
   };
 
   const handleSubmit = (
@@ -58,7 +58,7 @@ export function AddEditKitchenDialog({
       name: trimmedValues.name,
       location: trimmedValues.location,
       sequenceNumber: Number(values.sequenceNumber),
-      id: initialKitchen?.id,
+      id: initialPremise?.id,
     });
     setSubmitting(false);
     onOpenChange(false);
@@ -69,12 +69,12 @@ export function AddEditKitchenDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={
-        initialKitchen ? t("kitchens.editKitchen") : t("kitchens.addKitchen")
+        initialPremise ? t("premises.editPremise") : t("premises.addPremise")
       }
       description={
-        initialKitchen
-          ? t("kitchens.updateKitchenDetails")
-          : t("kitchens.createNewKitchen")
+        initialPremise
+          ? t("premises.updatePremiseDetails")
+          : t("premises.createNewPremise")
       }
       icon={<Building2 className="w-5 h-5 text-primary-foreground" />}
       size="md"
@@ -90,12 +90,12 @@ export function AddEditKitchenDialog({
             <div className="space-y-4">
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  {t("kitchens.kitchenName")} *
+                  {t("premises.premiseName")} *
                 </Label>
                 <Field
                   as={Input}
                   name="name"
-                  placeholder={t("kitchens.enterKitchenName")}
+                  placeholder={t("premises.enterPremiseName")}
                   className="border-border focus:border-primary focus:ring-primary/20"
                 />
                 <ErrorMessage
@@ -106,12 +106,12 @@ export function AddEditKitchenDialog({
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  {t("kitchens.location")} *
+                  {t("premises.location")} *
                 </Label>
                 <Field
                   as={Input}
                   name="location"
-                  placeholder={t("kitchens.enterLocation")}
+                  placeholder={t("premises.enterLocation")}
                   className="border-border focus:border-primary focus:ring-primary/20"
                 />
                 <ErrorMessage
@@ -122,13 +122,13 @@ export function AddEditKitchenDialog({
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  {t("kitchens.sequenceNumber")} *
+                  {t("premises.sequenceNumber")} *
                 </Label>
                 <Field
                   as={Input}
                   type="number"
                   name="sequenceNumber"
-                  placeholder={t("kitchens.enterSequenceNumber")}
+                  placeholder={t("premises.enterSequenceNumber")}
                   className="border-border focus:border-primary focus:ring-primary/20"
                 />
                 <ErrorMessage
@@ -158,10 +158,10 @@ export function AddEditKitchenDialog({
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                     {t("common.saving")}
                   </>
-                ) : initialKitchen ? (
+                ) : initialPremise ? (
                   t("common.saveChanges")
                 ) : (
-                  t("kitchens.addKitchen")
+                  t("premises.addPremise")
                 )}
               </Button>
             </div>

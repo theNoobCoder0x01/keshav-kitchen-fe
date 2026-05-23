@@ -1,87 +1,87 @@
 "use client";
 
-import { AddEditKitchenDialog } from "@/components/dialogs/add-edit-kitchen-dialog";
+import { AddEditPremiseDialog } from "@/components/dialogs/add-edit-premise-dialog";
 import {
-  KitchensTable,
-  KitchensTableSkeleton,
-} from "@/components/kitchens/kitchens-table";
+  PremisesTable,
+  PremisesTableSkeleton,
+} from "@/components/premises/premises-table";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
 import {
-  createKitchen,
-  deleteKitchen,
-  fetchKitchens,
-  updateKitchen,
-} from "@/lib/api/kitchens";
+  createPremise,
+  deletePremise,
+  fetchPremises,
+  updatePremise,
+} from "@/lib/api/premises";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function KitchensPage() {
+export default function PremisesPage() {
   const { t } = useTranslations();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingKitchen, setEditingKitchen] = useState<any | null>(null);
-  const [kitchens, setKitchens] = useState<any[]>([]);
+  const [editingPremise, setEditingPremise] = useState<any | null>(null);
+  const [premises, setPremises] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const loadKitchens = async () => {
+  const loadPremises = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchKitchens();
-      setKitchens(data);
+      const data = await fetchPremises();
+      setPremises(data);
     } catch (e: any) {
-      setError(t("messages.failedToLoadKitchens"));
+      setError(t("messages.failedToLoadPremises"));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadKitchens();
+    loadPremises();
   }, []);
 
-  const handleSave = async (kitchen: {
+  const handleSave = async (premise: {
     name: string;
     location: string;
     sequenceNumber?: number;
     id?: string;
   }) => {
     try {
-      if (kitchen.id) {
-        const { id, ...data } = kitchen;
-        await updateKitchen(id, data);
-        toast.success(t("messages.kitchenUpdated"));
+      if (premise.id) {
+        const { id, ...data } = premise;
+        await updatePremise(id, data);
+        toast.success(t("messages.premiseUpdated"));
       } else {
-        const { id, ...data } = kitchen;
-        await createKitchen(data);
-        toast.success(t("messages.kitchenAdded"));
+        const { id, ...data } = premise;
+        await createPremise(data);
+        toast.success(t("messages.premiseAdded"));
       }
       setDialogOpen(false);
-      setEditingKitchen(null);
-      loadKitchens();
+      setEditingPremise(null);
+      loadPremises();
     } catch (e) {
-      toast.error(t("messages.failedToSaveKitchen"));
+      toast.error(t("messages.failedToSavePremise"));
     }
   };
 
-  const handleEdit = (kitchen: any) => {
-    setEditingKitchen(kitchen);
+  const handleEdit = (premise: any) => {
+    setEditingPremise(premise);
     setDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm(t("messages.confirmDeleteKitchen"))) {
+    if (window.confirm(t("messages.confirmDeletePremise"))) {
       setDeletingId(id);
       try {
-        await deleteKitchen(id);
-        toast.success(t("messages.kitchenDeleted"));
-        loadKitchens();
+        await deletePremise(id);
+        toast.success(t("messages.premiseDeleted"));
+        loadPremises();
       } catch {
-        toast.error(t("messages.failedToDeleteKitchen"));
+        toast.error(t("messages.failedToDeletePremise"));
       } finally {
         setDeletingId(null);
       }
@@ -91,41 +91,41 @@ export default function KitchensPage() {
   return (
     <div className="w-full flex flex-col gap-2 md:gap-4">
       <PageHeader
-        title={t("kitchens.management")}
-        subtitle={t("kitchens.managementSubtitle")}
+        title={t("premises.management")}
+        subtitle={t("premises.managementSubtitle")}
         actions={
           <Button
             onClick={() => {
-              setEditingKitchen(null);
+              setEditingPremise(null);
               setDialogOpen(true);
             }}
           >
             <Plus className="w-4 h-4 mr-1" />
-            {t("kitchens.addKitchen")}
+            {t("premises.addPremise")}
           </Button>
         }
       />
 
       <div>
-        <AddEditKitchenDialog
+        <AddEditPremiseDialog
           open={dialogOpen}
           onOpenChange={(open) => {
             setDialogOpen(open);
-            if (!open) setEditingKitchen(null);
+            if (!open) setEditingPremise(null);
           }}
-          initialKitchen={editingKitchen}
+          initialPremise={editingPremise}
           onSave={handleSave}
         />
 
         {loading ? (
-          <KitchensTableSkeleton />
+          <PremisesTableSkeleton />
         ) : error ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-destructive">{error}</div>
           </div>
         ) : (
-          <KitchensTable
-            kitchens={kitchens}
+          <PremisesTable
+            premises={premises}
             onEdit={handleEdit}
             onDelete={handleDelete}
             deletingId={deletingId}

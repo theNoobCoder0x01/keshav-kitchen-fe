@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       where: { id: data.menuId },
       include: {
         user: { select: { id: true } },
-        kitchen: { select: { id: true } },
+        premise: { select: { id: true } },
       },
     });
 
@@ -114,7 +114,7 @@ export async function PUT(request: Request) {
       where: { id: data.menuId },
       include: {
         user: { select: { id: true } },
-        kitchen: { select: { id: true } },
+        premise: { select: { id: true } },
       },
     });
 

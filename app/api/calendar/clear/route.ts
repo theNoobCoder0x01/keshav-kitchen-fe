@@ -14,33 +14,33 @@ export const DELETE = apiHandler({
       throw respondError("Authentication required", 401, { code: ERR.AUTH });
     }
 
-    const kitchenId = ctx.searchParams.get("kitchenId");
+    const premiseId = ctx.searchParams.get("premiseId");
 
     // Get user info
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { kitchen: true },
+      include: { premise: true },
     });
 
     if (!user) {
       throw respondError("User not found", 404, { code: ERR.NOT_FOUND });
     }
 
-    // Use provided kitchenId or user's kitchenId
-    const targetKitchenId = kitchenId || user.kitchenId;
+    // Use provided premiseId or user's premiseId
+    const targetPremiseId = premiseId || user.premiseId;
 
-    if (!targetKitchenId) {
-      throw respondError("No kitchen specified", 400, { code: ERR.VALIDATION });
+    if (!targetPremiseId) {
+      throw respondError("No premise specified", 400, { code: ERR.VALIDATION });
     }
 
-    // Delete all calendar events for this kitchen
+    // Delete all calendar events for this premise
     const result = await prisma.calendarEvent.deleteMany({
-      where: { kitchenId: targetKitchenId },
+      where: { premiseId: targetPremiseId },
     });
 
     return {
       deletedCount: result.count,
-      kitchenId: targetKitchenId,
+      premiseId: targetPremiseId,
     };
   },
 });

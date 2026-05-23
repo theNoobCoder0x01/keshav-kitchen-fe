@@ -21,7 +21,7 @@ export const GET = apiHandler({
     }
 
     const epochMs = ctx.searchParams.get("epochMs");
-    const kitchenId = ctx.searchParams.get("kitchenId");
+    const premiseId = ctx.searchParams.get("premiseId");
 
     if (!epochMs) {
       console.log("qwerty2");
@@ -33,7 +33,7 @@ export const GET = apiHandler({
     // Get user info
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { kitchen: true },
+      include: { premise: true },
     });
 
     if (!user) {

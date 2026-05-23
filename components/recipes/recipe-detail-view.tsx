@@ -308,7 +308,7 @@ export const RecipeDetailView = forwardRef<
       {/* Print Footer */}
       {isPrintMode && (
         <div className="mt-8 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-          <p>Recipe printed from Keshav Kitchen Management System</p>
+          <p>Recipe printed from Keshav Premise Management System</p>
           <p>Generated on {new Date().toLocaleDateString()}</p>
         </div>
       )}

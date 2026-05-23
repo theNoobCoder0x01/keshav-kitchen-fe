@@ -35,14 +35,14 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: kitchenId } = await params;
+    const { id: premiseId } = await params;
     const { searchParams } = new URL(request.url);
     const mealType = searchParams.get("mealType");
     const date = parseDateFromRequest(request);
 
-    const counts = await prisma.kitchenMealPersonCount.findMany({
+    const counts = await prisma.premiseMealPersonCount.findMany({
       where: {
-        kitchenId,
+        premiseId,
         date,
         ...(isMealType(mealType) ? { mealType } : {}),
       },
@@ -83,7 +83,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: kitchenId } = await params;
+    const { id: premiseId } = await params;
     const body = await request.json();
     const date = body.epochMs
       ? createStartOfDayUTC(new Date(Number(body.epochMs)))
@@ -108,26 +108,26 @@ export async function PUT(
 
     const count = Math.max(0, Math.floor(Number(body.count) || 0));
 
-    const personType = await prisma.kitchenPersonType.findFirst({
+    const personType = await prisma.premisePersonType.findFirst({
       where: {
         id: body.personTypeId,
-        kitchenId,
+        premiseId,
       },
       select: { id: true },
     });
 
     if (!personType) {
       return NextResponse.json(
-        { error: "Person type does not belong to this kitchen." },
+        { error: "Person type does not belong to this premise." },
         { status: 400 },
       );
     }
 
     if (count === 0) {
-      await prisma.kitchenMealPersonCount.deleteMany({
+      await prisma.premiseMealPersonCount.deleteMany({
         where: {
           date,
-          kitchenId,
+          premiseId,
           mealType: body.mealType,
           personTypeId: body.personTypeId,
         },
@@ -136,18 +136,18 @@ export async function PUT(
       return NextResponse.json({ success: true, count: null });
     }
 
-    const saved = await prisma.kitchenMealPersonCount.upsert({
+    const saved = await prisma.premiseMealPersonCount.upsert({
       where: {
-        date_kitchenId_mealType_personTypeId: {
+        date_premiseId_mealType_personTypeId: {
           date,
-          kitchenId,
+          premiseId,
           mealType: body.mealType,
           personTypeId: body.personTypeId,
         },
       },
       create: {
         date,
-        kitchenId,
+        premiseId,
         mealType: body.mealType,
         personTypeId: body.personTypeId,
         count,

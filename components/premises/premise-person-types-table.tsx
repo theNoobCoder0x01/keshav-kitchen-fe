@@ -1,4 +1,4 @@
-import type { KitchenPersonType } from "@/types/kitchens";
+import type { PremisePersonType } from "@/types/premises";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,13 +13,13 @@ import { useTranslations } from "@/hooks/use-translations";
 import { Pencil, Trash2 } from "lucide-react";
 
 interface Props {
-  personTypes: KitchenPersonType[];
-  onEdit?: (personType: KitchenPersonType) => void;
+  personTypes: PremisePersonType[];
+  onEdit?: (personType: PremisePersonType) => void;
   onDelete?: (id: string) => void;
   deletingId?: string | null;
 }
 
-export function KitchenPersonTypesTable({
+export function PremisePersonTypesTable({
   personTypes,
   onEdit,
   onDelete,
@@ -31,9 +31,9 @@ export function KitchenPersonTypesTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>{t("kitchens.sequenceNumber")}</TableHead>
+          <TableHead>{t("premises.sequenceNumber")}</TableHead>
           <TableHead>{t("common.name")}</TableHead>
-          <TableHead>{t("kitchens.personTypeDescription")}</TableHead>
+          <TableHead>{t("premises.personTypeDescription")}</TableHead>
           <TableHead>{t("common.actions")}</TableHead>
         </TableRow>
       </TableHeader>
@@ -44,7 +44,7 @@ export function KitchenPersonTypesTable({
               colSpan={4}
               className="text-center text-muted-foreground"
             >
-              {t("kitchens.noPersonTypesFound")}
+              {t("premises.noPersonTypesFound")}
             </TableCell>
           </TableRow>
         ) : (
@@ -58,7 +58,7 @@ export function KitchenPersonTypesTable({
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit?.(personType)}
-                  aria-label={t("kitchens.editPersonType")}
+                  aria-label={t("premises.editPersonType")}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -67,7 +67,7 @@ export function KitchenPersonTypesTable({
                   size="icon"
                   disabled={deletingId === personType.id}
                   onClick={() => onDelete?.(personType.id)}
-                  aria-label={t("kitchens.deletePersonType")}
+                  aria-label={t("premises.deletePersonType")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

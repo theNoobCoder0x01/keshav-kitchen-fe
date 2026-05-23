@@ -22,21 +22,21 @@ const menuComponentInclude = {
   },
 } as const;
 
-// GET: List menu components for a kitchen
+// GET: List menu components for a premise
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id: kitchenId } = await params;
+  const { id: premiseId } = await params;
 
   const { searchParams } = new URL(request.url);
   const mealType = searchParams.get("mealType");
 
   const whereClause: {
-    kitchenId: string;
+    premiseId: string;
     mealType?: MealType;
   } = {
-    kitchenId,
+    premiseId,
   };
 
   if (mealType && Object.values(MealType).includes(mealType as MealType)) {
@@ -58,12 +58,12 @@ export async function GET(
   }
 }
 
-// POST: Add a new menu component to a kitchen
+// POST: Add a new menu component to a premise
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id: kitchenId } = await params;
+  const { id: premiseId } = await params;
   try {
     const body = await request.json();
     const parsed = MenuComponentSchema.safeParse(body);
@@ -81,9 +81,9 @@ export async function POST(
     const personTypeIds = parsed.data.averages.map(
       (average) => average.personTypeId,
     );
-    const personTypeCount = await prisma.kitchenPersonType.count({
+    const personTypeCount = await prisma.premisePersonType.count({
       where: {
-        kitchenId,
+        premiseId,
         id: {
           in: personTypeIds,
         },
@@ -92,7 +92,7 @@ export async function POST(
 
     if (personTypeCount !== personTypeIds.length) {
       return NextResponse.json(
-        { error: "One or more person types do not belong to this kitchen" },
+        { error: "One or more person types do not belong to this premise" },
         { status: 400 },
       );
     }
@@ -103,7 +103,7 @@ export async function POST(
         label: parsed.data.label,
         mealType: parsed.data.mealType,
         sequenceNumber: parsed.data.sequenceNumber,
-        kitchenId,
+        premiseId,
         averages: {
           create: parsed.data.averages.map((average) => ({
             personTypeId: average.personTypeId,

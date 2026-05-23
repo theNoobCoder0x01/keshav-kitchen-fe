@@ -38,19 +38,19 @@ export const POST = apiHandler({
 
     const { events, clearExisting } = body;
 
-    // Get user and kitchen info
+    // Get user and premise info
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { kitchen: true },
+      include: { premise: true },
     });
 
     if (!user) {
       throw respondError("User not found", 404, { code: ERR.NOT_FOUND });
     }
 
-    const kitchenId = user.kitchenId;
-    if (!kitchenId) {
-      throw respondError("User not associated with any kitchen", 400, {
+    const premiseId = user.premiseId;
+    if (!premiseId) {
+      throw respondError("User not associated with any premise", 400, {
         code: ERR.VALIDATION,
       });
     }
@@ -58,7 +58,7 @@ export const POST = apiHandler({
     // Clear existing calendar events if requested
     if (clearExisting) {
       await prisma.calendarEvent.deleteMany({
-        where: { kitchenId },
+        where: { premiseId },
       });
     }
 
@@ -76,7 +76,7 @@ export const POST = apiHandler({
       location: event.location || null,
       url: event.url || null,
       userId: user.id,
-      kitchenId: kitchenId,
+      premiseId: premiseId,
     }));
 
     // Bulk insert all calendar events

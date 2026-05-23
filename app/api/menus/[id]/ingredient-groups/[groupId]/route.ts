@@ -32,7 +32,7 @@ export async function PUT(
       where: { id: menuId },
       include: {
         user: { select: { id: true } },
-        kitchen: { select: { id: true } },
+        premise: { select: { id: true } },
       },
     });
 
@@ -125,7 +125,7 @@ export async function DELETE(
       where: { id: menuId },
       include: {
         user: { select: { id: true } },
-        kitchen: { select: { id: true } },
+        premise: { select: { id: true } },
       },
     });
 

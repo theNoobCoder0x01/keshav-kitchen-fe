@@ -72,7 +72,7 @@ export interface MenuWithIngredients {
   quantityPerPiece?: number | null;
   ghanFactor: number;
   notes?: string;
-  kitchen: {
+  premise: {
     id: string;
     name: string;
   };
@@ -92,7 +92,7 @@ export interface CombinedIngredient {
   unit: UnitValue;
   totalCost: number;
   sources: Array<{
-    kitchen: string;
+    premise: string;
     mealType: string;
     recipe: string;
     quantity: number;
@@ -102,9 +102,9 @@ export interface CombinedIngredient {
 
 export interface IngredientCombineOptions {
   combineMealTypes: boolean;
-  combineKitchens: boolean;
+  combinePremises: boolean;
   selectedMealTypes?: string[];
-  selectedKitchens?: string[];
+  selectedPremises?: string[];
 }
 
 export interface MenuReportData {
@@ -121,10 +121,10 @@ export interface MenuReportData {
     totalCost: number;
     uniqueIngredients: number;
     mealTypesCombined: boolean;
-    kitchensCombined: boolean;
+    premisesCombined: boolean;
   };
   selectedMealTypes?: string[];
-  combineKitchens?: boolean;
+  combinePremises?: boolean;
   combineMealTypes?: boolean;
   menus: Array<{
     id: string;
@@ -136,7 +136,7 @@ export interface MenuReportData {
     servingQuantityUnit?: UnitValue | null;
     ghanFactor: number;
     notes?: string;
-    kitchen: { name: string };
+    premise: { name: string };
     recipe?: {
       name: string;
       description?: string;

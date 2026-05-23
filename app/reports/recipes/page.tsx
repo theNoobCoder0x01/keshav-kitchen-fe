@@ -32,7 +32,7 @@ export default function RecipesReport() {
         console.error("Timestamp is required.");
       }
     } catch (error) {
-      console.error("Failed to load kitchens:", error);
+      console.error("Failed to load premises:", error);
     }
   }, [epochMs]);
 
@@ -45,7 +45,7 @@ export default function RecipesReport() {
       <div className="flex items-center space-x-1 h-15">
         <Image
           src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/logo.svg`}
-          alt="Keshav Kitchen"
+          alt="Keshav Premise"
           width="20"
           height="10"
           className="w-auto h-4/5"
@@ -78,12 +78,12 @@ export default function RecipesReport() {
         <div className="bg-transparent flex flex-col w-full overflow-x-hidden min-h-full text-xs">
           {header}
           <div className="px-2 pt-2 flex flex-col gap-3">
-            {data.map((kitchen) => (
-              <div key={kitchen.kitchenName} className="flex flex-col gap-1">
+            {data.map((premise) => (
+              <div key={premise.premiseName} className="flex flex-col gap-1">
                 <h1 className="text-sm font-extrabold text-primary border-b border-primary pb-0.5">
-                  {kitchen.kitchenName}
+                  {premise.premiseName}
                 </h1>
-                {kitchen.mealTypes.map((mealType: any) => (
+                {premise.mealTypes.map((mealType: any) => (
                   <div key={mealType.mealType} className="flex flex-col gap-1">
                     <h2 className="text-xs font-bold text-secondary-foreground pl-1 border-l-2 border-secondary">
                       {mealType.mealType}
@@ -161,15 +161,15 @@ export default function RecipesReport() {
         {header}
 
         <div className="px-2 pt-3 flex flex-col gap-6">
-          {data.map((kitchen) => (
+          {data.map((premise) => (
             <div
-              key={kitchen.kitchenName}
+              key={premise.premiseName}
               className="flex flex-col gap-4 break-inside-avoid"
             >
               <h1 className="text-xl font-extrabold text-primary border-b-2 border-primary pb-1">
-                {kitchen.kitchenName}
+                {premise.premiseName}
               </h1>
-              {kitchen.mealTypes.map((mealType: any) => (
+              {premise.mealTypes.map((mealType: any) => (
                 <div key={mealType.mealType} className="flex flex-col gap-3">
                   <h2 className="text-lg font-bold text-secondary-foreground pl-2 border-l-4 border-secondary">
                     {mealType.mealType}

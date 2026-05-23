@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        kitchen: {
+        premise: {
           select: {
             name: true,
             sequenceNumber: true,
@@ -93,12 +93,12 @@ export async function GET(request: NextRequest) {
       },
       orderBy: [
         {
-          kitchen: {
+          premise: {
             sequenceNumber: "asc",
           },
         },
         {
-          kitchen: {
+          premise: {
             name: "asc",
           },
         },
@@ -118,11 +118,11 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    // Group by kitchen -> mealType -> recipeId
-    const kitchenMap: { [key: string]: any } = {};
+    // Group by premise -> mealType -> recipeId
+    const premiseMap: { [key: string]: any } = {};
 
     menus.forEach((menu: any) => {
-      const kitchenName = menu.kitchen.name;
+      const premiseName = menu.premise.name;
       const mealType = menu.mealType;
       const recipeId = menu.recipeId || `menu:${menu.id}`;
       const recipeName =
@@ -131,22 +131,22 @@ export async function GET(request: NextRequest) {
         menu.menuComponent?.name ||
         "Custom menu item";
 
-      if (!kitchenMap[kitchenName]) {
-        kitchenMap[kitchenName] = {
-          kitchenName,
-          sequenceNumber: menu.kitchen.sequenceNumber,
+      if (!premiseMap[premiseName]) {
+        premiseMap[premiseName] = {
+          premiseName,
+          sequenceNumber: menu.premise.sequenceNumber,
           mealTypeMap: {},
         };
       }
 
-      if (!kitchenMap[kitchenName].mealTypeMap[mealType]) {
-        kitchenMap[kitchenName].mealTypeMap[mealType] = {
+      if (!premiseMap[premiseName].mealTypeMap[mealType]) {
+        premiseMap[premiseName].mealTypeMap[mealType] = {
           mealType,
           recipeMap: {},
         };
       }
 
-      const recipeMap = kitchenMap[kitchenName].mealTypeMap[mealType].recipeMap;
+      const recipeMap = premiseMap[premiseName].mealTypeMap[mealType].recipeMap;
 
       if (!recipeMap[recipeId]) {
         recipeMap[recipeId] = {
@@ -220,16 +220,16 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    const data = Object.values(kitchenMap)
+    const data = Object.values(premiseMap)
       .sort((a: any, b: any) => {
         if (a.sequenceNumber !== b.sequenceNumber) {
           return a.sequenceNumber - b.sequenceNumber;
         }
-        return a.kitchenName.localeCompare(b.kitchenName);
+        return a.premiseName.localeCompare(b.premiseName);
       })
-      .map((kitchen: any) => ({
-        kitchenName: kitchen.kitchenName,
-        mealTypes: Object.values(kitchen.mealTypeMap).map((mealType: any) => ({
+      .map((premise: any) => ({
+        premiseName: premise.premiseName,
+        mealTypes: Object.values(premise.mealTypeMap).map((mealType: any) => ({
           mealType: mealType.mealType,
           recipes: Object.values(mealType.recipeMap)
             .sort((a: any, b: any) => {

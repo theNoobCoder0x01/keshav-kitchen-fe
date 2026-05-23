@@ -6,7 +6,7 @@ import { useTranslations } from "@/hooks/use-translations";
 import { ErrorMessage, Field, Formik, type FieldInputProps } from "formik";
 import * as Yup from "yup";
 
-export interface KitchenPersonTypeForm {
+export interface PremisePersonTypeForm {
   id?: string;
   name: string;
   description?: string;
@@ -16,11 +16,11 @@ export interface KitchenPersonTypeForm {
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialPersonType?: KitchenPersonTypeForm | null;
-  onSave: (personType: KitchenPersonTypeForm) => boolean | Promise<boolean>;
+  initialPersonType?: PremisePersonTypeForm | null;
+  onSave: (personType: PremisePersonTypeForm) => boolean | Promise<boolean>;
 }
 
-export function AddEditKitchenPersonTypeDialog({
+export function AddEditPremisePersonTypeDialog({
   open,
   onOpenChange,
   initialPersonType,
@@ -29,12 +29,12 @@ export function AddEditKitchenPersonTypeDialog({
   const { t } = useTranslations();
 
   const validationSchema = Yup.object().shape({
-    name: Yup.string().trim().required(t("kitchens.personTypeNameRequired")),
+    name: Yup.string().trim().required(t("premises.personTypeNameRequired")),
     sequenceNumber: Yup.number()
-      .typeError(t("kitchens.personTypeSequenceNumberRequired"))
-      .integer(t("kitchens.personTypeSequenceNumberRequired"))
-      .min(1, t("kitchens.personTypeSequenceNumberMin"))
-      .required(t("kitchens.personTypeSequenceNumberRequired")),
+      .typeError(t("premises.personTypeSequenceNumberRequired"))
+      .integer(t("premises.personTypeSequenceNumberRequired"))
+      .min(1, t("premises.personTypeSequenceNumberMin"))
+      .required(t("premises.personTypeSequenceNumberRequired")),
   });
 
   return (
@@ -43,18 +43,18 @@ export function AddEditKitchenPersonTypeDialog({
       onOpenChange={onOpenChange}
       title={
         initialPersonType?.id
-          ? t("kitchens.editPersonType")
-          : t("kitchens.addPersonType")
+          ? t("premises.editPersonType")
+          : t("premises.addPersonType")
       }
       description={
         initialPersonType?.id
-          ? t("kitchens.editPersonTypeDescription")
-          : t("kitchens.addPersonTypeDescription")
+          ? t("premises.editPersonTypeDescription")
+          : t("premises.addPersonTypeDescription")
       }
       icon={null}
       size="md"
     >
-      <Formik<KitchenPersonTypeForm>
+      <Formik<PremisePersonTypeForm>
         initialValues={
           initialPersonType || {
             name: "",
@@ -89,7 +89,7 @@ export function AddEditKitchenPersonTypeDialog({
                   <Input
                     {...field}
                     id="name"
-                    placeholder={t("kitchens.enterPersonTypeName")}
+                    placeholder={t("premises.enterPersonTypeName")}
                     required
                   />
                 )}
@@ -102,14 +102,14 @@ export function AddEditKitchenPersonTypeDialog({
             </div>
             <div>
               <Label htmlFor="description">
-                {t("kitchens.personTypeDescription")}
+                {t("premises.personTypeDescription")}
               </Label>
               <Field name="description">
                 {({ field }: { field: FieldInputProps<string> }) => (
                   <Input
                     {...field}
                     id="description"
-                    placeholder={t("kitchens.enterPersonTypeDescription")}
+                    placeholder={t("premises.enterPersonTypeDescription")}
                   />
                 )}
               </Field>
@@ -121,7 +121,7 @@ export function AddEditKitchenPersonTypeDialog({
             </div>
             <div>
               <Label htmlFor="sequenceNumber">
-                {t("kitchens.sequenceNumber")}
+                {t("premises.sequenceNumber")}
               </Label>
               <Field name="sequenceNumber">
                 {({ field }: { field: FieldInputProps<number> }) => (

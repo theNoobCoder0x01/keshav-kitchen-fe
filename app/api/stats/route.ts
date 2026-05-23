@@ -8,13 +8,13 @@ export async function GET() {
     // Commenting out problematic queries for now to prevent errors
     // const mealsServed = await prisma.meal.count();
     const mealsServed = 0; // Placeholder value
-    const activeKitchens = await prisma.kitchen.count();
+    const activePremises = await prisma.premise.count();
     const recipes = await prisma.recipe.count();
     // const volunteers = await prisma.user.count({ where: { role: 'volunteer' } });
     const volunteers = 0; // Placeholder value until role type is fixed
     const stats = [
       { label: "Meals Served", value: mealsServed },
-      { label: "Active Kitchens", value: activeKitchens },
+      { label: "Active Premises", value: activePremises },
       { label: "Recipes", value: recipes },
       { label: "Volunteers", value: volunteers },
     ];

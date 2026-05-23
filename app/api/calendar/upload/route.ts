@@ -57,10 +57,10 @@ export const POST = apiHandler({
       });
     }
 
-    // Get user and kitchen info
+    // Get user and premise info
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { kitchen: true },
+      include: { premise: true },
     });
 
     if (!user) {
@@ -82,7 +82,7 @@ export const POST = apiHandler({
 
     console.log("Test123");
 
-    // Clear existing calendar events for this kitchen
+    // Clear existing calendar events for this premise
     await prisma.calendarEvent.deleteMany({});
     console.log("Test12323");
 

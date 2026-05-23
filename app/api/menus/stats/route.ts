@@ -16,11 +16,11 @@ export async function GET(request: Request) {
 
     const epochMs = searchParams.get("epochMs");
     const targetDate = epochMs ? new Date(parseInt(epochMs)) : new Date();
-    const targetKitchenId = searchParams.get("kitchenId");
+    const targetPremiseId = searchParams.get("premiseId");
 
-    if (!targetKitchenId) {
+    if (!targetPremiseId) {
       return NextResponse.json(
-        { error: "Kitchen Id is required." },
+        { error: "Premise Id is required." },
         { status: 400 },
       );
     }
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
             gte: startOfTargetDay,
             lte: endOfTargetDay,
           },
-          kitchenId: targetKitchenId,
+          premiseId: targetPremiseId,
         },
         _sum: {
           servingQuantity: true,
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
             gte: startOfTargetDay,
             lte: endOfTargetDay,
           },
-          kitchenId: targetKitchenId,
+          premiseId: targetPremiseId,
         },
         _sum: {
           servingQuantity: true,

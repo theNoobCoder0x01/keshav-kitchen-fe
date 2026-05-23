@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         date: { gte: startOfDay, lt: endOfDay },
       },
       include: {
-        kitchen: {
+        premise: {
           select: { name: true, sequenceNumber: true },
         },
         recipe: {
@@ -74,30 +74,30 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: [
-        { kitchen: { sequenceNumber: "asc" } },
-        { kitchen: { name: "asc" } },
+        { premise: { sequenceNumber: "asc" } },
+        { premise: { name: "asc" } },
         { mealType: "asc" },
         { menuComponent: { sequenceNumber: "asc" } },
       ],
     });
 
-    // Group: kitchen -> mealType -> list of items
-    const kitchenMap: Record<string, any> = {};
+    // Group: premise -> mealType -> list of items
+    const premiseMap: Record<string, any> = {};
 
     menus.forEach((menu: any) => {
-      const kitchenName = menu.kitchen.name;
+      const premiseName = menu.premise.name;
       const mealType = menu.mealType;
 
-      if (!kitchenMap[kitchenName]) {
-        kitchenMap[kitchenName] = {
-          kitchenName,
-          sequenceNumber: menu.kitchen.sequenceNumber,
+      if (!premiseMap[premiseName]) {
+        premiseMap[premiseName] = {
+          premiseName,
+          sequenceNumber: menu.premise.sequenceNumber,
           mealTypeMap: {},
         };
       }
 
-      if (!kitchenMap[kitchenName].mealTypeMap[mealType]) {
-        kitchenMap[kitchenName].mealTypeMap[mealType] = {
+      if (!premiseMap[premiseName].mealTypeMap[mealType]) {
+        premiseMap[premiseName].mealTypeMap[mealType] = {
           mealType,
           items: [],
         };
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
         return a.sortOrder - b.sortOrder;
       });
 
-      kitchenMap[kitchenName].mealTypeMap[mealType].items.push({
+      premiseMap[premiseName].mealTypeMap[mealType].items.push({
         menuId: menu.id,
         menuComponentLabel:
           menu.menuComponent?.label ||
@@ -171,15 +171,15 @@ export async function GET(request: NextRequest) {
 
     const MEAL_TYPE_ORDER = ["BREAKFAST", "LUNCH", "DINNER", "SNACK"];
 
-    const data = Object.values(kitchenMap)
+    const data = Object.values(premiseMap)
       .sort((a: any, b: any) => {
         if (a.sequenceNumber !== b.sequenceNumber)
           return a.sequenceNumber - b.sequenceNumber;
-        return a.kitchenName.localeCompare(b.kitchenName);
+        return a.premiseName.localeCompare(b.premiseName);
       })
-      .map((kitchen: any) => ({
-        kitchenName: kitchen.kitchenName,
-        mealTypes: Object.values(kitchen.mealTypeMap)
+      .map((premise: any) => ({
+        premiseName: premise.premiseName,
+        mealTypes: Object.values(premise.mealTypeMap)
           .sort((a: any, b: any) => {
             const ai = MEAL_TYPE_ORDER.indexOf(a.mealType);
             const bi = MEAL_TYPE_ORDER.indexOf(b.mealType);

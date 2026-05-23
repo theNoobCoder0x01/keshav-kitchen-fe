@@ -83,7 +83,7 @@ export default function SignInPage() {
             Welcome Back
           </CardTitle>
           <CardDescription>
-            Sign in to your kitchen management account
+            Sign in to your premise management account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -123,7 +123,7 @@ export default function SignInPage() {
 
           <div className="mt-4 text-center text-sm text-[#4b465c]/60">
             <p>Demo credentials:</p>
-            <p>Email: admin@kitchen.com</p>
+            <p>Email: admin@premise.com</p>
             <p>Password: admin123</p>
           </div>
         </CardContent>

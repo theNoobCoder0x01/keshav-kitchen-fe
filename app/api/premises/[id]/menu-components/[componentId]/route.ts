@@ -26,7 +26,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string; componentId: string }> },
 ) {
-  const { id: kitchenId, componentId } = await params;
+  const { id: premiseId, componentId } = await params;
   try {
     const body = await request.json();
 
@@ -44,9 +44,9 @@ export async function PUT(
     const personTypeIds = parsed.data.averages.map(
       (average) => average.personTypeId,
     );
-    const personTypeCount = await prisma.kitchenPersonType.count({
+    const personTypeCount = await prisma.premisePersonType.count({
       where: {
-        kitchenId,
+        premiseId,
         id: {
           in: personTypeIds,
         },
@@ -55,7 +55,7 @@ export async function PUT(
 
     if (personTypeCount !== personTypeIds.length) {
       return NextResponse.json(
-        { error: "One or more person types do not belong to this kitchen" },
+        { error: "One or more person types do not belong to this premise" },
         { status: 400 },
       );
     }
@@ -63,7 +63,7 @@ export async function PUT(
     const existingComponent = await prisma.menuComponent.findFirst({
       where: {
         id: componentId,
-        kitchenId,
+        premiseId,
       },
       select: {
         id: true,
@@ -84,7 +84,7 @@ export async function PUT(
         label: parsed.data.label,
         mealType: parsed.data.mealType,
         sequenceNumber: parsed.data.sequenceNumber,
-        kitchenId,
+        premiseId,
         averages: {
           deleteMany: {},
           create: parsed.data.averages.map((average) => ({
@@ -114,12 +114,12 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; componentId: string }> },
 ) {
-  const { id: kitchenId, componentId } = await params;
+  const { id: premiseId, componentId } = await params;
   try {
     const deletedCount = await prisma.menuComponent.deleteMany({
       where: {
         id: componentId,
-        kitchenId,
+        premiseId,
       },
     });
 

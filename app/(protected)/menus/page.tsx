@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  AddEditKitchenPersonTypeDialog,
-  type KitchenPersonTypeForm,
-} from "@/components/dialogs/add-edit-kitchen-person-type-dialog";
+  AddEditPremisePersonTypeDialog,
+  type PremisePersonTypeForm,
+} from "@/components/dialogs/add-edit-premise-person-type-dialog";
 import {
   AddEditMenuComponentDialog,
   type MenuComponentForm,
@@ -27,16 +27,16 @@ import {
 import { useTranslations } from "@/hooks/use-translations";
 import api from "@/lib/api/axios";
 import {
-  createKitchenPersonType,
-  fetchKitchenPersonTypes,
-} from "@/lib/api/kitchen-person-types";
-import { fetchKitchens } from "@/lib/api/kitchens";
+  createPremisePersonType,
+  fetchPremisePersonTypes,
+} from "@/lib/api/premise-person-types";
+import { fetchPremises } from "@/lib/api/premises";
 import {
   fetchMealPersonCounts,
   saveMealPersonCount,
 } from "@/lib/api/meal-person-counts";
 import { deleteMenu, fetchMenus, fetchMenuStats } from "@/lib/api/menus";
-import type { KitchenPersonType } from "@/types/kitchens";
+import type { PremisePersonType } from "@/types/premises";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import type { MealType as UnifiedMealType } from "@/types/menus";
 import { MealTypeEnum as MealType } from "@/types/menus";
@@ -79,38 +79,38 @@ export default function MenuPage() {
     useState<MealDialogState | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [kitchens, setKitchens] = useState<any[]>([]);
-  const [personTypes, setPersonTypes] = useState<KitchenPersonType[]>([]);
+  const [premises, setPremises] = useState<any[]>([]);
+  const [personTypes, setPersonTypes] = useState<PremisePersonType[]>([]);
   const [personCountsByMealType, setPersonCountsByMealType] = useState<
     Record<string, Record<string, number>>
   >({});
   const [menuStats, setMenuStats] = useState<any>(null);
   const [dailyMenus, setDailyMenus] = useState<any>({});
   const [loadingStates, setLoadingStates] = useState({
-    kitchens: 0,
+    premises: 0,
     stats: 0,
     menus: 0,
   });
 
   const reportIFrameRef = useRef<HTMLIFrameElement | null>(null);
 
-  const loadKitchens = useCallback(async () => {
+  const loadPremises = useCallback(async () => {
     try {
       setLoadingStates((prev) => ({
         ...prev,
-        kitchens: prev.kitchens + 1,
+        premises: prev.premises + 1,
         stats: prev.stats + 1,
         menus: prev.menus + 1,
       }));
-      const kitchensData = await fetchKitchens();
-      setKitchens(kitchensData);
+      const premisesData = await fetchPremises();
+      setPremises(premisesData);
     } catch (error) {
-      console.error("Failed to load kitchens:", error);
-      toast.error(t("messages.loadKitchensError"));
+      console.error("Failed to load premises:", error);
+      toast.error(t("messages.loadPremisesError"));
     } finally {
       setLoadingStates((prev) => ({
         ...prev,
-        kitchens: prev.kitchens - 1,
+        premises: prev.premises - 1,
         stats: prev.stats - 1,
         menus: prev.menus - 1,
       }));
@@ -118,13 +118,13 @@ export default function MenuPage() {
   }, []);
 
   const loadMenuData = useCallback(async () => {
-    if (kitchens.length === 0) return; // Wait for kitchens to load first
+    if (premises.length === 0) return; // Wait for premises to load first
 
     try {
-      // Get current kitchen ID
-      const currentKitchenId = kitchens[activeTab]?.id;
+      // Get current premise ID
+      const currentPremiseId = premises[activeTab]?.id;
 
-      if (!currentKitchenId) {
+      if (!currentPremiseId) {
         setMenuStats({
           total: { planned: 0 },
           byMealType: { BREAKFAST: 0, LUNCH: 0, DINNER: 0, SNACK: 0 },
@@ -147,13 +147,13 @@ export default function MenuPage() {
         personTypesData,
         mealPersonCountsData,
       ] = await Promise.all([
-        fetchMenuStats(selectedDate.getTime(), currentKitchenId),
+        fetchMenuStats(selectedDate.getTime(), currentPremiseId),
         fetchMenus({
-          kitchenId: currentKitchenId,
+          premiseId: currentPremiseId,
           epochMs: selectedDate.getTime(),
         }),
-        fetchKitchenPersonTypes(currentKitchenId),
-        fetchMealPersonCounts(currentKitchenId, {
+        fetchPremisePersonTypes(currentPremiseId),
+        fetchMealPersonCounts(currentPremiseId, {
           epochMs: selectedDate.getTime(),
         }),
       ]);
@@ -195,16 +195,16 @@ export default function MenuPage() {
         menus: prev.menus - 1,
       }));
     }
-  }, [selectedDate, activeTab, kitchens]);
+  }, [selectedDate, activeTab, premises]);
 
-  // Load kitchens once on mount
+  // Load premises once on mount
   useEffect(() => {
-    loadKitchens();
-  }, [loadKitchens]);
+    loadPremises();
+  }, [loadPremises]);
 
-  // Load menu data when date, tab, or kitchens change
+  // Load menu data when date, tab, or premises change
   useEffect(() => {
-    if (kitchens.length > 0) {
+    if (premises.length > 0) {
       loadMenuData();
     }
   }, [loadMenuData]);
@@ -283,12 +283,12 @@ export default function MenuPage() {
       },
     }));
 
-    const currentKitchenId = kitchens[activeTab]?.id;
-    if (!currentKitchenId) {
+    const currentPremiseId = premises[activeTab]?.id;
+    if (!currentPremiseId) {
       return;
     }
 
-    void saveMealPersonCount(currentKitchenId, {
+    void saveMealPersonCount(currentPremiseId, {
       epochMs: selectedDate.getTime(),
       mealType,
       personTypeId,
@@ -299,22 +299,22 @@ export default function MenuPage() {
     });
   };
 
-  const handleSavePersonType = async (personType: KitchenPersonTypeForm) => {
-    const currentKitchenId = kitchens[activeTab]?.id;
-    if (!currentKitchenId) {
-      toast.error("Kitchen information not found. Please try again.");
+  const handleSavePersonType = async (personType: PremisePersonTypeForm) => {
+    const currentPremiseId = premises[activeTab]?.id;
+    if (!currentPremiseId) {
+      toast.error("Premise information not found. Please try again.");
       return false;
     }
 
     try {
-      await createKitchenPersonType(currentKitchenId, {
+      await createPremisePersonType(currentPremiseId, {
         name: personType.name,
         description: personType.description || undefined,
         sequenceNumber: Number(personType.sequenceNumber),
       });
       toast.success(t("messages.personTypeAdded"));
       setPersonTypeDialogOpen(false);
-      const updatedPersonTypes = await fetchKitchenPersonTypes(currentKitchenId);
+      const updatedPersonTypes = await fetchPremisePersonTypes(currentPremiseId);
       setPersonTypes(updatedPersonTypes);
       return true;
     } catch {
@@ -329,15 +329,15 @@ export default function MenuPage() {
   };
 
   const handleSaveMenuComponent = async (menuComponent: MenuComponentForm) => {
-    const currentKitchenId = kitchens[activeTab]?.id;
-    if (!currentKitchenId || !menuComponent.id) {
+    const currentPremiseId = premises[activeTab]?.id;
+    if (!currentPremiseId || !menuComponent.id) {
       toast.error("Menu component information not found. Please try again.");
       return false;
     }
 
     try {
       await api.put(
-        `/kitchens/${currentKitchenId}/menu-components/${menuComponent.id}/`,
+        `/premises/${currentPremiseId}/menu-components/${menuComponent.id}/`,
         menuComponent,
       );
       toast.success(t("messages.menuComponentUpdated"));
@@ -372,7 +372,7 @@ export default function MenuPage() {
       return;
     }
     const reportRoute = `${window.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ""}/reports/cook?epochMs=${selectedDate.getTime()}`;
-    const headerHtml = `<h1>Kitchen Report</h1><p>${new Date().toLocaleDateString()}</p>`;
+    const headerHtml = `<h1>Premise Report</h1><p>${new Date().toLocaleDateString()}</p>`;
     const authToken = localStorage.getItem("pdfToken"); // or any short-lived token
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     try {
@@ -427,10 +427,10 @@ export default function MenuPage() {
       {/* Header Section */}
       <div>
         <PageHeader
-          title={t("menus.kitchenDashboard")}
+          title={t("menus.premiseDashboard")}
           subtitle={
             <span className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <span>{t("menus.kitchenDashboardSubtitle")}</span>
+              <span>{t("menus.premiseDashboardSubtitle")}</span>
             </span>
           }
           actions={
@@ -509,13 +509,13 @@ export default function MenuPage() {
         />
       </div>
 
-      {(loadingStates.kitchens || kitchens.length > 0) && (
+      {(loadingStates.premises || premises.length > 0) && (
         <>
-          {loadingStates.kitchens ? (
-            <TabNavigationSkeleton tabCount={kitchens.length || 6} />
+          {loadingStates.premises ? (
+            <TabNavigationSkeleton tabCount={premises.length || 6} />
           ) : (
             <TabNavigation
-              tabs={kitchens.map((k) => k.name)}
+              tabs={premises.map((k) => k.name)}
               activeTab={activeTab}
               onTabChange={handleTabChange}
             />
@@ -536,7 +536,7 @@ export default function MenuPage() {
               onEditMeal={handleEditMeal}
               onDeleteMeal={handleDeleteMeal}
               menus={dailyMenus}
-              kitchenId={kitchens[activeTab]?.id}
+              premiseId={premises[activeTab]?.id}
               selectedDate={selectedDate}
               personTypes={personTypes}
               personCountsByMealType={personCountsByMealType}
@@ -549,18 +549,18 @@ export default function MenuPage() {
         </>
       )}
 
-      {!loadingStates.kitchens && kitchens.length === 0 && (
+      {!loadingStates.premises && premises.length === 0 && (
         <Card className="p-4">
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <p className="text-muted-foreground flex flex-col items-center gap-2 text-xl text-center">
               <span className="flex items-center gap-1">
                 <AlertTriangle className="w-7 h-7" />{" "}
-                {t("menus.noKitchensFound")}
+                {t("menus.noPremisesFound")}
               </span>
-              <span className="text-sm">{t("menus.addKitchenFirst")}</span>
+              <span className="text-sm">{t("menus.addPremiseFirst")}</span>
             </p>
-            <Button variant="default" onClick={() => router.push("/kitchens")}>
-              {t("menus.manageKitchens")}
+            <Button variant="default" onClick={() => router.push("/premises")}>
+              {t("menus.managePremises")}
             </Button>
           </div>
         </Card>
@@ -572,7 +572,7 @@ export default function MenuPage() {
         onOpenChange={handleMealDialogClose}
         mealType={selectedMealType}
         selectedDate={selectedDate}
-        kitchenId={kitchens[activeTab]?.id}
+        premiseId={premises[activeTab]?.id}
         mode={mealDialogState?.mode ?? "create"}
         menuId={
           mealDialogState?.mode === "update" ? mealDialogState.menuId : undefined
@@ -582,7 +582,7 @@ export default function MenuPage() {
           personCountsByMealType[selectedMealType] || EMPTY_PERSON_COUNTS
         }
       />
-      <AddEditKitchenPersonTypeDialog
+      <AddEditPremisePersonTypeDialog
         open={personTypeDialogOpen}
         onOpenChange={setPersonTypeDialogOpen}
         initialPersonType={{

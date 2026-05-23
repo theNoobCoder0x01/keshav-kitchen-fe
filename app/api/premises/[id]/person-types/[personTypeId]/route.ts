@@ -26,23 +26,23 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized!" }, { status: 401 });
     }
 
-    const { id: kitchenId, personTypeId } = await params;
+    const { id: premiseId, personTypeId } = await params;
 
-    if (!kitchenId || !personTypeId) {
+    if (!premiseId || !personTypeId) {
       return NextResponse.json(
-        { error: "Kitchen person type id required." },
+        { error: "Premise person type id required." },
         { status: 400 },
       );
     }
 
-    const existingPersonType = await prisma.kitchenPersonType.findFirst({
-      where: { id: personTypeId, kitchenId },
+    const existingPersonType = await prisma.premisePersonType.findFirst({
+      where: { id: personTypeId, premiseId },
       select: { id: true },
     });
 
     if (!existingPersonType) {
       return NextResponse.json(
-        { error: "Kitchen person type not found." },
+        { error: "Premise person type not found." },
         { status: 404 },
       );
     }
@@ -62,7 +62,7 @@ export async function PUT(
       );
     }
 
-    const updatedPersonType = await prisma.kitchenPersonType.update({
+    const updatedPersonType = await prisma.premisePersonType.update({
       where: { id: personTypeId },
       data: {
         name,
@@ -74,7 +74,7 @@ export async function PUT(
     return NextResponse.json(updatedPersonType);
   } catch {
     return NextResponse.json(
-      { error: "Failed to update kitchen person type." },
+      { error: "Failed to update premise person type." },
       { status: 500 },
     );
   }
@@ -95,35 +95,35 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized!" }, { status: 401 });
     }
 
-    const { id: kitchenId, personTypeId } = await params;
+    const { id: premiseId, personTypeId } = await params;
 
-    if (!kitchenId || !personTypeId) {
+    if (!premiseId || !personTypeId) {
       return NextResponse.json(
-        { error: "Kitchen person type id required." },
+        { error: "Premise person type id required." },
         { status: 400 },
       );
     }
 
-    const existingPersonType = await prisma.kitchenPersonType.findFirst({
-      where: { id: personTypeId, kitchenId },
+    const existingPersonType = await prisma.premisePersonType.findFirst({
+      where: { id: personTypeId, premiseId },
       select: { id: true },
     });
 
     if (!existingPersonType) {
       return NextResponse.json(
-        { error: "Kitchen person type not found." },
+        { error: "Premise person type not found." },
         { status: 404 },
       );
     }
 
-    await prisma.kitchenPersonType.delete({
+    await prisma.premisePersonType.delete({
       where: { id: personTypeId },
     });
 
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json(
-      { error: "Failed to delete kitchen person type." },
+      { error: "Failed to delete premise person type." },
       { status: 500 },
     );
   }

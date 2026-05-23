@@ -39,7 +39,7 @@ export function Header() {
             <div className="hidden sm:flex items-center space-x-1 h-15">
               <Image
                 src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/logo.svg`}
-                alt="Keshav Kitchen"
+                alt="Keshav Premise"
                 width="20"
                 height="10"
                 className="w-auto h-full"

@@ -22,24 +22,24 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized!" }, { status: 401 });
     }
 
-    const { id: kitchenId } = await params;
+    const { id: premiseId } = await params;
 
-    if (!kitchenId) {
+    if (!premiseId) {
       return NextResponse.json(
-        { error: "Kitchen id required." },
+        { error: "Premise id required." },
         { status: 400 },
       );
     }
 
-    const personTypes = await prisma.kitchenPersonType.findMany({
-      where: { kitchenId },
+    const personTypes = await prisma.premisePersonType.findMany({
+      where: { premiseId },
       orderBy: [{ sequenceNumber: "asc" }, { createdAt: "asc" }],
     });
 
     return NextResponse.json(personTypes);
   } catch {
     return NextResponse.json(
-      { error: "Failed to fetch kitchen person types." },
+      { error: "Failed to fetch premise person types." },
       { status: 500 },
     );
   }
@@ -56,11 +56,11 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized!" }, { status: 401 });
     }
 
-    const { id: kitchenId } = await params;
+    const { id: premiseId } = await params;
 
-    if (!kitchenId) {
+    if (!premiseId) {
       return NextResponse.json(
-        { error: "Kitchen id required." },
+        { error: "Premise id required." },
         { status: 400 },
       );
     }
@@ -80,19 +80,19 @@ export async function POST(
       );
     }
 
-    const personType = await prisma.kitchenPersonType.create({
+    const personType = await prisma.premisePersonType.create({
       data: {
         name,
         description: description || null,
         sequenceNumber,
-        kitchenId,
+        premiseId,
       },
     });
 
     return NextResponse.json(personType, { status: 201 });
   } catch {
     return NextResponse.json(
-      { error: "Failed to create kitchen person type." },
+      { error: "Failed to create premise person type." },
       { status: 500 },
     );
   }

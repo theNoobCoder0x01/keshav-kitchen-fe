@@ -23,7 +23,7 @@ export const GET = apiHandler({
     // Get user info
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { kitchen: true },
+      include: { premise: true },
     });
 
     if (!user) {

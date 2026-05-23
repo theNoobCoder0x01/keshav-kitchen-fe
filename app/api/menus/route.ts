@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const kitchenId = searchParams.get("kitchenId");
+    const premiseId = searchParams.get("premiseId");
     const epochMs = searchParams.get("epochMs");
     const dateISOString = searchParams.get("date");
     const date = epochMs
@@ -33,8 +33,8 @@ export async function GET(request: Request) {
     // Build where clause for filtering
     const where: any = {};
 
-    if (kitchenId) {
-      where.kitchenId = kitchenId;
+    if (premiseId) {
+      where.premiseId = premiseId;
     }
 
     if (date) {
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
           },
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
         },
-        kitchen: {
+        premise: {
           select: {
             id: true,
             name: true,
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
         },
       },
       orderBy: [
-        { kitchen: { sequenceNumber: "asc" } },
+        { premise: { sequenceNumber: "asc" } },
         { mealType: "asc" },
         { createdAt: "asc" },
       ],
@@ -142,11 +142,11 @@ export async function POST(request: Request) {
     const data = await request.json();
 
     // Validate required fields
-    if (!data.mealType || !data.kitchenId || !data.userId) {
+    if (!data.mealType || !data.premiseId || !data.userId) {
       return NextResponse.json(
         {
           error:
-            "Missing required fields: mealType, kitchenId, userId",
+            "Missing required fields: mealType, premiseId, userId",
         },
         { status: 400 },
       );
@@ -295,7 +295,7 @@ export async function POST(request: Request) {
             },
             orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           },
-          kitchen: {
+          premise: {
             select: {
               id: true,
               name: true,

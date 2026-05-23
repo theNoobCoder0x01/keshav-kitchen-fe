@@ -180,7 +180,7 @@ export async function getRecentActivity() {
               name: true,
             },
           },
-          kitchen: {
+          premise: {
             select: {
               name: true,
             },
@@ -269,14 +269,14 @@ export async function getQuickActionsData() {
       return {
         menusCount: 0,
         recipesCount: 0,
-        kitchensCount: 0,
+        premisesCount: 0,
         ingredientsCount: 0,
       };
     }
 
     const whereClause: any = {};
 
-    const [menusCount, recipesCount, kitchensCount, ingredientsCount] =
+    const [menusCount, recipesCount, premisesCount, ingredientsCount] =
       await Promise.all([
         prisma.menu.count({
           where: {
@@ -289,7 +289,7 @@ export async function getQuickActionsData() {
         prisma.recipe.count({
           where: whereClause,
         }),
-        prisma.kitchen.count(),
+        prisma.premise.count(),
         prisma.ingredient.count({
           where: {
             recipe: whereClause,
@@ -300,7 +300,7 @@ export async function getQuickActionsData() {
     return {
       menusCount,
       recipesCount,
-      kitchensCount,
+      premisesCount,
       ingredientsCount,
     };
   } catch (error) {
@@ -308,7 +308,7 @@ export async function getQuickActionsData() {
     return {
       menusCount: 0,
       recipesCount: 0,
-      kitchensCount: 0,
+      premisesCount: 0,
       ingredientsCount: 0,
     };
   }

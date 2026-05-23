@@ -38,14 +38,14 @@ export default function PrasadReport() {
 
   return (
     <div className="bg-white text-black font-sans">
-      {data.map((kitchen: any, kitchenIndex: number) => (
-        <Fragment key={kitchen.kitchenName}>
+      {data.map((premise: any, premiseIndex: number) => (
+        <Fragment key={premise.premiseName}>
           {/* ── Page wrapper ── */}
-          <div className={kitchenIndex > 0 ? "break-before-page" : ""}>
+          <div className={premiseIndex > 0 ? "break-before-page" : ""}>
             {/* ── Header ── */}
             <div className="text-center py-3 px-4">
               <h1 className="text-2xl font-extrabold text-[#8B0000] leading-tight">
-                {kitchen.kitchenName}
+                {premise.premiseName}
               </h1>
             </div>
 
@@ -69,7 +69,7 @@ export default function PrasadReport() {
             </div>
 
             {/* ── Meal type sections ── */}
-            {kitchen.mealTypes.map((mealType: any) => (
+            {premise.mealTypes.map((mealType: any) => (
               <div key={mealType.mealType} className="mb-4 mx-4">
                 {/* Meal header — gray bar */}
                 <div className="bg-gray-300 border border-gray-500 px-4 py-1 font-bold text-lg mb-0">

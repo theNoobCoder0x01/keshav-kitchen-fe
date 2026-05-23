@@ -10,7 +10,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized!" }, { status: 401 });
     }
 
-    const kitchens = await prisma.kitchen.findMany({
+    const premises = await prisma.premise.findMany({
       orderBy: [
         {
           sequenceNumber: "asc",
@@ -21,16 +21,16 @@ export async function GET(request: Request) {
       ],
     });
 
-    return NextResponse.json(kitchens);
+    return NextResponse.json(premises);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch kitchens." },
+      { error: "Failed to fetch premises." },
       { status: 500 },
     );
   }
 }
 
-// POST create kitchen
+// POST create premise
 export async function POST(request: Request) {
   try {
     const session = await auth();
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     const data = await request.json();
 
-    const kitchen = await prisma.kitchen.create({
+    const premise = await prisma.premise.create({
       data: {
         name: data.name,
         location: data.location,
@@ -50,10 +50,10 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(kitchen, { status: 201 });
+    return NextResponse.json(premise, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to create kitchen." },
+      { error: "Failed to create premise." },
       { status: 500 },
     );
   }

@@ -13,11 +13,11 @@ export async function fetchMenu(id: string, params = {}) {
   return response.data;
 }
 
-export async function fetchMenuStats(epochMs: number, kitchenId?: string) {
+export async function fetchMenuStats(epochMs: number, premiseId?: string) {
   const response = await api.get("/menus/stats/", {
     params: {
       epochMs,
-      kitchenId,
+      premiseId,
     },
   });
   return response.data;
@@ -27,7 +27,7 @@ export async function createMenu(data: {
   epochMs: number;
   mealType: MealType;
   recipeId?: string | null;
-  kitchenId: string;
+  premiseId: string;
   userId: string;
   preparedQuantity: number;
   preparedQuantityUnit: string;
@@ -56,7 +56,7 @@ export async function updateMenu(
     epochMs?: number;
     mealType?: MealType;
     recipeId?: string | null;
-    kitchenId?: string;
+    premiseId?: string;
     userId?: string;
     preparedQuantity?: number;
     preparedQuantityUnit?: string;

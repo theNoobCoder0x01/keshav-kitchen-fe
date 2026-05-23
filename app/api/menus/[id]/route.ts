@@ -62,7 +62,7 @@ export async function GET(
           },
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
         },
-        kitchen: {
+        premise: {
           select: {
             id: true,
             name: true,
@@ -248,7 +248,7 @@ export async function PUT(
             select: { id: true, name: true, sortOrder: true },
             orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           },
-          kitchen: { select: { id: true, name: true } },
+          premise: { select: { id: true, name: true } },
           user: { select: { id: true, name: true } },
         },
       });

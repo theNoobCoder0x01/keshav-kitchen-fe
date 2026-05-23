@@ -23,7 +23,7 @@ export async function GET(
       where: { id: menuId },
       include: {
         user: { select: { id: true } },
-        kitchen: { select: { id: true } },
+        premise: { select: { id: true } },
       },
     });
 
@@ -90,7 +90,7 @@ export async function POST(
       where: { id: menuId },
       include: {
         user: { select: { id: true } },
-        kitchen: { select: { id: true } },
+        premise: { select: { id: true } },
       },
     });
 

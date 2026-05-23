@@ -110,12 +110,12 @@ export function Sidebar() {
       children: null,
     },
     {
-      id: "kitchens",
-      label: navigation("kitchens"),
+      id: "premises",
+      label: navigation("premises"),
       icon: Users,
-      href: "/kitchens",
-      isActive: pathname.startsWith("/kitchens"),
-      description: navigation("kitchensDesc"),
+      href: "/premises",
+      isActive: pathname.startsWith("/premises"),
+      description: navigation("premisesDesc"),
       badge: null,
       children: null,
     },
@@ -164,7 +164,7 @@ export function Sidebar() {
           <nav className="flex-1 p-4 space-y-2">
             <div className="mb-6">
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
-                {navigation("kitchenManagement")}
+                {navigation("premiseManagement")}
               </h2>
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn, formatDecimal } from "@/lib/utils";
-import type { KitchenPersonType } from "@/types/kitchens";
+import type { PremisePersonType } from "@/types/premises";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import { MealTypeEnum as MealType } from "@/types";
 import { useEffect, useMemo, useState } from "react";
@@ -18,9 +18,9 @@ interface MenuGridProps {
   onEditMeal: (mealType: MealType, meal: any) => void;
   onDeleteMeal: (mealId: string) => void;
   menus: any;
-  kitchenId: string;
+  premiseId: string;
   selectedDate: Date;
-  personTypes?: KitchenPersonType[];
+  personTypes?: PremisePersonType[];
   personCountsByMealType?: Record<string, Record<string, number>>;
   onPersonCountChange?: (
     mealType: MealType,
@@ -37,7 +37,7 @@ export function MenuGrid({
   onEditMeal,
   onDeleteMeal,
   menus = {},
-  kitchenId,
+  premiseId,
   personTypes = [],
   personCountsByMealType = {},
   onPersonCountChange,
@@ -105,7 +105,7 @@ export function MenuGrid({
           <MenuCard
             key={type}
             id={type}
-            kitchenId={kitchenId}
+            premiseId={premiseId}
             title={title}
             className="col-span-12 md:col-span-6 xl:col-span-4 2xl:col-span-3"
             items={menuData[key] || []}

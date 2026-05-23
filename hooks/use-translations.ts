@@ -39,8 +39,8 @@ export function useTranslations() {
     t(`menus.${key}`, values);
   const auth = (key: string, values?: TranslationValues) =>
     t(`auth.${key}`, values);
-  const kitchens = (key: string, values?: TranslationValues) =>
-    t(`kitchens.${key}`, values);
+  const premises = (key: string, values?: TranslationValues) =>
+    t(`premises.${key}`, values);
   const dashboard = (key: string, values?: TranslationValues) =>
     t(`dashboard.${key}`, values);
   const messages = (key: string, values?: TranslationValues) =>
@@ -58,7 +58,7 @@ export function useTranslations() {
     ingredients, // Ingredient translations
     menus, // Menu translations
     auth, // Auth translations
-    kitchens, // Kitchen translations
+    premises, // Premise translations
     dashboard, // Dashboard translations
     messages, // Message translations
     intl, // Direct access to intl object for advanced usage

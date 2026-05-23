@@ -37,13 +37,13 @@ export default function CookReport() {
   const loadData = useCallback(async () => {
     try {
       if (epochMs) {
-        const kitchensData = await fetchReportData({ type: "cook", epochMs });
-        setData(kitchensData);
+        const premisesData = await fetchReportData({ type: "cook", epochMs });
+        setData(premisesData);
       } else {
         console.error("Timestamp is required.");
       }
     } catch (error) {
-      console.error("Failed to load kitchens:", error);
+      console.error("Failed to load premises:", error);
     }
   }, [epochMs]);
 
@@ -54,36 +54,36 @@ export default function CookReport() {
   const structuredData = useMemo(() => {
     let modifiedData: any = {};
     data.forEach((d) => {
-      if (!Object.hasOwn(modifiedData, d.kitchenId)) {
-        modifiedData[d.kitchenId] = {
-          kitchenId: d.kitchenId,
-          kitchenName: d.kitchenName,
+      if (!Object.hasOwn(modifiedData, d.premiseId)) {
+        modifiedData[d.premiseId] = {
+          premiseId: d.premiseId,
+          premiseName: d.premiseName,
           mealTypes: [],
         };
       }
 
-      modifiedData[d.kitchenId].mealTypes.push(d);
+      modifiedData[d.premiseId].mealTypes.push(d);
     });
 
-    modifiedData = Object.values(modifiedData).map((kitchen: any) => {
-      let modifiedKitchen: any = {};
+    modifiedData = Object.values(modifiedData).map((premise: any) => {
+      let modifiedPremise: any = {};
 
-      kitchen.mealTypes.forEach((d: any) => {
-        if (!Object.hasOwn(modifiedKitchen, d.mealType)) {
-          modifiedKitchen[d.mealType] = {
+      premise.mealTypes.forEach((d: any) => {
+        if (!Object.hasOwn(modifiedPremise, d.mealType)) {
+          modifiedPremise[d.mealType] = {
             mealType: d.mealType,
             recipes: [],
           };
         }
 
-        modifiedKitchen[d.mealType].recipes.push({
+        modifiedPremise[d.mealType].recipes.push({
           recipeId: d.recipeId,
           recipeName: d.recipeName,
           ghanFactor: d.ghanFactor,
         });
       });
 
-      return { ...kitchen, mealTypes: Object.values(modifiedKitchen) };
+      return { ...premise, mealTypes: Object.values(modifiedPremise) };
     });
 
     return modifiedData;
@@ -92,8 +92,8 @@ export default function CookReport() {
   return (
     <div className="bg-transparent">
       <div className="bg-transparent flex flex-col w-full overflow-x-hidden min-h-full">
-        {structuredData.map((kitchen: any, index: number) => (
-          <Fragment key={kitchen.kitchenId}>
+        {structuredData.map((premise: any, index: number) => (
+          <Fragment key={premise.premiseId}>
             <div
               className={cn(
                 "px-4 py-2 print:pt-0 flex items-center justify-between border-b border-accent-foreground",
@@ -103,7 +103,7 @@ export default function CookReport() {
               <div className="flex items-center space-x-1 h-15">
                 <Image
                   src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/logo.svg`}
-                  alt="Keshav Kitchen"
+                  alt="Keshav Premise"
                   width="20"
                   height="10"
                   className="w-auto h-4/5"
@@ -129,9 +129,9 @@ export default function CookReport() {
             </div>
             <div className={cn("px-2 flex flex-col")}>
               <h1 className="text-center text-2xl font-extrabold my-3">
-                {kitchen.kitchenName}
+                {premise.premiseName}
               </h1>
-              {kitchen.mealTypes.map((mealType: any) => {
+              {premise.mealTypes.map((mealType: any) => {
                 const MealTypeIcon =
                   mealTypeIconMap[mealType.mealType as MealType];
                 return (

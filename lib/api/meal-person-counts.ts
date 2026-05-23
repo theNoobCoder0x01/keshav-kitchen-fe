@@ -6,23 +6,23 @@ export interface MealPersonCount {
   id: string;
   date: string | Date;
   mealType: MealType;
-  kitchenId: string;
+  premiseId: string;
   personTypeId: string;
   count: number;
 }
 
 export async function fetchMealPersonCounts(
-  kitchenId: string,
+  premiseId: string,
   params: { epochMs: number; mealType?: MealType },
 ) {
-  const response = await api.get(`/kitchens/${kitchenId}/meal-person-counts/`, {
+  const response = await api.get(`/premises/${premiseId}/meal-person-counts/`, {
     params,
   });
   return response.data as MealPersonCount[];
 }
 
 export async function saveMealPersonCount(
-  kitchenId: string,
+  premiseId: string,
   data: {
     epochMs: number;
     mealType: MealType;
@@ -31,7 +31,7 @@ export async function saveMealPersonCount(
   },
 ) {
   const response = await api.put(
-    `/kitchens/${kitchenId}/meal-person-counts/`,
+    `/premises/${premiseId}/meal-person-counts/`,
     data,
   );
   return response.data;

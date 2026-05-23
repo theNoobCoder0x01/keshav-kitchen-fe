@@ -12,7 +12,7 @@ import {
 import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
 import { UNIT_OPTIONS, getWeightUnits } from "@/lib/constants/units";
 import type { UnitOption } from "@/types";
-import type { KitchenPersonType } from "@/types/kitchens";
+import type { PremisePersonType } from "@/types/premises";
 import {
   MealType,
   MealTypeEnum,
@@ -29,7 +29,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialMenuComponent?: MenuComponentForm | null;
-  personTypes: KitchenPersonType[];
+  personTypes: PremisePersonType[];
   onSave: (
     menuComponent: MenuComponentForm,
   ) => boolean | void | Promise<boolean | void>;
