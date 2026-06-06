@@ -1,15 +1,59 @@
-# Orchestrator Agent — Keshav Kitchen UI/UX Overhaul
+---
+name: orchestrator
+description: Master orchestrator for all Keshav Kitchen projects. Coordinates UI/UX overhaul agents (Phases 1-3) and the DevX/CI/CD overhaul agents (Phase 4+). Routes sub-tasks to specialists, enforces quality gates, and integrates all deliverables.
+tools: Read, Write, Edit, Bash, Agent
+---
 
-## Role
-Master coordinator. Routes sub-tasks to specialist agents, enforces quality gates, and ensures all deliverables integrate cohesively.
+# Master Orchestrator — Keshav Kitchen
 
-## Project Objective
-1. Make the UI significantly better across all pages
-2. Make all report pages more compact (remove unnecessary whitespace, tighten spacing) while keeping them readable and professional
-3. Improve UX across every user flow: Premise setup → Recipe management → Menu planning → Report generation
+---
 
-## Team Roster
+## PHASE 4: DevX & CI/CD Overhaul (current active phase)
 
+### Objective
+Transform the development workflow from "deploy-to-Docker-to-test" into a frictionless local experience. End state: **`cp .env.local.example .env.local && npm run dev` just works**.
+
+### Agent Roster (Phase 4)
+| Agent File | Responsibility | Output Files |
+|---|---|---|
+| `devx-engineer.md` | Local dev scripts, env template, DB-only Docker compose | `.env.local.example`, `docker-compose.db-only.yml`, updated `package.json` scripts |
+| `db-connectivity.md` | SSH tunnel script for remote dev DB | `scripts/tunnel-dev-db.sh` |
+| `dependency-auditor.md` | Fix package.json conflicts, audit vulnerabilities | Updated `package.json`, updated `.npmrc` |
+| `devops-engineer.md` | GitHub Actions CI/CD pipeline | `.github/workflows/*.yml` |
+
+### Execution Plan (Phase 4)
+
+#### Step 1 — Foundation (run dependency-auditor + db-connectivity in parallel)
+These two are fully independent.
+
+- **dependency-auditor**: fixes `package.json` (removes unused `prototype`, documents peer dep situation), updates `.npmrc` with explanatory comment
+- **db-connectivity**: creates `scripts/tunnel-dev-db.sh`
+
+#### Step 2 — DevX Core (after Step 1 — reads updated package.json)
+- **devx-engineer**: creates `.env.local.example`, `docker-compose.db-only.yml`, adds npm scripts
+
+#### Step 3 — CI/CD (parallel with Step 2)
+- **devops-engineer**: creates all three GitHub Actions workflows
+
+#### Step 4 — Validation
+Verify all files exist and pass syntax checks.
+
+### Phase 4 Quality Gates
+- [ ] `.env.local.example` exists with 3 DB options, no real secrets
+- [ ] `.env.local.example` listed in `.gitignore` exceptions
+- [ ] `docker-compose.db-only.yml` valid YAML
+- [ ] `scripts/tunnel-dev-db.sh` passes `bash -n` syntax check
+- [ ] `package.json` has all new dev scripts and is valid JSON
+- [ ] `.github/workflows/ci.yml` exists and is valid YAML
+- [ ] `.github/workflows/deploy-dev.yml` exists and is valid YAML
+- [ ] `.github/workflows/deploy-prod.yml` exists and is valid YAML
+- [ ] `prototype` removed from devDependencies (if confirmed unused)
+
+---
+
+## PHASES 1–3: UI/UX Overhaul (completed)
+
+### Team Roster
 | Agent | File | Domain |
 |-------|------|--------|
 | UX Analyst | `ux-analyst.md` | Maps friction points, defines improvements per flow |
@@ -17,87 +61,22 @@ Master coordinator. Routes sub-tasks to specialist agents, enforces quality gate
 | UI Developer | `ui-developer.md` | Improves global UI: layout, typography, spacing, components |
 | Flow Developer | `flow-developer.md` | Fixes each user flow end-to-end, dialog UX, navigation |
 | Quality Checker | `quality-checker.md` | Verifies correctness, no regressions, i18n compliance |
-
-## Execution Roadmap
-
-### Step 1 — UX Analyst (first)
-- Reads all page and component files
-- Produces prioritized list of UX issues per flow
-- Outputs: friction map that all other agents use
-
-### Step 2 — Parallel (after UX Analyst)
-- **Report Optimizer** → targets `app/reports/` pages ONLY
-- **UI Developer** → targets global layout, sidebar, header, component library
-
-### Step 3 — Flow Developer (after UI Developer finishes)
-- Uses UX Analyst friction map
-- Implements fixes for each app flow:
-  1. Premise setup (`/premises`, `/premises/[id]`)
-  2. Recipe management (`/recipes`)
-  3. Menu planning (`/menus`) — most complex
-  4. Kitchen management (`/kitchens`)
-  5. Dashboard (`/`)
-
-### Step 4 — Quality Checker (last)
-- Verifies all changes compile cleanly
-- Checks i18n compliance
-- Confirms report print quality
-
-## Quality Gates
-- [ ] No TypeScript errors introduced
-- [ ] All new user-visible strings use t() with keys in BOTH locales files
-- [ ] No window.confirm / window.alert remaining
-- [ ] Reports still print cleanly via browser print dialog
-- [ ] Tailwind CSS only — no inline style sprawl
-- [ ] Mobile responsiveness preserved
-
-## Key Constraints
-- Stack: Next.js 15 App Router, TypeScript, Tailwind CSS 4, Shadcn/Radix UI
-- No new dependencies unless absolutely necessary
-- All mutations via lib/actions/ or lib/api/ — no direct fetch in components
-- Translation strings required for all user-visible text
-
----
-
-## Phase 2: Menu UX Deep Overhaul (current active phase)
-
-### New Team Member
-| Agent | File | Domain |
-|-------|------|--------|
 | Menu UX Developer | `menu-ux-developer.md` | Person counts panel, AddMealDialog auto-calc, MenuCard cleanup |
+| Round 2 UX Developer | `round2-ux-developer.md` | Phase 3 UX polish and critical bug fixes |
 
-### Phase 2 Objective
-Transform the person-count entry and auto-calculation UX in the daily menu planning flow:
-- Move person count entry from per-card dialogs → unified PersonCountsPanel above the grid
-- Remove redundant count entry from AddMealDialog → auto-apply suggestion instead
-- Rename confusing "Averages" → "Portions" with a helpful tooltip
-- Add "Same for all meals" toggle to the counts panel
-
-### Phase 2 Execution
-1. Menu UX Developer → implements PersonCountsPanel + all related changes
-2. Quality Checker → verifies no regressions in menu flow
+### Phase 1–3 Summary
+- Phase 1: Full UI/UX audit → report compaction → flow fixes → quality check
+- Phase 2: Menu UX deep overhaul (PersonCountsPanel, AddMealDialog, Portions rename)
+- Phase 3: Critical bug fixes (recipe delete confirm, filter chrome, empty states, i18n)
 
 ---
 
-## Phase 3: UX Polish & Critical Bug Fixes (current active phase)
-
-### Problems Found in Round 2 Audit
-
-| Severity | Issue | File |
-|----------|-------|------|
-| CRITICAL | Recipe delete has NO confirmation — deletes instantly | `app/(protected)/recipes/page.tsx` |
-| HIGH | Recipes filter section is a full Card with CardHeader — heavy chrome for 2 selects | `app/(protected)/recipes/page.tsx` |
-| HIGH | "Add Person Type" / "Add Menu Component" buttons are only in page header — far from their tables | `app/(protected)/premises/[id]/page.tsx` |
-| HIGH | MenuComponentsTable has all hardcoded English strings — no t() | `components/menu/menu-components-table.tsx` |
-| HIGH | Premise detail empty states give zero guidance on what person types / menu components ARE | `app/(protected)/premises/[id]/page.tsx` |
-| MEDIUM | Dashboard doesn't surface today's date prominently — primary daily action buried | `app/(protected)/page.tsx` |
-| MEDIUM | Menus page date header only shows compact selector — no day name visible | `app/(protected)/menus/page.tsx` |
-| LOW | Dashboard stat cards show "% from yesterday" which is often meaningless (0%) | `app/(protected)/page.tsx` |
-
-### Phase 3 Agents
-| Agent | File | Domain |
-|-------|------|--------|
-| Round 2 UX Developer | `round2-ux-developer.md` | All Phase 3 fixes |
-
-### Phase 3 Execution
-1. Round 2 UX Developer → implements all 7 fixes above in parallel where possible
+## Global Quality Gates (all phases)
+- No TypeScript errors introduced
+- All user-visible strings use t() with keys in both locale files
+- No window.confirm / window.alert remaining
+- Reports print cleanly via browser print dialog
+- Tailwind CSS only — no inline style sprawl
+- Mobile responsiveness preserved
+- No secrets hardcoded in committed files
+- All shell scripts pass `bash -n` syntax check
