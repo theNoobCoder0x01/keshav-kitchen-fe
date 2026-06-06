@@ -35,6 +35,12 @@ import { fetchAllRecipesForDropdown } from "@/lib/api/recipes";
 import { BookOpen, Utensils } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 import {
   convertUnits,
@@ -426,6 +432,7 @@ export function AddMealDialog({
     (
       meal?: AddMealDialogProps["initialMeal"],
       recipes?: Recipe[],
+      suggestion?: ConsumptionSuggestion | null,
     ): MealFormValuesWithGroups => {
       if (mode === "update" && meal?.id) {
         // Use ingredients from the menu if available, otherwise fall back to recipe ingredients
@@ -547,10 +554,11 @@ export function AddMealDialog({
         customName: "",
         followRecipe: false,
         ghanFactor: 1.0,
-        servingQuantity: 0,
-        servingQuantityUnit: DEFAULT_UNIT,
-        preparedQuantity: 0,
-        preparedQuantityUnit: DEFAULT_UNIT,
+        servingQuantity: suggestion?.servingQuantity ?? 0,
+        servingQuantityUnit: suggestion?.servingQuantityUnit ?? DEFAULT_UNIT,
+        preparedQuantity: suggestion?.preparedQuantity ?? 0,
+        preparedQuantityUnit: suggestion?.preparedQuantityUnit ?? DEFAULT_UNIT,
+        quantityPerPiece: suggestion?.quantityPerPiece ?? undefined,
         menuComponentId: meal?.menuComponentId,
         kitchenId: "",
         cook: "",
@@ -1044,8 +1052,23 @@ export function AddMealDialog({
   };
 
   const initialFormValues = useMemo(
-    () => getInitialValues(fetchedMenu || initialMeal, recipes),
-    [fetchedMenu, initialMeal, recipes, getInitialValues],
+    () =>
+      getInitialValues(
+        fetchedMenu || initialMeal,
+        recipes,
+        mode === "create" && !hasAppliedConsumptionSuggestion
+          ? consumptionSuggestion
+          : null,
+      ),
+    [
+      fetchedMenu,
+      initialMeal,
+      recipes,
+      consumptionSuggestion,
+      mode,
+      hasAppliedConsumptionSuggestion,
+      getInitialValues,
+    ],
   );
 
   const filteredRecipes = useMemo(() => {
@@ -1513,7 +1536,7 @@ export function AddMealDialog({
                                     Consumption planner
                                   </h3>
                                   <p className="mt-1 text-xs text-muted-foreground">
-                                    Counts generate the suggested quantity.
+                                    {t("meals.autoCalculated")}
                                   </p>
                                 </div>
                                 <Button
@@ -1527,129 +1550,37 @@ export function AddMealDialog({
                                   disabled={!consumptionSuggestion}
                                 >
                                   {hasAppliedConsumptionSuggestion
-                                    ? "Refresh suggestion"
-                                    : "Apply suggestion"}
+                                    ? t("meals.recalculate")
+                                    : "Apply"}
                                 </Button>
                               </div>
 
-                              <div className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_14rem]">
-                                <div className="grid gap-2 xl:grid-cols-2">
-                                  {selectedMenuComponent.averages.map(
-                                    (average) => (
-                                      <div
-                                        key={average.id}
-                                        className="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-2 rounded-md border border-border bg-background px-3 py-2"
-                                      >
-                                        <div className="min-w-0">
-                                          <Label
-                                            htmlFor={`person-count-${average.personTypeId}`}
-                                            className="block truncate text-sm font-medium leading-tight text-foreground"
-                                          >
-                                            {average.personType.name}
-                                          </Label>
-                                          <p className="truncate text-xs text-muted-foreground">
-                                            {average.personType.description
-                                              ? `${average.personType.description} · `
-                                              : ""}
-                                            Avg{" "}
-                                            {formatDecimal(average.quantity)}{" "}
-                                            {average.unit}
-                                            {average.unit === "pcs" &&
-                                            average.weightPerPiece != null
-                                              ? ` @ ${formatDecimal(average.weightPerPiece)} ${average.weightPerPieceUnit}`
-                                              : ""}
-                                          </p>
-                                        </div>
-                                        <Input
-                                          id={`person-count-${average.personTypeId}`}
-                                          type="number"
-                                          min={0}
-                                          step={1}
-                                          value={
-                                            personCounts[
-                                              average.personTypeId
-                                            ] || 0
-                                          }
-                                          onChange={(event) => {
-                                            const nextValue = Number(
-                                              event.target.value || 0,
-                                            );
-                                            setPersonCounts(
-                                              (currentCounts) => ({
-                                                ...currentCounts,
-                                                [average.personTypeId]:
-                                                  Number.isFinite(nextValue) &&
-                                                  nextValue > 0
-                                                    ? nextValue
-                                                    : 0,
-                                              }),
-                                            );
-                                          }}
-                                          className="h-8 text-right"
-                                        />
-                                      </div>
-                                    ),
-                                  )}
+                              <div className="mt-3 rounded-md border border-border bg-muted/30 p-3">
+                                <p className="text-xs font-medium text-muted-foreground mb-2">{t("meals.basedOn")}:</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {selectedMenuComponent.averages.map((average) => (
+                                    <span key={average.id} className="inline-flex items-center gap-1 rounded-md bg-background border border-border px-2 py-1 text-xs">
+                                      <span className="font-medium">{average.personType.name}</span>
+                                      <span className="text-muted-foreground">{personCounts[average.personTypeId] || 0}</span>
+                                    </span>
+                                  ))}
                                 </div>
-
-                                <div className="rounded-md bg-background px-3 py-2 text-sm text-foreground">
-                                  {consumptionSuggestion ? (
-                                    <div className="grid gap-y-1">
-                                      <div className="flex items-center justify-between gap-2">
-                                        <span className="text-xs text-muted-foreground">
-                                          Suggested
-                                        </span>
-                                        <span className="font-medium">
-                                          {formatDecimal(
-                                            consumptionSuggestion.preparedQuantity,
-                                          )}{" "}
-                                          {
-                                            consumptionSuggestion.preparedQuantityUnit
-                                          }
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center justify-between gap-2">
-                                        <span className="text-xs text-muted-foreground">
-                                          Per person
-                                        </span>
-                                        <span className="font-medium">
-                                          {formatDecimal(
-                                            consumptionSuggestion.servingQuantity,
-                                          )}{" "}
-                                          {
-                                            consumptionSuggestion.servingQuantityUnit
-                                          }
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center justify-between gap-2">
-                                        <span className="text-xs text-muted-foreground">
-                                          People
-                                        </span>
-                                        <span className="font-medium">
-                                          {consumptionSuggestion.totalPersons}
-                                        </span>
-                                      </div>
-                                      {consumptionSuggestion.totalPieces > 0 ? (
-                                        <div className="flex items-center justify-between gap-2">
-                                          <span className="text-xs text-muted-foreground">
-                                            Pieces
-                                          </span>
-                                          <span className="font-medium">
-                                            {formatDecimal(
-                                              consumptionSuggestion.totalPieces,
-                                            )}{" "}
-                                            pcs
-                                          </span>
-                                        </div>
-                                      ) : null}
+                                {consumptionSuggestion && (
+                                  <div className="mt-3 flex flex-wrap gap-4 text-sm">
+                                    <div>
+                                      <span className="text-xs text-muted-foreground">Suggested </span>
+                                      <span className="font-medium">{formatDecimal(consumptionSuggestion.preparedQuantity)} {consumptionSuggestion.preparedQuantityUnit}</span>
                                     </div>
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground">
-                                      Enter a person count to calculate a
-                                      suggestion.
-                                    </p>
-                                  )}
-                                </div>
+                                    <div>
+                                      <span className="text-xs text-muted-foreground">Per person </span>
+                                      <span className="font-medium">{formatDecimal(consumptionSuggestion.servingQuantity)} {consumptionSuggestion.servingQuantityUnit}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-muted-foreground">People </span>
+                                      <span className="font-medium">{consumptionSuggestion.totalPersons}</span>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ) : null}
@@ -1657,9 +1588,18 @@ export function AddMealDialog({
                           <div className="@container grid grid-cols-12 gap-3">
                             {values.followRecipe && (
                               <div className="col-span-12 @sm:col-span-6 @xl:col-span-4 @5xl:col-span-2">
-                                <Label className="mb-1 block text-xs font-medium text-foreground">
-                                  {t("meals.ghan")}
-                                </Label>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Label className="mb-1 block text-xs font-medium text-foreground cursor-help">
+                                        {t("meals.ghan")} ⓘ
+                                      </Label>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs text-xs">Number of recipe batches to prepare. 1 = one full recipe batch.</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                                 <Field
                                   as={Input}
                                   name={`ghanFactor`}

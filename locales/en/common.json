@@ -28,7 +28,9 @@
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "searchPlaceholder": "Search recipes, ingredients...",
+    "delete": "Delete",
     "update": "Update",
+    "print": "Print",
     "pagination": {
       "showing": "Showing {from} to {to} of {total} items",
       "previous": "Previous",
@@ -104,10 +106,17 @@
     "cook": "Cook",
     "cookPlaceholder": "Cook name (optional)",
     "failedToLoadMenu": "Failed to load meal details",
-    "loadingMenu": "Loading meal details..."
+    "loadingMenu": "Loading meal details...",
+    "autoCalculated": "Auto-calculated from person counts",
+    "recalculate": "Recalculate",
+    "basedOn": "Based on"
   },
   "reports": {
-    "title": "Reports"
+    "title": "Reports",
+    "prasadReport": "Prasad Report",
+    "recipesReport": "Recipes Report",
+    "previewTitle": "Report Preview",
+    "previewDescription": "Preview and print the report"
   },
   "recipes": {
     "title": "Recipes",
@@ -178,7 +187,12 @@
     "premiseDashboardSubtitle": "Manage your daily menu and track premise operations",
     "noPremisesFound": "No premises found.",
     "addPremiseFirst": "Please add a premise first.",
-    "managePremises": "Manage Premises"
+    "managePremises": "Manage Premises",
+    "sameForAllMeals": "Same for all meals",
+    "personCounts": "People Counts",
+    "totalPeople": "Total",
+    "noPersonTypesConfigured": "No person types configured.",
+    "addPersonType": "Add person type"
   },
   "auth": {
     "signOut": "Sign Out",
@@ -218,7 +232,18 @@
     "management": "Premises Management",
     "managementSubtitle": "Manage your premise locations and settings",
     "noPremisesFound": "No premises found.",
-    "deletePremise": "Delete premise"
+    "deletePremise": "Delete premise",
+    "deleteMenuComponentTitle": "Delete Menu Component",
+    "deletePersonTypeTitle": "Delete Person Type",
+    "personTypesEmptyTitle": "No person types yet",
+    "personTypesEmptyDescription": "Add the types of people eating here (e.g. Adult, Senior, Child). These are used to track how many people each meal serves and to auto-calculate ingredient quantities.",
+    "menuComponentsEmptyTitle": "No dish components yet",
+    "menuComponentsEmptyDescription": "Add the dishes served at this premise (e.g. Dal, Rice, Sabji). For each dish you can set typical per-person quantities — the menu page will then auto-calculate how much to prepare.",
+    "menuComponentLabel": "Label",
+    "menuComponentMealType": "Meal Type",
+    "menuComponentPortions": "Portions",
+    "noMenuComponentsFound": "No menu components found.",
+    "noPortionsConfigured": "No portions configured."
   },
   "dashboard": {
     "manageMenus": "Manage Menus",
@@ -236,7 +261,8 @@
     "fromLastWeek": "from last week",
     "totalCostToday": "Total Cost Today",
     "noRecentActivity": "No recent activity",
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "getStarted": "Get started →"
   },
   "messages": {
     "saveError": "Failed to save settings",
@@ -246,7 +272,8 @@
     "networkError": "Network error. Please try again.",
     "loadPremisesError": "Failed to load premises",
     "loadMenuDataError": "Failed to load menu data",
-    "confirmDeleteMeal": "Are you sure you want to delete this meal?",
+    "confirmDeleteMeal": "Delete meal?",
+    "confirmDeleteMealDesc": "This action cannot be undone.",
     "mealDeleteError": "Failed to delete meal",
     "loadRecipeDetailsError": "Failed to load recipe details for printing",
     "recipeDeleted": "Recipe deleted",
@@ -260,7 +287,8 @@
     "premiseUpdated": "Premise updated",
     "premiseAdded": "Premise added",
     "failedToSavePremise": "Failed to save premise",
-    "confirmDeletePremise": "Are you sure you want to delete this premise? This action cannot be undone.",
+    "confirmDeletePremise": "Delete premise?",
+    "confirmDeletePremiseDesc": "This action cannot be undone.",
     "premiseDeleted": "Premise deleted",
     "failedToDeletePremise": "Failed to delete premise",
     "pdfDownloadedSuccess": "PDF downloaded successfully",
@@ -274,6 +302,7 @@
     "menuComponentAdded": "Menu component added successfully",
     "failedToSaveMenuComponent": "Failed to save menu component",
     "confirmDeleteMenuComponent": "Are you sure you want to delete this menu component?",
+    "confirmDeleteRecipeDesc": "This will permanently delete the recipe and all its ingredients. This action cannot be undone.",
     "menuComponentDeleted": "Menu component deleted successfully",
     "failedToDeleteMenuComponent": "Failed to delete menu component",
     "personTypeUpdated": "Person type updated successfully",
@@ -285,10 +314,14 @@
     "kitchenUpdated": "Kitchen updated",
     "kitchenAdded": "Kitchen added",
     "failedToSaveKitchen": "Failed to save kitchen",
-    "confirmDeleteKitchen": "Are you sure you want to delete this kitchen? This action cannot be undone.",
+    "confirmDeleteKitchen": "Delete kitchen?",
+    "confirmDeleteKitchenDesc": "This action cannot be undone.",
     "kitchenDeleted": "Kitchen deleted",
     "failedToDeleteKitchen": "Failed to delete kitchen",
-    "failedToLoadKitchens": "Failed to load kitchens"
+    "failedToLoadKitchens": "Failed to load kitchens",
+    "failedToSavePersonCount": "Failed to save person count",
+    "premiseNotFound": "Premise information not found. Please try again.",
+    "menuComponentNotFound": "Menu component information not found. Please try again."
   },
   "kitchens": {
     "title": "Kitchens",

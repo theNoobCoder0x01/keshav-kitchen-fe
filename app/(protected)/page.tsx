@@ -206,6 +206,20 @@ export default function HomePage() {
         />
       </div>
 
+      {/* Today's highlight bar */}
+      <div className="mb-6 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Today</p>
+          <p className="text-lg font-bold text-foreground">
+            {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+        </div>
+        <Button onClick={() => router.push("/menus")} size="sm" className="gap-2">
+          <ChefHat className="h-4 w-4" />
+          {t("dashboard.planTodaysMenu")}
+        </Button>
+      </div>
+
       {/* Quick Actions Grid */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-foreground mb-4">
@@ -233,11 +247,11 @@ export default function HomePage() {
                 <CardDescription className="text-sm">
                   {action.description}
                 </CardDescription>
-                {action.count > 0 && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    {action.count} {t("common.items")}
-                  </div>
-                )}
+                <div className="mt-2 text-xs text-muted-foreground">
+                  {action.count > 0
+                    ? `${action.count} ${t("common.items")}`
+                    : t("dashboard.getStarted")}
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -260,14 +274,6 @@ export default function HomePage() {
               <div className="text-2xl font-bold text-foreground">
                 {homeStats?.totalMealsPlanned || 0}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {homeStats?.mealsPlannedChange &&
-                homeStats.mealsPlannedChange >= 0
-                  ? "+"
-                  : ""}
-                {homeStats?.mealsPlannedChange || 0}%{" "}
-                {t("dashboard.fromYesterday")}
-              </p>
             </CardContent>
           </Card>
           <Card>
@@ -280,12 +286,6 @@ export default function HomePage() {
               <div className="text-2xl font-bold text-foreground">
                 {homeStats?.activeRecipes || 0}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {homeStats?.recipesChange && homeStats.recipesChange >= 0
-                  ? "+"
-                  : ""}
-                {homeStats?.recipesChange || 0}% {t("dashboard.fromLastWeek")}
-              </p>
             </CardContent>
           </Card>
           <Card>
@@ -298,10 +298,6 @@ export default function HomePage() {
               <div className="text-2xl font-bold text-foreground">
                 ₹{homeStats?.totalCostToday || 0}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {homeStats?.costChange && homeStats.costChange >= 0 ? "+" : ""}
-                {homeStats?.costChange || 0}% {t("dashboard.fromYesterday")}
-              </p>
             </CardContent>
           </Card>
         </div>

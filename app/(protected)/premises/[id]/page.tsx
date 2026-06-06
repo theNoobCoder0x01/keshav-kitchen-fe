@@ -12,6 +12,16 @@ import { PremisePersonTypesTable } from "@/components/premises/premise-person-ty
 import { PremisesTableSkeleton } from "@/components/premises/premises-table";
 import { MenuComponentsTable } from "@/components/menu/menu-components-table";
 import type { MenuComponent } from "@/components/menu/menu-components-table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
@@ -46,6 +56,12 @@ export default function PremiseDetailsPage() {
     string | null
   >(null);
   const [deletingPersonTypeId, setDeletingPersonTypeId] = useState<
+    string | null
+  >(null);
+  const [menuComponentToDelete, setMenuComponentToDelete] = useState<
+    string | null
+  >(null);
+  const [personTypeToDelete, setPersonTypeToDelete] = useState<
     string | null
   >(null);
 
@@ -104,18 +120,22 @@ export default function PremiseDetailsPage() {
     setMenuComponentDialogOpen(true);
   };
 
-  const handleDeleteMenuComponent = async (idToDelete: string) => {
-    if (window.confirm(t("messages.confirmDeleteMenuComponent"))) {
-      setDeletingMenuComponentId(idToDelete);
-      try {
-        await api.delete(`/premises/${id}/menu-components/${idToDelete}/`);
-        toast.success(t("messages.menuComponentDeleted"));
-        await loadPremiseDetails();
-      } catch {
-        toast.error(t("messages.failedToDeleteMenuComponent"));
-      } finally {
-        setDeletingMenuComponentId(null);
-      }
+  const handleDeleteMenuComponent = (idToDelete: string) => {
+    setMenuComponentToDelete(idToDelete);
+  };
+
+  const confirmDeleteMenuComponent = async () => {
+    if (!menuComponentToDelete) return;
+    setDeletingMenuComponentId(menuComponentToDelete);
+    setMenuComponentToDelete(null);
+    try {
+      await api.delete(`/premises/${id}/menu-components/${menuComponentToDelete}/`);
+      toast.success(t("messages.menuComponentDeleted"));
+      await loadPremiseDetails();
+    } catch {
+      toast.error(t("messages.failedToDeleteMenuComponent"));
+    } finally {
+      setDeletingMenuComponentId(null);
     }
   };
 
@@ -155,18 +175,22 @@ export default function PremiseDetailsPage() {
     setPersonTypeDialogOpen(true);
   };
 
-  const handleDeletePersonType = async (personTypeId: string) => {
-    if (window.confirm(t("messages.confirmDeletePersonType"))) {
-      setDeletingPersonTypeId(personTypeId);
-      try {
-        await deletePremisePersonType(id, personTypeId);
-        toast.success(t("messages.personTypeDeleted"));
-        await loadPremiseDetails();
-      } catch {
-        toast.error(t("messages.failedToDeletePersonType"));
-      } finally {
-        setDeletingPersonTypeId(null);
-      }
+  const handleDeletePersonType = (personTypeId: string) => {
+    setPersonTypeToDelete(personTypeId);
+  };
+
+  const confirmDeletePersonType = async () => {
+    if (!personTypeToDelete) return;
+    setDeletingPersonTypeId(personTypeToDelete);
+    setPersonTypeToDelete(null);
+    try {
+      await deletePremisePersonType(id, personTypeToDelete);
+      toast.success(t("messages.personTypeDeleted"));
+      await loadPremiseDetails();
+    } catch {
+      toast.error(t("messages.failedToDeletePersonType"));
+    } finally {
+      setDeletingPersonTypeId(null);
     }
   };
 
@@ -234,9 +258,23 @@ export default function PremiseDetailsPage() {
         onSave={handleSavePersonType}
       />
       <div className="mt-4">
-        <h2 className="mb-2 text-lg font-semibold">
-          {t("premises.personTypes")}
-        </h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">{t("premises.personTypes")}</h2>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { setEditingPersonType(null); setPersonTypeDialogOpen(true); }}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            {t("premises.addPersonType")}
+          </Button>
+        </div>
+        {personTypes.length === 0 && (
+          <div className="rounded-lg border border-dashed border-border p-4 mb-3 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">{t("premises.personTypesEmptyTitle")}</p>
+            <p>{t("premises.personTypesEmptyDescription")}</p>
+          </div>
+        )}
         <PremisePersonTypesTable
           personTypes={personTypes}
           onEdit={handleEditPersonType}
@@ -245,9 +283,23 @@ export default function PremiseDetailsPage() {
         />
       </div>
       <div className="mt-4">
-        <h2 className="mb-2 text-lg font-semibold">
-          {t("premises.menuComponents")}
-        </h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">{t("premises.menuComponents")}</h2>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { setEditingMenuComponent(null); setMenuComponentDialogOpen(true); }}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            {t("premises.addMenuComponent")}
+          </Button>
+        </div>
+        {menuComponents.length === 0 && (
+          <div className="rounded-lg border border-dashed border-border p-4 mb-3 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">{t("premises.menuComponentsEmptyTitle")}</p>
+            <p>{t("premises.menuComponentsEmptyDescription")}</p>
+          </div>
+        )}
         <MenuComponentsTable
           menuComponents={menuComponents}
           onEdit={handleEditMenuComponent}
@@ -255,6 +307,50 @@ export default function PremiseDetailsPage() {
           deletingId={deletingMenuComponentId}
         />
       </div>
+
+      <AlertDialog
+        open={!!menuComponentToDelete}
+        onOpenChange={(open) => {
+          if (!open) setMenuComponentToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("premises.deleteMenuComponentTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("messages.confirmDeleteMenuComponent")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteMenuComponent}>
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={!!personTypeToDelete}
+        onOpenChange={(open) => {
+          if (!open) setPersonTypeToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("premises.deletePersonTypeTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("messages.confirmDeletePersonType")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeletePersonType}>
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

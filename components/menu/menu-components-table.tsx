@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslations } from "@/hooks/use-translations";
 import { formatDecimal } from "@/lib/utils";
 import { MealType, MealTypeEnum, MenuComponentApiItem } from "@/types";
 import { Pencil, Trash2 } from "lucide-react";
@@ -38,6 +39,8 @@ export function MenuComponentsTable({
   onDelete,
   deletingId,
 }: Props) {
+  const { t } = useTranslations();
+
   const mealTypesObj = {
     [MealTypeEnum.BREAKFAST]: "Breakfast",
     [MealTypeEnum.LUNCH]: "Lunch",
@@ -49,12 +52,12 @@ export function MenuComponentsTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Sequence Number</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Label</TableHead>
-          <TableHead>Meal Type</TableHead>
-          <TableHead>Averages</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead>{t("premises.sequenceNumber")}</TableHead>
+          <TableHead>{t("common.name")}</TableHead>
+          <TableHead>{t("premises.menuComponentLabel")}</TableHead>
+          <TableHead>{t("premises.menuComponentMealType")}</TableHead>
+          <TableHead>{t("premises.menuComponentPortions")}</TableHead>
+          <TableHead>{t("common.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -64,7 +67,7 @@ export function MenuComponentsTable({
               colSpan={6}
               className="text-center text-muted-foreground"
             >
-              No menu components found.
+              {t("premises.noMenuComponentsFound")}
             </TableCell>
           </TableRow>
         ) : (
@@ -77,7 +80,7 @@ export function MenuComponentsTable({
               <TableCell className="max-w-md">
                 {mc.averages.length === 0 ? (
                   <span className="text-sm text-muted-foreground">
-                    No averages configured.
+                    {t("premises.noPortionsConfigured")}
                   </span>
                 ) : (
                   <div className="space-y-1 text-sm">

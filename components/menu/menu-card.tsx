@@ -2,15 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BaseDialog } from "@/components/ui/base-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { fetchMenuComponents } from "@/lib/api/menu-components";
 import { cn } from "@/lib/utils";
 import type { PremisePersonType } from "@/types/premises";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import { MenuIngredient, MenuIngredientGroup } from "@/types/menus";
-import { Edit, Plus, SlidersHorizontal, Trash2, Users } from "lucide-react";
+import { Edit, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 
@@ -61,7 +64,6 @@ export function MenuCard({
   const [menuComponents, setMenuComponents] = useState<MenuComponentApiItem[]>(
     [],
   );
-  const [peopleDialogOpen, setPeopleDialogOpen] = useState(false);
 
   const loadMenuComponents = async () => {
     try {
@@ -150,15 +152,6 @@ export function MenuCard({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button
-              size="icon"
-              variant="outline"
-              className="h-8 w-8"
-              onClick={() => setPeopleDialogOpen(true)}
-              title={`People for ${title}`}
-            >
-              <Users className="h-4 w-4" />
-            </Button>
-            <Button
               size="sm"
               className="bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
               onClick={() => onAdd()}
@@ -168,67 +161,6 @@ export function MenuCard({
             </Button>
           </div>
         </div>
-        <BaseDialog
-          open={peopleDialogOpen}
-          onOpenChange={setPeopleDialogOpen}
-          title={`People for ${title}`}
-          description="Set person counts for this meal type"
-          icon={<Users className="h-5 w-5 text-primary-foreground" />}
-          size="lg"
-        >
-          <div className="space-y-4">
-            <div className="flex justify-end">
-              <Button type="button" variant="outline" onClick={onAddPersonType}>
-                <Plus className="mr-1 h-4 w-4" />
-                Add Person Type
-              </Button>
-            </div>
-            {personTypes.length > 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {personTypes.map((personType) => (
-                  <div
-                    key={personType.id}
-                    className="rounded-md border border-border bg-background p-3"
-                  >
-                    <Label
-                      htmlFor={`${title}-${personType.id}-count`}
-                      className="text-sm font-medium text-foreground"
-                    >
-                      {personType.name}
-                    </Label>
-                    {personType.description ? (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {personType.description}
-                      </p>
-                    ) : null}
-                    <Input
-                      id={`${title}-${personType.id}-count`}
-                      type="number"
-                      min={0}
-                      step={1}
-                      inputMode="numeric"
-                      value={personCounts[personType.id] ?? 0}
-                      onChange={(event) => {
-                        const nextValue = Number(event.target.value || 0);
-                        onPersonCountChange?.(
-                          personType.id,
-                          Number.isFinite(nextValue) && nextValue > 0
-                            ? nextValue
-                            : 0,
-                        );
-                      }}
-                      className="mt-2"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                Add a person type to enter counts for this meal.
-              </div>
-            )}
-          </div>
-        </BaseDialog>
         <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
           {menuComponentWithMenuItemList?.map(({ item, component }) => (
             <div
@@ -266,18 +198,26 @@ export function MenuCard({
                   {showActions && (
                     <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       {component && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="w-8 h-8 p-0 text-muted-foreground hover:bg-muted"
-                          title={`Edit averages for ${component.label}`}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onEditMenuComponent?.(component);
-                          }}
-                        >
-                          <SlidersHorizontal className="w-4 h-4" />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="w-8 h-8 p-0 text-muted-foreground hover:bg-muted"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  onEditMenuComponent?.(component);
+                                }}
+                              >
+                                <SlidersHorizontal className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <p className="max-w-xs text-xs">Set the typical amount each person type eats — used to auto-calculate preparation quantities</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                       <Button
                         size="sm"
@@ -307,19 +247,27 @@ export function MenuCard({
                     <span className="text-sm">Add {component?.label}</span>
                   </div>
                   {component && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 px-2 text-muted-foreground hover:bg-muted"
-                      title={`Edit averages for ${component.label}`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onEditMenuComponent?.(component);
-                      }}
-                    >
-                      <SlidersHorizontal className="mr-1 h-4 w-4" />
-                      Averages
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2 text-muted-foreground hover:bg-muted"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onEditMenuComponent?.(component);
+                            }}
+                          >
+                            <SlidersHorizontal className="mr-1 h-4 w-4" />
+                            Portions
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p className="max-w-xs text-xs">Set the typical amount each person type eats — used to auto-calculate preparation quantities</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
               )}

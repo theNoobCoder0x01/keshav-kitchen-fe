@@ -10,6 +10,17 @@ import {
 } from "@/components/dialogs/add-edit-menu-component-dialog";
 import { AddMealDialog } from "@/components/dialogs/add-meal-dialog";
 import { MenuGrid, MenuGridSkeleton } from "@/components/menu/menu-grid";
+import { PersonCountsPanel } from "@/components/menu/person-counts-panel";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { BaseDialog } from "@/components/ui/base-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,18 +51,11 @@ import type { PremisePersonType } from "@/types/premises";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import type { MealType as UnifiedMealType } from "@/types/menus";
 import { MealTypeEnum as MealType } from "@/types/menus";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import { AlertTriangle, ChevronDown, File } from "lucide-react";
+import { ChevronLeft, ChevronRight, File, Plus, UtensilsCrossed } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-// import html2pdf from "html2pdf.js";
 
 const EMPTY_PERSON_COUNTS: Record<string, number> = {};
 
@@ -93,6 +97,7 @@ export default function MenuPage() {
   });
 
   const reportIFrameRef = useRef<HTMLIFrameElement | null>(null);
+  const [mealToDelete, setMealToDelete] = useState<string | null>(null);
 
   const loadPremises = useCallback(async () => {
     try {
@@ -241,16 +246,21 @@ export default function MenuPage() {
     setAddMealDialog(true);
   };
 
-  const handleDeleteMeal = async (mealId: string) => {
-    if (window.confirm(t("messages.confirmDeleteMeal"))) {
-      try {
-        const response = await deleteMenu(mealId);
-        loadMenuData(); // Reload data after deletion
-        toast.success(response.message);
-      } catch (error) {
-        console.error("Error deleting meal:", error);
-        toast.error(t("messages.mealDeleteError"));
-      }
+  const handleDeleteMeal = (mealId: string) => {
+    setMealToDelete(mealId);
+  };
+
+  const confirmDeleteMeal = async () => {
+    if (!mealToDelete) return;
+    const id = mealToDelete;
+    setMealToDelete(null);
+    try {
+      const response = await deleteMenu(id);
+      loadMenuData();
+      toast.success(response.message);
+    } catch (error) {
+      console.error("Error deleting meal:", error);
+      toast.error(t("messages.mealDeleteError"));
     }
   };
 
@@ -295,14 +305,14 @@ export default function MenuPage() {
       count,
     }).catch((error) => {
       console.error("Failed to save meal person count:", error);
-      toast.error("Failed to save person count");
+      toast.error(t("messages.failedToSavePersonCount"));
     });
   };
 
   const handleSavePersonType = async (personType: PremisePersonTypeForm) => {
     const currentPremiseId = premises[activeTab]?.id;
     if (!currentPremiseId) {
-      toast.error("Premise information not found. Please try again.");
+      toast.error(t("messages.premiseNotFound"));
       return false;
     }
 
@@ -331,7 +341,7 @@ export default function MenuPage() {
   const handleSaveMenuComponent = async (menuComponent: MenuComponentForm) => {
     const currentPremiseId = premises[activeTab]?.id;
     if (!currentPremiseId || !menuComponent.id) {
-      toast.error("Menu component information not found. Please try again.");
+      toast.error(t("messages.menuComponentNotFound"));
       return false;
     }
 
@@ -364,37 +374,6 @@ export default function MenuPage() {
     setReportPdfPreviewDialog(undefined);
   };
 
-  const handleDownloadIframePdfV2 = async () => {
-    const iframe = reportIFrameRef.current;
-
-    if (!iframe?.contentDocument) {
-      console.error("Iframe not found or not loaded yet");
-      return;
-    }
-    const reportRoute = `${window.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ""}/reports/cook?epochMs=${selectedDate.getTime()}`;
-    const headerHtml = `<h1>Premise Report</h1><p>${new Date().toLocaleDateString()}</p>`;
-    const authToken = localStorage.getItem("pdfToken"); // or any short-lived token
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    try {
-      const res = await api.post(
-        "/reports/pdf/",
-        { route: reportRoute, headerHtml, authToken, timezone },
-        { responseType: "arraybuffer" },
-      );
-
-      const arrayBuffer = await res.data;
-      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "report.pdf";
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF");
-    }
-  };
   const handleDownloadIframePdf = () => {
     const iframe = document.getElementById(
       "report-preview-iframe",
@@ -436,74 +415,48 @@ export default function MenuPage() {
           actions={
             <div className="flex items-center gap-3">
               {/* Date Selector */}
-              <CompactDateSelector
-                date={selectedDate}
-                onDateChange={handleDateChange}
-                className="w-auto"
-              />
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:block text-sm font-medium text-muted-foreground min-w-[90px] text-right">
+                  {selectedDate.toLocaleDateString("en-IN", { weekday: "long" })}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleDateChange(new Date(selectedDate.getTime() - 86400000))}
+                    className="h-9 w-9"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <CompactDateSelector
+                    date={selectedDate}
+                    onDateChange={handleDateChange}
+                    className="w-auto"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleDateChange(new Date(selectedDate.getTime() + 86400000))}
+                    className="h-9 w-9"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
 
               {/* Reports buttons */}
               <Button
                 variant="outline"
                 onClick={() => handleDownloadReport("prasad")}
               >
-                Prasad Report
+                {t("reports.prasadReport")}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => handleDownloadReport("recipes?compact=true")}
               >
-                Recipes Report
+                {t("reports.recipesReport")}
               </Button>
-              {false && (
-                <Button
-                  variant="default"
-                  onClick={() => handleDownloadReport("recipes")}
-                >
-                  Recipes Report old
-                </Button>
-              )}
-
-              {/* Reports Dropdown Menu */}
-              {false && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="border-primary text-primary hover:bg-primary/10 bg-background/80 backdrop-blur-xs flex items-center"
-                    >
-                      <span className="hidden sm:inline">
-                        {t("reports.title")}
-                      </span>
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    side="bottom"
-                    align="end"
-                    className="z-10 bg-secondary drop-shadow-lg py-2 flex flex-col rounded-lg border"
-                  >
-                    <DropdownMenuItem
-                      className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
-                      onClick={() => handleDownloadReport("cook")}
-                    >
-                      Cook Report
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
-                      onClick={() => handleDownloadReport("supplier")}
-                    >
-                      Supplier Report
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="hover:bg-accent-foreground/30 cursor-pointer px-3 py-1.5 transition-colors duration-300"
-                      onClick={() => handleDownloadReport("recipes")}
-                    >
-                      Recipes Report
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
             </div>
           }
         />
@@ -527,6 +480,16 @@ export default function MenuPage() {
             <EnhancedStatsGrid stats={getStatsForTab()} />
           )}
 
+          {/* Person Counts Panel */}
+          {!loadingStates.menus && personTypes.length >= 0 && (
+            <PersonCountsPanel
+              personTypes={personTypes}
+              personCountsByMealType={personCountsByMealType}
+              onPersonCountChange={handlePersonCountChange}
+              onAddPersonType={() => setPersonTypeDialogOpen(true)}
+            />
+          )}
+
           {/* Menu Section */}
           {loadingStates.menus ? (
             <MenuGridSkeleton />
@@ -541,7 +504,6 @@ export default function MenuPage() {
               personTypes={personTypes}
               personCountsByMealType={personCountsByMealType}
               onPersonCountChange={handlePersonCountChange}
-              onAddPersonType={() => setPersonTypeDialogOpen(true)}
               onEditMenuComponent={handleEditMenuComponent}
               menuComponentsRefreshKey={menuComponentsRefreshKey}
             />
@@ -550,16 +512,21 @@ export default function MenuPage() {
       )}
 
       {!loadingStates.premises && premises.length === 0 && (
-        <Card className="p-4">
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <p className="text-muted-foreground flex flex-col items-center gap-2 text-xl text-center">
-              <span className="flex items-center gap-1">
-                <AlertTriangle className="w-7 h-7" />{" "}
+        <Card className="border-dashed">
+          <div className="flex flex-col items-center justify-center py-16 px-8 gap-6 text-center">
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <UtensilsCrossed className="w-10 h-10 text-primary" />
+            </div>
+            <div className="space-y-2 max-w-sm">
+              <h3 className="text-xl font-semibold text-foreground">
                 {t("menus.noPremisesFound")}
-              </span>
-              <span className="text-sm">{t("menus.addPremiseFirst")}</span>
-            </p>
-            <Button variant="default" onClick={() => router.push("/premises")}>
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t("menus.addPremiseFirst")}
+              </p>
+            </div>
+            <Button onClick={() => router.push("/premises")} size="lg" className="gap-2">
+              <Plus className="w-4 h-4" />
               {t("menus.managePremises")}
             </Button>
           </div>
@@ -608,17 +575,14 @@ export default function MenuPage() {
       <BaseDialog
         open={!!reportPdfPreviewDialog}
         onOpenChange={handleReportPdfPreviewClose}
-        title="Preview"
-        description="This is a preview of pdf report"
+        title={t("reports.previewTitle")}
+        description={t("reports.previewDescription")}
         icon={<File className="w-5 h-5 text-primary-foreground" />}
         size="6xl"
       >
         <div className="flex justify-end gap-2 mb-2">
-          {/* <Button variant="outline" onClick={handleDownloadIframePdf}>
-            Download
-          </Button> */}
           <Button variant="outline" onClick={handleDownloadIframePdf}>
-            Print
+            {t("common.print")}
           </Button>
         </div>
         <div
@@ -634,6 +598,26 @@ export default function MenuPage() {
           />
         </div>
       </BaseDialog>
+
+      <AlertDialog open={!!mealToDelete} onOpenChange={(open) => !open && setMealToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("messages.confirmDeleteMeal")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("messages.confirmDeleteMealDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteMeal}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

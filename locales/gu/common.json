@@ -28,7 +28,9 @@
     "saveChanges": "ફેરફારો સાચવો",
     "saving": "સાચવી રહ્યા છીએ...",
     "searchPlaceholder": "વાનગીઓ, સામગ્રી શોધો...",
+    "delete": "કાઢી નાખો",
     "update": "અપડેટ કરો",
+    "print": "છાપો",
     "pagination": {
       "showing": "{from} થી {to} એન્ટ્રીઓ {total} માંથી બતાવી રહ્યા છીએ",
       "previous": "અગાઉ",
@@ -104,10 +106,17 @@
     "cook": "રસોઇયો",
     "cookPlaceholder": "રસોઇયાનું નામ (વૈકલ્પિક)",
     "failedToLoadMenu": "ભોજન વિગત લોડ કરવામાં નિષ્ફળ",
-    "loadingMenu": "ભોજન વિગત લોડ થઈ રહ્યું છે..."
+    "loadingMenu": "ભોજન વિગત લોડ થઈ રહ્યું છે...",
+    "autoCalculated": "Auto-calculated from person counts",
+    "recalculate": "Recalculate",
+    "basedOn": "Based on"
   },
   "reports": {
-    "title": "અહેવાલો"
+    "title": "અહેવાલો",
+    "prasadReport": "પ્રસાદ રિપોર્ટ",
+    "recipesReport": "રેસિપી રિપોર્ટ",
+    "previewTitle": "રિપોર્ટ પૂર્વાવલોકન",
+    "previewDescription": "રિપોર્ટ પૂર્વાવલોકન કરો અને છાપો"
   },
   "recipes": {
     "title": "વાનગીઓ",
@@ -178,7 +187,12 @@
     "premiseDashboardSubtitle": "તમારા દૈનિક મેન્યુ વ્યવસ્થા કરો અને રસોડાની કામગીરી ટ્રૅક કરો",
     "noPremisesFound": "કોઈ રસોડા મળ્યા નથી.",
     "addPremiseFirst": "કૃપા કરી પહેલા રસોડું ઉમેરો.",
-    "managePremises": "રસોડા વ્યવસ્થા કરો"
+    "managePremises": "રસોડા વ્યવસ્થા કરો",
+    "sameForAllMeals": "Same for all meals",
+    "personCounts": "People Counts",
+    "totalPeople": "Total",
+    "noPersonTypesConfigured": "No person types configured.",
+    "addPersonType": "Add person type"
   },
   "auth": {
     "signOut": "સાઇન આઉટ",
@@ -218,7 +232,18 @@
     "management": "રસોડા વ્યવસ્થાપન",
     "managementSubtitle": "તમારા રસોડાના સ્થાનો અને સેટિંગ્સ વ્યવસ્થા કરો",
     "noPremisesFound": "કોઈ રસોડા મળ્યા નથી.",
-    "deletePremise": "રસોડું કાઢી નાખો"
+    "deletePremise": "રસોડું કાઢી નાખો",
+    "deleteMenuComponentTitle": "મેન્યુ ઘટક કાઢી નાખો",
+    "deletePersonTypeTitle": "વ્યક્તિ પ્રકાર કાઢી નાખો",
+    "personTypesEmptyTitle": "No person types yet",
+    "personTypesEmptyDescription": "Add the types of people eating here (e.g. Adult, Senior, Child). These are used to track how many people each meal serves and to auto-calculate ingredient quantities.",
+    "menuComponentsEmptyTitle": "No dish components yet",
+    "menuComponentsEmptyDescription": "Add the dishes served at this premise (e.g. Dal, Rice, Sabji). For each dish you can set typical per-person quantities — the menu page will then auto-calculate how much to prepare.",
+    "menuComponentLabel": "Label",
+    "menuComponentMealType": "Meal Type",
+    "menuComponentPortions": "Portions",
+    "noMenuComponentsFound": "No menu components found.",
+    "noPortionsConfigured": "No portions configured."
   },
   "dashboard": {
     "manageMenus": "મેન્યુ વ્યવસ્થાપન",
@@ -236,7 +261,8 @@
     "fromLastWeek": "ગયા અઠવાડિયાથી",
     "totalCostToday": "આજનો કુલ ખર્ચ",
     "noRecentActivity": "કોઈ તાજી પ્રવૃત્તિ નથી",
-    "recentActivity": "તાજેતરની પ્રવૃત્તિ"
+    "recentActivity": "તાજેતરની પ્રવૃત્તિ",
+    "getStarted": "શરૂ કરો →"
   },
   "messages": {
     "saveError": "સેટિંગ્સ સાચવવામાં નિષ્ફળ",
@@ -246,7 +272,8 @@
     "networkError": "નેટવર્ક ભૂલ. કૃપા કરીને ફરી પ્રયાસ કરો.",
     "loadPremisesError": "રસોડા લોડ કરવામાં નિષ્ફળ",
     "loadMenuDataError": "મેન્યુ ડેટા લોડ કરવામાં નિષ્ફળ",
-    "confirmDeleteMeal": "શું તમે ખરેખર આ ભોજન કાઢી નાખવા માંગો છો?",
+    "confirmDeleteMeal": "ભોજન કાઢી નાખવું?",
+    "confirmDeleteMealDesc": "આ ક્રિયા પૂર્વવત્ કરી શકાશે નહીં.",
     "mealDeleteError": "ભોજન કાઢી નાખવામાં નિષ્ફળ",
     "loadRecipeDetailsError": "પ્રિન્ટિંગ માટે વાનગીની વિગતો લોડ કરવામાં નિષ્ફળ",
     "recipeDeleted": "વાનગી કાઢી નાખવામાં આવી",
@@ -260,7 +287,8 @@
     "premiseUpdated": "રસોડું અપડેટ થયું",
     "premiseAdded": "રસોડું ઉમેરવામાં આવ્યું",
     "failedToSavePremise": "રસોડું સાચવવામાં નિષ્ફળ",
-    "confirmDeletePremise": "શું તમે ખરેખર આ રસોડું કાઢી નાખવા માંગો છો? આ ક્રિયા પાછી કરી શકાતી નથી.",
+    "confirmDeletePremise": "રસોડું કાઢી નાખવું?",
+    "confirmDeletePremiseDesc": "આ ક્રિયા પૂર્વવત્ કરી શકાશે નહીં.",
     "premiseDeleted": "રસોડું કાઢી નાખવામાં આવ્યું",
     "failedToDeletePremise": "રસોડું કાઢી નાખવામાં નિષ્ફળ",
     "pdfDownloadedSuccess": "PDF સફળતાપૂર્વક ડાઉનલોડ થયું",
@@ -274,6 +302,7 @@
     "menuComponentAdded": "મેન્યુ ઘટક સફળતાપૂર્વક ઉમેરાયો",
     "failedToSaveMenuComponent": "મેન્યુ ઘટક સાચવવામાં નિષ્ફળ",
     "confirmDeleteMenuComponent": "શું તમે ખરેખર આ મેન્યુ ઘટક કાઢી નાખવા માંગો છો?",
+    "confirmDeleteRecipeDesc": "This will permanently delete the recipe and all its ingredients. This action cannot be undone.",
     "menuComponentDeleted": "મેન્યુ ઘટક સફળતાપૂર્વક કાઢી નાખવામાં આવ્યો",
     "failedToDeleteMenuComponent": "મેન્યુ ઘટક કાઢી નાખવામાં નિષ્ફળ",
     "personTypeUpdated": "વ્યક્તિ પ્રકાર સફળતાપૂર્વક અપડેટ થયો",
@@ -285,10 +314,14 @@
     "kitchenUpdated": "રસોઈઘર અપડેટ થઈ ગયું",
     "kitchenAdded": "રસોઈઘર ઉમેરાઈ ગયું",
     "failedToSaveKitchen": "રસોઈઘર સાચવવામાં નિષ્ફળ",
-    "confirmDeleteKitchen": "શું તમે ખરેખર આ રસોઈઘર કાઢી નાખવા માંગો છો? આ ક્રિયા પૂર્વવત્ કરી શકાશે નહીં.",
+    "confirmDeleteKitchen": "રસોઈઘર કાઢી નાખવું?",
+    "confirmDeleteKitchenDesc": "આ ક્રિયા પૂર્વવત્ કરી શકાશે નહીં.",
     "kitchenDeleted": "રસોઈઘર કાઢી નાખ્યું",
     "failedToDeleteKitchen": "રસોઈઘર કાઢી નાખવામાં નિષ્ફળ",
-    "failedToLoadKitchens": "રસોઈઘર લોડ કરવામાં નિષ્ફળ"
+    "failedToLoadKitchens": "રસોઈઘર લોડ કરવામાં નિષ્ફળ",
+    "failedToSavePersonCount": "વ્યક્તિ ગણના સાચવવામાં નિષ્ફળ",
+    "premiseNotFound": "રસોડાની માહિતી મળી નથી. કૃપા કરી ફરીથી પ્રયાસ કરો.",
+    "menuComponentNotFound": "મેન્યુ ઘટકની માહિતી મળી નથી. કૃપા કરી ફરીથી પ્રયાસ કરો."
   },
   "kitchens": {
     "title": "રસોઈઘરો",

@@ -6,15 +6,18 @@ import {
   RecipesTable,
   RecipesTableSkeleton,
 } from "@/components/recipes/recipes-table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -61,6 +64,7 @@ export default function RecipesPage() {
     instructions?: string | null;
   } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -199,7 +203,7 @@ export default function RecipesPage() {
     }
   };
 
-  // Delete handler
+  // Delete handler — called only after confirmation
   const handleDeleteRecipe = async (id: string) => {
     setDeletingId(id);
     try {
@@ -230,6 +234,13 @@ export default function RecipesPage() {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const confirmDeleteRecipe = () => {
+    if (!recipeToDelete) return;
+    const id = recipeToDelete;
+    setRecipeToDelete(null);
+    handleDeleteRecipe(id);
   };
 
   const handleSaveRecipe = async (
@@ -513,127 +524,90 @@ export default function RecipesPage() {
         />
       </div>
 
-      {/* Search and Filter Section */}
-      <Card>
-        <CardHeader className="p-4 pb-0">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Search className="w-5 h-5 text-primary" />
-            {t("recipes.searchAndFilter")}
-          </CardTitle>
-          <CardDescription>
-            {t("recipes.searchAndFilterDescription")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 space-y-4">
-          {/* Basic Search */}
-          <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder={t("recipes.searchPlaceholder")}
-                value={searchTerm}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSearchTerm(e.target.value)
-                }
-                className="pl-10"
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className="flex items-center gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              {t("recipes.filters")}
+      {/* Search and Filters */}
+      <div className="flex flex-col gap-2">
+        {/* Row 1: Search + filter toggle + clear */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder={t("recipes.searchPlaceholder")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="gap-2 shrink-0"
+          >
+            <Filter className="h-4 w-4" />
+            {t("recipes.filters")}
+            {(filterCategory !== "all" || filterSubcategory !== "all") && (
+              <span className="ml-1 h-2 w-2 rounded-full bg-primary inline-block" />
+            )}
+          </Button>
+          {(searchTerm || filterCategory !== "all" || filterSubcategory !== "all") && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2 shrink-0 text-muted-foreground">
+              <RefreshCw className="h-4 w-4" />
+              {t("recipes.clear")}
             </Button>
-            {(searchTerm ||
-              filterCategory !== "all" ||
-              filterSubcategory !== "all") && (
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                {t("recipes.clear")}
-              </Button>
+          )}
+        </div>
+
+        {/* Row 2: Category + Subcategory selects (collapsible) */}
+        {showAdvancedFilters && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("recipes.allCategories")} />
+              </SelectTrigger>
+              <SelectContent searchable>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category === "all" ? t("recipes.allCategories") : category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterSubcategory} onValueChange={setFilterSubcategory}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("recipes.allSubcategories")} />
+              </SelectTrigger>
+              <SelectContent searchable>
+                {subcategories.map((subcategory) => (
+                  <SelectItem key={subcategory} value={subcategory}>
+                    {subcategory === "all" ? t("recipes.allSubcategories") : subcategory}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Active filter badges */}
+        {(searchTerm || filterCategory !== "all" || filterSubcategory !== "all") && (
+          <div className="flex flex-wrap gap-1.5">
+            {searchTerm && (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                {t("recipes.search")}: &quot;{searchTerm}&quot;
+              </Badge>
+            )}
+            {filterCategory !== "all" && (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                {t("recipes.category")}: {filterCategory}
+              </Badge>
+            )}
+            {filterSubcategory !== "all" && (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                {t("recipes.subcategory")}: {filterSubcategory}
+              </Badge>
             )}
           </div>
-
-          {/* Advanced Filters */}
-          {showAdvancedFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {t("recipes.category")}
-                </label>
-                <Select
-                  value={filterCategory}
-                  onValueChange={setFilterCategory}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("recipes.category")} />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category === "all"
-                          ? t("recipes.allCategories")
-                          : category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {t("recipes.subcategory")}
-                </label>
-                <Select
-                  value={filterSubcategory}
-                  onValueChange={setFilterSubcategory}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("recipes.subcategory")} />
-                  </SelectTrigger>
-                  <SelectContent searchable>
-                    {subcategories.map((subcategory) => (
-                      <SelectItem key={subcategory} value={subcategory}>
-                        {subcategory === "all"
-                          ? t("recipes.allSubcategories")
-                          : subcategory}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
-          {/* Active Filters Display */}
-          {(searchTerm ||
-            filterCategory !== "all" ||
-            filterSubcategory !== "all") && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {searchTerm && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {t("recipes.search")}: &quot;{searchTerm}&quot;
-                </Badge>
-              )}
-              {filterCategory !== "all" && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {t("recipes.category")}: {filterCategory}
-                </Badge>
-              )}
-              {filterSubcategory !== "all" && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {t("recipes.subcategory")}: {filterSubcategory}
-                </Badge>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Results Summary */}
       <div className="flex items-center justify-between">
@@ -663,7 +637,7 @@ export default function RecipesPage() {
               });
               setIsEditDialogOpen(true);
             }}
-            onDelete={handleDeleteRecipe}
+            onDelete={(id) => setRecipeToDelete(id)}
             onPrint={handlePrintRecipe}
             deletingId={deletingId}
             itemsPerPageOptions={[20, 50]}
@@ -727,6 +701,25 @@ export default function RecipesPage() {
         onOpenChange={setIsPrintDialogOpen}
         recipe={selectedRecipeForPrint}
       />
+      <AlertDialog open={!!recipeToDelete} onOpenChange={(open) => !open && setRecipeToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("recipes.deleteRecipe")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("messages.confirmDeleteRecipeDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteRecipe}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
