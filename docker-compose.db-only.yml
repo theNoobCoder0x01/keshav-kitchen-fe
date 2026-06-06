@@ -1,0 +1,47 @@
+# docker-compose.db-only.yml
+# Standalone compose file for local development — spins up ONLY the database and pgAdmin.
+# No nginx, no app container, no backup container.
+#
+# Usage:
+#   npm run dev:db        # start
+#   npm run dev:db:stop   # stop
+#
+# Credentials are read from .env.local (or fall back to the defaults below).
+
+services:
+  db:
+    image: postgres:17
+    container_name: keshav_db_local
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-keshav}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-keshav123}
+      POSTGRES_DB: keshav_kitchen_dev
+    ports:
+      - "0.0.0.0:5432:5432"
+    volumes:
+      - db_local_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-keshav} -d keshav_kitchen_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_local
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@keshav.local
+      PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD:-keshav123}
+    ports:
+      - "0.0.0.0:8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_local_data:
+    name: keshav_db_local_data

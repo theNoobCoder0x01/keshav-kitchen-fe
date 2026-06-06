@@ -1,54 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import crypto from "crypto"; // Use webcrypto for browser compatibility
-
-// Import the crypto utilities for password hashing
-// Note: This is a workaround since we can't directly import ES modules in CommonJS
-// In a real scenario, you might want to convert this to TypeScript or use dynamic imports
-
-/**
- * Simple PBKDF2 implementation for the seed script
- * This mirrors the crypto-utils.ts implementation
- */
-async function hashPasswordForSeed(password: string) {
-  const iterations = 100000;
-  const saltLength = 32;
-  const hashLength = 32;
-
-  // Generate salt
-  const salt = crypto.getRandomValues(new Uint8Array(saltLength));
-
-  // Convert password to ArrayBuffer
-  const passwordBuffer = new TextEncoder().encode(password);
-
-  // Import key
-  const key = await crypto.subtle.importKey(
-    "raw",
-    passwordBuffer,
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits"],
-  );
-
-  // Derive hash
-  const hashBuffer = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      salt: salt,
-      iterations: iterations,
-      hash: "SHA-256",
-    },
-    key,
-    hashLength * 8,
-  );
-
-  // Convert to base64
-  const hashArray = new Uint8Array(hashBuffer);
-  const saltBase64 = btoa(String.fromCharCode(...salt));
-  const hashBase64 = btoa(String.fromCharCode(...hashArray));
-
-  return `${saltBase64}.${hashBase64}`;
-}
+import crypto from "crypto";
 
 const databaseUrl = process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL;
 
@@ -60,37 +12,76 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: databaseUrl }),
 });
 
-async function main() {
-  console.log("🌱 Starting database seed...");
+// Mirrors the PBKDF2/SHA-256 implementation in lib/crypto-utils.ts
+async function hashPassword(password: string): Promise<string> {
+  const saltLength = 32;
+  const hashLength = 32;
+  const salt = crypto.getRandomValues(new Uint8Array(saltLength));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"],
+  );
+  const hashBuffer = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    key,
+    hashLength * 8,
+  );
+  const saltBase64 = btoa(String.fromCharCode(...salt));
+  const hashBase64 = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
+  return `${saltBase64}.${hashBase64}`;
+}
 
-  // Set up dates for menu creation
-  console.log("Setting up dates...");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
+type SeedStats = { created: string[]; skipped: string[] };
 
-  // Create users with proper premise references
-  console.log("Creating users...");
-  const hashedPassword = await hashPasswordForSeed("admin123");
+// Each seeder checks existence first so the hash is only computed when actually needed.
+// Add new seeders below following the same pattern — check → skip or create.
 
-  const users = await Promise.all([
-    prisma.user.upsert({
-      where: { email: "admin@kitchen.com" },
-      update: {},
-      create: {
-        id: "user-1",
-        name: "Admin User",
-        email: "admin@kitchen.com",
-        password: hashedPassword,
-        role: "ADMIN",
+async function seedUsers(stats: SeedStats) {
+  const users = [
+    {
+      id: "user-1",
+      email: "admin@kitchen.com",
+      name: "Admin User",
+      password: "admin123",
+      role: "ADMIN" as const,
+    },
+  ];
+
+  for (const u of users) {
+    const exists = await prisma.user.findUnique({ where: { email: u.email } });
+    if (exists) {
+      stats.skipped.push(`user:${u.email}`);
+      continue;
+    }
+    await prisma.user.create({
+      data: {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        password: await hashPassword(u.password),
+        role: u.role,
       },
-    }),
-  ]);
+    });
+    stats.created.push(`user:${u.email}`);
+  }
+}
 
-  console.log("✅ Database seeded successfully!");
-  console.log("🔑 Login credentials:");
-  console.log("  Admin: admin@kitchen.com / admin123");
+async function main() {
+  console.log("🌱 Seeding database...");
+
+  const stats: SeedStats = { created: [], skipped: [] };
+
+  await seedUsers(stats);
+  // await seedPremises(stats);   ← add future seeders here
+
+  console.log("\n✅ Seed complete.");
+  if (stats.created.length) console.log("  Created :", stats.created.join(", "));
+  if (stats.skipped.length) console.log("  Skipped :", stats.skipped.join(", "));
+  console.log("\n🔑 Default credentials:");
+  console.log("  Admin : admin@kitchen.com / admin123");
 }
 
 main()

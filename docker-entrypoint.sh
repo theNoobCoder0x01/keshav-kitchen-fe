@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-echo "Running db setup..."
-npm run setup
+echo "Running database migrations..."
+npx prisma migrate deploy
 
-echo "Setup done. Starting app..."
+echo "Migrations applied. Starting app..."
 exec "$@"

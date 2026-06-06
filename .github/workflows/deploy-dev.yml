@@ -1,0 +1,36 @@
+# Deploy to Dev (Beta) — runs on every push to main and supports manual trigger.
+# Deploys via SSH to the dev server and runs `npm run deploy:dev`.
+#
+# Required GitHub Secrets — configure these in Settings > Secrets > Actions:
+#   DEV_SSH_HOST   — IP address or hostname of the dev server
+#   DEV_SSH_USER   — SSH username (e.g. root or deploy)
+#   DEV_SSH_KEY    — Private SSH key in PEM format (the entire key contents)
+#   DEV_SSH_PORT   — SSH port (default 22)
+#   DEV_APP_PATH   — Absolute path to the app on the dev server (e.g. /opt/keshav-kitchen)
+
+name: Deploy Dev
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_SSH_HOST }}
+          username: ${{ secrets.DEV_SSH_USER }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          port: ${{ secrets.DEV_SSH_PORT }}
+          script: |
+            cd ${{ secrets.DEV_APP_PATH }} && git pull origin main && npm run deploy:dev

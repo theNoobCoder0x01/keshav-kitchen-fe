@@ -4,7 +4,8 @@
   "private": true,
   "description": "Keshav Kitchen Frontend",
   "scripts": {
-    "dev": "next dev",
+    "predev": "node -e \"const fs=require('fs');if(!fs.existsSync('.env.local')){console.error('\\x1b[33m\\n⚠  .env.local not found. Run:\\n   cp .env.local.example .env.local\\n   Then fill in NEXTAUTH_SECRET (openssl rand -base64 32)\\n\\x1b[0m');process.exit(1)}\"",
+    "dev": "dotenv -e .env.local -- next dev",
     "lint": "eslint .",
     "format": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
     "build": "next build",
@@ -21,7 +22,14 @@
     "deploy:prod": "APP_ENV_FILE=.env.production docker compose --env-file .env.production -f docker-compose.base.yml -f docker-compose.prod.yml up -d --build",
     "docker:db": "docker compose --env-file .env.development -f docker-compose.base.yml up db pgadmin -d",
     "gen:lockfile": "./scripts/regenerate-lockfile.sh",
-    "comment": "// gen:lockfile: To be run directly in macos terminal otherwise it produces differnt lock file that does not work in deployment"
+    "comment": "// gen:lockfile: To be run directly in macos terminal otherwise it produces differnt lock file that does not work in deployment",
+    "dev:db": "docker compose -f docker-compose.db-only.yml up -d",
+    "dev:db:stop": "docker compose -f docker-compose.db-only.yml down",
+    "dev:tunnel": "bash scripts/tunnel-dev-db.sh",
+    "db:migrate:local": "dotenv -e .env.local prisma migrate dev",
+    "db:push:local": "dotenv -e .env.local prisma db push",
+    "db:studio:local": "dotenv -e .env.local prisma studio",
+    "db:seed:local": "dotenv -e .env.local tsx prisma/seed.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -74,7 +82,6 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "dotenv": "^17.4.2",
     "embla-carousel-react": "^8.6.0",
     "exceljs": "^4.4.0",
     "fast-csv": "^5.0.5",
@@ -111,13 +118,13 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.0",
+    "dotenv": "^17.4.2",
     "dotenv-cli": "^11.0.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.4",
     "postcss": "^8.5.13",
     "prettier": "^3.8.3",
     "prisma": "^7.8.0",
-    "prototype": "^0.0.5",
     "tailwindcss": "^4.2.4",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
