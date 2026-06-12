@@ -1,4 +1,4 @@
-# CI — Lint, typecheck, and build on every PR and push to main.
+# CI — Lint, typecheck, and build on every PR and push to dev or main.
 # Lint and typecheck run in parallel; build waits for both to pass.
 # PUPPETEER_SKIP_DOWNLOAD=true prevents Chromium download during build.
 
@@ -8,9 +8,11 @@ on:
   pull_request:
     branches:
       - main
+      - dev
   push:
     branches:
       - main
+      - dev
 
 jobs:
   lint:
