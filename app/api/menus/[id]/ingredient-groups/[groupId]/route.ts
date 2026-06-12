@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // PUT update ingredient group
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string; groupId: string } },
+  { params }: { params: Promise<{ id: string; groupId: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: menuId, groupId } = params;
+    const { id: menuId, groupId } = await params;
     const data = await request.json();
 
     // Validate required fields
@@ -110,7 +110,7 @@ export async function PUT(
 // DELETE ingredient group
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; groupId: string } },
+  { params }: { params: Promise<{ id: string; groupId: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -118,7 +118,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: menuId, groupId } = params;
+    const { id: menuId, groupId } = await params;
 
     // Verify menu exists and user has access
     const menu = await prisma.menu.findUnique({

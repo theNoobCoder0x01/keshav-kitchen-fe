@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 // PUT /api/recipes/[id]/ingredient-groups/[groupId] - Update ingredient group
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; groupId: string } },
+  { params }: { params: Promise<{ id: string; groupId: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,7 +26,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: recipeId, groupId } = params;
+    const { id: recipeId, groupId } = await params;
     const body = await request.json();
 
     const validatedData = UpdateIngredientGroupSchema.parse(body);
@@ -120,7 +120,7 @@ export async function PUT(
 // DELETE /api/recipes/[id]/ingredient-groups/[groupId] - Delete ingredient group
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; groupId: string } },
+  { params }: { params: Promise<{ id: string; groupId: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -128,7 +128,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: recipeId, groupId } = params;
+    const { id: recipeId, groupId } = await params;
 
     // Verify recipe exists and user has access
     const recipe = await prisma.recipe.findFirst({

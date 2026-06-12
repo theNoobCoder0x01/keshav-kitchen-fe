@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 // GET /api/recipes/[id]/ingredient-groups - Get all ingredient groups for a recipe
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const recipeId = params.id;
+    const { id: recipeId } = await params;
 
     // Verify recipe exists and user has access
     const recipe = await prisma.recipe.findFirst({
@@ -78,7 +78,7 @@ export async function GET(
 // POST /api/recipes/[id]/ingredient-groups - Create new ingredient group
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -86,7 +86,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const recipeId = params.id;
+    const { id: recipeId } = await params;
     const body = await request.json();
 
     const validatedData = IngredientGroupSchema.parse(body);

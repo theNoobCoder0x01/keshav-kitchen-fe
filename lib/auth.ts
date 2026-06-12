@@ -17,6 +17,7 @@ export const authOptions: AuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          include: { premise: true },
         });
 
         if (!user || !user.password) return null;
@@ -29,6 +30,8 @@ export const authOptions: AuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          premiseId: user.premiseId ?? null,
+          premiseName: user.premise?.name ?? null,
         };
       },
     }),
@@ -38,6 +41,8 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
+        token.premiseId = user.premiseId;
+        token.premiseName = user.premiseName;
       }
       return token;
     },
@@ -45,6 +50,8 @@ export const authOptions: AuthOptions = {
       if (token) {
         session.user.id = token.sub!;
         session.user.role = token.role;
+        session.user.premiseId = token.premiseId;
+        session.user.premiseName = token.premiseName;
       }
       return session;
     },

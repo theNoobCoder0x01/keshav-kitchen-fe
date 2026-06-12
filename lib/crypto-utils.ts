@@ -21,8 +21,10 @@ const HASH_CONFIG = {
  * Generates a cryptographically secure random salt
  * @returns Promise<Uint8Array> - Random salt bytes
  */
-async function generateSalt(): Promise<Uint8Array> {
-  return crypto.getRandomValues(new Uint8Array(HASH_CONFIG.saltLength));
+async function generateSalt(): Promise<Uint8Array<ArrayBuffer>> {
+  const bytes = new Uint8Array(HASH_CONFIG.saltLength);
+  crypto.getRandomValues(bytes);
+  return bytes;
 }
 
 /**
@@ -39,11 +41,13 @@ function bufferToBase64(buffer: Uint8Array): string {
  * @param base64 - The base64 string to convert
  * @returns Uint8Array - The decoded byte array
  */
-function base64ToBuffer(base64: string): Uint8Array {
+function base64ToBuffer(base64: string): Uint8Array<ArrayBuffer> {
   const binaryString = atob(base64);
-  return new Uint8Array(binaryString.length).map((_, i) =>
-    binaryString.charCodeAt(i),
-  );
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 }
 
 /**

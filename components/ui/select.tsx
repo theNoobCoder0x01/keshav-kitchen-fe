@@ -92,7 +92,7 @@ const SelectContent = React.forwardRef<
     if (searchable && searchTerm && React.Children.count(children) > 0) {
       filteredChildren = React.Children.toArray(children).filter((child) => {
         if (
-          React.isValidElement(child) &&
+          React.isValidElement<{ children?: React.ReactNode }>(child) &&
           typeof child.props.children === "string"
         ) {
           return child.props.children
