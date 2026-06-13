@@ -24,6 +24,13 @@ jobs:
     name: Deploy to Dev
     runs-on: ubuntu-latest
     steps:
+      - name: Verify secrets are accessible
+        run: |
+          echo "DEV_SSH_HOST set: ${{ secrets.DEV_SSH_HOST != '' }}"
+          echo "DEV_SSH_USER set: ${{ secrets.DEV_SSH_USER != '' }}"
+          echo "DEV_SSH_KEY  set: ${{ secrets.DEV_SSH_KEY  != '' }}"
+          echo "DEV_APP_PATH set: ${{ secrets.DEV_APP_PATH != '' }}"
+
       - name: Configure SSH key
         run: |
           mkdir -p ~/.ssh
