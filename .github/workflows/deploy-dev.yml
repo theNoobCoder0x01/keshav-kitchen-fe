@@ -24,20 +24,11 @@ jobs:
     name: Deploy to Dev
     runs-on: ubuntu-latest
     steps:
-      - name: Verify secrets are accessible
-        run: |
-          echo "DEV_SSH_HOST set: ${{ secrets.DEV_SSH_HOST != '' }}"
-          echo "DEV_SSH_USER set: ${{ secrets.DEV_SSH_USER != '' }}"
-          echo "DEV_SSH_KEY  set: ${{ secrets.DEV_SSH_KEY  != '' }}"
-          echo "DEV_APP_PATH set: ${{ secrets.DEV_APP_PATH != '' }}"
-
       - name: Configure SSH key
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.DEV_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          # Verify key loaded correctly (shows first line only, not the key content)
-          head -1 ~/.ssh/deploy_key
 
       - name: Deploy via SSH
         run: |
@@ -45,4 +36,4 @@ jobs:
             -p "${{ secrets.DEV_SSH_PORT || '22' }}" \
             -o StrictHostKeyChecking=accept-new \
             "${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}" \
-            "cd '${{ secrets.DEV_APP_PATH }}' && git pull origin dev && npm run deploy:dev"
+            "bash -lc 'cd ${{ secrets.DEV_APP_PATH }} && git pull origin dev && npm run deploy:dev'"
