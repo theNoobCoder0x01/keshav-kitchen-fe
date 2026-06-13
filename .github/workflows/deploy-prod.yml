@@ -32,8 +32,9 @@ jobs:
 
       - name: Deploy via SSH
         run: |
+          APP_PATH="${{ secrets.PROD_APP_PATH }}"
           ssh -i ~/.ssh/deploy_key \
             -p "${{ secrets.PROD_SSH_PORT || '22' }}" \
             -o StrictHostKeyChecking=accept-new \
             "${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_SSH_HOST }}" \
-            "bash -lc 'cd ${{ secrets.PROD_APP_PATH }} && git pull origin main && npm run deploy:prod'"
+            "export NVM_DIR=\"\$HOME/.nvm\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; cd \"$APP_PATH\" && git pull origin main && npm run deploy:prod"
