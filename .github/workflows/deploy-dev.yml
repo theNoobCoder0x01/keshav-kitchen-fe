@@ -1,11 +1,10 @@
 # Deploy to Dev (Beta) — runs on every push to dev branch and supports manual trigger.
-# Deploys via SSH to the dev server and runs `npm run deploy:dev`.
 #
 # Required GitHub Secrets (Settings > Secrets > Actions):
 #   DEV_SSH_HOST   — IP address or hostname of the dev server
 #   DEV_SSH_USER   — SSH username (e.g. root)
 #   DEV_SSH_KEY    — Private SSH key, full PEM contents
-#   DEV_SSH_PORT   — SSH port (default 22)
+#   DEV_SSH_PORT   — SSH port (optional, defaults to 22)
 #   DEV_APP_PATH   — Absolute path to the app on the server (e.g. /opt/keshav-kitchen)
 
 name: Deploy Dev
@@ -25,21 +24,16 @@ jobs:
     name: Deploy to Dev
     runs-on: ubuntu-latest
     steps:
+      - name: Configure SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEV_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          APP_PATH: ${{ secrets.DEV_APP_PATH }}
-        with:
-          host: ${{ secrets.DEV_SSH_HOST }}
-          username: ${{ secrets.DEV_SSH_USER }}
-          key: ${{ secrets.DEV_SSH_KEY }}
-          port: ${{ secrets.DEV_SSH_PORT }}
-          envs: APP_PATH
-          script: |
-            if [ -z "$APP_PATH" ]; then
-              echo "ERROR: DEV_APP_PATH secret is not set or empty"
-              exit 1
-            fi
-            cd "$APP_PATH"
-            git pull origin dev
-            npm run deploy:dev
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -p "${{ secrets.DEV_SSH_PORT || '22' }}" \
+            -o StrictHostKeyChecking=accept-new \
+            "${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}" \
+            "cd '${{ secrets.DEV_APP_PATH }}' && git pull origin dev && npm run deploy:dev"

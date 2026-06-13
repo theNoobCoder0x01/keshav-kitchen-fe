@@ -6,7 +6,7 @@
 #   PROD_SSH_HOST   — IP address or hostname of the prod server
 #   PROD_SSH_USER   — SSH username (e.g. root)
 #   PROD_SSH_KEY    — Private SSH key, full PEM contents
-#   PROD_SSH_PORT   — SSH port (default 22)
+#   PROD_SSH_PORT   — SSH port (optional, defaults to 22)
 #   PROD_APP_PATH   — Absolute path to the app on the server (e.g. /opt/keshav-kitchen)
 
 name: Deploy Prod
@@ -24,21 +24,16 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - name: Configure SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          APP_PATH: ${{ secrets.PROD_APP_PATH }}
-        with:
-          host: ${{ secrets.PROD_SSH_HOST }}
-          username: ${{ secrets.PROD_SSH_USER }}
-          key: ${{ secrets.PROD_SSH_KEY }}
-          port: ${{ secrets.PROD_SSH_PORT }}
-          envs: APP_PATH
-          script: |
-            if [ -z "$APP_PATH" ]; then
-              echo "ERROR: PROD_APP_PATH secret is not set or empty"
-              exit 1
-            fi
-            cd "$APP_PATH"
-            git pull origin main
-            npm run deploy:prod
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -p "${{ secrets.PROD_SSH_PORT || '22' }}" \
+            -o StrictHostKeyChecking=accept-new \
+            "${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_SSH_HOST }}" \
+            "cd '${{ secrets.PROD_APP_PATH }}' && git pull origin main && npm run deploy:prod"
