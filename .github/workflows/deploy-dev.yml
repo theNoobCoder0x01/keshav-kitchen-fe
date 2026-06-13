@@ -37,4 +37,4 @@ jobs:
             -p "${{ secrets.DEV_SSH_PORT || '22' }}" \
             -o StrictHostKeyChecking=accept-new \
             "${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}" \
-            "export NVM_DIR=\"\$HOME/.nvm\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; cd \"$APP_PATH\" && git pull origin dev && npm run deploy:dev"
+            "export NVM_DIR=\"\$HOME/.nvm\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; cd \"$APP_PATH\" && git fetch origin && git checkout dev && git pull origin dev && npm run deploy:dev"
