@@ -96,11 +96,11 @@ export default function CookReport() {
           <Fragment key={premise.premiseId}>
             <div
               className={cn(
-                "px-4 py-1 print:pt-0 flex items-center justify-between border-b border-accent-foreground",
+                "px-4 py-2 print:pt-0 flex items-center justify-between border-b border-accent-foreground",
                 index && "break-before-page",
               )}
             >
-              <div className="flex items-center space-x-1 h-10">
+              <div className="flex items-center space-x-1 h-15">
                 <Image
                   src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/logo.svg`}
                   alt="Keshav Premise"
@@ -128,7 +128,7 @@ export default function CookReport() {
               </div>
             </div>
             <div className={cn("px-2 flex flex-col")}>
-              <h1 className="text-center text-lg font-extrabold my-1">
+              <h1 className="text-center text-2xl font-extrabold my-3">
                 {premise.premiseName}
               </h1>
               {premise.mealTypes.map((mealType: any) => {
@@ -137,14 +137,14 @@ export default function CookReport() {
                 return (
                   <div
                     key={mealType.mealType}
-                    className="bg-secondary rounded p-2 flex flex-col gap-2 break-inside-avoid"
+                    className="bg-secondary rounded p-3 flex flex-col gap-3 break-inside-avoid"
                   >
-                    <h2 className="capitalize flex gap-2 font-extrabold border-b border-muted-foreground pb-1">
+                    <h2 className="capitalize flex gap-2 font-extrabold border-b-2 border-muted-foreground pb-2">
                       <MealTypeIcon />
                       {mealType.mealType.toLowerCase()}
                     </h2>
 
-                    <div className="grid grid-cols-2 gap-y-1.5 gap-x-4 text-xs text-muted-foreground font-bold">
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-sm text-muted-foreground font-bold">
                       {mealType.recipes.map((recipe: any) => (
                         <div
                           key={recipe.recipeId}

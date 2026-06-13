@@ -5,16 +5,6 @@ import {
   PremisesTable,
   PremisesTableSkeleton,
 } from "@/components/premises/premises-table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
@@ -36,7 +26,6 @@ export default function PremisesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [premiseToDelete, setPremiseToDelete] = useState<string | null>(null);
 
   const loadPremises = async () => {
     setLoading(true);
@@ -84,92 +73,65 @@ export default function PremisesPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setPremiseToDelete(id);
-  };
-
-  const confirmDeletePremise = async () => {
-    if (!premiseToDelete) return;
-    const id = premiseToDelete;
-    setPremiseToDelete(null);
-    setDeletingId(id);
-    try {
-      await deletePremise(id);
-      toast.success(t("messages.premiseDeleted"));
-      loadPremises();
-    } catch {
-      toast.error(t("messages.failedToDeletePremise"));
-    } finally {
-      setDeletingId(null);
+  const handleDelete = async (id: string) => {
+    if (window.confirm(t("messages.confirmDeletePremise"))) {
+      setDeletingId(id);
+      try {
+        await deletePremise(id);
+        toast.success(t("messages.premiseDeleted"));
+        loadPremises();
+      } catch {
+        toast.error(t("messages.failedToDeletePremise"));
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
   return (
-    <>
-      <div className="w-full flex flex-col gap-2 md:gap-4">
-        <PageHeader
-          title={t("premises.management")}
-          subtitle={t("premises.managementSubtitle")}
-          actions={
-            <Button
-              onClick={() => {
-                setEditingPremise(null);
-                setDialogOpen(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              {t("premises.addPremise")}
-            </Button>
-          }
+    <div className="w-full flex flex-col gap-2 md:gap-4">
+      <PageHeader
+        title={t("premises.management")}
+        subtitle={t("premises.managementSubtitle")}
+        actions={
+          <Button
+            onClick={() => {
+              setEditingPremise(null);
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            {t("premises.addPremise")}
+          </Button>
+        }
+      />
+
+      <div>
+        <AddEditPremiseDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) setEditingPremise(null);
+          }}
+          initialPremise={editingPremise}
+          onSave={handleSave}
         />
 
-        <div>
-          <AddEditPremiseDialog
-            open={dialogOpen}
-            onOpenChange={(open) => {
-              setDialogOpen(open);
-              if (!open) setEditingPremise(null);
-            }}
-            initialPremise={editingPremise}
-            onSave={handleSave}
+        {loading ? (
+          <PremisesTableSkeleton />
+        ) : error ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-destructive">{error}</div>
+          </div>
+        ) : (
+          <PremisesTable
+            premises={premises}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            deletingId={deletingId}
           />
-
-          {loading ? (
-            <PremisesTableSkeleton />
-          ) : error ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-destructive">{error}</div>
-            </div>
-          ) : (
-            <PremisesTable
-              premises={premises}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              deletingId={deletingId}
-            />
-          )}
-        </div>
+        )}
       </div>
-
-      <AlertDialog open={!!premiseToDelete} onOpenChange={(open) => !open && setPremiseToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("messages.confirmDeletePremise")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("messages.confirmDeletePremiseDesc")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDeletePremise}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("common.delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    </div>
   );
 }

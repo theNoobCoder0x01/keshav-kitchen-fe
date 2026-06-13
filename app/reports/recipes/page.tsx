@@ -160,28 +160,28 @@ export default function RecipesReport() {
       <div className="bg-transparent flex flex-col w-full overflow-x-hidden min-h-full">
         {header}
 
-        <div className="px-2 pt-2 flex flex-col gap-3">
+        <div className="px-2 pt-3 flex flex-col gap-6">
           {data.map((premise) => (
             <div
               key={premise.premiseName}
-              className="flex flex-col gap-2 break-inside-avoid"
+              className="flex flex-col gap-4 break-inside-avoid"
             >
-              <h1 className="text-base font-extrabold text-primary border-b border-primary pb-0.5">
+              <h1 className="text-xl font-extrabold text-primary border-b-2 border-primary pb-1">
                 {premise.premiseName}
               </h1>
               {premise.mealTypes.map((mealType: any) => (
-                <div key={mealType.mealType} className="flex flex-col gap-2">
-                  <h2 className="text-sm font-bold text-secondary-foreground pl-2 border-l-2 border-secondary">
+                <div key={mealType.mealType} className="flex flex-col gap-3">
+                  <h2 className="text-lg font-bold text-secondary-foreground pl-2 border-l-4 border-secondary">
                     {mealType.mealType}
                   </h2>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     {mealType.recipes.map((recipe: any) => (
                       <div
                         key={recipe.recipeId}
-                        className="bg-secondary rounded p-2 flex flex-col gap-2 break-inside-avoid"
+                        className="bg-secondary rounded p-3 flex flex-col gap-3 break-inside-avoid"
                       >
-                        <div className="flex items-center justify-between border-b border-muted-foreground pb-1">
-                          <h2 className="flex gap-1.5 text-sm font-extrabold">
+                        <div className="flex items-center justify-between border-b-2 border-muted-foreground pb-2">
+                          <h2 className="flex gap-2 font-extrabold">
                             <RecipeIcon />
                             <span>
                               {recipe.menuComponents.length > 0 && (
@@ -211,17 +211,17 @@ export default function RecipesReport() {
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-3">
                           {recipe.ingredientGroups.map((group: any) => (
                             <div key={group.name}>
-                              <h3 className="font-bold text-xs text-primary mb-1">
+                              <h3 className="font-bold text-sm text-primary mb-2">
                                 {group.name}
                               </h3>
-                              <div className="grid grid-cols-3 gap-x-6 gap-y-0.5 text-xs text-muted-foreground font-bold">
+                              <div className="grid grid-cols-3 gap-x-10 gap-y-1 text-sm text-muted-foreground font-bold">
                                 {group.ingredients.map((ingredient: any) => (
                                   <div
                                     key={`${ingredient.name}-${ingredient.unit}`}
-                                    className="flex items-center justify-between pb-0.5 border-b border-dashed border-muted-foreground break-inside-avoid"
+                                    className="flex items-center justify-between pb-1 border-b border-dashed border-muted-foreground break-inside-avoid"
                                   >
                                     <div>{ingredient.name}</div>
                                     <div>

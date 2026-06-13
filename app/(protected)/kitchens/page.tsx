@@ -5,16 +5,6 @@ import {
   KitchensTable,
   KitchensTableSkeleton,
 } from "@/components/kitchens/kitchens-table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useTranslations } from "@/hooks/use-translations";
@@ -37,7 +27,6 @@ export default function KitchensPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [kitchenToDelete, setKitchenToDelete] = useState<string | null>(null);
 
   const loadKitchens = async () => {
     setLoading(true);
@@ -85,92 +74,65 @@ export default function KitchensPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setKitchenToDelete(id);
-  };
-
-  const confirmDeleteKitchen = async () => {
-    if (!kitchenToDelete) return;
-    const id = kitchenToDelete;
-    setKitchenToDelete(null);
-    setDeletingId(id);
-    try {
-      await deleteKitchen(id);
-      toast.success(t("messages.kitchenDeleted"));
-      loadKitchens();
-    } catch {
-      toast.error(t("messages.failedToDeleteKitchen"));
-    } finally {
-      setDeletingId(null);
+  const handleDelete = async (id: string) => {
+    if (window.confirm(t("messages.confirmDeleteKitchen"))) {
+      setDeletingId(id);
+      try {
+        await deleteKitchen(id);
+        toast.success(t("messages.kitchenDeleted"));
+        loadKitchens();
+      } catch {
+        toast.error(t("messages.failedToDeleteKitchen"));
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
   return (
-    <>
-      <div className="w-full flex flex-col gap-2 md:gap-4">
-        <PageHeader
-          title={t("kitchens.management")}
-          subtitle={t("kitchens.managementSubtitle")}
-          actions={
-            <Button
-              onClick={() => {
-                setEditingKitchen(null);
-                setDialogOpen(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              {t("kitchens.addKitchen")}
-            </Button>
-          }
+    <div className="w-full flex flex-col gap-2 md:gap-4">
+      <PageHeader
+        title={t("kitchens.management")}
+        subtitle={t("kitchens.managementSubtitle")}
+        actions={
+          <Button
+            onClick={() => {
+              setEditingKitchen(null);
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            {t("kitchens.addKitchen")}
+          </Button>
+        }
+      />
+
+      <div>
+        <AddEditKitchenDialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) setEditingKitchen(null);
+          }}
+          initialKitchen={editingKitchen}
+          onSave={handleSave}
         />
 
-        <div>
-          <AddEditKitchenDialog
-            open={dialogOpen}
-            onOpenChange={(open) => {
-              setDialogOpen(open);
-              if (!open) setEditingKitchen(null);
-            }}
-            initialKitchen={editingKitchen}
-            onSave={handleSave}
+        {loading ? (
+          <KitchensTableSkeleton />
+        ) : error ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-destructive">{error}</div>
+          </div>
+        ) : (
+          <KitchensTable
+            kitchens={kitchens}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            deletingId={deletingId}
           />
-
-          {loading ? (
-            <KitchensTableSkeleton />
-          ) : error ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-destructive">{error}</div>
-            </div>
-          ) : (
-            <KitchensTable
-              kitchens={kitchens}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              deletingId={deletingId}
-            />
-          )}
-        </div>
+        )}
       </div>
-
-      <AlertDialog open={!!kitchenToDelete} onOpenChange={(open) => !open && setKitchenToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("messages.confirmDeleteKitchen")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("messages.confirmDeleteKitchenDesc")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDeleteKitchen}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("common.delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    </div>
   );
 }

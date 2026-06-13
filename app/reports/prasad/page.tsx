@@ -193,7 +193,7 @@ export default function PrasadReport() {
                                 }}
                               />
 
-                              <div className="flex-1 flex flex-col gap-1">
+                              <div className="flex-1 flex flex-col gap-2">
                                 {hasIngredients ? (
                                   item.ingredientGroups.map((group: any) => {
                                     if (group.ingredients.length === 0)
@@ -220,7 +220,7 @@ export default function PrasadReport() {
                                         )}
 
                                         {/* Ingredient grid */}
-                                        <div className="flex-1 grid grid-cols-3 gap-x-8 gap-y-1 text-xs">
+                                        <div className="flex-1 grid grid-cols-3 gap-x-12 gap-y-2 text-xs">
                                           {group.ingredients.map((ing: any) => {
                                             const actualQty = showGhan
                                               ? ing.quantity * item.ghanFactor

@@ -187,7 +187,7 @@ export function Sidebar() {
               >
                 <div
                   className={cn(
-                    "group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all duration-200",
+                    "group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200",
                     item.isActive
                       ? "bg-linear-to-r from-primary/10 to-primary/5 text-primary shadow-xs border border-primary/10"
                       : "text-foreground hover:bg-muted hover:text-primary",
@@ -196,7 +196,7 @@ export function Sidebar() {
                   <div className="flex items-center space-x-3">
                     <div
                       className={cn(
-                        "w-9 h-9 rounded-lg flex items-center justify-center transition-colors",
+                        "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
                         item.isActive
                           ? "bg-linear-to-br from-primary to-primary/80 text-primary-foreground shadow-md"
                           : "bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary",
@@ -206,6 +206,9 @@ export function Sidebar() {
                     </div>
                     <div>
                       <span className="font-medium">{item.label}</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
