@@ -34,8 +34,10 @@ jobs:
       - name: Configure SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEV_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEV_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          # Verify key loaded correctly (shows first line only, not the key content)
+          head -1 ~/.ssh/deploy_key
 
       - name: Deploy via SSH
         run: |
