@@ -107,7 +107,10 @@ export default function DailyMenuBuilderPage() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+    // `t` is intentionally excluded: useTranslations returns a new function each
+    // render, so depending on it would re-run this fetch on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadDayData = useCallback(async () => {
     if (!premiseId) return;
@@ -138,7 +141,9 @@ export default function DailyMenuBuilderPage() {
     } finally {
       setLoadingData(false);
     }
-  }, [premiseId, selectedDate, t]);
+    // `t` excluded on purpose (new identity each render). See note above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [premiseId, selectedDate]);
 
   useEffect(() => {
     if (premiseId) loadDayData();
