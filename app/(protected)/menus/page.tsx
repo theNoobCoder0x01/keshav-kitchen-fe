@@ -48,6 +48,7 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { AlertTriangle, ChevronDown, File } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -441,6 +442,11 @@ export default function MenuPage() {
                 onDateChange={handleDateChange}
                 className="w-auto"
               />
+
+              {/* Daily Menu Builder */}
+              <Button variant="default" asChild>
+                <Link href="/menus/daily">{t("dailyMenu.title")}</Link>
+              </Button>
 
               {/* Reports buttons */}
               <Button
