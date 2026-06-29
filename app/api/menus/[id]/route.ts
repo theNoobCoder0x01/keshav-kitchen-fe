@@ -276,6 +276,7 @@ export async function PUT(
         error: "Failed to update menu.",
         detail: error?.message,
         code: error?.code,
+        meta: error?.meta,
       },
       { status: 400 },
     );

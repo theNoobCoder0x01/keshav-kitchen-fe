@@ -326,6 +326,7 @@ export async function POST(request: Request) {
         error: "Failed to create menu.",
         detail: error?.message,
         code: error?.code,
+        meta: error?.meta,
       },
       { status: 500 },
     );
