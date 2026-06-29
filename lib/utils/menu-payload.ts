@@ -147,9 +147,17 @@ export function getRowInitialValues(params: {
   existingMenu?: ExistingMenuLike | null;
   menuComponentId?: string;
   defaultKitchenId?: string;
+  /** Default cook for the default kitchen, pre-filled on new rows. */
+  defaultCook?: string;
   generateId: () => string;
 }): DailyMenuRowFormValues {
-  const { existingMenu, menuComponentId, defaultKitchenId, generateId } = params;
+  const {
+    existingMenu,
+    menuComponentId,
+    defaultKitchenId,
+    defaultCook,
+    generateId,
+  } = params;
 
   if (existingMenu?.id) {
     const followRecipe = Boolean(existingMenu.followRecipe);
@@ -198,7 +206,7 @@ export function getRowInitialValues(params: {
     servingQuantityUnit: DEFAULT_UNIT,
     quantityPerPiece: undefined,
     kitchenId: defaultKitchenId || "",
-    cook: "",
+    cook: defaultCook || "",
     notes: "",
     menuComponentId,
     ingredientGroups: emptyUngroupedGroups(generateId),

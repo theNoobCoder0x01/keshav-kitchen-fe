@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
 import { useTranslations } from "@/hooks/use-translations";
@@ -50,8 +51,6 @@ import { buildMenuRowSchema } from "@/lib/validations/menu-row";
 import type { DailyMenuRowFormValues } from "@/types/forms";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import type { MealType } from "@/types/menus";
-
-const CUSTOM = "__custom__";
 
 export interface DailyMenuRowProps {
   rowKey: string;
@@ -127,6 +126,12 @@ export function DailyMenuRow({
 
   const generateStableId = useCallback(() => uuidv4(), []);
 
+  // Default cook for the day's default kitchen, used to pre-fill new rows.
+  const defaultCook = useMemo(
+    () => kitchens.find((k) => k.id === defaultKitchenId)?.defaultCook ?? "",
+    [kitchens, defaultKitchenId],
+  );
+
   // menuId in a ref so a pending autosave retry sees it synchronously (prevents
   // a duplicate create before the first POST's id is captured).
   const menuIdRef = useRef<string | null>(initialMenu?.id ?? null);
@@ -147,6 +152,7 @@ export function DailyMenuRow({
         existingMenu: initialMenu,
         menuComponentId,
         defaultKitchenId,
+        defaultCook,
         generateId: generateStableId,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -301,8 +307,6 @@ export function DailyMenuRow({
       onSubmit={() => {}}
     >
       {({ values, setFieldValue }) => {
-        const dishSelectValue =
-          values.followRecipe && values.recipeId ? values.recipeId : CUSTOM;
         const namedIngredients = values.ingredientGroups
           .flatMap((group) => group.ingredients)
           .filter((ing) => ing.name.trim());
@@ -319,8 +323,12 @@ export function DailyMenuRow({
           );
         };
 
-        const onDishChange = (value: string) => {
-          if (value === CUSTOM) {
+        // Toggle between recipe mode and custom (manual) mode in place.
+        const onModeChange = (recipeMode: boolean) => {
+          if (recipeMode) {
+            setFieldValue("followRecipe", true);
+            // Recipe stays empty until the user picks one from the dropdown.
+          } else {
             setFieldValue("followRecipe", false);
             setFieldValue("recipeId", "");
             setFieldValue("ghanFactor", 1.0);
@@ -334,9 +342,14 @@ export function DailyMenuRow({
                 })),
               })),
             );
-          } else {
-            applyRecipe(value);
           }
+        };
+
+        // Selecting a kitchen pulls in its default cook.
+        const onKitchenChange = (kitchenId: string) => {
+          setFieldValue("kitchenId", kitchenId);
+          const kitchen = kitchens.find((k) => k.id === kitchenId);
+          setFieldValue("cook", kitchen?.defaultCook ?? "");
         };
 
         const applyConsumptionSuggestion = () => {
@@ -430,7 +443,7 @@ export function DailyMenuRow({
           <>
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[150px_1fr]">
               {/* Label cell */}
-              <div className="flex items-start justify-end border-r border-border/60 bg-muted/40 px-2 py-2 text-right">
+              <div className="flex items-start justify-end border-r border-border/60 bg-muted/40 px-2 py-1.5 text-right">
                 <span className="text-sm font-semibold leading-tight text-primary">
                   {categoryLabel || t("dailyMenu.customItem")} :-
                 </span>
@@ -440,47 +453,82 @@ export function DailyMenuRow({
               <div className="px-2.5 py-1.5">
                 {/* Primary line */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Select value={dishSelectValue} onValueChange={onDishChange}>
-                    <SelectTrigger className="h-8 w-[150px] sm:w-[170px]">
-                      <SelectValue placeholder={t("dailyMenu.pickRecipe")} />
-                    </SelectTrigger>
-                    <SelectContent searchable>
-                      <SelectItem value={CUSTOM}>
-                        {t("dailyMenu.customDish")}
-                      </SelectItem>
-                      {filteredRecipes.map((recipe) => (
-                        <SelectItem key={recipe.id} value={recipe.id}>
-                          {recipe.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* Recipe / Custom mode toggle */}
+                  <div className="flex items-center gap-1.5">
+                    <Switch
+                      checked={values.followRecipe}
+                      onCheckedChange={onModeChange}
+                      aria-label={t("dailyMenu.recipeMode")}
+                    />
+                    <span className="w-12 text-xs font-medium text-muted-foreground">
+                      {values.followRecipe
+                        ? t("dailyMenu.recipeMode")
+                        : t("dailyMenu.customMode")}
+                    </span>
+                  </div>
 
-                  {!values.followRecipe && (
+                  {/* Shared name space: recipe picker OR custom name */}
+                  {values.followRecipe ? (
+                    <Select
+                      value={values.recipeId || ""}
+                      onValueChange={applyRecipe}
+                    >
+                      <SelectTrigger className="h-7 min-w-[160px] flex-1">
+                        <SelectValue
+                          placeholder={t("dailyMenu.selectRecipe")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent searchable>
+                        {filteredRecipes.map((recipe) => (
+                          <SelectItem key={recipe.id} value={recipe.id}>
+                            {recipe.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
                     <Field
                       as={Input}
                       name="customName"
                       placeholder={t("dailyMenu.itemNamePlaceholder")}
-                      className="h-8 min-w-[140px] flex-1"
+                      className="h-7 min-w-[160px] flex-1"
                     />
                   )}
 
-                  <div className="w-[150px]">
+                  {/* Prepared quantity (compact) */}
+                  <div className="w-[118px]">
                     <FormikValueUnitInput
                       quantityName="preparedQuantity"
                       unitName="preparedQuantityUnit"
                       min={0}
                       step={0.0001}
                       placeholder={t("recipes.preparedQuantity")}
-                      className="h-8"
+                      className="h-7"
                     />
                   </div>
+
+                  {/* Kitchen + cook live together */}
+                  <Select
+                    value={values.kitchenId}
+                    onValueChange={onKitchenChange}
+                  >
+                    <SelectTrigger className="h-7 w-[130px]">
+                      <SelectValue placeholder={t("meals.selectKitchen")} />
+                    </SelectTrigger>
+                    <SelectContent searchable>
+                      {kitchens.map((kitchen) => (
+                        <SelectItem key={kitchen.id} value={kitchen.id}>
+                          {kitchen.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   <Field
                     as={Input}
                     name="cook"
                     placeholder={t("meals.cook")}
-                    className="h-8 w-[110px]"
+                    className="h-7 w-[100px]"
                   />
 
                   <SaveStatusBadge status={saveStatus} t={t} />
@@ -490,7 +538,7 @@ export function DailyMenuRow({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8 px-2 text-muted-foreground"
+                      className="h-7 px-2 text-muted-foreground"
                       onClick={() => setExpanded((prev) => !prev)}
                       aria-expanded={expanded}
                     >
@@ -505,7 +553,7 @@ export function DailyMenuRow({
                       type="button"
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      className="h-7 w-7 text-destructive hover:bg-destructive/10"
                       onClick={handleDelete}
                       disabled={isDeleting}
                       title={t("dailyMenu.deleteRow")}
@@ -545,96 +593,64 @@ export function DailyMenuRow({
 
                 {/* Details disclosure */}
                 {expanded && (
-                  <div className="mt-2 space-y-2 rounded-md border border-dashed border-border bg-muted/20 p-2.5">
-                    <div className="flex flex-wrap items-end gap-3">
-                      <div className="w-[180px]">
-                        <Label className="mb-1 block text-xs text-muted-foreground">
-                          {t("meals.kitchen")} *
-                        </Label>
-                        <Field name="kitchenId">
-                          {({ field }: { field: any }) => (
-                            <Select
-                              value={field.value}
-                              onValueChange={(value) =>
-                                field.onChange({
-                                  target: { name: field.name, value },
-                                })
-                              }
-                            >
-                              <SelectTrigger className="h-8 w-full">
-                                <SelectValue
-                                  placeholder={t("meals.selectKitchen")}
-                                />
-                              </SelectTrigger>
-                              <SelectContent searchable>
-                                {kitchens.map((kitchen) => (
-                                  <SelectItem key={kitchen.id} value={kitchen.id}>
-                                    {kitchen.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </Field>
+                  <div className="mt-2 space-y-2 rounded-md border border-dashed border-border bg-muted/20 p-2">
+                    {/* Recipe filters (recipe mode only) */}
+                    {values.followRecipe && (
+                      <div className="flex flex-wrap items-end gap-3">
+                        <div className="w-[150px]">
+                          <Label className="mb-1 block text-xs text-muted-foreground">
+                            {t("recipes.category")}
+                          </Label>
+                          <Select
+                            value={recipeCategory}
+                            onValueChange={setRecipeCategory}
+                          >
+                            <SelectTrigger className="h-7 w-full">
+                              <SelectValue
+                                placeholder={t("recipes.allCategories")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {recipeCategories.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category === "all"
+                                    ? t("recipes.allCategories")
+                                    : category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="w-[150px]">
+                          <Label className="mb-1 block text-xs text-muted-foreground">
+                            {t("recipes.subcategory")}
+                          </Label>
+                          <Select
+                            value={recipeSubcategory}
+                            onValueChange={setRecipeSubcategory}
+                          >
+                            <SelectTrigger className="h-7 w-full">
+                              <SelectValue
+                                placeholder={t("recipes.allSubcategories")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent searchable>
+                              {recipeSubcategories.map((subcategory) => (
+                                <SelectItem
+                                  key={subcategory}
+                                  value={subcategory}
+                                  className="break-all"
+                                >
+                                  {subcategory === "all"
+                                    ? t("recipes.allSubcategories")
+                                    : subcategory}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-
-                      {values.followRecipe && (
-                        <>
-                          <div className="w-[150px]">
-                            <Label className="mb-1 block text-xs text-muted-foreground">
-                              {t("recipes.category")}
-                            </Label>
-                            <Select
-                              value={recipeCategory}
-                              onValueChange={setRecipeCategory}
-                            >
-                              <SelectTrigger className="h-8 w-full">
-                                <SelectValue
-                                  placeholder={t("recipes.allCategories")}
-                                />
-                              </SelectTrigger>
-                              <SelectContent searchable>
-                                {recipeCategories.map((category) => (
-                                  <SelectItem key={category} value={category}>
-                                    {category === "all"
-                                      ? t("recipes.allCategories")
-                                      : category}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="w-[150px]">
-                            <Label className="mb-1 block text-xs text-muted-foreground">
-                              {t("recipes.subcategory")}
-                            </Label>
-                            <Select
-                              value={recipeSubcategory}
-                              onValueChange={setRecipeSubcategory}
-                            >
-                              <SelectTrigger className="h-8 w-full">
-                                <SelectValue
-                                  placeholder={t("recipes.allSubcategories")}
-                                />
-                              </SelectTrigger>
-                              <SelectContent searchable>
-                                {recipeSubcategories.map((subcategory) => (
-                                  <SelectItem
-                                    key={subcategory}
-                                    value={subcategory}
-                                    className="break-all"
-                                  >
-                                    {subcategory === "all"
-                                      ? t("recipes.allSubcategories")
-                                      : subcategory}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    )}
 
                     {/* Follow-recipe planning */}
                     {values.followRecipe && (
@@ -712,7 +728,7 @@ export function DailyMenuRow({
                               type="number"
                               min={0}
                               step={0.0001}
-                              className="h-8"
+                              className="h-7"
                             />
                             <ErrorMessage
                               name="ghanFactor"
@@ -729,7 +745,7 @@ export function DailyMenuRow({
                               pieceUnit={values.preparedQuantityUnit}
                               min={0}
                               step={0.0001}
-                              inputClassName="h-8"
+                              inputClassName="h-7"
                               labelClassName="text-xs"
                             />
                           </div>
@@ -798,7 +814,7 @@ export function DailyMenuRow({
                                     as={Input}
                                     name={`ingredientGroups[0].ingredients[${i}].name`}
                                     placeholder={t("dailyMenu.ingredientName")}
-                                    className="h-8 flex-1"
+                                    className="h-7 flex-1"
                                   />
                                   <div className="w-[140px]">
                                     <FormikValueUnitInput
@@ -806,7 +822,7 @@ export function DailyMenuRow({
                                       unitName={`ingredientGroups[0].ingredients[${i}].unit`}
                                       min={0}
                                       step={0.0001}
-                                      className="h-8"
+                                      className="h-7"
                                     />
                                   </div>
                                   <Field
@@ -816,13 +832,13 @@ export function DailyMenuRow({
                                     min={0}
                                     step={0.0001}
                                     placeholder={t("dailyMenu.cost")}
-                                    className="h-8 w-[70px]"
+                                    className="h-7 w-[70px]"
                                   />
                                   <Button
                                     type="button"
                                     size="icon"
                                     variant="ghost"
-                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
                                     onClick={() => remove(i)}
                                     disabled={editableIngredients.length <= 1}
                                     aria-label={t("dailyMenu.removeIngredient")}
@@ -835,7 +851,7 @@ export function DailyMenuRow({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-8"
+                                className="h-7"
                                 onClick={() =>
                                   push(createEmptyIngredient(generateStableId))
                                 }
