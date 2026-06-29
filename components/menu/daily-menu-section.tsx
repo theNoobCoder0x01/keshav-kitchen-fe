@@ -49,8 +49,9 @@ export function DailyMenuSection({
       className="rounded-lg border border-border bg-card/40"
     >
       <AccordionItem value="open" className="border-b-0">
-        {/* Sticky, clickable meal-period band that toggles the section */}
-        <AccordionPrimitive.Header className="sticky top-0 z-20 flex rounded-t-lg border-b border-border bg-muted">
+        {/* Clickable meal-period band that toggles the section. It stays put
+            because the row list below scrolls internally — no sticky needed. */}
+        <AccordionPrimitive.Header className="flex rounded-t-lg border-b border-border bg-muted">
           <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between gap-3 px-3 py-1.5 text-left outline-none [&[data-state=open]>svg]:rotate-180">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold text-foreground">{title}</h2>
@@ -64,7 +65,7 @@ export function DailyMenuSection({
 
         <AccordionContent className="pb-0 pt-0">
           {rows.length > 0 && (
-            <div className="divide-y divide-border">
+            <div className="max-h-[60vh] divide-y divide-border overflow-y-auto">
               {rows.map((row) => (
                 <DailyMenuRow
                   key={row.rowKey}
@@ -77,7 +78,7 @@ export function DailyMenuSection({
             </div>
           )}
 
-          {/* Add control at the bottom (new rows append here) */}
+          {/* Add control pinned below the scroll area (new rows append here) */}
           <div className="border-t border-border px-3 py-1.5">
             <Button
               type="button"
