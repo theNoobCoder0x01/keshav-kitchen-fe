@@ -1,12 +1,14 @@
 "use client";
 
-import { ErrorMessage, Field, Formik } from "formik";
+import { ErrorMessage, Field, FieldArray, Formik } from "formik";
 import {
   AlertCircle,
-  BookOpen,
   Check,
+  ChevronDown,
   Loader2,
+  Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import type { ClipboardEvent } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -14,18 +16,10 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
 import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  FormikAutosave,
+  type AutosaveStatus,
+} from "@/components/menu/formik-autosave";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { IngredientsInput } from "@/components/ui/ingredients-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QuantityWithPieceInput } from "@/components/ui/quantity-with-piece-input";
@@ -36,12 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  FormikAutosave,
-  type AutosaveStatus,
-} from "@/components/menu/formik-autosave";
+import { FormikValueUnitInput } from "@/components/ui/value-unit-input";
 import { useTranslations } from "@/hooks/use-translations";
 import { createMenu, deleteMenu, updateMenu } from "@/lib/api/menus";
 import { convertUnits, DEFAULT_UNIT, normalizeUnit } from "@/lib/constants/units";
@@ -52,14 +42,16 @@ import {
   applyRecipeToForm,
   buildCreateMenuPayload,
   buildUpdateMenuPayload,
+  createEmptyIngredient,
   getRowInitialValues,
-  getRowSummary,
   type ExistingMenuLike,
 } from "@/lib/utils/menu-payload";
 import { buildMenuRowSchema } from "@/lib/validations/menu-row";
 import type { DailyMenuRowFormValues } from "@/types/forms";
 import type { MenuComponentApiItem } from "@/types/menu-components";
 import type { MealType } from "@/types/menus";
+
+const CUSTOM = "__custom__";
 
 export interface DailyMenuRowProps {
   rowKey: string;
@@ -135,12 +127,13 @@ export function DailyMenuRow({
 
   const generateStableId = useCallback(() => uuidv4(), []);
 
-  // menuId lives in a ref (not state) so it is visible synchronously to any
-  // pending autosave retry — this prevents a second create firing before the
-  // first POST's id is captured. The UI does not depend on it for rendering.
+  // menuId in a ref so a pending autosave retry sees it synchronously (prevents
+  // a duplicate create before the first POST's id is captured).
   const menuIdRef = useRef<string | null>(initialMenu?.id ?? null);
   const [saveStatus, setSaveStatus] = useState<AutosaveStatus>("idle");
   const [isDeleting, setIsDeleting] = useState(false);
+  // Empty / new rows open expanded so the ingredient inputs are visible.
+  const [expanded, setExpanded] = useState<boolean>(!initialMenu);
   const originalGroupsRef = useRef<Array<{ id: string; name: string }>>(
     (initialMenu?.ingredientGroups ?? []) as Array<{
       id: string;
@@ -148,8 +141,6 @@ export function DailyMenuRow({
     }>,
   );
 
-  // Computed once on mount. The row remounts (via its key) when the underlying
-  // record changes from a page-level reload, so this never needs to reinit.
   const initialValues = useMemo(
     () =>
       getRowInitialValues({
@@ -164,7 +155,6 @@ export function DailyMenuRow({
 
   const validationSchema = useMemo(() => buildMenuRowSchema(t), [t]);
 
-  // Recipe picker filters (local to this row).
   const [recipeCategory, setRecipeCategory] = useState("all");
   const [recipeSubcategory, setRecipeSubcategory] = useState("all");
 
@@ -201,7 +191,6 @@ export function DailyMenuRow({
     [recipes, recipeCategory, recipeSubcategory],
   );
 
-  // Consumption planner state (seeded from the day's saved person counts).
   const [personCounts, setPersonCounts] = useState<Record<string, number>>(
     () => {
       const seed = personCountsByMealType[mealType] || {};
@@ -218,25 +207,21 @@ export function DailyMenuRow({
 
     let totalPersons = 0;
     let totalGrams = 0;
-    const pieceWeightsInGrams: number[] = [];
-    let totalPieces = 0;
+    const pieceWeights: number[] = [];
 
     menuComponent.averages.forEach((avg) => {
       const count = Number(personCounts[avg.personTypeId] || 0);
       if (count <= 0) return;
       totalPersons += count;
-
       if (avg.unit === "pcs") {
-        const pieces = avg.quantity * count;
-        totalPieces += pieces;
         if (avg.weightPerPiece != null && avg.weightPerPieceUnit) {
           const grams = convertUnits(
             avg.weightPerPiece,
             avg.weightPerPieceUnit,
             "g",
           );
-          pieceWeightsInGrams.push(grams);
-          totalGrams += pieces * grams;
+          pieceWeights.push(grams);
+          totalGrams += avg.quantity * count * grams;
         }
         return;
       }
@@ -244,24 +229,20 @@ export function DailyMenuRow({
     });
 
     if (totalPersons === 0 || totalGrams <= 0) return null;
-
     const unit = totalGrams >= 1000 ? "kg" : "g";
-    const normalizedPieceWeight =
-      pieceWeightsInGrams.length > 0 &&
-      pieceWeightsInGrams.every(
-        (w) => Math.abs(w - pieceWeightsInGrams[0]) < 0.0001,
-      )
-        ? convertUnits(pieceWeightsInGrams[0], "g", unit)
+    const quantityPerPiece =
+      pieceWeights.length > 0 &&
+      pieceWeights.every((w) => Math.abs(w - pieceWeights[0]) < 0.0001)
+        ? convertUnits(pieceWeights[0], "g", unit)
         : null;
 
     return {
       totalPersons,
-      totalPieces,
       preparedQuantity: convertUnits(totalGrams, "g", unit),
       preparedQuantityUnit: unit,
       servingQuantity: convertUnits(totalGrams / totalPersons, "g", unit),
       servingQuantityUnit: unit,
-      quantityPerPiece: normalizedPieceWeight,
+      quantityPerPiece,
     };
   }, [personCounts, menuComponent]);
 
@@ -301,9 +282,7 @@ export function DailyMenuRow({
     setIsDeleting(true);
     try {
       const currentMenuId = menuIdRef.current;
-      if (currentMenuId) {
-        await deleteMenu(currentMenuId);
-      }
+      if (currentMenuId) await deleteMenu(currentMenuId);
       onDeleted(rowKey, currentMenuId);
     } catch (error: any) {
       toast.error(error?.message || t("dailyMenu.deleteFailed"));
@@ -318,10 +297,14 @@ export function DailyMenuRow({
       onSubmit={() => {}}
     >
       {({ values, setFieldValue }) => {
-        const summary = getRowSummary(values, recipes);
-        const totalPrepared =
-          (values.preparedQuantity || 0) *
-          (values.followRecipe ? values.ghanFactor || 1 : 1);
+        const dishSelectValue =
+          values.followRecipe && values.recipeId ? values.recipeId : CUSTOM;
+        const namedIngredients = values.ingredientGroups
+          .flatMap((group) => group.ingredients)
+          .filter((ing) => ing.name.trim());
+        const hasNamedIngredient = namedIngredients.length > 0;
+        const editableIngredients =
+          values.ingredientGroups[0]?.ingredients ?? [];
 
         const applyRecipe = (recipeId: string) => {
           const recipe = recipes.find((r) => r.id === recipeId);
@@ -332,11 +315,10 @@ export function DailyMenuRow({
           );
         };
 
-        const handleFollowRecipeChange = (checked: boolean) => {
-          setFieldValue("followRecipe", checked);
-          if (checked && values.recipeId) {
-            applyRecipe(values.recipeId);
-          } else if (!checked) {
+        const onDishChange = (value: string) => {
+          if (value === CUSTOM) {
+            setFieldValue("followRecipe", false);
+            setFieldValue("recipeId", "");
             setFieldValue("ghanFactor", 1.0);
             setFieldValue(
               "ingredientGroups",
@@ -348,6 +330,8 @@ export function DailyMenuRow({
                 })),
               })),
             );
+          } else {
+            applyRecipe(value);
           }
         };
 
@@ -406,16 +390,7 @@ export function DailyMenuRow({
 
           const ensureRow = (index: number) => {
             while (next.length <= index) {
-              next.push({
-                id: undefined,
-                name: "",
-                quantity: 0,
-                unit: DEFAULT_UNIT,
-                costPerUnit: 0,
-                sequenceNumber: index + 1,
-                localId: generateStableId(),
-                selected: false,
-              });
+              next.push(createEmptyIngredient(generateStableId));
             }
           };
 
@@ -449,314 +424,243 @@ export function DailyMenuRow({
 
         return (
           <>
-          <AccordionItem
-            value={rowKey}
-            className="rounded-lg border border-border/60 bg-card/40 px-0"
-          >
-            <div className="flex items-center gap-1 pr-2">
-              <AccordionTrigger className="flex-1 px-3 py-3 hover:no-underline">
-                <div className="flex flex-1 items-center justify-between gap-3 pr-2 text-left">
-                  <div className="min-w-0">
-                    {categoryLabel ? (
-                      <p className="text-xs font-medium text-muted-foreground">
-                        {categoryLabel}
-                      </p>
-                    ) : (
-                      <p className="text-xs font-medium text-muted-foreground">
-                        {t("dailyMenu.customItem")}
-                      </p>
-                    )}
-                    <p className="truncate font-medium text-foreground">
-                      {summary.title || (
-                        <span className="text-muted-foreground">
-                          {t("dailyMenu.emptyRow")}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    {totalPrepared > 0 && values.followRecipe ? (
-                      <span className="text-sm text-muted-foreground">
-                        {formatDecimal(totalPrepared)}{" "}
-                        {values.preparedQuantityUnit}
-                      </span>
-                    ) : null}
-                    <SaveStatusBadge status={saveStatus} t={t} />
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8 shrink-0 text-destructive hover:bg-destructive/10"
-                onClick={handleDelete}
-                disabled={isDeleting}
-                title={t("dailyMenu.deleteRow")}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+            <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[170px_1fr]">
+              {/* Label cell */}
+              <div className="flex items-start justify-end border-r border-border/60 bg-muted/40 px-2 py-3 text-right">
+                <span className="text-sm font-semibold leading-tight text-primary">
+                  {categoryLabel || t("dailyMenu.customItem")} :-
+                </span>
+              </div>
 
-            <AccordionContent className="px-3">
-              <div className="grid grid-cols-12 gap-4 pt-1">
-                {/* Kitchen */}
-                <div className="col-span-12 sm:col-span-6 md:col-span-4">
-                  <Label className="mb-2 block text-sm font-medium text-foreground">
-                    {t("meals.kitchen")} *
-                  </Label>
-                  <Field name="kitchenId">
-                    {({ field }: { field: any }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={(value) => {
-                          field.onChange({
-                            target: { name: field.name, value },
-                          });
-                          if (!values.cook) {
-                            const selected = kitchens.find(
-                              (k) => k.id === value,
-                            );
-                            setFieldValue("cook", selected?.defaultCook || "");
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue
-                            placeholder={t("meals.selectKitchen")}
-                          />
-                        </SelectTrigger>
-                        <SelectContent searchable>
-                          {kitchens.map((kitchen) => (
-                            <SelectItem key={kitchen.id} value={kitchen.id}>
-                              {kitchen.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </Field>
-                  <ErrorMessage
-                    name="kitchenId"
-                    component="p"
-                    className="mt-1 text-xs text-destructive"
-                  />
-                </div>
+              {/* Value cell */}
+              <div className="px-3 py-2.5">
+                {/* Primary line */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select value={dishSelectValue} onValueChange={onDishChange}>
+                    <SelectTrigger className="h-9 w-[150px] sm:w-[170px]">
+                      <SelectValue placeholder={t("dailyMenu.pickRecipe")} />
+                    </SelectTrigger>
+                    <SelectContent searchable>
+                      <SelectItem value={CUSTOM}>
+                        {t("dailyMenu.customDish")}
+                      </SelectItem>
+                      {filteredRecipes.map((recipe) => (
+                        <SelectItem key={recipe.id} value={recipe.id}>
+                          {recipe.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                {/* Cook */}
-                <div className="col-span-12 sm:col-span-6 md:col-span-5">
-                  <Label className="mb-2 block text-sm font-medium text-foreground">
-                    {t("meals.cook")}
-                  </Label>
-                  <Field
-                    as={Input}
-                    name="cook"
-                    placeholder={t("meals.cookPlaceholder")}
-                  />
-                </div>
-
-                {/* Follow recipe */}
-                <div className="col-span-12 sm:col-span-6 md:col-span-3">
-                  <Label className="mb-2 block text-sm font-medium text-foreground">
-                    {t("meals.followRecipe")}
-                  </Label>
-                  <div className="flex h-10 items-center">
-                    <Field name="followRecipe">
-                      {({ field }: { field: any }) => (
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            handleFollowRecipeChange(checked);
-                            field.onChange({
-                              target: { name: field.name, value: checked },
-                            });
-                          }}
-                          className="data-[state=checked]:bg-primary"
-                        />
-                      )}
-                    </Field>
-                  </div>
-                </div>
-
-                {/* Recipe pickers OR custom name */}
-                {values.followRecipe ? (
-                  <>
-                    <div className="col-span-12 sm:col-span-4">
-                      <Label className="mb-2 block text-sm font-medium text-foreground">
-                        {t("recipes.category")}
-                      </Label>
-                      <Select
-                        value={recipeCategory}
-                        onValueChange={setRecipeCategory}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue
-                            placeholder={t("recipes.allCategories")}
-                          />
-                        </SelectTrigger>
-                        <SelectContent searchable>
-                          {recipeCategories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category === "all"
-                                ? t("recipes.allCategories")
-                                : category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-12 sm:col-span-4">
-                      <Label className="mb-2 block text-sm font-medium text-foreground">
-                        {t("recipes.subcategory")}
-                      </Label>
-                      <Select
-                        value={recipeSubcategory}
-                        onValueChange={setRecipeSubcategory}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue
-                            placeholder={t("recipes.allSubcategories")}
-                          />
-                        </SelectTrigger>
-                        <SelectContent searchable>
-                          {recipeSubcategories.map((subcategory) => (
-                            <SelectItem
-                              key={subcategory}
-                              value={subcategory}
-                              className="break-all"
-                            >
-                              {subcategory === "all"
-                                ? t("recipes.allSubcategories")
-                                : subcategory}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-12 sm:col-span-4">
-                      <Label className="mb-2 block text-sm font-medium text-foreground">
-                        {t("meals.recipe")}
-                      </Label>
-                      <Field name="recipeId">
-                        {({ field }: { field: any }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={(value) => {
-                              const nextRecipeId =
-                                value === "__no_recipe__" ? "" : value;
-                              field.onChange({
-                                target: {
-                                  name: field.name,
-                                  value: nextRecipeId,
-                                },
-                              });
-                              if (nextRecipeId) {
-                                applyRecipe(nextRecipeId);
-                              } else {
-                                setFieldValue("followRecipe", false);
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue
-                                placeholder={t("meals.selectRecipe")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent searchable>
-                              <SelectItem value="__no_recipe__">
-                                {t("dailyMenu.noStoredRecipe")}
-                              </SelectItem>
-                              {filteredRecipes.map((recipe) => (
-                                <SelectItem key={recipe.id} value={recipe.id}>
-                                  {recipe.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </Field>
-                    </div>
-                  </>
-                ) : (
-                  <div className="col-span-12">
-                    <Label className="mb-2 block text-sm font-medium text-foreground">
-                      {t("dailyMenu.itemName")} *
-                    </Label>
+                  {!values.followRecipe && (
                     <Field
                       as={Input}
                       name="customName"
                       placeholder={t("dailyMenu.itemNamePlaceholder")}
+                      className="h-9 min-w-[140px] flex-1"
                     />
-                    <ErrorMessage
-                      name="customName"
-                      component="p"
-                      className="mt-1 text-xs text-destructive"
+                  )}
+
+                  <div className="w-[150px]">
+                    <FormikValueUnitInput
+                      quantityName="preparedQuantity"
+                      unitName="preparedQuantityUnit"
+                      min={0}
+                      step={0.0001}
+                      placeholder={t("recipes.preparedQuantity")}
+                      className="h-9"
                     />
                   </div>
-                )}
 
-                {/* Notes */}
-                <div className="col-span-12">
-                  <Label className="mb-2 block text-sm font-medium text-foreground">
-                    {t("dailyMenu.notes")}
-                  </Label>
                   <Field
-                    as={Textarea}
-                    name="notes"
-                    rows={2}
-                    placeholder={t("dailyMenu.notesPlaceholder")}
+                    as={Input}
+                    name="cook"
+                    placeholder={t("meals.cook")}
+                    className="h-9 w-[110px]"
                   />
+
+                  <SaveStatusBadge status={saveStatus} t={t} />
+
+                  <div className="ml-auto flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-muted-foreground"
+                      onClick={() => setExpanded((prev) => !prev)}
+                      aria-expanded={expanded}
+                    >
+                      <ChevronDown
+                        className={`mr-1 h-4 w-4 transition-transform ${
+                          expanded ? "rotate-180" : ""
+                        }`}
+                      />
+                      {t("dailyMenu.details")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      title={t("dailyMenu.deleteRow")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Quantity planning (follow-recipe mode) */}
-                {values.followRecipe && (
-                  <Card className="col-span-12">
-                    <CardHeader className="px-4 py-3">
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <BookOpen className="h-4 w-4 text-primary" />
-                        {t("recipes.quantityInformation")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3 px-4 pb-4">
-                      {menuComponent &&
-                      menuComponent.averages.length > 0 ? (
-                        <div className="rounded-md border border-border bg-muted/30 p-3">
-                          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                            <div className="min-w-0">
-                              <h4 className="text-sm font-semibold text-foreground">
-                                {t("dailyMenu.consumptionPlanner")}
-                              </h4>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {t("dailyMenu.consumptionPlannerHint")}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-8 shrink-0 px-3"
-                              onClick={applyConsumptionSuggestion}
-                              disabled={!consumptionSuggestion}
+                {/* Inline errors / hints */}
+                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-0.5">
+                  <ErrorMessage
+                    name="customName"
+                    component="span"
+                    className="text-xs text-destructive"
+                  />
+                  <ErrorMessage
+                    name="preparedQuantity"
+                    component="span"
+                    className="text-xs text-destructive"
+                  />
+                  <ErrorMessage
+                    name="kitchenId"
+                    component="span"
+                    className="text-xs text-destructive"
+                  />
+                  {!hasNamedIngredient && (
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(true)}
+                      className="text-xs text-amber-600 hover:underline"
+                    >
+                      {t("dailyMenu.addIngredientsHint")}
+                    </button>
+                  )}
+                </div>
+
+                {/* Details disclosure */}
+                {expanded && (
+                  <div className="mt-3 space-y-3 rounded-md border border-dashed border-border bg-muted/20 p-3">
+                    <div className="flex flex-wrap items-end gap-3">
+                      <div className="w-[180px]">
+                        <Label className="mb-1 block text-xs text-muted-foreground">
+                          {t("meals.kitchen")} *
+                        </Label>
+                        <Field name="kitchenId">
+                          {({ field }: { field: any }) => (
+                            <Select
+                              value={field.value}
+                              onValueChange={(value) =>
+                                field.onChange({
+                                  target: { name: field.name, value },
+                                })
+                              }
                             >
-                              {t("dailyMenu.applySuggestion")}
-                            </Button>
+                              <SelectTrigger className="h-9 w-full">
+                                <SelectValue
+                                  placeholder={t("meals.selectKitchen")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent searchable>
+                                {kitchens.map((kitchen) => (
+                                  <SelectItem key={kitchen.id} value={kitchen.id}>
+                                    {kitchen.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </Field>
+                      </div>
+
+                      {values.followRecipe && (
+                        <>
+                          <div className="w-[150px]">
+                            <Label className="mb-1 block text-xs text-muted-foreground">
+                              {t("recipes.category")}
+                            </Label>
+                            <Select
+                              value={recipeCategory}
+                              onValueChange={setRecipeCategory}
+                            >
+                              <SelectTrigger className="h-9 w-full">
+                                <SelectValue
+                                  placeholder={t("recipes.allCategories")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent searchable>
+                                {recipeCategories.map((category) => (
+                                  <SelectItem key={category} value={category}>
+                                    {category === "all"
+                                      ? t("recipes.allCategories")
+                                      : category}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
-                          <div className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_14rem]">
-                            <div className="grid gap-2 xl:grid-cols-2">
+                          <div className="w-[150px]">
+                            <Label className="mb-1 block text-xs text-muted-foreground">
+                              {t("recipes.subcategory")}
+                            </Label>
+                            <Select
+                              value={recipeSubcategory}
+                              onValueChange={setRecipeSubcategory}
+                            >
+                              <SelectTrigger className="h-9 w-full">
+                                <SelectValue
+                                  placeholder={t("recipes.allSubcategories")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent searchable>
+                                {recipeSubcategories.map((subcategory) => (
+                                  <SelectItem
+                                    key={subcategory}
+                                    value={subcategory}
+                                    className="break-all"
+                                  >
+                                    {subcategory === "all"
+                                      ? t("recipes.allSubcategories")
+                                      : subcategory}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Follow-recipe planning */}
+                    {values.followRecipe && (
+                      <div className="space-y-3">
+                        {menuComponent && menuComponent.averages.length > 0 && (
+                          <div className="rounded-md border border-border bg-background p-2.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-semibold text-foreground">
+                                {t("dailyMenu.consumptionPlanner")}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={applyConsumptionSuggestion}
+                                disabled={!consumptionSuggestion}
+                              >
+                                {t("dailyMenu.applySuggestion")}
+                              </Button>
+                            </div>
+                            <div className="mt-2 grid gap-2 sm:grid-cols-2">
                               {menuComponent.averages.map((avg) => (
                                 <div
                                   key={avg.id}
-                                  className="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-2 rounded-md border border-border bg-background px-3 py-2"
+                                  className="flex items-center justify-between gap-2 rounded border border-border px-2 py-1"
                                 >
-                                  <div className="min-w-0">
-                                    <Label className="block truncate text-sm font-medium text-foreground">
-                                      {avg.personType.name}
-                                    </Label>
-                                    <p className="truncate text-xs text-muted-foreground">
-                                      {t("dailyMenu.avgLabel")}{" "}
-                                      {formatDecimal(avg.quantity)} {avg.unit}
-                                    </p>
-                                  </div>
+                                  <span className="truncate text-xs">
+                                    {avg.personType.name}
+                                  </span>
                                   <Input
                                     type="number"
                                     min={0}
@@ -774,164 +678,197 @@ export function DailyMenuRow({
                                             : 0,
                                       }));
                                     }}
-                                    className="h-8 text-right"
+                                    className="h-7 w-16 text-right"
                                   />
                                 </div>
                               ))}
                             </div>
-                            <div className="rounded-md bg-background px-3 py-2 text-sm">
-                              {consumptionSuggestion ? (
-                                <div className="grid gap-y-1">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-xs text-muted-foreground">
-                                      {t("dailyMenu.suggested")}
-                                    </span>
-                                    <span className="font-medium">
-                                      {formatDecimal(
-                                        consumptionSuggestion.preparedQuantity,
-                                      )}{" "}
-                                      {consumptionSuggestion.preparedQuantityUnit}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-xs text-muted-foreground">
-                                      {t("dailyMenu.people")}
-                                    </span>
-                                    <span className="font-medium">
-                                      {consumptionSuggestion.totalPersons}
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="text-xs text-muted-foreground">
-                                  {t("dailyMenu.enterCounts")}
-                                </p>
-                              )}
-                            </div>
+                            {consumptionSuggestion && (
+                              <p className="mt-2 text-xs text-muted-foreground">
+                                {t("dailyMenu.suggested")}:{" "}
+                                {formatDecimal(
+                                  consumptionSuggestion.preparedQuantity,
+                                )}{" "}
+                                {consumptionSuggestion.preparedQuantityUnit} ·{" "}
+                                {consumptionSuggestion.totalPersons}{" "}
+                                {t("dailyMenu.people")}
+                              </p>
+                            )}
                           </div>
-                        </div>
-                      ) : null}
+                        )}
 
-                      <div className="@container grid grid-cols-12 gap-3">
-                        <div className="col-span-12 @sm:col-span-4">
-                          <Label className="mb-1 block text-xs font-medium text-foreground">
-                            {t("meals.ghan")}
-                          </Label>
-                          <Field
-                            as={Input}
-                            name="ghanFactor"
-                            type="number"
-                            min={0}
-                            step={0.0001}
-                            className="h-9"
-                          />
-                          <ErrorMessage
-                            name="ghanFactor"
-                            component="p"
-                            className="mt-1 text-xs text-destructive"
-                          />
-                        </div>
-                        <div className="col-span-12 @sm:col-span-4">
-                          <QuantityWithPieceInput
-                            label={`${t("recipes.preparedQuantity")} (${t("dailyMenu.perGhan")})`}
-                            quantityName="preparedQuantity"
-                            unitName="preparedQuantityUnit"
-                            pieceQuantityName="quantityPerPiece"
-                            pieceUnit={values.servingQuantityUnit}
-                            min={0}
-                            step={0.0001}
-                            inputClassName="h-9"
-                            labelClassName="text-xs"
-                          />
-                        </div>
-                        <div className="col-span-12 @sm:col-span-4">
-                          <QuantityWithPieceInput
-                            label={t("recipes.servingQuantity")}
-                            quantityName="servingQuantity"
-                            unitName="servingQuantityUnit"
-                            pieceQuantityName="quantityPerPiece"
-                            pieceUnit={values.preparedQuantityUnit}
-                            min={0}
-                            step={0.0001}
-                            inputClassName="h-9"
-                            labelClassName="text-xs"
-                          />
+                        <div className="flex flex-wrap items-end gap-3">
+                          <div className="w-[90px]">
+                            <Label className="mb-1 block text-xs text-muted-foreground">
+                              {t("meals.ghan")}
+                            </Label>
+                            <Field
+                              as={Input}
+                              name="ghanFactor"
+                              type="number"
+                              min={0}
+                              step={0.0001}
+                              className="h-9"
+                            />
+                            <ErrorMessage
+                              name="ghanFactor"
+                              component="p"
+                              className="mt-1 text-xs text-destructive"
+                            />
+                          </div>
+                          <div className="w-[170px]">
+                            <QuantityWithPieceInput
+                              label={t("recipes.servingQuantity")}
+                              quantityName="servingQuantity"
+                              unitName="servingQuantityUnit"
+                              pieceQuantityName="quantityPerPiece"
+                              pieceUnit={values.preparedQuantityUnit}
+                              min={0}
+                              step={0.0001}
+                              inputClassName="h-9"
+                              labelClassName="text-xs"
+                            />
+                          </div>
+                          {(() => {
+                            const calc = getCalculatedQuantities({
+                              preparedQuantity: values.preparedQuantity,
+                              preparedQuantityUnit: values.preparedQuantityUnit,
+                              servingQuantity: values.servingQuantity,
+                              servingQuantityUnit: values.servingQuantityUnit,
+                              quantityPerPiece: values.quantityPerPiece ?? null,
+                              ghanFactor: values.ghanFactor,
+                            });
+                            return (
+                              <p className="text-xs text-muted-foreground">
+                                {t("dailyMenu.totalPrepared")}:{" "}
+                                {formatDecimal(calc.preparedQuantity)}{" "}
+                                {calc.preparedUnit} ·{" "}
+                                {t("recipes.numberOfServings")}:{" "}
+                                {calc.numberOfServings}
+                              </p>
+                            );
+                          })()}
                         </div>
                       </div>
+                    )}
 
-                      {(() => {
-                        const calc = getCalculatedQuantities({
-                          preparedQuantity: values.preparedQuantity,
-                          preparedQuantityUnit: values.preparedQuantityUnit,
-                          servingQuantity: values.servingQuantity,
-                          servingQuantityUnit: values.servingQuantityUnit,
-                          quantityPerPiece: values.quantityPerPiece ?? null,
-                          ghanFactor: values.ghanFactor,
-                        });
-                        return (
-                          <div className="grid gap-x-4 gap-y-1 rounded-md border border-border bg-accent px-3 py-2 text-sm sm:grid-cols-3">
-                            <div className="flex items-center justify-between gap-2 sm:block">
-                              <span className="text-xs text-muted-foreground">
-                                {t("dailyMenu.totalPrepared")}
-                              </span>
-                              <span className="font-medium text-foreground sm:block">
-                                {formatDecimal(calc.preparedQuantity)}{" "}
-                                {calc.preparedUnit}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between gap-2 sm:block">
-                              <span className="text-xs text-muted-foreground">
-                                {t("recipes.numberOfServings")}
-                              </span>
-                              <span className="font-medium text-foreground sm:block">
-                                {calc.numberOfServings}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between gap-2 sm:block">
-                              <span className="text-xs text-muted-foreground">
-                                {t("recipes.extraQuantity")}
-                              </span>
-                              <span className="font-medium text-foreground sm:block">
-                                {formatDecimal(calc.extraQuantity)}{" "}
-                                {calc.preparedUnit}
-                              </span>
-                            </div>
+                    {/* Ingredients */}
+                    <div>
+                      <Label className="mb-1.5 block text-xs font-medium text-foreground">
+                        {t("meals.ingredients")} *
+                      </Label>
+                      {values.followRecipe ? (
+                        namedIngredients.length > 0 ? (
+                          <div className="space-y-1">
+                            {namedIngredients.map((ing, idx) => (
+                              <div
+                                key={ing.localId || idx}
+                                className="flex items-center justify-between rounded border border-border bg-background px-2 py-1 text-sm"
+                              >
+                                <span className="truncate">{ing.name}</span>
+                                <span className="shrink-0 text-muted-foreground">
+                                  {formatDecimal(Number(ing.quantity) || 0)}{" "}
+                                  {ing.unit}
+                                </span>
+                              </div>
+                            ))}
                           </div>
-                        );
-                      })()}
-                    </CardContent>
-                  </Card>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            {t("dailyMenu.recipeNoIngredients")}
+                          </p>
+                        )
+                      ) : (
+                        <FieldArray name="ingredientGroups[0].ingredients">
+                          {({ push, remove }) => (
+                            <div
+                              className="space-y-1.5"
+                              onPaste={handlePasteIngredients}
+                            >
+                              {editableIngredients.map((ing, i) => (
+                                <div
+                                  key={ing.localId || i}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Field
+                                    as={Input}
+                                    name={`ingredientGroups[0].ingredients[${i}].name`}
+                                    placeholder={t("dailyMenu.ingredientName")}
+                                    className="h-8 flex-1"
+                                  />
+                                  <div className="w-[140px]">
+                                    <FormikValueUnitInput
+                                      quantityName={`ingredientGroups[0].ingredients[${i}].quantity`}
+                                      unitName={`ingredientGroups[0].ingredients[${i}].unit`}
+                                      min={0}
+                                      step={0.0001}
+                                      className="h-8"
+                                    />
+                                  </div>
+                                  <Field
+                                    as={Input}
+                                    name={`ingredientGroups[0].ingredients[${i}].costPerUnit`}
+                                    type="number"
+                                    min={0}
+                                    step={0.0001}
+                                    placeholder={t("dailyMenu.cost")}
+                                    className="h-8 w-[70px]"
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                    onClick={() => remove(i)}
+                                    disabled={editableIngredients.length <= 1}
+                                    aria-label={t("dailyMenu.removeIngredient")}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8"
+                                onClick={() =>
+                                  push(createEmptyIngredient(generateStableId))
+                                }
+                              >
+                                <Plus className="mr-1 h-4 w-4" />
+                                {t("dailyMenu.addIngredient")}
+                              </Button>
+                            </div>
+                          )}
+                        </FieldArray>
+                      )}
+                    </div>
+
+                    {/* Notes */}
+                    <div>
+                      <Label className="mb-1 block text-xs text-muted-foreground">
+                        {t("dailyMenu.notes")}
+                      </Label>
+                      <Field
+                        as={Textarea}
+                        name="notes"
+                        rows={2}
+                        placeholder={t("dailyMenu.notesPlaceholder")}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
                 )}
-
-                {/* Ingredients */}
-                <div
-                  className={`col-span-12 ${
-                    values.followRecipe ? "pointer-events-none opacity-90" : ""
-                  }`}
-                >
-                  <IngredientsInput
-                    name="ingredientGroups"
-                    ingredientGroups={values.ingredientGroups}
-                    generateStableId={generateStableId}
-                    title={t("meals.ingredients")}
-                    description={t("dailyMenu.ingredientsHint")}
-                    showCostSummary={false}
-                    quantityType="number"
-                    onPasteIngredients={handlePasteIngredients}
-                    hideGroupManagement
-                  />
-                </div>
               </div>
+            </div>
 
-            </AccordionContent>
-          </AccordionItem>
-          {/* Rendered outside AccordionContent so it stays mounted (and keeps
-              its pending debounce) even while the row is collapsed. */}
-          <FormikAutosave
-            onSave={handleSave}
-            onStatusChange={setSaveStatus}
-            enabled={!isDeleting}
-          />
+            {/* Outside any collapsible region so it never unmounts mid-edit. */}
+            <FormikAutosave
+              onSave={handleSave}
+              onStatusChange={setSaveStatus}
+              enabled={!isDeleting}
+            />
           </>
         );
       }}

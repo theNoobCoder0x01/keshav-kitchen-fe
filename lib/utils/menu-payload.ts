@@ -294,36 +294,52 @@ export function computeDeletedGroupIds(
   return Array.from(originalIds).filter((id) => !currentIds.has(id));
 }
 
-/** Resolve the prepared/serving/ghan quantities the same way the dialog does. */
+/**
+ * Resolve the prepared/serving/ghan quantities to persist.
+ * - Follow-recipe rows use the entered values directly (prepared is per-ghan).
+ * - Manual rows use the entered prepared quantity (the dish's main quantity,
+ *   shown on the row's primary line); only when it is blank do we fall back to
+ *   summing the ingredient quantities.
+ */
 function resolveQuantities(
   values: DailyMenuRowFormValues,
   allIngredients: Array<Record<string, any>>,
 ) {
+  if (values.followRecipe) {
+    return {
+      preparedQuantity: values.preparedQuantity,
+      preparedQuantityUnit: values.preparedQuantityUnit as string,
+      servingQuantity: values.servingQuantity,
+      servingQuantityUnit: values.servingQuantityUnit as string,
+      ghanFactor: values.ghanFactor,
+    };
+  }
+
   let preparedQuantity = values.preparedQuantity;
   let preparedQuantityUnit: string = values.preparedQuantityUnit;
-  let servingQuantity = values.servingQuantity;
-  let servingQuantityUnit: string = values.servingQuantityUnit;
-  let ghanFactor = values.ghanFactor;
-
-  if (!values.followRecipe) {
+  if (!preparedQuantity) {
     const aggregated = sumCompatibleQuantities(allIngredients as any, {
       preferUnit: values.preparedQuantityUnit,
     });
     if (aggregated) {
       preparedQuantity = aggregated.quantity;
       preparedQuantityUnit = aggregated.unit;
-      servingQuantity = 1;
-      servingQuantityUnit = aggregated.unit;
-      ghanFactor = 1.0;
     }
   }
+
+  // No separate per-person serving on manual rows: treat the whole dish as one
+  // serving so downstream serving math stays well-defined.
+  const servingQuantity = values.servingQuantity || preparedQuantity || 1;
+  const servingQuantityUnit = values.servingQuantity
+    ? values.servingQuantityUnit
+    : preparedQuantityUnit;
 
   return {
     preparedQuantity,
     preparedQuantityUnit,
     servingQuantity,
     servingQuantityUnit,
-    ghanFactor,
+    ghanFactor: 1,
   };
 }
 

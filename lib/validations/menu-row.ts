@@ -33,27 +33,18 @@ export function buildMenuRowSchema(t: TranslateFn) {
           .max(100, t("meals.ghanMax")),
       otherwise: (schema) => schema.notRequired(),
     }),
-    preparedQuantity: Yup.number().when("followRecipe", {
-      is: true,
-      then: (schema) =>
-        schema
-          .required(t("meals.preparedQuantityRequired"))
-          .positive(t("meals.preparedQuantityPositive")),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    preparedQuantityUnit: Yup.string().when("followRecipe", {
-      is: true,
-      then: (schema) =>
-        schema
-          .trim()
-          .required(t("meals.preparedQuantityUnitRequired"))
-          .test(
-            "valid-prepared-unit",
-            t("meals.unitRequired"),
-            (value) => !value || isValidUnit(value),
-          ),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    // The dish's main quantity (the PDF "1 kg") is always required.
+    preparedQuantity: Yup.number()
+      .required(t("meals.preparedQuantityRequired"))
+      .positive(t("meals.preparedQuantityPositive")),
+    preparedQuantityUnit: Yup.string()
+      .trim()
+      .required(t("meals.preparedQuantityUnitRequired"))
+      .test(
+        "valid-prepared-unit",
+        t("meals.unitRequired"),
+        (value) => !value || isValidUnit(value),
+      ),
     servingQuantity: Yup.number().when("followRecipe", {
       is: true,
       then: (schema) =>
