@@ -208,6 +208,10 @@ export async function POST(request: Request) {
 
     const scalarData = {
       ...menuData,
+      // `notes` is nullable in the Prisma schema, but some databases have it as
+      // NOT NULL (migration drift). The existing dialog always sends a notes
+      // string so it never hits this; default null/blank to "" to stay safe.
+      notes: menuData.notes ?? "",
       preparedQuantity:
         menuData.preparedQuantity != null
           ? Number(menuData.preparedQuantity)

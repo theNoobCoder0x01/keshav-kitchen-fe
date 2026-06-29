@@ -178,6 +178,12 @@ export async function PUT(
           : {}),
       };
 
+      // Guard against NOT NULL `notes` columns (migration drift) — only when the
+      // client explicitly sent null, so partial updates that omit it are kept.
+      if (normalizedMenuData.notes === null) {
+        normalizedMenuData.notes = "";
+      }
+
       await tx.menu.update({
         where: { id },
         data: {
