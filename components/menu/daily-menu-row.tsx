@@ -428,20 +428,20 @@ export function DailyMenuRow({
 
         return (
           <>
-            <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[170px_1fr]">
+            <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[150px_1fr]">
               {/* Label cell */}
-              <div className="flex items-start justify-end border-r border-border/60 bg-muted/40 px-2 py-3 text-right">
+              <div className="flex items-start justify-end border-r border-border/60 bg-muted/40 px-2 py-2 text-right">
                 <span className="text-sm font-semibold leading-tight text-primary">
                   {categoryLabel || t("dailyMenu.customItem")} :-
                 </span>
               </div>
 
               {/* Value cell */}
-              <div className="px-3 py-2.5">
+              <div className="px-2.5 py-1.5">
                 {/* Primary line */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <Select value={dishSelectValue} onValueChange={onDishChange}>
-                    <SelectTrigger className="h-9 w-[150px] sm:w-[170px]">
+                    <SelectTrigger className="h-8 w-[150px] sm:w-[170px]">
                       <SelectValue placeholder={t("dailyMenu.pickRecipe")} />
                     </SelectTrigger>
                     <SelectContent searchable>
@@ -461,7 +461,7 @@ export function DailyMenuRow({
                       as={Input}
                       name="customName"
                       placeholder={t("dailyMenu.itemNamePlaceholder")}
-                      className="h-9 min-w-[140px] flex-1"
+                      className="h-8 min-w-[140px] flex-1"
                     />
                   )}
 
@@ -472,7 +472,7 @@ export function DailyMenuRow({
                       min={0}
                       step={0.0001}
                       placeholder={t("recipes.preparedQuantity")}
-                      className="h-9"
+                      className="h-8"
                     />
                   </div>
 
@@ -480,7 +480,7 @@ export function DailyMenuRow({
                     as={Input}
                     name="cook"
                     placeholder={t("meals.cook")}
-                    className="h-9 w-[110px]"
+                    className="h-8 w-[110px]"
                   />
 
                   <SaveStatusBadge status={saveStatus} t={t} />
@@ -545,7 +545,7 @@ export function DailyMenuRow({
 
                 {/* Details disclosure */}
                 {expanded && (
-                  <div className="mt-3 space-y-3 rounded-md border border-dashed border-border bg-muted/20 p-3">
+                  <div className="mt-2 space-y-2 rounded-md border border-dashed border-border bg-muted/20 p-2.5">
                     <div className="flex flex-wrap items-end gap-3">
                       <div className="w-[180px]">
                         <Label className="mb-1 block text-xs text-muted-foreground">
@@ -561,7 +561,7 @@ export function DailyMenuRow({
                                 })
                               }
                             >
-                              <SelectTrigger className="h-9 w-full">
+                              <SelectTrigger className="h-8 w-full">
                                 <SelectValue
                                   placeholder={t("meals.selectKitchen")}
                                 />
@@ -588,7 +588,7 @@ export function DailyMenuRow({
                               value={recipeCategory}
                               onValueChange={setRecipeCategory}
                             >
-                              <SelectTrigger className="h-9 w-full">
+                              <SelectTrigger className="h-8 w-full">
                                 <SelectValue
                                   placeholder={t("recipes.allCategories")}
                                 />
@@ -612,7 +612,7 @@ export function DailyMenuRow({
                               value={recipeSubcategory}
                               onValueChange={setRecipeSubcategory}
                             >
-                              <SelectTrigger className="h-9 w-full">
+                              <SelectTrigger className="h-8 w-full">
                                 <SelectValue
                                   placeholder={t("recipes.allSubcategories")}
                                 />
@@ -712,7 +712,7 @@ export function DailyMenuRow({
                               type="number"
                               min={0}
                               step={0.0001}
-                              className="h-9"
+                              className="h-8"
                             />
                             <ErrorMessage
                               name="ghanFactor"
@@ -729,7 +729,7 @@ export function DailyMenuRow({
                               pieceUnit={values.preparedQuantityUnit}
                               min={0}
                               step={0.0001}
-                              inputClassName="h-9"
+                              inputClassName="h-8"
                               labelClassName="text-xs"
                             />
                           </div>

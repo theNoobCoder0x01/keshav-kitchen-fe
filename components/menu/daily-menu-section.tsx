@@ -36,34 +36,18 @@ export function DailyMenuSection({
   const filledCount = rows.filter((row) => row.initialMenu).length;
 
   return (
-    <section className="overflow-hidden rounded-xl border border-border bg-card/40">
-      {/* Meal-period band, like the PDF section header */}
-      <div className="flex items-center justify-between gap-3 bg-muted/60 px-4 py-2.5">
+    <section className="rounded-lg border border-border bg-card/40">
+      {/* Sticky meal-period band */}
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 rounded-t-lg border-b border-border bg-muted px-3 py-1.5">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
-            {title}
-          </h2>
-          <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+          <h2 className="text-sm font-bold text-foreground">{title}</h2>
+          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
             {filledCount}/{rows.length}
           </span>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onAddAdHoc}
-          className="h-8"
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          {t("dailyMenu.addItem")}
-        </Button>
       </div>
 
-      {rows.length === 0 ? (
-        <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-          {t("dailyMenu.noRows")}
-        </p>
-      ) : (
+      {rows.length > 0 && (
         <div className="divide-y divide-border">
           {rows.map((row) => (
             <DailyMenuRow
@@ -76,6 +60,20 @@ export function DailyMenuSection({
           ))}
         </div>
       )}
+
+      {/* Add control at the bottom (new rows append here) */}
+      <div className="border-t border-border px-3 py-1.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onAddAdHoc}
+          className="h-7 text-primary hover:bg-primary/10"
+        >
+          <Plus className="mr-1 h-4 w-4" />
+          {t("dailyMenu.addItem")}
+        </Button>
+      </div>
     </section>
   );
 }

@@ -49,6 +49,14 @@ const MEAL_TYPES: MealType[] = [
   MealTypeEnum.SNACK,
 ];
 
+// Match the labels shown on the main /menus dashboard.
+const MEAL_LABELS: Record<MealType, string> = {
+  BREAKFAST: "Breakfast",
+  LUNCH: "Lunch",
+  DINNER: "Dinner",
+  SNACK: "Snack",
+};
+
 export default function DailyMenuBuilderPage() {
   const { t } = useTranslations();
   const { data: session, status } = useSession();
@@ -271,7 +279,7 @@ export default function DailyMenuBuilderPage() {
   if (status === "unauthenticated") return null;
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-3">
       <PageHeader
         title={t("dailyMenu.title")}
         subtitle={t("dailyMenu.subtitle")}
@@ -294,7 +302,7 @@ export default function DailyMenuBuilderPage() {
 
       {/* PDF-style day banner */}
       <Card className="border-border bg-card/60">
-        <CardContent className="flex flex-col items-center gap-1 py-4 text-center">
+        <CardContent className="flex flex-col items-center gap-0.5 py-2 text-center">
           <h2 className="text-lg font-bold text-primary">
             {premises[activeTab]?.name ?? t("dailyMenu.title")}
           </h2>
@@ -362,12 +370,12 @@ export default function DailyMenuBuilderPage() {
             </div>
           ) : (
             <DailyMenuProvider value={contextValue}>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 {MEAL_TYPES.map((mealType) => (
                   <DailyMenuSection
                     key={mealType}
                     mealType={mealType}
-                    title={t(`dailyMenu.period.${mealType}`)}
+                    title={MEAL_LABELS[mealType]}
                     rows={rowsByMealType[mealType] || []}
                     onRowCreated={handleRowCreated}
                     onRowDeleted={handleRowDeleted}
