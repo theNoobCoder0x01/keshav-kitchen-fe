@@ -215,13 +215,14 @@ export async function PUT(
           if (ing.groupId) {
             finalGroupId = groupIdMap.get(ing.groupId) ?? ing.groupId;
           }
+          // costPerUnit is NOT NULL in the schema — coerce blanks/NaN to 0.
+          const cost = Number(ing.costPerUnit);
           return {
             menuId: id,
             name: ing.name,
             quantity: Number(ing.quantity) || 0,
             unit: normalizeUnit(ing.unit),
-            costPerUnit:
-              ing.costPerUnit != null ? Number(ing.costPerUnit) : null,
+            costPerUnit: Number.isFinite(cost) ? cost : 0,
             sequenceNumber:
               ing.sequenceNumber != null ? Number(ing.sequenceNumber) : null,
             groupId: finalGroupId,
@@ -262,10 +263,14 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedMenu);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Update menu API error:", error);
     return NextResponse.json(
-      { error: "Failed to update menu." },
+      {
+        error: "Failed to update menu.",
+        detail: error?.message,
+        code: error?.code,
+      },
       { status: 400 },
     );
   }

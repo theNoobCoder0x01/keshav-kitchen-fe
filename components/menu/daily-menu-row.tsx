@@ -270,7 +270,11 @@ export function DailyMenuRow({
             updated?.ingredientGroups ?? originalGroupsRef.current;
         }
       } catch (error: any) {
-        toast.error(error?.message || t("dailyMenu.saveFailed"));
+        const detail =
+          error?.response?.data?.detail ||
+          error?.response?.data?.error ||
+          error?.message;
+        toast.error(detail || t("dailyMenu.saveFailed"));
         throw error;
       }
     },

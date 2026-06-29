@@ -1,6 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import { normalizeUnit } from "@/lib/constants/units";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import {
   createEndOfDayUTC,
   createStartOfDayUTC,
@@ -136,7 +137,38 @@ export async function GET(request: Request) {
   }
 }
 
-// POST create menu
+const menuWriteInclude: Prisma.MenuInclude = {
+  recipe: {
+    select: { id: true, name: true, description: true, category: true },
+  },
+  ingredients: {
+    select: {
+      id: true,
+      name: true,
+      quantity: true,
+      unit: true,
+      costPerUnit: true,
+      sequenceNumber: true,
+      groupId: true,
+      group: { select: { id: true, name: true, sortOrder: true } },
+    },
+    orderBy: [{ sequenceNumber: "asc" }],
+  },
+  ingredientGroups: {
+    select: { id: true, name: true, sortOrder: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+  },
+  premise: { select: { id: true, name: true } },
+  kitchen: { select: { id: true, name: true } },
+  user: { select: { id: true, name: true } },
+};
+
+// POST create (or upsert) a menu.
+//
+// The Daily Menu Builder treats each premise + day + mealType + menuComponent
+// "slot" as holding a single menu, so when a slot already has a menu we update
+// it in place instead of creating a duplicate. Ad-hoc rows (no menuComponentId)
+// always create, then the client switches to PUT using the returned id.
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -172,43 +204,68 @@ export async function POST(request: Request) {
       ...menuData
     } = data;
 
-    const normalizedRecipeId = menuData.recipeId || null;
-    menuData.recipeId = normalizedRecipeId;
+    menuData.recipeId = menuData.recipeId || null;
 
-    // Create menu, ingredient groups and ingredients in a transaction so we can map
-    // any temporary frontend group IDs to real DB ids (same approach as recipes POST)
+    const scalarData = {
+      ...menuData,
+      preparedQuantity:
+        menuData.preparedQuantity != null
+          ? Number(menuData.preparedQuantity)
+          : undefined,
+      preparedQuantityUnit: menuData.preparedQuantityUnit
+        ? normalizeUnit(menuData.preparedQuantityUnit)
+        : undefined,
+      servingQuantity:
+        menuData.servingQuantity != null
+          ? Number(menuData.servingQuantity)
+          : undefined,
+      servingQuantityUnit: menuData.servingQuantityUnit
+        ? normalizeUnit(menuData.servingQuantityUnit)
+        : undefined,
+      quantityPerPiece:
+        menuData.quantityPerPiece != null
+          ? Number(menuData.quantityPerPiece)
+          : undefined,
+      ghanFactor:
+        menuData.ghanFactor != null ? Number(menuData.ghanFactor) : undefined,
+      date: data.date ?? undefined,
+    };
+
     const menu = await prisma.$transaction(async (tx) => {
-      // Create the menu first (without nested ingredient/group creates)
-      const newMenu = await tx.menu.create({
-        data: {
-          ...menuData,
-          preparedQuantity:
-            menuData.preparedQuantity != null
-              ? Number(menuData.preparedQuantity)
-              : undefined,
-          preparedQuantityUnit: menuData.preparedQuantityUnit
-            ? normalizeUnit(menuData.preparedQuantityUnit)
-            : undefined,
-          servingQuantity:
-            menuData.servingQuantity != null
-              ? Number(menuData.servingQuantity)
-              : undefined,
-          servingQuantityUnit: menuData.servingQuantityUnit
-            ? normalizeUnit(menuData.servingQuantityUnit)
-            : undefined,
-          quantityPerPiece:
-            menuData.quantityPerPiece != null
-              ? Number(menuData.quantityPerPiece)
-              : undefined,
-          ghanFactor:
-            menuData.ghanFactor != null
-              ? Number(menuData.ghanFactor)
-              : undefined,
-          date: data.date ?? undefined,
-        },
-      });
+      // Resolve an existing slot menu (idempotent upsert) when this is a
+      // component slot rather than an ad-hoc row.
+      let existingId: string | null = null;
+      if (menuData.menuComponentId && data.date) {
+        const existing = await tx.menu.findFirst({
+          where: {
+            premiseId: menuData.premiseId,
+            mealType: menuData.mealType,
+            menuComponentId: menuData.menuComponentId,
+            date: {
+              gte: createStartOfDayUTC(data.date),
+              lte: createEndOfDayUTC(data.date),
+            },
+          },
+          select: { id: true },
+        });
+        existingId = existing?.id ?? null;
+      }
 
-      // Create ingredient groups (if any) and keep a map from temporary IDs -> real IDs
+      let menuId: string;
+      if (existingId) {
+        await tx.menu.update({ where: { id: existingId }, data: scalarData });
+        // Replace ingredients/groups wholesale (delete children first).
+        await tx.menuIngredient.deleteMany({ where: { menuId: existingId } });
+        await tx.menuIngredientGroup.deleteMany({
+          where: { menuId: existingId },
+        });
+        menuId = existingId;
+      } else {
+        const created = await tx.menu.create({ data: scalarData });
+        menuId = created.id;
+      }
+
+      // Recreate ingredient groups, mapping any temporary frontend ids -> real ids.
       const groupIdMap = new Map<string, string>();
       if (Array.isArray(ingredientGroups) && ingredientGroups.length > 0) {
         for (const group of ingredientGroups) {
@@ -216,7 +273,7 @@ export async function POST(request: Request) {
             data: {
               name: group.name,
               sortOrder: group.sortOrder ?? 0,
-              menuId: newMenu.id,
+              menuId,
             },
           });
           if (group.id) {
@@ -225,27 +282,20 @@ export async function POST(request: Request) {
         }
       }
 
-      // Build ingredient data, map temp group ids to real ids when necessary
       const ingredientData = (ingredients || []).map((ingredient: any) => {
         let finalGroupId: string | null = null;
-
         if (ingredient.groupId) {
-          if (groupIdMap.has(ingredient.groupId)) {
-            finalGroupId = groupIdMap.get(ingredient.groupId) as string;
-          } else {
-            finalGroupId = ingredient.groupId;
-          }
+          finalGroupId =
+            groupIdMap.get(ingredient.groupId) ?? ingredient.groupId;
         }
-
+        // costPerUnit is NOT NULL in the schema — coerce blanks/NaN to 0.
+        const cost = Number(ingredient.costPerUnit);
         return {
-          menuId: newMenu.id,
+          menuId,
           name: ingredient.name,
           quantity: Number(ingredient.quantity) || 0,
           unit: normalizeUnit(ingredient.unit),
-          costPerUnit:
-            ingredient.costPerUnit != null
-              ? Number(ingredient.costPerUnit)
-              : undefined,
+          costPerUnit: Number.isFinite(cost) ? cost : 0,
           sequenceNumber:
             ingredient.sequenceNumber != null
               ? Number(ingredient.sequenceNumber)
@@ -258,76 +308,21 @@ export async function POST(request: Request) {
         await tx.menuIngredient.createMany({ data: ingredientData });
       }
 
-      // Return the created menu with included relations for the client
       return await tx.menu.findUnique({
-        where: { id: newMenu.id },
-        include: {
-          recipe: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              category: true,
-            },
-          },
-          ingredients: {
-            select: {
-              id: true,
-              name: true,
-              quantity: true,
-              unit: true,
-              costPerUnit: true,
-              sequenceNumber: true,
-              groupId: true,
-              group: {
-                select: {
-                  id: true,
-                  name: true,
-                  sortOrder: true,
-                },
-              },
-            },
-            orderBy: [
-              {
-                sequenceNumber: "asc",
-              },
-            ],
-          },
-          ingredientGroups: {
-            select: {
-              id: true,
-              name: true,
-              sortOrder: true,
-            },
-            orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-          },
-          premise: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          kitchen: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          user: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
+        where: { id: menuId },
+        include: menuWriteInclude,
       });
     });
 
     return NextResponse.json(menu, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create menu API error:", error);
     return NextResponse.json(
-      { error: "Failed to create menu." },
+      {
+        error: "Failed to create menu.",
+        detail: error?.message,
+        code: error?.code,
+      },
       { status: 500 },
     );
   }
